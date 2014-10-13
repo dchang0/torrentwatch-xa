@@ -1,7 +1,7 @@
 torrentwatch-xa
 ===============
 
-torrentwatch-xa is a fork of TorrentWatch-X with focus on anime fansub torrents that do not have season numbers, only episode numbers.
+torrentwatch-xa is a fork of TorrentWatch-X with focus on anime fansub torrents that do not have season numbers, only episode numbers and on Transmission as the only torrent client.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
