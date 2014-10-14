@@ -19,6 +19,7 @@ Throughout all versions
 
 
 Unassigned, Realistic
+- make the Interface>Font Size actually affect the entire web UI instead of just the Configuration dialog
 - refresh button in toolbar can trigger Test Hit downloads just like browser refresh
 - separate out the torrents that were direct-downloaded and don't match any favorites from the ones that do match favorites
 - fix pop-up playback controls related to Transmission
