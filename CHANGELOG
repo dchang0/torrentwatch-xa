@@ -3,6 +3,7 @@ https://code.google.com/p/torrentwatch-x/ 0.8.9 -> https://github.com/dchang0/to
 0.1.0
 - cloned torrentwatch-xa to GitHub
 - replaced Paypal donation account
+- replaced all references to torrentwatch and TorrentWatch-X with torrentwatch-xa
 - rearranged paths to separate web UI from backend and put files in traditional Debian 7 paths, making it easier for future .deb packaging
 - fixed Issues 238, 244: "no torrent found at URL" (at least for ezRSS)
 - added anime-style episode guessing, treating all episodes as part of season 1
