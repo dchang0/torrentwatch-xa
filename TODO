@@ -36,5 +36,5 @@ Dream on!
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
 - sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version
-
+- move season and episode pattern matching (regexp) from hardcode to Configuration tab so users can configure them
 
