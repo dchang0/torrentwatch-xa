@@ -2,6 +2,8 @@ Throughout all versions
 - improve debugging and commenting
 - refactor when reasonable
 
+0.1.0
+- rearrange paths to separate web UI from backend and put files in traditional Debian 7 paths, making it easier for future .deb packaging
 
 0.1.1
 - remove all tvDB support (currently disabled anyway, as cloned from TorrentWatch-X 0.8.9)
