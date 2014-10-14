@@ -1,6 +1,6 @@
 https://code.google.com/p/torrentwatch-x/ 0.8.9 -> https://github.com/dchang0/torrentwatch-xa 0.1
-   * Cloned torrentwatch-xa to GitHub
-   * Replaced Paypal donation account
-   * Fixed Issues 238, 244: "no torrent found at URL" (at least for ezRSS)
-   * Added anime-style episode guessing, treating all episodes as part of season 1
-   * Fixed failure to match TV-style episodes introduced by anime-style episode guessing
+- cloned torrentwatch-xa to GitHub
+- replaced Paypal donation account
+- fixed Issues 238, 244: "no torrent found at URL" (at least for ezRSS)
+- added anime-style episode guessing, treating all episodes as part of season 1
+- fixed failure to match TV-style episodes introduced by anime-style episode guessing
