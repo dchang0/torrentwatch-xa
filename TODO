@@ -9,7 +9,11 @@ Throughout all versions
 0.1.2
 - pin the Favorites dialog so that it is easier to manage Favorites in bulk
 - pin the Feeds tab in the Configuration dialog
+- add Feed Title input above each Feed URL
+
+0.1.3
 - add debug console to web UI
+- combine History into Downloaded tab, using color coding to show stuff that was downloaded but whos torrent was auto-deleted
 
 
 
