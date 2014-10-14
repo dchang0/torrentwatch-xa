@@ -7,12 +7,13 @@ Throughout all versions
 - remove all NMT support (only supported OS is currently Debian 7.5)
 
 0.1.2
-- pin the Favorites dialog so that it is easier to manage favorites in bulk
+- pin the Favorites dialog so that it is easier to manage Favorites in bulk
 - pin the Feeds tab in the Configuration dialog
 
 
 
 Unassigned, Realistic
+- separate out the torrents that were direct-downloaded and don't match any favorites from the ones that do match favorites
 - fix pop-up playback controls related to Transmission
 - improve history system so that flushing the feed cache and deleting torrents does not easily fool torrentwatch-xa into thinking matching torrents must be downloaded again
 - if it does download again, honor the seed ratio from the favorite that it matched
