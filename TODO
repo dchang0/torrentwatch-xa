@@ -1,5 +1,6 @@
 Throughout all versions
 - improve debugging and commenting
+- refactor when reasonable
 
 
 0.1.1
@@ -17,6 +18,8 @@ Unassigned, Realistic
 - improve history system so that flushing the feed cache and deleting torrents does not easily fool torrentwatch-xa into thinking matching torrents must be downloaded again
 - if it does download again, honor the seed ratio from the favorite that it matched
 - allow user to mark a torrent as the most recent episode downloaded in that season or in every season
+- sqlite for caching and history
+- delete old episodes that are replaced by REPACK or PROPER
 
 
 
@@ -24,3 +27,6 @@ Dream on!
 - multi-select torrents in feed list and perform single action on entire selection
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
+- sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version
+
+
