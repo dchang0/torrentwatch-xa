@@ -17,5 +17,5 @@ Currently it is too soon to post any code. There are some glaring bugs carried o
 
 https://code.google.com/p/torrentwatch-x/issues/list
 
-#238 and #244 which are roughly "no torrent found at URL." I am getting this on all ezRSS torrents.
-#237 which is roughly "episode filter filtering out favorites that should match." I am getting this on all feeds' torrents.
+Issues 238 and 244 which are essentially "no torrent found at URL." I am getting this on all ezRSS torrents.
+Issue 237 which could be rephrased as "episode filter filtering out favorites that should match." I am getting this on all feeds' torrents. Downloads happen if I explicitly select Download on a torrent.
