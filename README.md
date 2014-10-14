@@ -28,9 +28,9 @@ Credits
 
 The credits may change as features and assets are removed.
 
-Original TorrentWatch-X by Joris Vandalon
-Crul emulator by Ian Harris
-Original Torrentwatch by Erik Bernhardson
-Original Torrentwatch CSS styling, images and general html tweaking by Keith Solomon http://reciprocity.be/
-Icons, by David Vignoni, are from Nuvola-1.0 available under the LGPL http://icon-king.com/
-Backgrounds and CSS Layout are borrowed from Clutch http://www.clutchbt.com/
+- Original TorrentWatch-X by Joris Vandalon
+- Crul emulator by Ian Harris
+- Original Torrentwatch by Erik Bernhardson
+- Original Torrentwatch CSS styling, images and general html tweaking by Keith Solomon http://reciprocity.be/
+- Icons, by David Vignoni, are from Nuvola-1.0 available under the LGPL http://icon-king.com/
+- Backgrounds and CSS Layout are borrowed from Clutch http://www.clutchbt.com/
