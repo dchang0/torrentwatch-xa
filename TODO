@@ -9,10 +9,12 @@ Throughout all versions
 0.1.2
 - pin the Favorites dialog so that it is easier to manage Favorites in bulk
 - pin the Feeds tab in the Configuration dialog
+- add debug console to web UI
 
 
 
 Unassigned, Realistic
+- refresh button in toolbar can trigger Test Hit downloads just like browser refresh
 - separate out the torrents that were direct-downloaded and don't match any favorites from the ones that do match favorites
 - fix pop-up playback controls related to Transmission
 - improve history system so that flushing the feed cache and deleting torrents does not easily fool torrentwatch-xa into thinking matching torrents must be downloaded again
