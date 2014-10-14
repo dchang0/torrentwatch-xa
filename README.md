@@ -11,3 +11,11 @@ In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll
 - let some features languish or remove them outright, especially buggy/unreliable portions of the code
  
 The end goal is for torrentwatch-xa to do only what it's supposed to do and do it well. Over time, this will mean that broken or aging features related to non-anime torrents will probably be removed rather than repaired. While such features still work, they will remain.
+
+
+Currently it is too soon to post any code. There are some glaring bugs carried over from TorrentWatch-X 0.8.9 that should be fixed immediately that are probably these:
+
+https://code.google.com/p/torrentwatch-x/issues/list
+
+#238 and #244 which are roughly "no torrent found at URL." I am getting this on all ezRSS torrents.
+#237 which is roughly "episode filter filtering out favorites that should match." I am getting this on all feeds' torrents.
