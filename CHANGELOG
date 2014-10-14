@@ -9,3 +9,4 @@ https://code.google.com/p/torrentwatch-x/ 0.8.9 -> https://github.com/dchang0/to
 - fixed TorrentWatch-X Issues 238, 244: "no torrent found at URL" (at least for the default ezRSS feed)
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
+- added new default anime feeds: nyaa.se and tokyotosho.info
