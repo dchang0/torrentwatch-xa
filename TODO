@@ -1,0 +1,26 @@
+Throughout all versions
+- improve debugging and commenting
+
+
+0.1.1
+- remove all tvDB support (currently disabled anyway, as cloned from TorrentWatch-X 0.8.9)
+- remove all NMT support (only supported OS is currently Debian 7.5)
+
+0.1.2
+- pin the Favorites dialog so that it is easier to manage favorites in bulk
+- pin the Feeds tab in the Configuration dialog
+
+
+
+Unassigned, Realistic
+- fix pop-up playback controls related to Transmission
+- improve history system so that flushing the feed cache and deleting torrents does not easily fool torrentwatch-xa into thinking matching torrents must be downloaded again
+- if it does download again, honor the seed ratio from the favorite that it matched
+- allow user to mark a torrent as the most recent episode downloaded in that season or in every season
+
+
+
+Dream on!
+- multi-select torrents in feed list and perform single action on entire selection
+- implement five-star rating system with separate subfolders for each to make watching the best shows first easier
+- implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
