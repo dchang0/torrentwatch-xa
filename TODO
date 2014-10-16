@@ -29,7 +29,9 @@ Unassigned, Realistic
 - sqlite for caching and history
 - delete old episodes that are replaced by REPACK or PROPER
 
-
+Unassigned, Realistic, Unpopular
+- Remove code related to NMT support
+- Remove code related to TVDB and TMDB because it was disabled at the time of cloning anyway
 
 Dream on!
 - multi-select torrents in feed list and perform single action on entire selection
