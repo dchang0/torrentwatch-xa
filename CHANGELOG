@@ -12,4 +12,7 @@
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
 - cleaned up typos discovered by IDE in several files
+- typo cleanup inadvertently fixed torrent buttons in clientButtons
 - add alt attributes to img tags
+- replaced return ob_get_contents();ob_end_clean(); with ob_get_clean(); to fix "unreachable statement" IDE warnings
+- fixed unquoted CURL-related constants in config_lib.php:get_curl_defaults()
