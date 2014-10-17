@@ -1,4 +1,5 @@
 0.1.0
+Functional changes
 - cloned from TorrentWatch-X 0.8.9 (https://code.google.com/p/torrentwatch-x/) to torrentwatch-xa 0.1.0 (https://github.com/dchang0/torrentwatch-xa/)
 - replaced Paypal donation account
 - replaced all references to torrentwatch and TorrentWatch-X with torrentwatch-xa
@@ -8,7 +9,7 @@
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
 - added new default anime feeds: nyaa.se and tokyotosho.info
-
+Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
 - cleaned up typos discovered by IDE in several files
