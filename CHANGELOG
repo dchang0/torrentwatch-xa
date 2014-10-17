@@ -14,5 +14,5 @@
 - cleaned up typos discovered by IDE in several files
 - typo cleanup inadvertently fixed torrent buttons in clientButtons
 - add alt attributes to img tags
-- replaced return ob_get_contents();ob_end_clean(); with ob_get_clean(); to fix "unreachable statement" IDE warnings
+- removed ob_end_clean(); from several functions in torrentwatch-xa.php to fix "unreachable statement" IDE warnings, but this is a temporary cleanup
 - fixed unquoted CURL-related constants in config_lib.php:get_curl_defaults()
