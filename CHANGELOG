@@ -1,7 +1,7 @@
 0.1.0
 Functional changes
 - cloned from TorrentWatch-X 0.8.9 (https://code.google.com/p/torrentwatch-x/) to torrentwatch-xa 0.1.0 (https://github.com/dchang0/torrentwatch-xa/)
-- replaced Paypal donation account
+- replaced Paypal donation account and fixed button so that it displays properly according to config setting
 - replaced all references to torrentwatch and TorrentWatch-X with torrentwatch-xa
 - split basedir into baseDir and webDir in order to put files in traditional Debian 7 paths, making it easier for future .deb packaging
 - renamed configDir to configCacheDir because the config held there is dynamic
