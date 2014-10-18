@@ -14,11 +14,11 @@ Throughout all versions
 - Downloading and Downloaded filters are redundant with each other due to progress bar--combine into one filter called Downloads and use color-coding to distinguish downloading from downloaded items
 - Transmission filter is redundant with Transmission modal window and Downloading and Downloaded--remove Transmission filter
 - fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
+- fix feed section header numbers so that they match the number of rows after selected filter has been applied
 
 0.1.3
 - add debug console to web UI
-- combine History into Downloaded tab, using color coding to show stuff that was downloaded but whos torrent was auto-deleted
-
+- 
 
 
 Unassigned, Realistic
