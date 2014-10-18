@@ -11,6 +11,8 @@ Functional changes
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
 - added new default anime feeds: nyaa.se and tokyotosho.info (anime only)
+- removed default feed ezRSS.it because they serve gzipped torrent files, for which there is currently no support
+- improved error alert for "Error: No torrent file found on..." to clue user to possibility of gzipping
 - modified version check to use new URL
 - added default Transmission login to default config
 - updated the Bug Report to send to this project, not TorrentWatch-X
