@@ -5,6 +5,7 @@ Throughout all versions
 0.1.1
 - remove all tvDB support (currently disabled anyway, as cloned from TorrentWatch-X 0.8.9)
 - remove all NMT support (only supported OS is currently Debian 7.5)
+- clean up all the undefined variable PHP notices spewing into the web server error_log
 
 0.1.2
 - pin the Favorites dialog so that it is easier to manage Favorites in bulk
