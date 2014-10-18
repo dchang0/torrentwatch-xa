@@ -4,11 +4,14 @@ Functional changes
 - replaced Paypal donation account and fixed button so that it displays properly according to config setting
 - replaced all references to torrentwatch and TorrentWatch-X with torrentwatch-xa
 - split basedir into baseDir and webDir in order to put files in traditional Debian 7 paths, making it easier for future .deb packaging
+    This is a BIG change; the split may break a lot of things that will be fixed over time
 - renamed configDir to configCacheDir because the config held there is dynamic
 - fixed TorrentWatch-X Issues 238, 244: "no torrent found at URL" (at least for the default ezRSS feed)
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
-- added new default anime feeds: nyaa.se and tokyotosho.info
+- added new default anime feeds: nyaa.se and tokyotosho.info (anime only)
+- modified version check to use new URL
+- added default Transmission login to default config
 Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
@@ -17,3 +20,5 @@ Code changes
 - add alt attributes to img tags
 - removed ob_end_clean(); from several functions in torrentwatch-xa.php to fix "unreachable statement" IDE warnings, but this is a temporary cleanup
 - fixed unquoted CURL-related constants in config_lib.php:get_curl_defaults()
+- replaced variable name prefix of tw_ with twxa_
+- used IDE source reformatting tools
