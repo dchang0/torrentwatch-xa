@@ -11,7 +11,7 @@ Throughout all versions
 - pin the Favorites dialog so that it is easier to manage Favorites in bulk
 - pin the Feeds tab in the Configuration dialog
 - add Feed Title input above each Feed URL
-- Downloading and Downloaded filters are redundant with each other due to progress bar--combine into one filter called Downloads
+- Downloading and Downloaded filters are redundant with each other due to progress bar--combine into one filter called Downloads and use color-coding to distinguish downloading from downloaded items
 - Transmission filter is redundant with Transmission modal window and Downloading and Downloaded--remove Transmission filter
 - fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
 
