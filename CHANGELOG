@@ -7,7 +7,7 @@ Functional changes
     This is a BIG change; the split will probably break a lot of things that will be fixed over time.
     Splitting it up also required hardcoding paths in several places due to the poor use of libraries. These will be fixed soon for sure.
 - renamed configDir to configCacheDir because the config held there is dynamic
-- added season and episode labels for items that are detected as episodes
+- added season and episode labels for items that are detected as episodes or full seasons
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
 - added new default anime feeds: nyaa.se and tokyotosho.info (anime only)
