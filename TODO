@@ -12,6 +12,7 @@ Throughout all versions
 - pin the Feeds tab in the Configuration dialog
 - add Feed Title input above each Feed URL
 - fix Downloading list so that it shows rows instead of just the feed headers
+- fix the filterBar so that it wraps properly when screen is narrow (responsive design)
 
 0.1.3
 - add debug console to web UI
