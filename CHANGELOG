@@ -7,7 +7,7 @@ Functional changes
     This is a BIG change; the split will probably break a lot of things that will be fixed over time.
     Splitting it up also required hardcoding paths in several places due to the poor use of libraries. These will be fixed soon for sure.
 - renamed configDir to configCacheDir because the config held there is dynamic
-- fixed TorrentWatch-X Issues 238, 244: "no torrent found at URL" (at least for the default ezRSS feed)
+- add a color code or marker for items that are detected as episodes and update Legend if need be
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
 - added new default anime feeds: nyaa.se and tokyotosho.info (anime only)
