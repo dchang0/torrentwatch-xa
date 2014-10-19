@@ -1,23 +1,24 @@
 0.1.0
 Functional changes
 - cloned from TorrentWatch-X 0.8.9 (https://code.google.com/p/torrentwatch-x/) to torrentwatch-xa 0.1.0 (https://github.com/dchang0/torrentwatch-xa/)
+- changed footer to show gratitude for support from the community
 - replaced Paypal donation account and fixed button so that it displays properly according to config setting
 - replaced all references to torrentwatch and TorrentWatch-X with torrentwatch-xa
 - split basedir into baseDir and webDir in order to put files in traditional Debian 7 paths, making it easier for future .deb packaging
     This is a BIG change; the split will probably break a lot of things that will be fixed over time.
     Splitting it up also required hardcoding paths in several places due to the poor use of libraries. These will be fixed soon for sure.
 - renamed configDir to configCacheDir because the config held there is dynamic
+- added default Transmission login to default config
 - added season and episode labels for items that are detected as episodes or full seasons
-- added anime-style episode guessing, treating all episodes as part of season 1
-- fixed failure to match TV-style episodes introduced by anime-style episode guessing
+- rewrote method of sanitizing titles to reduce errors
 - added new default anime feeds: nyaa.se and tokyotosho.info (anime only)
 - removed default feed ezRSS.it because they serve gzipped torrent files, for which there is currently no support
 - improved error alert for "Error: No torrent file found on..." to clue user to possibility of gzipping
 - removed default feed ThePirateBay HiRes Shows to reduce clutter
+- added anime-style episode guessing, treating all episodes as part of season 1
+- fixed failure to match TV-style episodes introduced by anime-style episode guessing
 - modified version check to use new URL
-- added default Transmission login to default config
 - updated the Bug Report to send to this project, not TorrentWatch-X
-- changed footer to show gratitude for support from the community
 Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
@@ -28,3 +29,5 @@ Code changes
 - fixed unquoted CURL-related constants in config_lib.php:get_curl_defaults()
 - replaced variable name prefix of tw_ with twxa_
 - used IDE source reformatting tools to clean up some files
+- started new collection of utility functions in twxa_parse_utils.php
+- removed get_item_filter(); started transition to allow user-defined Sanitize Characters string in config
