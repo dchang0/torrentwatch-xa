@@ -1,6 +1,7 @@
 Throughout all versions
 - improve debugging and commenting
 - refactor when reasonable
+- conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
 0.1.1
 - remove all tvDB support (currently disabled anyway, as cloned from TorrentWatch-X 0.8.9)
