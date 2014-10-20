@@ -35,11 +35,9 @@ Unassigned, Realistic
 - delete old episodes that are replaced by REPACK or PROPER
 
 Unassigned, Realistic, Unpopular
-- Remove code related to NMT support
-- Remove code related to TVDB and TMDB because it was disabled at the time of cloning anyway
+- 
 
 Dream on!
-- multi-select torrents in feed list and perform single action on entire selection
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
 - sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version
