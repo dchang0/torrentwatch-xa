@@ -16,6 +16,7 @@ Functional changes
 - removed default feed ezRSS.it because they serve gzipped torrent files, for which there is currently no support
 - improved error alert for "Error: No torrent file found on..." to clue user to possibility of gzipping
 - removed default feed ThePirateBay HiRes Shows to reduce clutter
+- added ability to detect specific resolutions (like 1280x720p, 720i, 1920x1080p, 480i) as certain qualities
 - added anime-style episode guessing, treating all episodes as part of season 1
 - fixed failure to match TV-style episodes introduced by anime-style episode guessing
 - modified version check to use new URL
@@ -31,5 +32,5 @@ Code changes
 - replaced existing variable name prefix of tw_ with twxa_ (will expand use of twxa_ prefix in future)
 - used IDE source reformatting tools to clean up some files
 - started new collection of utility functions in twxa_parse_utils.php
-- removed get_item_filter(); started transition to allow user-defined Sanitize Characters string in config
+- removed get_item_filter(); started transition to allow user-defined Sanitize Characters and Separator Characters strings in config
 - renamed some variables and functions according to Zend naming convention
