@@ -17,11 +17,9 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-Currently it is too soon to post any code. There are some glaring bugs carried over from TorrentWatch-X 0.8.9 that should be fixed immediately that are probably these from:
+Currently it is too soon to post any code. There are some glaring bugs carried over from TorrentWatch-X 0.8.9 that should be fixed immediately.
 
-https://code.google.com/p/torrentwatch-x/issues/list
-
-Issues 238 and 244 which are essentially "no torrent found at URL." I am getting this on all ezRSS torrents with the out-of-the-box TorrentWatch-X.
+I am rewriting the Season and Episode and Date detection engine, which is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, accurate matches.
 
 Credits
 ===============
