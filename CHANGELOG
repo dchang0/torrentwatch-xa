@@ -16,13 +16,14 @@ Functional changes
 - removed default feed ezRSS.it because they serve gzipped torrent files, for which there is currently no support
 - improved error alert for "Error: No torrent file found on..." to clue user to possibility of gzipping
 - removed default feed ThePirateBay HiRes Shows to reduce clutter
+- changed favicon to new logo
 - added anime-style episode guessing, treating all anime episodes as part of season 1
     - fixed failure to match TV-style episodes introduced by anime-style episode guessing
     - added ability to detect specific resolutions (like 1280x720p, 720i, 1920x1080p, 480i) as certain qualities
     - rewrote resolution and quality detection
     - rewrote Season and Episode and Date detection
 - modified version check to use new URL
-- updated the Bug Report to send to this project, not TorrentWatch-X
+- updated the Bug Report to send to Github, not TorrentWatch-X
 Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
@@ -33,6 +34,6 @@ Code changes
 - fixed unquoted CURL-related constants in config_lib.php:get_curl_defaults()
 - replaced existing variable name prefix of tw_ with twxa_ (will expand use of twxa_ prefix in future)
 - used IDE source reformatting tools to clean up some files
-- started new collection of utility functions in twxa_parse_utils.php
+- started new collection of "member" functions in twxa_parse.php
 - removed get_item_filter(); started transition to allow user-defined Sanitize Characters and Separator Characters strings in config
 - renamed some variables and functions according to Zend naming convention
