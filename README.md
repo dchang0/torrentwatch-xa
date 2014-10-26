@@ -1,3 +1,5 @@
+![torrentwatch-xa TWXA logo](http://silverlakecorp.com/torrentwatch-xa/torrentwatch-xa-logo144.png)
+
 torrentwatch-xa
 ===============
 
