@@ -3,7 +3,7 @@ torrentwatch-xa
 
 torrentwatch-xa is a fork of Joris Vandalon's TorrentWatch-X with special focus on anime fansub torrents that do not have season numbers, only episode numbers.
 
-To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 7.5 LINUX as the only OS and on Transmission as the only torrent client.
+To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 7.x LINUX as the only OS and on Transmission as the only torrent client.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
@@ -19,7 +19,7 @@ Status and Announcements
 
 Currently it is too soon to post any code. There are some glaring bugs carried over from TorrentWatch-X 0.8.9 that should be fixed immediately.
 
-I am rewriting the Season and Episode and Date detection engine, which is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, accurate matches.
+I am rewriting the Season and Episode and Date detection engine; it is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, more accurate matches.
 
 Credits
 ===============
