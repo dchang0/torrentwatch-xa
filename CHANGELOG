@@ -17,6 +17,7 @@ Functional changes
 - improved error alert for "Error: No torrent file found on..." to clue user to possibility of gzipping
 - removed default feed ThePirateBay HiRes Shows to reduce clutter
 - changed favicon to new logo
+- added logo at far left edge of top navbar (will revamp graphic design layout in future version)
 - modified version check to use new URLs
 - added anime-style episode guessing, treating all anime episodes as part of season 1
     - fixed failure to match TV-style episodes introduced by anime-style episode guessing
