@@ -23,6 +23,19 @@ Currently it is too soon to post any code. There are some glaring bugs carried o
 
 I am rewriting the Season and Episode and Date detection engine; it is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, more accurate matches.
 
+UPDATE: Project is on hold due to an error in PHP 5.4's preg_match() function. The specific example is this:
+
+preg_match("/S(\d+)E(\d+)/i", $title, $matches);
+
+When encountering a partial match before the real match, preg_match() gives up and stops looking. So, this string will fail to match:
+
+"SAF3 - S02E205"
+
+because it partially matches the first "S" and then runs into the "A" and gives up, rather than moving on to the correct match.
+
+I will have to wait until this gets fixed by PHP.net OR write a workaround.
+
+
 Credits
 ===============
 
