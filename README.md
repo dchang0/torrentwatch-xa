@@ -23,7 +23,7 @@ Currently it is too soon to post any code. There are some glaring bugs carried o
 
 I am rewriting the Season and Episode and Date detection engine; it is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, more accurate matches.
 
-UPDATE: Project is on hold due to an error in PHP 5.4's preg_match() function. The specific example is this:
+UPDATE: Project is on hold due to an error in PHP 5.4.4-14+deb7u14's preg_match() function. The specific example is this:
 
 preg_match("/S(\d+)E(\d+)/i", $title, $matches);
 
