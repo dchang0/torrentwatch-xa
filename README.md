@@ -23,7 +23,7 @@ Currently it is too soon to post any code. There are some glaring bugs carried o
 
 I am rewriting the Season and Episode and Date detection engine; it is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, more accurate matches.
 
-UPDATE: Season and Episode detection rewrite is challenging due to severe limitations or bugs in PHP 5.4's preg\_match() and preg\_match\_all() functions. I have found what seems to be a "distance" problem whereby a regular expression can't be found farther than (currently) 12 characters from the beginning of the string.
+UPDATE: Season and Episode detection rewrite is challenging due to severe limitations or bugs in PHP 5.4's preg\_match() and preg\_match\_all() functions. I have found what seems to be a "distance" problem whereby the first character of regular expression match can't be found if it is farther than 15 characters from EITHER the beginning or the end of the string. Needles to say, this is very limiting and strange. I will fix it by using a sliding window that moves forward through the long string.
 
 Prerequisites
 ===============
