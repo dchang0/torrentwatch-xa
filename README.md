@@ -35,6 +35,10 @@ because preg_match() partially matches the first "S" and then runs into the "A" 
 
 I will have to wait until this gets fixed by PHP.net OR write a workaround.
 
+Prerequisites
+===============
+PHP 5.5 or higher (5.4 has a bug that breaks preg_match() badly)
+
 
 Credits
 ===============
