@@ -23,7 +23,7 @@ Currently it is too soon to post any code. There are some glaring bugs carried o
 
 I am rewriting the Season and Episode and Date detection engine; it is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, more accurate matches.
 
-UPDATE: Season and Episode detection rewrite is challenging. Will have to tear it apart again and start over, using strpos() to save preg_match() for the very ends of the decision tree's branches.
+UPDATE: Season and Episode detection rewrite is challenging due to severe limitations or bugs in PHP 5.4's preg_match() function. I have found what seems to be a "distance" problem whereby a regular expression can't be found farther than (currently) 12 characters from the beginning of the string.
 
 Prerequisites
 ===============
