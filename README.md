@@ -29,9 +29,9 @@ preg_match("/S(\d+)E(\d+)/i", $title, $matches);
 
 When encountering a partial match before the real match, preg_match() gives up and stops looking. So, this string will fail to match:
 
-"SAF3 - S02E205"
+$title = "SAF3 - S02E205";
 
-because it partially matches the first "S" and then runs into the "A" and gives up, rather than moving on to the correct match.
+because preg_match() partially matches the first "S" and then runs into the "A" and gives up, rather than moving on to the correct match of "S02E205".
 
 I will have to wait until this gets fixed by PHP.net OR write a workaround.
 
