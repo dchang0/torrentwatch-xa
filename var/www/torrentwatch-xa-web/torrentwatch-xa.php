@@ -683,7 +683,7 @@ feeds_perform_matching($config_values['Feeds']);
 get_client();
 close_html();
 
-$footer = "<div id=\"footer\">Thank you for enjoying and supporting <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> torrentwatch-xa version $twxa_version[0]!&nbsp;&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\">click here</a> to report bugs. (Requires GitHub login.)";
+$footer = "<div id=\"footer\">Thank you for enjoying and supporting <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> torrentwatch-xa version $twxa_version[0]!&nbsp;&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">click here</a> to report bugs. (Requires GitHub login.)";
 //Just for quickly watching variables
 //$footer .= " - ";
 echo "$footer</div>";

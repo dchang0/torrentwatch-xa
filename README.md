@@ -23,6 +23,10 @@ I've posted 0.1.0 with the changes listed in CHANGELOG. There are many changes, 
 
 So far, 0.1.0 works on my out-of-the-box Debian 7.7 with its OOB Apache2 and PHP5.4 packages. I will spend a few weeks testing it before starting on 0.1.1.
 
+Nearly all the debugging features are turned on and will remain so until testing is complete.
+
+Be aware that I am not currently testing the GitHub copy of the code--I test using my local copy. So it is possible that permissions and file ownership differences may break the GitHub copy without my knowing it.
+
 Prerequisites
 ===============
 
