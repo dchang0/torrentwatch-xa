@@ -19,9 +19,9 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-Currently it is too soon to post any code. There are some glaring bugs carried over from TorrentWatch-X 0.8.9 that should be fixed immediately.
+I've posted 0.1.0 with the changes listed in CHANGELOG. There are many changes, and I fully expect a bunch of bugs to have been introduced, even as I fixed many bugs carried over from the original TorrentWatch-X 0.8.9.
 
-I am rewriting the Season and Episode and Date detection engine; it is a whole barrel full of worms causing the rewrite of Quality detection, among others. The new engine will have slightly more intelligence resulting in more, more accurate matches.
+So far, 0.1.0 works on my out-of-the-box Debian 7.7 with its OOB Apache2 and PHP5.4 packages.
 
 Prerequisites
 ===============
