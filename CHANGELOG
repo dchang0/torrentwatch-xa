@@ -10,7 +10,6 @@ Functional changes
 - renamed configDir to configCacheDir because the config held there is dynamic
 - added default Transmission login to default config
 - temporarily added season and episode labels for items that are detected as episodes or full seasons
-- temporarily added video quality label
 - rewrote method of sanitizing titles to reduce errors
 - added new default anime feeds: nyaa.se and tokyotosho.info (anime only)
 - removed default feed ezRSS.it because they serve gzipped torrent files, for which there is currently no support
