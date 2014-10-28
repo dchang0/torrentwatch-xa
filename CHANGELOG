@@ -24,6 +24,7 @@ Functional changes
     - added ability to detect specific resolutions (like 1280x720p, 720i, 1920x1080p, 480i) as certain qualities
     - rewrote resolution and quality detection
     - rewrote Season and Episode and Date detection
+    - temporarily removed REPACK, PROPER, RERIP detection because of anime-style 01v2 and 03v3 repacks
 - updated the Bug Report to send to Github, not TorrentWatch-X
 Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
@@ -38,3 +39,4 @@ Code changes
 - started new collection of "member" functions in twxa_parse.php
 - removed get_item_filter(); started transition to allow user-defined Sanitize Characters and Separator Characters strings in config
 - renamed some variables and functions according to Zend naming convention
+- commented out old guess_match() and replaced with new, partially-completed detectMatch()
