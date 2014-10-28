@@ -21,11 +21,18 @@ Status and Announcements
 
 I've posted 0.1.0 with the changes listed in CHANGELOG. There are many changes, and I fully expect a bunch of bugs to have been introduced, even as I fixed many bugs carried over from the original TorrentWatch-X 0.8.9.
 
-So far, 0.1.0 works on my out-of-the-box Debian 7.7 with its OOB Apache2 and PHP5.4 packages.
+So far, 0.1.0 works on my out-of-the-box Debian 7.7 with its OOB Apache2 and PHP5.4 packages. I will spend a few weeks testing it before starting on 0.1.1.
 
 Prerequisites
 ===============
 
+The following packages are provided by the official Debian 7 wheezy repos:
+
+transmission-daemon
+apache2
+php5
+
+They were installed just as they are, out-of-the-box.
 
 Credits
 ===============
