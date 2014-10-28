@@ -1,0 +1,204 @@
+html {
+    overflow: scroll;
+}
+
+body {
+    overflow: scroll;
+}
+
+div#topmenu { 
+    zoom: 130%;
+    height: 29px;
+}
+
+ul#mainoptions { display: none; }
+
+ul#filterbar_container {
+    top: 2px;
+    padding-left: 6px;
+}
+
+li#filter_downloading { display: none; }
+
+li#filter_downloaded { display: none; }
+
+ul#filterbar_container li:hover {
+    height: 18px;
+    background: #CCC;
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#EEEEEE,endColorstr=#AAAAAA);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#aaa));
+    background: -moz-linear-gradient(top, #eee, #aaa);    border-top: 1px solid #f5f5f5;
+    border-top: 1px solid #f5f5f5;
+    border-right: 1px solid #999;
+    border-left: 1px solid #999 !important;
+    border-bottom: 1px solid #999;
+    color: #111;
+}
+
+li#filter_all { 
+    width: 20px !important;
+}
+
+li#filter_matching {
+    width: 57px !important;
+}
+
+li#filter_matching span { display: none; }
+
+li#filter_transmission {
+    max-width: 82px !important;
+}
+
+li#filter_transmission span { display: none; }
+
+li#rates { display: none !important; }
+
+ul#clientButtons {
+    height: 34px;
+}
+
+li.add_fav { display: none !important; }
+
+li#filter_bytext { display: none !important; }
+
+div#torrentlist_container { 
+    position: static; 
+    margin-top: 32px;
+}
+
+div#torrentlist_container div.header,
+div#torrentlist_container div.header td.feed_title span.matches {
+    overflow: hidden;
+    font-size: 10px;
+    zoom: 120%;
+}
+
+ul#torrentlist li.torrent { 
+    min-height: 22px;
+}
+
+ul.torrentlist li.torrent td {
+    height: 22px;
+}
+
+ul.torrentlist td.torrent_name {
+    border-top: 1px solid #ddd;
+    padding-top: 1px;
+}
+
+span.torrent_pubDate { display: none; }
+
+span.torEta { display: none; }
+
+span.contextButton { display: none; }
+
+div#clientButtonsHolder {
+    right: 5px;    
+}
+
+ul#clientButtons {
+    height: 34px;
+    padding: 0 0 0 5px;
+}
+
+ul#clientButtons li { zoom: 120%; }
+
+ul#clientButtons li.move_data input { width: 320px; }
+
+span.torrent_title { 
+    font-size: 15px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    height: 18px;
+    overflow: hidden;
+    word-wrap: break-word;
+    width: 100% !important;
+}
+
+ul#transmission_list span.torrent_title,
+ul.torrentlist li.match_downloaded span.torrent_title,
+ul.torrentlist li.match_downloading span.torrent_title {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    font-size: 12px;
+    height: 14px;
+}
+
+span.torInfo { 
+    overflow: hidden;
+    height: 12px;
+}
+
+div#trash_tor_data {
+    font-size: 0.5em;
+}
+
+div#trash_tor_data {
+    margin-top: 50px;
+    font-size: 0.4em;
+    width: 280px;
+    margin-left: -145px;
+}
+
+div#trash_tor_data .buttonContainer {
+    font-size: 0.8em;
+    margin-right: 4px;
+}
+
+div#trash_tor_data .buttonContainer a {
+    width: 20px;
+}
+
+div#trash_tor_data .buttonContainer a.wide {
+    width: 50px;
+}
+
+div.dialog_window {
+    top: 40px;
+}
+
+div#twError,
+div#newVersion,
+div#clientError {
+    border-top: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    background: -webkit-gradient(linear, left top, left bottom, from(#bbb), to(#999));
+    top: 28px !important;
+    font-size: 0.8em !important;
+    margin-left: -172px;
+    width: 333px;
+    z-index: 100;
+}
+
+@media only screen and (orientation:portrait) {
+   /* portrait styles here */
+    div#torrentlist_container div.header,
+    div#torrentlist_container div.header td.feed_title span.matches {
+	height: 16px;
+        font-size: 10px;
+	zoom: 120%;
+    }
+
+    ul#clientButtons li.move_data input { width: 189px; }
+
+    div#trash_tor_data {
+        left: 315px;
+        margin-left: -300px;
+    }
+
+    #progressbar {
+	width: 240px;
+	margin-left: -126px;
+    }
+
+    div#twError,
+    div#newVersion,
+    div#clientError {
+        top: 31px !important;
+        margin-left: -128px;
+        width: 247px;
+    }
+}

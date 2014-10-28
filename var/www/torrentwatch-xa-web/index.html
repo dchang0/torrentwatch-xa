@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <title>torrentwatch-xa</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
+        <link rel="stylesheet" type="text/css" href="css/reset.css" />
+        <link rel="stylesheet" href="css/torrentwatch-xa.css" type="text/css"  />
+        <link rel="stylesheet" media="only screen and (min-device-width: 768) and (max-device-width: 1024px)" href="css/tablet.css" type="text/css" />
+        <link rel="stylesheet" media="only screen and (min-device-width: 320px) and (max-device-width: 640px)" href="css/phone.css" type="text/css" />
+        <!--[if IE]>
+          <link rel="Stylesheet" type="text/css" href="css/ie.css"></link>
+        <![endif]-->
+        <script type="text/javascript" src="javascript/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="javascript/jquery.tinysort.min.js"></script>
+        <script type="text/javascript" src="javascript/jquery.cookie.js"></script>
+        <script type="text/javascript" src="javascript/jquery.form.js"></script>
+        <script type="text/javascript" src="javascript/json2.js"></script>
+        <script type="text/javascript" src="javascript/torrentwatch-xa.js"></script>
+
+    </head>
+    <body>
+        <div id="topmenu">
+            <ul class="mainoptions" id="mainoptions">
+                <li id="torrentwatch-xaLogo">
+                    <img id="topLogo" src="images/torrentwatch-xa-logo22.png" alt="torrentwatch-xa logo" />
+                    torrentwatch-xa
+                </li>
+                <li id="favoritesMenu">
+                    <a class="toggleDialog" href="#favorites">
+                        <span class="icon"></span>
+                        Favorites</a>
+                </li>
+                <li id="config">
+                    <a class="toggleDialog" href="#configuration">
+                        <span class="icon"></span>
+                        Configure</a>
+                </li>
+                <li id="view">
+                    <a class="toggleDialog" href="#history">
+                        <span class="icon"></span>
+                        History</a>
+                </li>
+                <li id="empty">
+                    <a class="toggleDialog" href="#clear_cache">
+                        <span class="icon"></span>
+                        Empty Cache</a>
+                </li>
+                <li id="legend">
+                    <a class='toggleDialog' href='#show_legend'>
+                        <span class="icon"></span>
+                        Legend</a>
+                </li>
+                <!--<li id="report">
+                    <a class='toggleDialog' href='#report_bug'>
+                        <span class="icon"></span>
+                        Report Bug</a>
+                </li>-->
+                <li id="webui">
+                    <a class='toggleDialog' href='#show_transmission'>
+                        <span class="icon"></span>
+                    </a>
+                </li>
+            </ul>
+            <ul id="filterbar_container">
+                <li id="refresh" class="tab filter_left"><a href="#"><img src="images/refresh.png" alt="Refresh"/></a></li>
+                <li id="filter_all" class="tab"><a href="#">All</a></li>
+                <li id="filter_matching" class="tab"><a href="#">Matching</a><span id="Matching"></span></li>
+                <li id="filter_downloading" class="tab"><a href="#">Downloading</a><span id="Downloading"></span></li>
+                <li id="filter_downloaded" class="tab"><a href="#">Downloaded</a><span id="Downloaded"></span></li>
+                <li id="filter_transmission" class="tab"><a id="torClient" href="#">Client</a><span id="activeTorrents">(-)</span></li>
+                <li id="rates"></li>
+                <li id="filter_bytext"><input type="search" results="0" placeholder="Filter" id="filter_search_input"/></li>
+            </ul>
+        </div>
+        <div id='clientButtonsHolder'>
+            <ul id='clientButtons'>
+                <li class='button start' title='Start Torrent' onclick="javascript:$.processSelected('dlTorrent')"><img src='images/tor_start_20x20.png' alt="Start"/></li>
+                <li class='button add_fav' onclick="javascript:$.processSelected('addFavorite')"><img src='images/tor_fav_20x20.png' alt="Add Favorite"/></li>
+                <li class='button hide_item' onclick="javascript:$.processSelected('hideItem')"><img src='images/tor_hide_20x20.png' alt="Hide Item"/></li>
+                <li class='button resume' onclick="javascript:$.processSelected('start')"><img src='images/tor_resume_20x20.png' alt="Resume"/></li>
+                <li class='button pause' onclick="javascript:$.processSelected('stop')"><img src='images/tor_pause_20x20.png' alt="Pause"/></li>
+                <li class='button delete' onclick="javascript:$.processSelected('delete')"><img src='images/tor_stop_20x20.png' alt="Delete"/></li>
+                <li class='button trash' onclick="javascript:$.processSelected('trash')"><img src='images/tor_trash_20x20.png' alt="Trash"/></li>
+                <li class='button move_button' onclick="toggleTorMove();"><img src='images/tor_move_20x20.png' alt="Move"/></li>
+                <li class="move_data hidden"><input id="moveTo" type="text" class="text" name="moveTo"/></li>
+                <li id="Move" class='button move_data hidden' onclick="$.processSelected('move')">Move</li>
+                <li class='close hidden' onclick="$('#clientButtons .move_data').fadeOut();"></li>
+            </ul>
+        </div>
+        <div id='progress' class="progress progress_full">
+            <div class="progressbar dialog_window" id="progressbar"></div>
+        </div>
+        <div id="clientError" class="dialog_window"><p></p></div>
+        <div id="twError" class="dialog_window"></div>
+    </body>
+</html>

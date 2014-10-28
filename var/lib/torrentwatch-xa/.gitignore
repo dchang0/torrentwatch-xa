@@ -1,0 +1,7 @@
+!config_cache/README.md
+config_cache/**
+!rss_cache/
+rss_cache/**
+!tvdb_cache/
+tvdb_cache/**
+netbeans-metadata/
