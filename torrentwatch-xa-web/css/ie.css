@@ -1,0 +1,27 @@
+
+div#topmenu {
+    border: 0px;
+}
+
+ul#filterbar_container {
+    border: 0px;
+}
+
+ul#clientButtons {
+    top: 58px;
+}
+div#torrentlist_container {
+    top: 59px;
+}
+
+div#history {
+    height: 256px;
+}
+
+div#linkButtons  {
+    margin-bottom: 5px;
+}
+
+div#configuration div.config_form input#hideSearchText {
+    border-bottom: 1px solid #979797;
+}
