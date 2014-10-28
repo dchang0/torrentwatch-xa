@@ -18,13 +18,14 @@ Functional changes
 - changed favicon to new logo
 - added logo at far left edge of top navbar and in footer (will revamp graphic design layout in future version)
 - modified version check to use new URLs
+- disabled Bug Report button
+- added Bug Report link to footer
 - added anime-style episode guessing, treating all anime episodes as part of season 1
     - fixed failure to match TV-style episodes introduced by anime-style episode guessing
     - added ability to detect specific resolutions (like 1280x720p, 720i, 1920x1080p, 480i) as certain qualities
     - rewrote resolution and quality detection
     - rewrote Season and Episode and Date detection
     - temporarily removed REPACK, PROPER, RERIP detection because of anime-style 01v2 and 03v3 repacks
-- updated the Bug Report to send to Github, not TorrentWatch-X
 Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
