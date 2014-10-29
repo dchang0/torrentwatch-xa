@@ -49,7 +49,6 @@ function simplifyTitle($title, $separators = '\s\.\_') {
     
     // detect and strip out 8-character checksums
     if(preg_match_all("/([0-9a-f])[0-9a-f]{7}/i", $title, $matches, PREG_SET_ORDER)) {
-        echo "hit!\n";
         // only handle first one--not likely to have more than one checksum in any title
         $wholeMatch = $matches[0][0];
         $firstChar = $matches[0][1];
