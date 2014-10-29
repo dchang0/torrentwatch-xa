@@ -14,6 +14,9 @@ function sanitizeTitle($title, $separators = '\s\.\_') {
 
     // Remove soft hyphens
     $title = str_replace("\xC2\xAD", "", $title);
+    
+    // Replace every tilde with a minus
+    $title = str_replace("~", "-", $title);
 
     // replace with space any back-to-back sanitize chars that if taken singly would result in values getting smashed together
     //TODO add [] {} <> () to values IF they are not in the sanitize list
@@ -43,8 +46,25 @@ function simplifyTitle($title, $separators = '\s\.\_') {
     //TODO Maybe replace period-style separators with spaces (unless they are sanitized)
     //TODO Maybe pad parentheses with outside spaces (unless they are sanitized)
     //TODO Maybe remove audio codecs
+    
+    // detect and strip out 8-character checksums
+    if(preg_match_all("/([0-9a-f])[0-9a-f]{7}/i", $title, $matches, PREG_SET_ORDER)) {
+        echo "hit!\n";
+        // only handle first one--not likely to have more than one checksum in any title
+        $wholeMatch = $matches[0][0];
+        $firstChar = $matches[0][1];
+        if(preg_match("/\D/", $wholeMatch)) {
+            // any non-digit means it's a checksum
+            $title = str_replace($wholeMatch, "", $title);
+        }
+        else if($firstChar > 2) {
+            // if first digit is not 0, 1, or 2, it's likely not a date
+            $title = str_replace($wholeMatch, "", $title);
+        }
+    }
 
-    return $title;
+    // run sanitize again due to possibility of checksum removal leaving back-to-back separators
+    return sanitizeTitle($title);
 }
 
 function detectResolution($title, $separators = '\s\.\_') {
@@ -174,6 +194,7 @@ function detectSeasonAndEpisode($title, $qualitiesCount = 0, $separators = '\s\.
     // use short circuits to reduce overhead
 
     // MATCHES STILL IN PROGRESS, NOT DONE OR NOT TESTED ENOUGH:
+    // - 04 8864C4F4
     // ###.#v3 (anime episode number, version 3)
     // YYYY (collides with anime episode and YYMM)
     // YYYY MM (no DD)
@@ -191,6 +212,10 @@ function detectSeasonAndEpisode($title, $qualitiesCount = 0, $separators = '\s\.
     // Serie.A.2014.Day08(26 oct).Cesena.v.Inter.400p
     // Japanese Unicode \x{3010} left lenticular bracket, \x{3011} right lenticular bracket
     // Japanese Unicode \x{7B2C} wa
+    
+    // BLOCK THESE MATCHES
+    // Chapter ### (chapters almost always refer to manga scans)
+    // c### (chapters)
     
     if(strpbrk($title, "0123456789")) {
         // found a numeral (can't have an episode number without at least one numeral)
@@ -293,8 +318,20 @@ function detectSeasonAndEpisode($title, $qualitiesCount = 0, $separators = '\s\.
                 $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][3];
             }
         }
+        else if(preg_match_all("/[\(\)$separators](Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E)[$separators]?(\d+\.\d|\d+)[\(\)$separators]?\-[$separators]?(\d{1,3}\.\d|\d{1,3})/i", $title, $matches, PREG_SET_ORDER)) {
+            // search for Episode ##-## (no mention of Season, as that would have matched earlier)
+            if(count($matches) > 1) {
+                // more than one found--not likely to ever happen, since this would be two sets of ranges
+                //TODO handle range of range of episodes
+            }
+            else {
+                $detectedSeasonBatchEnd = $detectedSeasonBatchStart = 1; // anime episode notation gets Season 1
+                $detectedEpisodeBatchStart = $matches[0][2];
+                $detectedEpisodeBatchEnd = $matches[0][3];
+            }
+        }
         else if(preg_match_all("/[\(\)$separators](Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E)[$separators]?(\d+\.\d|\d+)[\(\)$separators]?/i", $title, $matches, PREG_SET_ORDER)) {
-            // search for Episode ## or (no mention of Season, as that would have matched earlier)
+            // search for Episode ## (no mention of Season, as that would have matched earlier)
             if(count($matches) > 1) {
                 // more than one found--probably a range
                 //TODO handle range of Episodes
@@ -364,6 +401,16 @@ function detectSeasonAndEpisode($title, $qualitiesCount = 0, $separators = '\s\.
                 $detectedSeasonBatchEnd = $detectedSeasonBatchStart = $matches[0][2]; // treat Volume like a Season
                 $detectedEpisodeBatchStart = 1;
                 $detectedEpisodeBatchEnd = 0;
+            }
+        }
+        //TODO match Chapters and Chapter ranges
+        else if(preg_match_all("/(Chapter|Chapitre|Chap\.|Chap|Ch\.|Ch|C\.|C)[$separators]?(\d{1,3}\.\d|\d{1,3})/i", $title, $matches, PREG_SET_ORDER)) {
+            // search for Chapter ##.# with at most tenths place (otherwise assume it's manga)
+            // unlike to have a range of Volumes
+            if($qualitiesCount > 0) {
+                // if video qualities are detected
+                $detectedSeasonBatchEnd = $detectedSeasonBatchStart = 1;  // assume it's anime, Season 1
+                $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2]; // treat Chapter like an Episode
             }
         }
         //TODO enable Japanese UTF-8 searches
@@ -459,4 +506,3 @@ function detectSeasonAndEpisode($title, $qualitiesCount = 0, $separators = '\s\.
 
     return ['detectedSeasonBatchStart' => $detectedSeasonBatchStart, 'detectedSeasonBatchEnd' => $detectedSeasonBatchEnd, 'detectedEpisodeBatchStart' => $detectedEpisodeBatchStart, 'detectedEpisodeBatchEnd' => $detectedEpisodeBatchEnd];
 }
-//print_r(detectSeasonAndEpisode("Anime-Koi Ai Tenchi Muyou! - 16 h264-720p"));
