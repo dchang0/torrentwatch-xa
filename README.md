@@ -21,12 +21,14 @@ Status and Announcements
 
 I've posted 0.1.0 with the changes listed in CHANGELOG.
 
-As of 2014/11/05, 0.1.0 is working fine with the new episode and season detection engine. There are about 2% false positives or false negatives, typically of the format 1 - 5, where torrentwatch-xa cannot decide whether that is Season 1, Episode 5 or Episodes 1 through 5.
-Such challenges are to be expected from simple regular expression matching, and they are nothing that affect torrentwatch-xa's ability to auto-download the episodes you want, so long as your favorites aren't written to specifically target the titles that torrentwatch-xa has trouble with.
+As of 2014/11/20, for 0.1.1, I am in the midst of a second rewrite of the season and episode detection engine because the first engine rewrite released in 0.1.0 was forcing the most popular episode notations to go through a long and growing list of conditionals.
+The new engine first counts the number of numbers found in the title and short-circuits the conditional tree if only one or two numbers are found. This results in improved performance but also avoids several false positives, ultimately allowing me to expand the number of notations it recognizes to include rarer or more unusual ones, including the addition of more Japanese notations.
 
+This growth does mean that the 0.1.1 release won't be for a long while due to testing, but when it is finally dropped, it will be worth the wait.
+ 
 There is only one bug that I have found in 0.1.0 that is annoying to me, and it was carried over from TorrentWatch-X: the delete torrent buttons behave the same as the trash torrent buttons. I have fixed this for the 0.1.1 release but will not repair it in 0.1.0.
 
-Otherwise, I have found nothing that warrants more commits to 0.1.0, and so I have turned to developing 0.1.1. The primary focus will be on improving episode and season detection and adding debug/diagnostic features to help me dial in the accuracy over time.
+I have found a second bug in 0.1.0 that is not quite so annoying: the "Episodes Only" checkbox in the configuration panel doesn't seem to do anything. This too appears to be carried over from TorrentWatch-X, and it may be fixed in 0.1.1 or postponed till 0.1.2.
 
 ---
 
