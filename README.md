@@ -19,12 +19,14 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-I've posted 0.1.0 with the changes listed in CHANGELOG.
+CURRENT VERSION: I've posted 0.1.0 with the changes listed in CHANGELOG.
 
-As of 2015/03/08, for 0.1.1, I have finished most of the "only one number detected" portion of the season and episode detection engine and put it through extensive testing.
+NEXT VERSION: As of 2015/03/08, for 0.1.1, I have finished most of the "only one number detected" portion of the season and episode detection engine and put it through extensive testing.
 It is this portion of the engine that catches the most anime episodes, so it is the most valuable part of the engine.
 
-I am now working on the "two numbers detected" portion that is responsible for detecting SSxEE notation and so on. There is a third portion for "three numbers detected" that handles dates like YYYY.MM.DD. Both of these sections will take quite a while to improve and test.
+As of 2015/03/09, for 0.1.1, I largely finished the "two numbers detected" portion that is responsible for detecting SSxEE notation and so on and have turned to the third portion for "three numbers detected" that handles dates like YYYY.MM.DD. The "three numbers detected" portion will take quite a while to improve and test, as it deals with the most unruly titles.
+
+KNOWN BUGS:
 
 There is only one bug that I have found in 0.1.0 that is annoying to me, and it was carried over from TorrentWatch-X: the delete torrent buttons behave the same as the trash torrent buttons. I have fixed this for the 0.1.1 release but will not repair it in 0.1.0.
 
