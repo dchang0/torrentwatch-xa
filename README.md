@@ -26,7 +26,8 @@ It is this portion of the engine that catches the most anime episodes, so it is 
 
 As of 2015/03/09, for 0.1.1, I largely finished the "two numbers detected" portion that is responsible for detecting SSxEE notation and so on and have turned to the third portion for "three numbers detected" that handles dates like YYYY.MM.DD. The "three numbers detected" portion will take quite a while to improve and test, as it deals with the most unruly titles.
 
-KNOWN BUGS:
+Known Bugs
+===============
 
 There is only one bug that I have found in 0.1.0 that is annoying to me, and it was carried over from TorrentWatch-X: the delete torrent buttons behave the same as the trash torrent buttons. I have fixed this for the 0.1.1 release but will not repair it in 0.1.0.
 
@@ -45,9 +46,10 @@ But the engine currently reads it as title = "Holly Stage for" and season 50, ep
 
 Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the Favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
 
----
+Tested Platforms
+===============
 
-0.1.0 works on my out-of-the-box install of Debian 7.7 with its OOB transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+0.1.0 works on my out-of-the-box install of Debian 7.8 x86_64 with its OOB transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
