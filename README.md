@@ -28,13 +28,11 @@ NEXT VERSION: 0.1.2 in progress. Will require re-prioritization of TODOs because
 Known Bugs
 ===============
 
-There is only one bug that I have found in 0.1.0 that is annoying to me, and it was carried over from TorrentWatch-X: the delete torrent buttons behave the same as the trash torrent buttons. I have fixed this for the 0.1.1 release but will not repair it in 0.1.0.
-
-I have found a second bug in 0.1.0 that is not quite so annoying: the "Episodes Only" checkbox in the configuration panel doesn't seem to do anything. This too appears to be carried over from TorrentWatch-X, and it may be fixed in 0.1.1 or postponed till 0.1.2.
+I have found a bug in 0.1.0 that is not too annoying: the "Episodes Only" checkbox in the configuration panel doesn't seem to do anything. This appears to be carried over from TorrentWatch-X, and it may be fixed in 0.1.2.
 
 One other small bug carried over from TorrentWatch-X is that the PHP-based Downloading/Downloaded state is incorrect so that Downloaded items end up in the Downloading filter.
 
-And one feature that must be added because the lack of it is quite annoying is the automatic removal of Downloaded and seeded torrents.
+And one feature that must be added because the lack of it is very annoying is the automatic removal of Downloaded and seeded torrents.
 
 "One man's bug is another man's feature."
 ---
