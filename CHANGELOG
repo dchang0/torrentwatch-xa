@@ -40,3 +40,53 @@ Code changes
 - removed get_item_filter(); started transition to allow user-defined Sanitize Characters and Separator Characters strings in config
 - renamed some variables and functions according to Zend naming convention
 - commented out old guess_match() and replaced with new, partially-completed detectMatch()
+- completed commenting out $epiDiv (part of tvDB feature that was already commented out) to fix PHP notices
+
+0.1.1
+Functional changes
+- renamed var/www/torrentwatch-xa-web to torrentwatch-xa, which means the URL changes
+- fixed Delete Torrent button; it used to trash the downloaded file
+- moved torrent list container down 6px in phone.css so that the filter bar no longer partially obscures it
+- totally revamped detectResolution() xto detect ###x### ####x### or ####x#### and check it for aspect ratios
+- added Enhanced Definition TV resolution 576i and 576p
+- temporarily removed font size setting because it only changes the font size of the Configuration UI
+- added removal of audio codecs before episode detection (AC3 is being seen as an episode number)
+- improved removal of all-numeric 8-digit checksums
+- revamped Season and Episode detection to improve performance by focusing on "low-hanging fruit"
+  - detection engine now counts occurrences of numbers in title and divides actions into groups by frequency of numbers
+    - benefit is that we can go after standalone anime-style episodes sooner with fewer mistakes
+    - also improves match debug output by grouping them together
+  - added many new pattern detections
+    - NOTE: Roman numeral Season I, II, or III - Arabic numeral Episode causes slightly counter-intuitive behavior in Favorites filters
+  - improved detection of non-delimited dates such as YYYYMMDD, YYMMDD and so on
+  - added conversion of fullwidth numerals to halfwidth for Japanese
+  - added episode version (includes PROPER, REPACK, RERIP as version 2)
+  - added detection of abbreviated years like '96
+  - added $numberSequence to handle parallel numbering sequences like Movie 1, Movie 2, Movie 3 alongside Episode 1, Episode 2, Episode 3
+  - added $detectedMediaType as groundwork for handling other media types than video
+- removed The Pirate Bay from default feeds as they no longer offer RSS
+- updated BT-Chat in default feeds as they removed category filtering from their RSS feed
+
+
+Code changes
+ 
+- fixed undefined $showEpisodeNumber in feed_item.tpl
+- removed undefined and unused $eta in feed_item.tpl
+- fixed undefined $status
+- renamed $torStop to $torPause
+- renamed .torStop to .torPause
+- renamed div.delete to div.torDelete
+- renamed div.trash to div.torTrash
+- added twxa_testMatch.php wrapper to make it easier to diagnose mismatches
+- renamed _debug.php() to twxa_debug()
+- added strtolower() for resolution matches so that 1080P becomes 1080p and so on
+- moved <div> tag out of $footer to match its closing </div>
+- single-quoted array keys in feeds.php:443
+- renamed detectMatch()=>'key' to detectMatch()=>'title'
+- renamed detectMatch()=>'data' to detectMatch()=>'qualities'
+- added detectMatch()=>'isVideo'
+- moved normalizing of codecs into normalizeCodecs()
+- added debug logging of Season and Episode detection into /tmp/twlog
+- changed Full Season $detectedEpisodeBatchEnd = 0 to $detectedEpisodeBatchEnd = '' for Preview episode 0 numbering
+- refactored detectSeasonAndEpisode() to detectItem()
+- added a simple pseudo-unit-tester for the parsing engine called twxa_test_parser.php

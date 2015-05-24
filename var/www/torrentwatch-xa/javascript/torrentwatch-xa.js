@@ -269,7 +269,7 @@ $(function() {
         } else {
             curObject.show();
         }
-        curObject = $('li.item_' + torHash + ' div.torStop');
+        curObject = $('li.item_' + torHash + ' div.torPause');
         if (curObject.css('display') == 'block') {
             curObject.hide();
         } else {
@@ -436,9 +436,7 @@ $(function() {
                 Percentage = 0;
             }
 
-
-	    // FIX ME!!!!!!
-	    // BUILD DECENT MAPPING TABLE!!!!!
+	    // Remap Transmission <v2.4 status codes to v2.4
 
 	    if ( item.status == 0 ) item.status = 16;
 	    if ( item.status == 3 ) item.status = 4;
@@ -501,7 +499,7 @@ $(function() {
             } else if (item.status == 16) {
                 if(Ratio >= item.seedRatioLimit && Percentage == 100) {
                     clientData = "Downloaded and seed ratio met. This torrent can be removed.";
-                } else {
+                 } else {
                     clientData = "Paused";
                 }
                 liClass = 'paused';
@@ -525,7 +523,7 @@ $(function() {
                 
                 if(window.oldStatus[item.id] != item.id + '_' + item.status) {  
                     if (item.status == 16 || item.errorString) {
-                        $('li.item_' + item.hashString + ' div.torStop').hide();
+                        $('li.item_' + item.hashString + ' div.torPause').hide();
                         $('li.item_' + item.hashString + ' div.torStart').show();
                     } else {
                         var curTorrent = $('li.item_' + item.hashString + ' div.torStart');
@@ -551,14 +549,14 @@ $(function() {
 			if(item.status == 8) { var match = 'match_downloaded' } else { var match = 'match_downloading' };
                         $('li.item_' + item.hashString + ' ,li.item_' + item.hashString + ' .buttons')
 			    .removeClass('match_to_check').addClass(match);
-                        $('li.item_' + item.hashString + ' div.delete').show();
-                        $('li.item_' + item.hashString + ' div.trash').show();
+                        $('li.item_' + item.hashString + ' div.torDelete').show();
+                        $('li.item_' + item.hashString + ' div.torTrash').show();
                         if(item.status == 16) {
-                            $('li.item_' + item.hashString + ' div.torStop').hide();
+                            $('li.item_' + item.hashString + ' div.torPause').hide();
                             $('li.item_' + item.hashString + ' div.torStart').show();
 			} else {
                             $('li.item_' + item.hashString + ' div.torStart').hide();
-                            $('li.item_' + item.hashString + ' div.torStop').show();
+                            $('li.item_' + item.hashString + ' div.torPause').show();
 			}
 			$('li.item_' + item.hashString + ' div.dlTorrent').hide();
 		}
@@ -590,9 +588,9 @@ $(function() {
 
 	if(window.gotAllData) {
 	    $('#torrentlist_container li.match_to_check, #torrentlist_container li.match_to_check .buttons').addClass('match_old_download').removeClass('match_to_check');
-	    $('#torrentlist_container li.match_old_download .progressBarContainer, #torrentlist_container li.match_old_download .activeTorrent.delete, #torrentlist_container li.match_old_download .activeTorrent.trash').hide();
+	    $('#torrentlist_container li.match_old_download .progressBarContainer, #torrentlist_container li.match_old_download .activeTorrent.torDelete, #torrentlist_container li.match_old_download .activeTorrent.torTrash').hide();
 	    $('#torrentlist_container li.match_old_download div.infoDiv, #torrentlist_container li.match_old_download .torEta').remove();
-	    $('#torrentlist_container li.match_old_download div.torStop').hide();
+	    $('#torrentlist_container li.match_old_download div.torPause').hide();
 	    $('#torrentlist_container li.match_old_download div.dlTorrent').show();
 	}
 
@@ -798,7 +796,7 @@ $(function() {
 
     $(document).keydown(function(e) {
 	if (e.keyCode == '17' || e.keyCode == '91' || e.keyCode == '224') window.ctrlKey = 1
-	if (window.ctrlKey && e.keyCode == '65') {
+	if (window.ctrlKey && e.keyCode == '65') { //TODO fix the bug where it thinks Cmd is being held down when it is not immediately after Cmd-Tab to switch to the browser
 	    if($('#torrentlist_container li.torrent.selected').length == $('#torrentlist_container li.torrent').length) {
 	        $('#torrentlist_container li.torrent').removeClass('selected');
 	    } else {
@@ -868,8 +866,8 @@ $(function() {
 			$('a#torClient ').show().html('Transmission');
 		    } else {
 			$('a#torClient').hide();
-			$('div.activeTorrent.delete').hide();
-			$('div.activeTorrent.trash').hide();
+			$('div.activeTorrent.torDelete').hide();
+			$('div.activeTorrent.torTrash').hide();
 			if(filter == 'transmission') {
 			    filter = 'all';
 			}
@@ -1148,10 +1146,10 @@ $(function() {
             $('li#id_' + id + ' div.hideItem').hide();
 	    if(window.client != 'folder') $('li#id_' + id + ' div.progressBarContainer').show();
             $('li#id_' + id + ' div.dlTorrent').hide();
-            $('li#id_' + id + ' div.torStop').show();
+            $('li#id_' + id + ' div.torPause').show();
 	    if(window.client == 'folder') return;
-            $('li#id_' + id + ' div.trash').show();
-            $('li#id_' + id + ' div.delete').show();
+            $('li#id_' + id + ' div.torTrash').show();
+            $('li#id_' + id + ' div.torDelete').show();
 
             $('li#id_' + id).removeClass('item_###torHash###').addClass('item_'+torHash);
 

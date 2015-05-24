@@ -789,15 +789,15 @@ div.contextMenu .torStart {
     background: url(../images/tor_start_10x10.png) no-repeat left center;
     background-position: 2px 3px;
 }
-div.contextMenu .torStop {
+div.contextMenu .torPause {
     background: url(../images/tor_pause_10x10.png) no-repeat left center;
     background-position: 2px 3px;
 }
-div.contextMenu .delete {
+div.contextMenu .torDelete {
     background: url(../images/tor_stop_10x10.png) no-repeat left center;
     background-position: 2px 3px;
 }
-div.contextMenu .trash {
+div.contextMenu .torTrash {
     background: url(../images/tor_trash_10x10.png) no-repeat left center;
     background-position: 2px 3px;
 }

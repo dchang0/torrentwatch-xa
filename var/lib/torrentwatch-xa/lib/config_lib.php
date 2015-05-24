@@ -11,7 +11,7 @@ function setup_default_config() {
     }
 
     if (!isset($config_values['Settings']))
-        $config_values['Settings'] = array();
+        $config_values['Settings'] = [];
     // Sensible Defaults 
     $baseDir = get_baseDir();
     _default('Episode Only', '0');
@@ -49,7 +49,6 @@ function setup_default_config() {
     _default('SMTP Server', 'localhost');
     _default('TimeZone', 'UTC');
     _default('Sanitize Hidelist', '0');
-    _default('Sanitize Characters', '[]{}<>,_'); //TODO implement this by 0.1.2
 }
 
 if (!(function_exists('get_baseDir'))) {
@@ -65,7 +64,7 @@ if (!(function_exists('get_webDir'))) {
 
     //default function
     function get_webDir() {
-        return "/var/www/torrentwatch-xa-web"; //default, meant for Debian 7.x
+        return "/var/www/torrentwatch-xa"; //default, meant for Debian 7.x
     }
 
 }
@@ -103,7 +102,7 @@ function read_config_file() {
     $group = "NONE";
 
     if (!file_exists($config_file)) {
-        _debug("No Config File Found, Creating default config\n", 0);
+        twxa_debug("No config file found--creating default config\n", 0);
         write_config_file();
     }
 
@@ -120,7 +119,7 @@ function read_config_file() {
         }
     } else {
         if (!($fp = fopen($config_file, "r"))) {
-            _debug("read_config_file: Could not open $config_file\n", 0);
+            twxa_debug("read_config_file: Could not open $config_file\n", 0);
             exit(1);
         }
 
@@ -162,42 +161,30 @@ function read_config_file() {
     // Create the base arrays if not already
 
     if (!isset($config_values['Favorites']))
-        $config_values['Favorites'] = array();
+        $config_values['Favorites'] = [];
     if (!isset($config_values['Hidden']))
-        $config_values['Hidden'] = array();
+        $config_values['Hidden'] = [];
     if (!isset($config_values['Feeds'])) {
-        $config_values['Feeds'] = array(
-            0 => array(
+        $config_values['Feeds'] = [
+            0 => [
                 'Link' => 'http://www.nyaa.se/?page=rss',
                 'Type' => 'RSS',
                 'seedRatio' => '-1',
                 'Name' => 'NyaaTorrents'
-            ),
-            1 => array(
+            ],
+            1 => [
                 'Link' => 'http://tokyotosho.info/rss.php?filter=1',
                 'Type' => 'RSS',
                 'seedRatio' => '-1',
                 'Name' => 'TokyoTosho.info Anime'
-            ),
-            2 => array(
-                'Link' => 'http://rss.bt-chat.com/?group=3&cat=9',
+            ],
+            2 => [
+                'Link' => 'http://rss.bt-chat.com/',
                 'Type' => 'RSS',
                 'seedRatio' => '-1',
                 'Name' => 'BT-Chat.com'
-            ),
-            3 => array(
-                'Link' => 'http://rss.thepiratebay.org/205',
-                'Type' => 'RSS',
-                'seedRatio' => '-1',
-                'Name' => 'The Pirate Bay - TV shows'
-            ),
-            /* 4 => array(
-                'Link' => 'http://rss.thepiratebay.org/208',
-                'Type' => 'RSS',
-                'seedRatio' => '-1',
-                'Name' => 'The Pirate Bay - Highres - TV shows'
-            ), */
-        );
+            ],
+        ];
         write_config_file();
     }
 
@@ -218,7 +205,7 @@ function write_config_file() {
     $config_file = platform_getConfigFile();
     $config_cache = platform_getConfigCache();
 
-    _debug("Preparing to write config file to $config_file\n");
+    twxa_debug("Preparing to write config file to $config_file\n");
 
     if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['Transmission Password']))) {
         if ($config_values['Settings']['Transmission Password']) {
@@ -263,18 +250,18 @@ function write_config_file() {
     array_walk($config_values, 'group_callback');
     $dir = dirname($config_file);
     if (!is_dir($dir)) {
-        _debug("Creating configuration directory\n", 1);
+        twxa_debug("Creating configuration directory\n", 1);
         if (file_exists($dir))
             unlink($dir);
         if (!mkdir($dir)) {
-            _debug("Unable to create config directory\n", 0);
+            twxa_debug("Unable to create config directory\n", 0);
             return FALSE;
         }
     }
     $config_out = html_entity_decode($config_out);
 
     if (!($fp = fopen($config_file . "_tmp", "w"))) {
-        _debug("read_config_file: Could not open $config_file\n", 0);
+        twxa_debug("read_config_file: Could not open $config_file\n", 0);
         exit(1);
     }
 
@@ -376,7 +363,7 @@ function add_hidden($name) {
     global $config_values;
     $guess = detectMatch($name);
     if ($guess) {
-        $name = strtolower(trim(strtr($guess['key'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))));
+        $name = strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))));
 
         foreach ($config_values['Favorites'] as $fav) {
             if ($name == strtolower(strtr($fav['Name'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))
@@ -482,7 +469,7 @@ function updateFavoriteEpisode(&$fav, $title) {
         return;
     }
     if ($fav['Episode'] && $curEpisode > $expectedEpisode) {
-        $show = $guess['key'];
+        $show = $guess['title'];
         $episode = $guess['episode'];
         $expected = $curSeason . "x" . $expectedEpisode;
         $oldEpisode = $fav['Episode'];
@@ -516,10 +503,10 @@ function add_feed($link) {
     global $config_values;
     $link = preg_replace('/ /', '%20', $link);
     $link = preg_replace('/^%20|%20$/', '', $link);
-    _debug('adding feed: ' . $link);
+    twxa_debug('adding feed: ' . $link . "\n");
 
     if (isset($link) AND ( $tmp = guess_feedtype($link)) != 'Unknown') {
-        _debug('really adding feed');
+        twxa_debug('really adding feed\n');
         $config_values['Feeds'][]['Link'] = $link;
         $idx = end(array_keys($config_values['Feeds']));
         $config_values['Feeds'][$idx]['Type'] = $tmp;
@@ -534,13 +521,13 @@ function add_feed($link) {
                 break;
         }
     } else {
-        _debug("Could not connect to Feed/guess Feed Type", -1);
+        twxa_debug("Could not connect to Feed/guess Feed Type\n", -1);
     }
 }
 
 function update_feedData() {
     global $config_values;
-    _debug('updating feed: ' . $idx);
+    twxa_debug('updating feed: ' . $idx . '\n');
     if (isset($_GET['idx']) AND isset($config_values['Feeds'][$_GET['idx']])) {
         if (!($_GET['feed_name']) || !($_GET['feed_link']))
             return;
@@ -565,5 +552,3 @@ function del_feed() {
         unset($config_values['Feeds'][$_GET['idx']]);
     }
 }
-
-?>

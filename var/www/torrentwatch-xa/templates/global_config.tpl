@@ -34,7 +34,7 @@
             <form action="torrentwatch-xa.php?setGlobals=1" id="config_form" name="config_form">
                 <div id="config_interface" class="configTab">
                     <div class="int_settings">
-                        <div id="config_webui">
+                        <!--<div id="config_webui">
                             <div class="left">
                                 <label class="item select">Font Size:</label>
                             </div>
@@ -45,8 +45,8 @@
                                     <option value="Large">Large</option>
                                 </select>
                             </div>
-                        </div>
-                        <div id="config_combinefeeds" title="Combine all feeds into 1 list">
+                        </div>--> <!-- TODO either make it so font size works everywhere or remove it -->
+                        <div id="config_combinefeeds" title="Combine all feeds into one list">
                             <div class="left">
                                 <label class="item checkbox">Combine Feeds:</label>
                             </div>

@@ -18,7 +18,7 @@ define ("CURLINFO_CONTENT_TYPE", "content-type");
 function curl_init() {    
 	global $curl_stuff;
 	$id=time().rand(100,100000);
-	$curl_stuff[$id]=array();
+	$curl_stuff[$id]=[];
 	return($id);
 }
 
@@ -92,7 +92,7 @@ function curl_exec ($sess) {
           }
           $result=$data;
    	}
-	//_debug("BLA: " . $header . "\n");
+	//twxa_debug("BLA: " . $header . "\n");
 	//$out.=$url."\n".$header."\n".$content."\n".$method."\n".$result."\n";;
 	return ($result);
 }
@@ -117,7 +117,5 @@ function curl_getinfo($sess, $ch) {
 
 function curl_close($sess) {
 	global $curl_stuff;
-	$curl_stuff[$sess]=array();
+	$curl_stuff[$sess]=[];
 }
-
-?>

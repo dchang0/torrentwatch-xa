@@ -21,7 +21,7 @@ require_once("tor_client.php");
 require_once("platform.php");
 require_once("guess.php");
 
-$config_values['Global'] = array();
+$config_values['Global'] = [];
 $time = 0;
 
 // Checks array is a key is set, return value or default
@@ -81,8 +81,8 @@ define('ARRAY_KEY_USE_MULTIBYTE', true); //use mutlibyte functions
  * @return     array
  */
 function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
-    $newArray = array();
-    //for more speed define the runtime created functions in the global namespac
+    $newArray = [];
+    //for more speed define the runtime created functions in the global namespace
     //get function
     $function = 'strToUpper'; //default
     switch ($case) {
@@ -114,8 +114,8 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
     return $newArray;
 }
 
-function _debug($string, $lvl = -1) {
-    global $config_values, $debug_output;
+function twxa_debug($string, $lvl = -1) {
+    global $config_values, $debug_output; //TODO fix this!!!
     file_put_contents('/tmp/twlog', $string, FILE_APPEND);
 
     if ($config_values['Settings']['debugLevel'] >= $lvl) {
@@ -171,8 +171,6 @@ function check_for_torrents($directory, $dest) {
         }
         closedir($handle);
     } else {
-        _debug("check_for_torrents: Couldn't read Directory: $directory\n", 0);
+        twxa_debug("check_for_torrents: Couldn't read Directory: $directory\n", 0);
     }
 }
-
-?>

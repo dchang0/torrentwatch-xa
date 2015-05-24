@@ -19,17 +19,17 @@ $verbosity = 0;
 $func_timer = 0;
 
 function usage() {
-    _debug( __FILE__ . "<options> - CLI Interface to torrentwatch-xa\n",0);
-    _debug( "           -c <dir> : Enable Cache\n",0);
-    _debug( "           -C : Disable Cache\n",0);
-    _debug( "           -d : skip watch folder\n",0);
-    _debug( "           -D : Start torrents in watch folder\n",0);
-    _debug( "           -h : show this help\n",0);
-    _debug( "           -nv: not verbose (default)\n",0);
-    _debug( "           -q : quiet (no output)\n",0);
-    _debug( "           -v : verbose output\n",0);
-    _debug( "           -vv: verbose output(even more)\n",0);
-    _debug( "    Note: This interface only writes to the config file when using the -i option\n",0);
+    twxa_debug( __FILE__ . "<options> - CLI Interface to torrentwatch-xa\n",0);
+    twxa_debug( "           -c <dir> : Enable Cache\n",0);
+    twxa_debug( "           -C : Disable Cache\n",0);
+    twxa_debug( "           -d : skip watch folder\n",0);
+    twxa_debug( "           -D : Start torrents in watch folder\n",0);
+    twxa_debug( "           -h : show this help\n",0);
+    twxa_debug( "           -nv: not verbose (default)\n",0);
+    twxa_debug( "           -q : quiet (no output)\n",0);
+    twxa_debug( "           -v : verbose output\n",0);
+    twxa_debug( "           -vv: verbose output(even more)\n",0);
+    twxa_debug( "    Note: This interface only writes to the config file when using the -i option\n",0);
 }
 
 function parse_args() {
@@ -68,7 +68,7 @@ function parse_args() {
                 $verbosity = 2;
                 break;
             default:
-                _debug("Unknown command line argument:  " . $_SERVER['argv'][$i] . "\n",0);
+                twxa_debug("Unknown command line argument:  " . $_SERVER['argv'][$i] . "\n",0);
                 break;
         }
     }
@@ -88,7 +88,7 @@ function parse_args() {
     if(isset($config_values['Settings']['Verbose']))
         $verbosity = $config_values['Settings']['Verbose'];
     parse_args();
-    _debug(date("F j, Y, g:i a")."\n",0);
+    twxa_debug(date("F j, Y, g:i a")."\n",0);
 
     if(isset($config_values['Feeds'])) {
         load_feeds($config_values['Feeds'], 1);
@@ -100,7 +100,7 @@ function parse_args() {
         $hit = 0;
         foreach($config_values['Favorites'] as $fav) {
             $guess = detectMatch(html_entity_decode($_GET['title']));
-            $name = trim(strtr($guess['key'], "._", "  "));
+            $name = trim(strtr($guess['title'], "._", "  "));
             if($name == $fav['Name']) {
                   $downloadDir = $fav['Save In'];
             } 
@@ -109,14 +109,13 @@ function parse_args() {
 
         check_for_torrents($config_values['Settings']['Watch Dir'], $downloadDir);
         if(!$hit)
-            _debug("No New Torrents to add from watch folder\n", 0);
+            twxa_debug("No New Torrents to add from watch folder\n", 0);
     } else {
-        _debug("Skipping Watch Folder\n");
+        twxa_debug("Skipping Watch Folder\n");
     }
 
     unlink_temp_files();
 
-    _debug($func_timer."s\n",0);
+    twxa_debug($func_timer."s\n",0);
 
-    _debug(timer_get_time($main_timer)."s\n",0);
-?>
+    twxa_debug(timer_get_time($main_timer)."s\n",0);

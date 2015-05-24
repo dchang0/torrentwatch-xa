@@ -33,7 +33,7 @@
 
 /**
 * lastRSS
-* Simple yet powerfull PHP class to parse RSS files.
+* Simple yet powerful PHP class to parse RSS files.
 */
 class lastRSS {
     // -------------------------------------------------------------------
@@ -64,13 +64,13 @@ class lastRSS {
             // Changed to only support local files
             $timedif = @(time() - filemtime($cache_file));
             if ($timedif < $this->cache_time) {
-                _debug(date(DATE_RFC822) . " - lastRSS: feed loaded from file cache: $rss_url\n", 0);
+                twxa_debug(date(DATE_RFC822) . " - lastRSS: feed loaded from file cache: $rss_url\n", 0);
                 // cached file is fresh enough, return cached array
                 $result = unserialize(join('', file($cache_file)));
                 // set 'cached' to 1 only if cached file is correct
                 if ($result) $result['cached'] = 1;
             } else {
-                _debug(date(DATE_RFC822) . " - lastRSS: feed cache is old, loading fresh: $rss_url", 0);
+                twxa_debug(date(DATE_RFC822) . " - lastRSS: feed cache is old, loading fresh: $rss_url\n", 0);
                 // cached file is too old, create new
                 $result = $this->Parse($rss_url);
                 if($result['items_count'] >= 0) {
@@ -93,7 +93,7 @@ class lastRSS {
     }
     
     // -------------------------------------------------------------------
-    // Modification of preg_match(); return trimed field with index 1
+    // Modification of preg_match(); return trimmed field with index 1
     // from 'classic' preg_match() array output
     // -------------------------------------------------------------------
     function my_preg_match ($pattern, $subject) {
@@ -199,7 +199,7 @@ class lastRSS {
             preg_match_all("'<item(| .*?)>(.*?)</item>'si", $rss_content, $items);
             $rss_items = $items[2];
             $i = 0;
-            $result['items'] = array(); // create array even if there are no items
+            $result['items'] = []; // create array even if there are no items
             foreach($rss_items as $rss_item) {
                 // If number of items is lower then limit: Parse one item
                 if ($i < $this->items_limit || $this->items_limit == 0) {
@@ -214,7 +214,7 @@ class lastRSS {
                         $temp2 = trim($this->my_preg_match("'<$itemtag\s*([^>]*)/?'si", $rss_item));
                         if ($temp2 != '') {
                             preg_match_all( '/([^\s"=]+)=["\']([^\'"]*?)["\']/' , $temp2, $attr, PREG_SET_ORDER);
-                            $result['items'][$i][$itemtag] = array();
+                            $result['items'][$i][$itemtag] = [];
                             if ($temp != '') $result['items'][$i][$itemtag]['value'] = $temp;
                                 foreach($attr as $a) { 
                                 $result['items'][$i][$itemtag][$a[1]] = $a[2];
@@ -248,7 +248,7 @@ class lastRSS {
         }
         else // Error in opening return False
         {
-            _debug("lastRSS: file_get_contents failed for $rss_url", -1);
+            twxa_debug("lastRSS: file_get_contents failed for $rss_url\n", -1);
             return False;
         }
     }

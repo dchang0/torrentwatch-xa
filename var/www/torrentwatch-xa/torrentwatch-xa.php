@@ -19,7 +19,7 @@ require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch thi
 
 global $platform;
 
-$twxa_version[0] = "0.1.0";
+$twxa_version[0] = "0.1.1";
 
 $twxa_version[1] = "";
 
@@ -126,14 +126,14 @@ function parse_options() {
                 $seedRatio = -1;
             }
             if (($tmp = detectMatch(html_entity_decode($_GET['title']), TRUE))) {
-                $_GET['name'] = trim(strtr($tmp['key'], "._", "  "));
+                $_GET['name'] = trim(strtr($tmp['title'], "._", "  "));
                 if ($config_values['Settings']['MatchStyle'] == "glob") {
-                    $_GET['filter'] = trim(strtr($tmp['key'], " ._", "???"));
+                    $_GET['filter'] = trim(strtr($tmp['title'], " ._", "???"));
                     $_GET['filter'] .= '*';
                 } else {
-                    $_GET['filter'] = trim($tmp['key']);
+                    $_GET['filter'] = trim($tmp['title']);
                 }
-                $_GET['quality'] = $tmp['data'];
+                $_GET['quality'] = $tmp['qualities'];
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['savein'] = 'Default';
@@ -163,7 +163,7 @@ function parse_options() {
                 echo "ERROR:$response";
             } else {
                 $guess = detectMatch(html_entity_decode($_GET['hide']), TRUE);
-                echo $guess['key'];
+                echo $guess['title'];
             }
             exit;
         case 'delHidden':
@@ -173,7 +173,7 @@ function parse_options() {
             // Loaded via ajax
             foreach ($config_values['Favorites'] as $fav) {
                 $guess = detectMatch(html_entity_decode($_GET['title']));
-                $name = trim(strtr($guess['key'], "._", "  "));
+                $name = trim(strtr($guess['title'], "._", "  "));
                 if ($name == $fav['Name']) {
                     $downloadDir = $fav['Save In'];
                 }
@@ -401,7 +401,7 @@ function display_history() {
     if (file_exists($config_values['Settings']['History'])) {
         $history = array_reverse(unserialize(file_get_contents($config_values['Settings']['History'])));
     } else {
-        $history = array();
+        $history = [];
     }
 
     ob_start();
@@ -430,7 +430,7 @@ function display_transmission() {
 function episode_info($show, $episode_num, $isShow, $epiInfo) {
     $temp = explode('x', $episode_num);
     $episode = $show->getEpisode($temp[0], $temp[1]);
-    _debug(print_r($episode, TRUE));
+    twxa_debug(print_r($episode, TRUE));
 
     $name = $show->seriesName;
     $episode_name = $episode->name;
@@ -438,7 +438,7 @@ function episode_info($show, $episode_num, $isShow, $epiInfo) {
     $image = empty($episode->filename) ? '' : cacheImage('http://thetvdb.com/banners/' . $episode->filename);
     $rating = $show->rating;
     $airdate = date('M d, Y', $episode->firstAired);
-    $actors = array();
+    $actors = [];
     if ($episode->guestStars) {
         foreach ($episode->guestStars as $person_name) {
             $guests[] = $person_name;
@@ -449,13 +449,13 @@ function episode_info($show, $episode_num, $isShow, $epiInfo) {
             $actors[] = $person_name;
         }
     }
-    $directors = array();
+    $directors = [];
     if ($episode->directors) {
         foreach ($episode->directors as $person_name) {
             $directors[] = $person_name;
         }
     }
-    $writers = array();
+    $writers = [];
     if ($episode->writers) {
         foreach ($episode->writers as $person_name) {
             $writers[] = $person_name;
@@ -482,8 +482,8 @@ function show_info($title) {
             $epiInfo = 0;
         }
         $isShow = $episode_data['episode'] == 'noShow' ? false : true;
-        $name = $episode_data['key'];
-        $data = $episode_data['data'];
+        $name = $episode_data['title'];
+        $data = $episode_data['qualities'];
     }
 
     $episode_num = $episode_data['episode'];
@@ -615,7 +615,7 @@ function post_bug($Summary, $Name, $Email, $Priority, $Description) {
     $Version = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
 
     $post = curl_init();
-    $postOptions[CURLOPT_URL] = "http://tw-issues.vandalon.net/"; //TODO replace this with GitHub!!!
+    $postOptions[CURLOPT_URL] = ""; //TODO replace this with anonymous-submission GitHub!!!
     $postOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
     $postOptions[CURLOPT_POSTFIELDS] = "Summary=$Summary&Name=$Name&Email=$Email&Priority=$Priority&Description=$Description&Version=$Version";
     get_curl_defaults($postOptions);
@@ -657,7 +657,7 @@ read_config_file();
 if ($config_values['Settings']['Sanitize Hidelist'] != 1) {
     include '/var/lib/torrentwatch-xa/lib/update_hidelist.php'; //TODO set to use baseDir/lib
     $config_values['Settings']['Sanitize Hidelist'] = 1;
-    _debug("Updated Hidelist\n");
+    twxa_debug("Updated Hidelist\n");
     write_config_file();
 }
 //authenticate();
@@ -683,10 +683,8 @@ feeds_perform_matching($config_values['Feeds']);
 get_client();
 close_html();
 
-$footer = "<div id=\"footer\">Thank you for enjoying and supporting <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> torrentwatch-xa version $twxa_version[0]!&nbsp;&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">click here</a> to report bugs. (Requires GitHub login.)";
-//Just for quickly watching variables
-//$footer .= " - ";
-echo "$footer</div>";
+$footer = "Thank you for enjoying and supporting <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> torrentwatch-xa $twxa_version[0]!&nbsp;&nbsp;<a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">Click here</a> to report bugs via GitHub Issues.";
+echo "<div id=\"footer\">$footer</div>";
 
 if ($config_values['Settings']['Hide Donate Button'] != 1) {
     echo '<div id="donate">
@@ -701,4 +699,3 @@ if ($config_values['Settings']['Hide Donate Button'] != 1) {
 
 unlink_temp_files();
 exit(0);
-?>

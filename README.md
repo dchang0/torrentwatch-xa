@@ -19,12 +19,11 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.1.0 with the changes listed in CHANGELOG.
+CURRENT VERSION: I've posted 0.1.1 with the changes listed in CHANGELOG. This version has a brand new season and episode detection engine that first counts the number of numbers in the title and uses that to improve pattern matching. This should improve accuracy and performance. One design decision this allows me to make is to give up on titles containing large numbers of numbers because they are too confusing to the parser. This behavior is preferable to getting a false-positive match.
 
-NEXT VERSION: As of 2015/03/08, for 0.1.1, I have finished most of the "only one number detected" portion of the season and episode detection engine and put it through extensive testing.
-It is this portion of the engine that catches the most anime episodes, so it is the most valuable part of the engine.
+I am sure the new detection engine will introduce its own share of bugs, but it has largely worked well over the past several months in testing.
 
-As of 2015/03/09, for 0.1.1, I largely finished the "two numbers detected" portion that is responsible for detecting SSxEE notation and so on and have turned to the third portion for "three numbers detected" that handles dates like YYYY.MM.DD. The "three numbers detected" portion will take quite a while to improve and test, as it deals with the most unruly titles.
+NEXT VERSION: 0.1.2 in progress. Will require re-prioritization of TODOs because there are so many. The following "Known Bugs" will be addressed, finally.
 
 Known Bugs
 ===============
@@ -49,7 +48,9 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 Tested Platforms
 ===============
 
-0.1.0 works on my out-of-the-box install of Debian 7.8 x86_64 with its OOB transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+0.1.1 works on my out-of-the-box install of Debian 7.8 x86_64 with its OOB transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+
+I do not plan on testing on Debian 8 yet. It will probably work fine.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 

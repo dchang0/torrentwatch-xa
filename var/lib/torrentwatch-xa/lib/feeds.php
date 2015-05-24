@@ -3,11 +3,12 @@
 require_once('twxa_parse.php');
 
 function human_readable($n) {
-    $scales = Array('bytes', 'KB', 'MB', 'GB', 'TB');
+    $scales = [ 'bytes', 'KB', 'MB', 'GB', 'TB' ];
     $scale = $scales[0];
     for ($i = 1; $i < count($scales); $i++) {
-        if ($n / 1024 < 1)
+        if ($n / 1024 < 1) {
             break;
+        }
         $n = $n / 1024;
         $scale = $scales[$i];
     }
@@ -15,8 +16,8 @@ function human_readable($n) {
 }
 
 function get_torrent_link($rs) {
-    $links = array();
-    $link = "";
+    $links = [];
+    $link = '';
     if ((isset($rs['enclosure'])) && ($rs['enclosure']['type'] == 'application/x-bittorrent')) {
         $links[] = $rs['enclosure']['url'];
     } else {
@@ -81,10 +82,12 @@ function choose_torrent_link($links) {
 function episode_filter($item, $filter) {
     $filter = preg_replace('/\s/', '', $filter);
 
-    if (!isset($itemS))
+    if (!isset($itemS)) {
         $itemS = '';
-    if (!isset($itemE))
+    }
+    if (!isset($itemE)) {
         $itemE = '';
+    }
     list($itemS, $itemE) = explode('x', $item['episode']);
 
     if (preg_match('/^S\d*/i', $filter)) {
@@ -93,11 +96,13 @@ function episode_filter($item, $filter) {
             $filter = preg_replace('/E/i', 'x', $filter);
         }
     }
-    // Split the filter(ex. 3x4-4x15 into 3,3 4,15).  @ to suppress error when no seccond item
-    if (isset($start))
+    // Split the filter(ex. 3x4-4x15 into 3,3 4,15).  @ to suppress error when no second item
+    if (isset($start)) {
         $start = '';
-    if (isset($stop))
+    }
+    if (isset($stop)) {
         $stop = '';
+    }
     list($start, $stop) = explode('-', $filter, 2);
     @list($startSeason, $startEpisode) = explode('x', $start, 2);
     if (!isset($stop)) {
@@ -117,48 +122,56 @@ function episode_filter($item, $filter) {
     $validateReg = '([0-9]+)(?:x([0-9]+))?';
     if (preg_match("/\dx\d-\dx\d/", $filter)) {
         if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0) {
-            _debug('bad episode filter: ' . $filter);
+            twxa_debug('bad episode filter: ' . $filter . '\n');
             return True; // bad filter, just accept all
         } else if (preg_match("/^{$validateReg}/", $filter) === 0) {
-            _debug('bad episode filter: ' . $filter);
+            twxa_debug('bad episode filter: ' . $filter . '\n');
             return True; // bad filter, just accept all
         }
     }
 
-    if (!($stopSeason))
+    if (!($stopSeason)) {
         $stopSeason = $startSeason;
-    if (!($startEpisode))
+    }
+    if (!($startEpisode)) {
         $startEpisode = 1;
-    if (!($stopEpisode))
+    }
+    if (!($stopEpisode)) {
         $stopEpisode = $startEpisode - 1;
+    }
 
 
     $startEpisodeLen = strlen($startEpisode);
     if ($startEpisodeLen == 1) {
         $startEpisode = "0$startEpisode";
-    };
+    }
     $stopEpisodeLen = strlen($stopEpisode);
     if ($stopEpisodeLen == 1) {
         $stopEpisode = "0$stopEpisode";
-    };
+    }
 
-    if (!preg_match('/^\d\d$/', $startSeason))
+    if (!preg_match('/^\d\d$/', $startSeason)) {
         $startSeason = 0 . $startSeason;
-    if (!preg_match('/^\d\d$/', $startEpisode))
+    }
+    if (!preg_match('/^\d\d$/', $startEpisode)) {
         $startEpisode = 0 . $startEpisode;
-    if (!preg_match('/^\d\d$/', $stopSeason))
+    }
+    if (!preg_match('/^\d\d$/', $stopSeason)) {
         $stopSeason = 0 . $stopSeason;
-    if (!preg_match('/^\d\d$/', $stopEpisode))
+    }
+    if (!preg_match('/^\d\d$/', $stopEpisode)) {
         $stopEpisode = 0 . $stopEpisode;
-    if (!preg_match('/^\d\d$/', $itemS))
+    }
+    if (!preg_match('/^\d\d$/', $itemS)) {
         $itemS = 0 . $itemS;
-    if (!preg_match('/^\d\d$/', $itemE))
+    }
+    if (!preg_match('/^\d\d$/', $itemE)) {
         $itemE = 0 . $itemE;
-
+    }
 
     // Season filter mis-match
     if (!("$itemS$itemE" >= "$startSeason$startEpisode" && "$itemS$itemE" <= "$stopSeason$stopEpisode")) {
-        _debug("$itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n");
+        twxa_debug("$itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n");
         return False;
     }
     return True;
@@ -196,8 +209,9 @@ function check_for_torrent(&$item, $key, $opts) {
         $any = 1;
     }
 
-    if ($hit)
+    if ($hit) {
         $guess = detectMatch($title, TRUE);
+    }
 
     if ($hit && episode_filter($guess, $item['Episodes']) == true) {
         $matched = 'match';
@@ -209,20 +223,20 @@ function check_for_torrent(&$item, $key, $opts) {
             if (!$any && _isset($config_values['Settings'], 'Only Newer') == 1) {
                 if (!empty($guess['episode']) && preg_match('/^(\d+)x(\d+)p?$|^(\d{8})p?$/i', $guess['episode'], $regs)) {
                     if (isset($regs[3]) && preg_match('/^(\d{8})$/', $regs[3]) && $item['Episode'] >= $regs[3]) {
-                        _debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1);
+                        twxa_debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1);
                         $matched = "old";
                         return FALSE;
                     } else if (isset($regs[1]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] > $regs[1]) {
-                        _debug($item['Name'] . ": " . $item['Season'] . ' > ' . $regs[1] . "\r\n", 1);
+                        twxa_debug($item['Name'] . ": " . $item['Season'] . ' > ' . $regs[1] . "\r\n", 1);
                         $matched = "old";
                         return FALSE;
                     } else if (isset($regs[2]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] == $regs[1] && $item['Episode'] >= $regs[2]) {
                         if (!preg_match('/proper|repack|rerip/i', $rs['title'])) {
-                            _debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[2] . "\r\n", 1);
+                            twxa_debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[2] . "\r\n", 1);
                             $matched = "old";
                             return FALSE;
                         } else if ($PROPER == 1) {
-                            _debug("Allready downloaded this Proper, Repack or Rerip of " . $item['Name'] . " $regs[1]x$regs[2]$regs[3]\r\n");
+                            twxa_debug("Already downloaded this Proper, Repack or Rerip of " . $item['Name'] . " $regs[1]x$regs[2]$regs[3]\r\n");
                             $matched = "old";
                             return FALSE;
                         }
@@ -231,12 +245,12 @@ function check_for_torrent(&$item, $key, $opts) {
                     $matched = "season";
                     return FALSE;
                 } else if (($guess['episode'] != 'noShow' && !preg_match('/^(\d{1,2} \d{1,2} \d{2,4})$/', $guess['episode'])) || $config_values['Settings']['Require Episode Info'] == 1) {
-                    _debug("$item is not in a workable format.");
+                    twxa_debug("$item is not in a workable format.\n");
                     $matched = "nomatch";
                     return FALSE;
                 }
             }
-            _debug('Match found for ' . $rs['title'] . "\n");
+            twxa_debug('Match found for ' . $rs['title'] . "\n");
             if ($test_run) {
                 $matched = 'test';
                 return;
@@ -244,13 +258,13 @@ function check_for_torrent(&$item, $key, $opts) {
             if ($link = get_torrent_link($rs)) {
                 $response = client_add_torrent($link, NULL, $rs['title'], $opts['URL'], $item);
                 if (preg_match('/^Error:/', $response)) {
-                    _debug("Failed adding torrent $link\n", -1);
+                    twxa_debug("Failed adding torrent $link\n", -1);
                     return FALSE;
                 } else {
                     add_cache($rs['title']);
                 }
             } else {
-                _debug("Unable to find URL for " . $rs['title'] . "\n", -1);
+                twxa_debug("Unable to find URL for " . $rs['title'] . "\n", -1);
                 $matched = "nourl";
             }
         }
@@ -271,10 +285,12 @@ function parse_one_rss($feed, $update = NULL) {
     }
     $rss->date_format = 'M d, H:i';
 
-    if (isset($config_values['Settings']['Cache Dir']))
+    if (isset($config_values['Settings']['Cache Dir'])) {
         $rss->cache_dir = $config_values['Settings']['Cache Dir'];
-    if (!$config_values['Global']['Feeds'][$feed['Link']] = $rss->get($feed['Link']))
-        _debug("Error creating rss parser for " . $feed['Link'] . "\n", -1);
+    }
+    if (!$config_values['Global']['Feeds'][$feed['Link']] = $rss->get($feed['Link'])) {
+        twxa_debug("Error creating rss parser for " . $feed['Link'] . "\n", -1);
+    } 
     else {
         if ($config_values['Global']['Feeds'][$feed['Link']]['items_count'] == 0) {
             unset($config_values['Global']['Feeds'][$feed['Link']]);
@@ -288,13 +304,16 @@ function parse_one_rss($feed, $update = NULL) {
 
 function parse_one_atom($feed) {
     global $config_values;
-    if (isset($config_values['Settings']['Cache Dir']))
+    if (isset($config_values['Settings']['Cache Dir'])) {
         $atom_parser = new myAtomParser($feed['Link'], $config_values['Settings']['Cache Dir']);
-    else
+    }
+    else {
         $atom_parser = new myAtomParser($feed['Link']);
+    }
 
-    if (!$config_values['Global']['Feeds'][$feed['Link']] = $atom_parser->getRawOutput())
-        _debug("Error creating atom parser for " . $feed['Link'] . "\n", -1);
+    if (!$config_values['Global']['Feeds'][$feed['Link']] = $atom_parser->getRawOutput()) {
+        twxa_debug("Error creating atom parser for " . $feed['Link'] . "\n", -1);
+    }
     else {
         $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
         $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'Atom';
@@ -325,18 +344,18 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     $alt = 'alt';
 
     $items = array_reverse($rs['items']);
-    $htmlList = array();
+    $htmlList = [];
     foreach ($items as $item) {
         if (!isset($item['title'])) {
             $item['title'] = '';
         }
         else {
-            $item['title'] = simplifyTitle($item['title']); //TODO test this, if it doesn't work, move it back out of the else
+            $item['title'] = simplifyTitle($item['title']);
         }
         $torHash = '';
         $matched = 'nomatch';
         if (isset($config_values['Favorites'])) {
-            array_walk($config_values['Favorites'], 'check_for_torrent', array('Obj' => $item, 'URL' => $rs['URL']));
+            array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $rs['URL'] ]);
         }
         $client = $config_values['Settings']['Client'];
         if (isset($config_values['Settings']['Cache Dir'])) {
@@ -346,7 +365,7 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
             $torHash = get_torHash($cache_file);
             if ($matched != "match" && $matched != 'cachehit' && file_exists($cache_file)) {
                 $matched = 'downloaded';
-                _debug("matched: " . $item['title'] . "\n", 1);
+                twxa_debug("matched downloaded: " . $item['title'] . "\n", 1);
             }
         }
         if (isset($config_values['Global']['HTMLOutput'])) {
@@ -355,16 +374,19 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
             } else {
                 $rsnr++;
             };
-            if (strlen($rsnr) <= 1)
+            if (strlen($rsnr) <= 1) {
                 $rsnr = 0 . $rsnr;
+            }
             $id = $idx . $rsnr;
-            $htmlItems = array('item' => $item,
+            $htmlItems = [
+                'item' => $item,
                 'URL' => $feedLink,
                 'feedName' => $feedName,
                 'alt' => $alt,
                 'torHash' => $torHash,
                 'matched' => $matched,
-                'id' => $id);
+                'id' => $id
+            ];
             array_push($htmlList, $htmlItems);
         }
 
@@ -389,14 +411,15 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     global $config_values, $matched;
 
     $atom = array_change_key_case_ext($atom, ARRAY_KEY_LOWERCASE);
-    if (count($atom['feed']) == 0)
+    if (count($atom['feed']) == 0) {
         return;
+    }
 
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
         show_feed_html($idx);
     }
     $alt = 'alt';
-    $htmlList = array();
+    $htmlList = [];
     $items = array_reverse($atom['feed']['entry']);
     foreach ($items as $item) {
         $item['title'] = simplifyTitle($item['title']);
@@ -409,7 +432,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
             $torHash = get_torHash($cache_file);
             if ($matched != "match" && $matched != 'cachehit' && file_exists($cache_file)) {
                 $matched = 'downloaded';
-                _debug("matched: " . $item['title'] . "\n", 1);
+                twxa_debug("matched downloaded: " . $item['title'] . "\n", 1);
             }
         }
         if (isset($config_values['Global']['HTMLOutput'])) {
@@ -417,17 +440,20 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
                 $rsnr = 1;
             } else {
                 $rsnr ++;
-            };
-            if (strlen($rsnr) <= 1)
+            }
+            if (strlen($rsnr) <= 1) {
                 $rsnr = 0 . $rsnr;
+            }
             $id = $idx . $rsnr;
-            $htmlItems = array('item' => $item,
+            $htmlItems = [
+                'item' => $item,
                 'URL' => $feedLink,
                 'feedName' => $feedName,
                 'alt' => $alt,
                 'torHash' => $torHash,
                 'matched' => $matched,
-                'id' => $id);
+                'id' => $id
+            ];
             array_push($htmlList, $htmlItems);
         }
 
@@ -437,10 +463,10 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
             $alt = 'alt';
         }
     }
-    _debug(print_r($htmlList, true));
+    twxa_debug(print_r($htmlList, true));
     $htmlList = array_reverse($htmlList, true);
     foreach ($htmlList as $item) {
-        show_torrent_html($item[item], $item[URL], $item[feedName], $item[alt], $item[torHash], $item[matched], $item[id]);
+        show_torrent_html($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);
     }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
         close_feed_html($idx, 0);
@@ -470,7 +496,7 @@ function feeds_perform_matching($feeds) {
                 atom_perform_matching($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
                 break;
             default:
-                _debug("Unknown Feed. Feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
+                twxa_debug("Unknown Feed. Feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
                 break;
         }
     }
@@ -486,8 +512,9 @@ function feeds_perform_matching($feeds) {
 
     if (isset($config_values['Global']['HTMLOutput'])) {
         echo('</div>');
-        if (function_exists('finish_rss_list_html'))
+        if (function_exists('finish_rss_list_html')) {
             finish_rss_list_html();
+        }
     }
 }
 
@@ -503,10 +530,8 @@ function load_feeds($feeds, $update = NULL) {
                 parse_one_atom($feed);
                 break;
             default:
-                _debug("Unknown Feed. Feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
+                twxa_debug("Unknown Feed. Feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
                 break;
         }
     }
 }
-
-?>

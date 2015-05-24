@@ -115,24 +115,24 @@ function get_deep_dir($dest, $tor_name) {
         break;
     case 'Title_Season':
           $guess = detectMatch($tor_name, TRUE);
-          if(isset($guess['key']) && isset($guess['episode'])) {
+          if(isset($guess['title']) && isset($guess['episode'])) {
             if(preg_match('/^(\d{1,3})x\d+p?$/', $guess['episode'], $Season)) {
-                $dest = $dest."/".ucwords(strtolower($guess['key']))."/Season ".$Season[1];
+                $dest = $dest."/".ucwords(strtolower($guess['title']))."/Season ".$Season[1];
             } else if(preg_match('/^(\d{4})\d{4}$/', $guess['episode'], $Year)) {
-                $dest = $dest."/".ucwords(strtolower($guess['key']))."/".$Year[1];
+                $dest = $dest."/".ucwords(strtolower($guess['title']))."/".$Year[1];
             } else {
-                $dest = $dest."/".ucwords(strtolower($guess['key']));
+                $dest = $dest."/".ucwords(strtolower($guess['title']));
             }
             break;
           }
-          _debug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
+          twxa_debug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
     case 'Title':
         $guess = detectMatch($tor_name, TRUE);
-        if(isset($guess['key'])) {
-          $dest = $dest."/".ucwords(strtolower($guess['key']));
+        if(isset($guess['title'])) {
+          $dest = $dest."/".ucwords(strtolower($guess['title']));
           break;
         }
-        _debug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
+        twxa_debug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
     case 'Full':
     default:
         $dest = $dest."/".ucwords(strtolower($tor_name));
@@ -190,7 +190,7 @@ function transmission_add_torrent($tor, $dest, $title, $seedRatio) {
             );
       $response = transmission_rpc($request);
       if($response['result'] != 'success') {
-	_debug("Failed setting ratio limit for $title\n");
+	twxa_debug("Failed setting ratio limit for $title\n");
       }
   } 
 
@@ -246,7 +246,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
 	    $link = find_torrent_link($url, $tor);
 	    return client_add_torrent($link, $dest, $title, $feed, $fav, $url);
 	} else {
-	    _debug("No torrent file found on $url. Exiting.\n");
+	    twxa_debug("No torrent file found on $url. Exiting.\n");
 	    if(isset($retried)) $url = $retried;
 	    return "Error: No torrent file found on $url. Might be a gzipped torrent.";
 	}
@@ -254,7 +254,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
 
     if(!$tor) {
       print '<pre>'.print_r($_GET, TRUE).'</pre>';
-      _debug("Couldn't open torrent: $filename \n",-1);
+      twxa_debug("Couldn't open torrent: $filename \n",-1);
       return "Error: Couldn't open torrent: $filename";
     }
   }
@@ -297,18 +297,18 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
       break;
     case 'folder':
       if($magnet) {
-	_debug("Can not save magnet links to a folder\n");
+	twxa_debug("Can not save magnet links to a folder\n");
       } else {
 	$return = folder_add_torrent($tor, $dest, $tor_name);
       }
       break;
     default:
-      _debug("Invalid Torrent Client: ".$config_values['Settings']['Client']."\n",-1);
+      twxa_debug("Invalid Torrent Client: ".$config_values['Settings']['Client']."\n",-1);
       exit(1);
   }
   if($return === 0) {
     add_history($tor_name);
-    _debug("Started: $tor_name in $dest\n",0);
+    twxa_debug("Started: $tor_name in $dest\n",0);
     if(isset($fav)) {
       run_script('favstart', $title);
       if($config_values['Settings']['Email Notifications'] == 1) {
@@ -318,7 +318,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
       }
       if(!$any) {
 	updateFavoriteEpisode($fav, $title);
-        _debug("Updated Favorites");
+        twxa_debug("Updated Favorites\n");
       }
     } else {
         run_script('nonfavstart', $title);
@@ -327,7 +327,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
       file_put_contents("$dest/$tor_name.torrent", $tor);
     return "Success";
   } else {
-    _debug("Failed Starting: $tor_name  Error: $return\n",-1);
+    twxa_debug("Failed Starting: $tor_name  Error: $return\n",-1);
 
     $msg = "torrentwatch-xa tried to start \"$tor_name\". But this failed with the following error:\n\n";
     $msg.= "$return\n";
@@ -383,5 +383,3 @@ function find_torrent_link($url_old, $content) {
 	}
 	return $url;
 }
-
-?>
