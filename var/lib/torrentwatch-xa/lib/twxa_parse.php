@@ -572,10 +572,10 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                         $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = mb_convert_kana($matches[0][1], "a", "UTF-8");
                         $debugMatchOutput = "1. Japanese ## Episode";
                     }
-                    else if(preg_match_all("/\x{7B2C}(\d+)\x{5dfb}/u", $title, $matches, PREG_SET_ORDER)) {
+                    else if(preg_match_all("/(\x{7B2C}|\x{5168})(\d+)\x{5dfb}/u", $title, $matches, PREG_SET_ORDER)) {
                         $detectedMediaType = 4;
                         $numberSequence = 4;
-                        $detectedSeasonBatchEnd = $detectedSeasonBatchStart = mb_convert_kana($matches[0][1], "a", "UTF-8");
+                        $detectedSeasonBatchEnd = $detectedSeasonBatchStart = mb_convert_kana($matches[0][2], "a", "UTF-8");
                         $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = 0;
                         $debugMatchOutput = "1. Japanese ## Print Media Book/Volume";
                     }
@@ -902,7 +902,7 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                 $debugMatchOutput = "2. Volumes ##-##";
             }
             // search for the word Volume, Volumen, Chapter
-            else if(preg_match_all("/(Volumen|Volume|\bVol|\bV\.)[$separators]?(\d+)[$separators]?(Chapitre|Chapter|Chap|\bCh|\bC\.)[$separators]?(\d+)/b/i", $title, $matches, PREG_SET_ORDER)) {
+            else if(preg_match_all("/(Volumen|Volume|\bVol|\bV\.)[$separators]?(\d+)[$separators]?(Chapitre|Chapter|Chap|\bCh|\bC\.)[$separators]?(\d+)\b/i", $title, $matches, PREG_SET_ORDER)) {
                 //TODO handle Volume
                 $debugMatchOutput = "2. Volume ##, Chapter ##";
             }
@@ -1005,6 +1005,12 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                     $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][1] . $matches[0][2];
                     $debugMatchOutput = "2. isolated YYYY-MM";
                 }
+                else {
+                    // #### is probably part of the title
+                    $detectedSeasonBatchEnd = $detectedSeasonBatchStart = 1; // assume Season 1
+                    $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2];
+                    $debugMatchOutput = "2. title #### - EE";
+                }
             }
             // isolated MM-YYYY
             else if(preg_match_all("/\b(\d{1,2})[-$separators](\d{4})\b/", $title, $matches, PREG_SET_ORDER)) {
@@ -1018,6 +1024,7 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                     $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2] . $matches[0][1];
                     $debugMatchOutput = "2. isolated MM-YYYY";
                 }
+                //TODO handle else
             }
             // (YYYY) - EE
             else if(preg_match_all("/\((\d{4})\)[$separators]?-?[$separators]?(\d{1,3})\b/", $title, $matches, PREG_SET_ORDER)) {
@@ -1026,6 +1033,12 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                     $detectedSeasonBatchEnd = $detectedSeasonBatchStart = $matches[0][1]; // Half date notation and half episode: let Season = YYYY
                     $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2];
                     $debugMatchOutput = "2. (YYYY) - EE";
+                }
+                else {
+                    // #### is probably part of the title
+                    $detectedSeasonBatchEnd = $detectedSeasonBatchStart = 1; // assume Season 1
+                    $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2];
+                    $debugMatchOutput = "2. title (####) - EE";
                 }
             }
             // isolated No.##-No.##
@@ -1205,7 +1218,7 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                 $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2] . $matches[0][3];
                 $debugMatchOutput = "3. Japanese YYYY MM Print Media, # elsewhere";
             }
-            else if(preg_match_all("/(Season|Seas|Se|S)[$separators]?(\d+\.\d|\d+)[$separators]?[\,\-]?[$separators]?(Episode|Epis|Epi|Ep|E|)[$separators]?(\d+\.\d|\d+)/i", $title, $matches, PREG_SET_ORDER)) {
+            else if(preg_match_all("/(Season|Saison|Seizoen|Sezona|Seas\b|\bSe\b|\bS\b)[$separators]?(\d+\.\d|\d+)[$separators]?[\,\-]?[$separators]?(Episode|Epizode|\bEpis\b|\bEpi\b|\bEp\b|\bE\b|Capitulo|)[$separators]?(\d+\.\d|\d+)/i", $title, $matches, PREG_SET_ORDER)) {
                 // search for explicit S##.#E###.#
                 // Example:
                 // S01.5E10.5
@@ -1214,16 +1227,9 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                 // Seas 2, Epis 3
                 // S3 - E6
                 // S2 - 32 (NOTE: passed S1 - ### short-circuit above, so assume Season 2, Episode 32)
-                if(count($matches) > 1) {
-                    // more than one S##.#E###.# found--probably a range
-                    //TODO handle range
-                    $debugMatchOutput = "3. S##.#E###.# range";
-                }
-                else {
-                    $detectedSeasonBatchEnd = $detectedSeasonBatchStart = $matches[0][2];
-                    $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][4];
-                    $debugMatchOutput = "3. S##.#E###.#";
-                }
+                $detectedSeasonBatchEnd = $detectedSeasonBatchStart = $matches[0][2];
+                $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][4];
+                $debugMatchOutput = "3. S##.#E###.#";
             }
             else if(preg_match_all("/(\d{4})\.(\d+\.\d|\d+)[$separators]?[xX][$separators]?(\d+\.\d|\d+)/", $title, $matches, PREG_SET_ORDER) && preg_match("/^[12]+/", $matches[0][1])) {
                 // short-circuit YYYY.SSxEE so that "Doctor.Who.2005.8x10.In" doesn't match later
@@ -1323,6 +1329,7 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                     $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2];
                     $debugMatchOutput = "3. (YYYY) - EE (EEE)";
                 }
+                //TODO handle else
             }
             // (YYYY) - EE
             else if(preg_match_all("/\((\d{4})\)[$separators]?-?[$separators]?(\d{1,3})\b/", $title, $matches, PREG_SET_ORDER)) {
@@ -1332,6 +1339,7 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                     $detectedEpisodeBatchEnd = $detectedEpisodeBatchStart = $matches[0][2];
                     $debugMatchOutput = "3. (YYYY) - EE, # elsewhere";
                 }
+                //TODO handle else
             }
             // SS \b##v#\b (Season ## Episode ## Version #)
             else if(preg_match_all("/\b(\d+)\b[$separators]?\-?[$separators]?\b(\d+)[$separators]?\-?[$separators]?(v|V)(\d{1,2})\b/", $title, $matches, PREG_SET_ORDER)) {
@@ -1350,7 +1358,7 @@ function detectItem($title, $wereQualitiesDetected = false, $separators = '\s\.\
                 $debugMatchOutput = "3. isolated ##v#, # elsewhere";
             }
             // #### EE - EE 
-            else if(preg_match_all("/\b(\d{1,4})[$separators]?\b(\d{1,3})[$separators]?\-[$separators]?(\d{1,3})\b/", $title, $matches, PREG_SET_ORDER)) {
+            else if(preg_match_all("/\b(\d{1,4})[$separators]?\-?[$separators]?\b(\d{1,3})[$separators]?\-[$separators]?(\d{1,3})\b/", $title, $matches, PREG_SET_ORDER)) {
                 if($matches[0][2] < $matches[0][3]) {
                     // could be #### EE - EE
                     if(strlen($matches[0][1]) > 2) {
