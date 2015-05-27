@@ -178,12 +178,6 @@ function read_config_file() {
                 'seedRatio' => '-1',
                 'Name' => 'TokyoTosho.info Anime'
             ],
-            2 => [
-                'Link' => 'http://rss.bt-chat.com/',
-                'Type' => 'RSS',
-                'seedRatio' => '-1',
-                'Name' => 'BT-Chat.com'
-            ],
         ];
         write_config_file();
     }
