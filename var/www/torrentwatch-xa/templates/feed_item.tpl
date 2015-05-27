@@ -98,7 +98,7 @@ else if(substr($debugMatch, 0, 1) + 0 == 3) {
 else {
     $debugMatch = "<font color=\"#cccccc\">" . $debugMatch . "</font>";
 }
-//$showEpisodeNumber = $debugMatch . "&nbsp;&nbsp;&nbsp;" . $showEpisodeNumber;
+$showEpisodeNumber = $debugMatch . "&nbsp;&nbsp;&nbsp;" . $showEpisodeNumber;
 if($guess['episode'] != 'noShow') {
     if($guess['episode'] != 'fullSeason') {
         if($guess['episode'] != '') {

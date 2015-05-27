@@ -28,7 +28,7 @@ NEXT VERSION: 0.1.2 in progress. Will require re-prioritization of TODOs because
 Known Bugs
 ===============
 
-I have found a bug in 0.1.0 that is not too annoying: the "Episodes Only" checkbox in the configuration panel doesn't seem to do anything. This appears to be carried over from TorrentWatch-X, and it may be fixed in 0.1.2.
+I have found a bug in 0.1.0 that is not too annoying: the "Episodes Only" checkbox in the configuration panel doesn't seem to do anything. This appears to be carried over from TorrentWatch-X.
 
 One other small bug carried over from TorrentWatch-X is that the PHP-based Downloading/Downloaded state is incorrect so that Downloaded items end up in the Downloading filter.
 
@@ -37,7 +37,7 @@ And one feature that must be added because the lack of it is very annoying is th
 "One man's bug is another man's feature."
 ---
 
-It's become obvious that there are situations that for a mutually-exclusive design decision that cannot be avoided. For example, the title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
+It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. For example, the title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
 (Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", season 2, episode 3, to further complicate matters.)
 But the engine currently reads it as title = "Holly Stage for" and season 50, episode 3. Why? Because it was determined that the ## - ## pattern much more often means SS - EE.
 
@@ -48,7 +48,7 @@ Tested Platforms
 
 0.1.1 works on my out-of-the-box install of Debian 7.8 x86_64 with its OOB transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
-I do not plan on testing on Debian 8 yet. It will probably work fine.
+I do not plan on testing on Debian 8 yet. It will probably work fine without any changes to torrentwatch-xa.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
