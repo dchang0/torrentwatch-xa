@@ -466,14 +466,14 @@ function episode_info($show, $episode_num, $isShow, $epiInfo) {
     return ob_get_contents();
 }
 
-function show_info($title) {
+function show_info($ti) {
     //Remove soft hyphens
-    $title = str_replace("\xC2\xAD", "", $title);
-    $episode_data = detectMatch($title, true);
+    $ti = str_replace("\xC2\xAD", "", $ti);
+    $episode_data = detectMatch($ti, true);
 
     if ($episode_data === false) {
         $isShow = false;
-        $name = $title;
+        $name = $ti;
         $data = '';
     } else {
         if (preg_match('/\d+x\d+/', $episode_data['episode'])) {

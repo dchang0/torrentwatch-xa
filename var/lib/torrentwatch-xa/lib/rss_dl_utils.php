@@ -132,11 +132,11 @@ function twxa_debug($string, $lvl = -1) {
     }
 }
 
-function add_history($title) {
+function add_history($ti) {
     global $config_values;
     if (file_exists($config_values['Settings']['History']))
         $history = unserialize(file_get_contents($config_values['Settings']['History']));
-    $history[] = array('Title' => $title, 'Date' => date("Y.m.d G:i"));
+    $history[] = array('Title' => $ti, 'Date' => date("Y.m.d G:i"));
     file_put_contents($config_values['Settings']['History'], serialize($history));
 }
 
@@ -165,8 +165,8 @@ function filename_encode($filename) {
 function check_for_torrents($directory, $dest) {
     if ($handle = opendir($directory)) {
         while (false !== ($file = readdir($handle))) {
-            $title = substr($file, 0, strrpos($file, '.') - 1);
-            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $title))
+            $ti = substr($file, 0, strrpos($file, '.') - 1);
+            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $ti))
                 unlink("$directory/$file");
         }
         closedir($handle);

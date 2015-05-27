@@ -14,12 +14,12 @@ function cache_setup() {
     }
 }
 
-function add_cache($title) {
+function add_cache($ti) {
     global $config_values, $test_run;
     if ($test_run)
         return;
     if (isset($config_values['Settings']['Cache Dir'])) {
-        $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($title);
+        $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($ti);
         touch($cache_file);
         return($cache_file);
     }
@@ -59,11 +59,11 @@ function clear_cache() {
  * Returns 0 if there is a hit
  */
 
-function check_cache_episode($title) {
+function check_cache_episode($ti) {
     global $config_values, $matched;
-    $guess = detectMatch($title, TRUE);
+    $guess = detectMatch($ti, TRUE);
     if ($guess == False) {
-        twxa_debug("Unable to guess for $title\n");
+        twxa_debug("Unable to guess for $ti\n");
         return 1;
     }
     if ($handle = opendir($config_values['Settings']['Cache Dir'])) {
@@ -89,13 +89,13 @@ function check_cache_episode($title) {
  * Returns 0 if there is a hit
  */
 
-function check_cache($title) {
+function check_cache($ti) {
     global $config_values, $matched;
     if (isset($config_values['Settings']['Cache Dir'])) {
-        $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($title);
+        $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($ti);
         if (!file_exists($cache_file)) {
             if ($config_values['Settings']['Verify Episode']) {
-                return check_cache_episode($title);
+                return check_cache_episode($ti);
             } else {
                 return 1;
             }

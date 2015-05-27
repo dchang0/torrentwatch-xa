@@ -445,10 +445,10 @@ function del_favorite() {
     }
 }
 
-function updateFavoriteEpisode(&$fav, $title) {
+function updateFavoriteEpisode(&$fav, $ti) {
     global $config_values;
 
-    if (!$guess = detectMatch($title, TRUE))
+    if (!$guess = detectMatch($ti, TRUE))
         return;
 
     if (preg_match('/^((\d+x)?\d+)p$/', $guess['episode'])) {
@@ -486,7 +486,7 @@ function updateFavoriteEpisode(&$fav, $title) {
         $subject = "torrentwatch-xa: got $show $episode, expected $expected";
         MailNotify($msg, $subject);
         $msg = escapeshellarg($msg);
-        run_script('error', $title, $msg);
+        run_script('error', $ti, $msg);
     }
     if (!isset($fav['Season'], $fav['Episode']) || $regs[1] > $fav['Season']) {
         $fav['Season'] = $regs[1];

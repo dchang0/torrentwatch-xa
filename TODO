@@ -4,28 +4,28 @@ Throughout all versions
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
 0.1.2
-- Downloading and Downloaded filters are switched! Downloaded shows torrents in progress and completed ones until next browser refresh; Downloading always shows only completed ones.
+- Downloading and Downloaded filters
+  - are redundant with each other due to progress bar--combine into one filter called Downloads and use color-coding to distinguish downloading from downloaded items
+  - are switched! Downloaded shows torrents in progress and completed ones until next browser refresh; Downloading always shows only completed ones.
+  - fix Downloaded items staying in Downloading filter (possibly by merging the two filters)
+- Transmission filter is redundant with Transmission modal window and Downloading and Downloaded--remove Transmission filter
 - fix Episodes Only config toggle
-- remove all NMT support (only supported OS is currently Debian 7.5)
+- remove all NMT support (only supported OS is currently Debian 7.x)
 - clean up all the undefined variable PHP notices spewing into the web server error_log
 - repair phone.css button bar location so it floats just above bottom edge of screen even when scrolling
 - fix New Favorite Last Downloaded Episode: one input field splits into two but doesn't understand SSxEE notation
 - prepopulate global default seed ratio in New Favorite
 - completely add or completely remove normalizing feature from guess_match() to detectMatch()
 - fix annoying bug where browser thinks Cmd is still depressed after switching to browser using Cmd-Tab on Macs
-- fix titles when added to Favorites via toolbar button so that episode number is not included in title
 - pin the Favorites dialog so that it is easier to manage Favorites in bulk
 - strip season and episode data from title when using Add to Favorites button in toolbar
 - pin the Feeds tab in the Configuration dialog
 - add Feed Title input above each Feed URL
 - add config option "Videos Only" beneath "Episodes Only" to only show items with at least one video quality
-- Downloading and Downloaded filters are redundant with each other due to progress bar--combine into one filter called Downloads and use color-coding to distinguish downloading from downloaded items
-- Transmission filter is redundant with Transmission modal window and Downloading and Downloaded--remove Transmission filter
 - fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
 - fix feed section header numbers so that they match the number of rows after selected filter has been applied
 - if torrent is deleted using contextMenu, the clientButtons delete and trash buttons sometimes don't know about it until the page is refreshed
 - how does <li id="id_###"> get its class overridden for downloading/downloaded items and why does clientID not match id when it happens?
-- fix Downloaded items staying in Downloading filter (possibly by merging the two filters)
 - resolve collision between $torInfo in html.php and torInfo() in tools.php
   - $torInfo has $torInfo['dlStatus'] but torInfo() has status codes
   - fixed typo of $torInfo['clientId'] in html.php

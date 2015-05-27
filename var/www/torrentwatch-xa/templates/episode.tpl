@@ -1,7 +1,7 @@
 <div id="episodeDialog" class="dialog">
     <div class="dialogTitle">
         <a class="toggleDialog button titleClose" href="#"></a>
-        <?=$title?>
+        <?=$ti?>
     </div>
     <div class="dialog_window" id="show_episode">
         <? if($isShow && $epiInfo):?>

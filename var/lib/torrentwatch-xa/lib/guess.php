@@ -3,15 +3,15 @@ require_once('twxa_parse.php');
 
 // This file purposefully over-commented to help with rewrite of season and episode guessing engine
 
-function detectMatch($title, $normalize = FALSE) {
+function detectMatch($ti, $normalize = FALSE) {
     //TODO param $normalize is not really used any more, but keeping it to maintain compatibility
     $episode_guess = '';
 
     // detect qualities
-    $detectQualitiesOutput = detectQualities(simplifyTitle($title));
-    $detectedQualitiesJoined = implode(' ', $detectQualitiesOutput['detectedQualities']);
+    $detectQualitiesOutput = detectQualities(simplifyTitle($ti));
+    $detQualitiesJoined = implode(' ', $detectQualitiesOutput['detectedQualities']);
     // don't use count() on arrays because it returns 1 if not countable; it is enough to know if any quality was detected
-    if(strlen($detectedQualitiesJoined) > 0) {
+    if(strlen($detQualitiesJoined) > 0) {
         $wereQualitiesDetected = true;
     }
     else {
@@ -72,7 +72,7 @@ function detectMatch($title, $normalize = FALSE) {
     //TODO handle "noShow", "singleEpisode", "range", or "fullSeason", etc.
     return [
         'title' => $detectQualitiesOutput['parsedTitle'],
-        'qualities' => $detectedQualitiesJoined,
+        'qualities' => $detQualitiesJoined,
         'episode' => $episode_guess,
         'isVideo' => $wereQualitiesDetected, //TODO replace this with mediaType
         'mediaType' => $detectItemOutput['mediaType'],

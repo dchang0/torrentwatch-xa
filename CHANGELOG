@@ -65,11 +65,10 @@ Functional changes
   - added $numberSequence to handle parallel numbering sequences like Movie 1, Movie 2, Movie 3 alongside Episode 1, Episode 2, Episode 3
   - added $detectedMediaType as groundwork for handling other media types than video
 - removed The Pirate Bay from default feeds as they no longer offer RSS
-- updated BT-Chat in default feeds as they removed category filtering from their RSS feed
+- removed BT-Chat from default feeds as they were shut down
 
 
 Code changes
- 
 - fixed undefined $showEpisodeNumber in feed_item.tpl
 - removed undefined and unused $eta in feed_item.tpl
 - fixed undefined $status
@@ -90,3 +89,18 @@ Code changes
 - changed Full Season $detectedEpisodeBatchEnd = 0 to $detectedEpisodeBatchEnd = '' for Preview episode 0 numbering
 - refactored detectSeasonAndEpisode() to detectItem()
 - added a simple pseudo-unit-tester for the parsing engine called twxa_test_parser.php
+- refactored (renamed) $title to $ti throughout
+- refactored (renamed) $separators to $seps throughout
+- refactored (abbreviated) $detectedSeason... to $detSeas... throughout
+- refactored (abbreviated) $detectedEpisode... to $detEpis... throughout
+- refactored (abbreviated) $detected... to $det... throughout
+- fixed missing mediaType in detectItem() return
+- fixed (changed) $matches[1][] to $matches[0][] in twxa_parse.php
+
+0.1.2
+
+Functional changes
+
+Code changes
+
+

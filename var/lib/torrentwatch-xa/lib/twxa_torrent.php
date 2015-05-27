@@ -12,7 +12,7 @@
  */
 class torrent {
 
-    public $title;
+    public $ti;
     public $key;
     public $data;
     private $lowestSeasonNumber;

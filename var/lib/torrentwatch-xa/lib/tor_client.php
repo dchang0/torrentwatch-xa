@@ -141,18 +141,18 @@ function get_deep_dir($dest, $tor_name) {
     return $dest;
 }
 
-function folder_add_torrent($tor, $dest, $title) {
+function folder_add_torrent($tor, $dest, $ti) {
   global $config_values;
   // remove invalid chars
-  $title = strtr($title, '/', '_');
+  $ti = strtr($ti, '/', '_');
   // add the directory and extension
-  $dest = "$dest/$title.".$config_values['Settings']['Extension'];
+  $dest = "$dest/$ti.".$config_values['Settings']['Extension'];
   // save it
   file_put_contents($dest, $tor);
   return 0;
 }
 
-function transmission_add_torrent($tor, $dest, $title, $seedRatio) {
+function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
   global $config_values;
   // transmission dies with bad folder if it doesn't end in a /
   if(substr($dest, strlen($dest)-1, 1) != '/')
@@ -176,7 +176,7 @@ function transmission_add_torrent($tor, $dest, $title, $seedRatio) {
   $torHash = $response['arguments']['torrent-added']['hashString'];
 
   if(isset($response['result']) AND ($response['result'] == 'success')) {
-    $cache = $config_values['Settings']['Cache Dir'] . "/rss_dl_" . filename_encode($title);
+    $cache = $config_values['Settings']['Cache Dir'] . "/rss_dl_" . filename_encode($ti);
     if($torHash) {
       $handle = fopen("$cache", "w");
       fwrite($handle, $torHash);
@@ -190,7 +190,7 @@ function transmission_add_torrent($tor, $dest, $title, $seedRatio) {
             );
       $response = transmission_rpc($request);
       if($response['result'] != 'success') {
-	twxa_debug("Failed setting ratio limit for $title\n");
+	twxa_debug("Failed setting ratio limit for $ti\n");
       }
   } 
 
@@ -205,7 +205,7 @@ function transmission_add_torrent($tor, $dest, $title, $seedRatio) {
   }
 }
 
-function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL, $retried=false) {
+function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $retried=false) {
   global $config_values, $hit, $twxa_version;
   if(strtolower($fav['Filter']) == "any") $any=1;
   $hit = 1;
@@ -244,7 +244,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
 	if(!$retried) {
 	    //Try to retrieve a .torrent link from the content.
 	    $link = find_torrent_link($url, $tor);
-	    return client_add_torrent($link, $dest, $title, $feed, $fav, $url);
+	    return client_add_torrent($link, $dest, $ti, $feed, $fav, $url);
 	} else {
 	    twxa_debug("No torrent file found on $url. Exiting.\n");
 	    if(isset($retried)) $url = $retried;
@@ -261,7 +261,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
   
   $tor_info = new BDecode("", $tor);
   if(!($tor_name = $tor_info->{'result'}['info']['name'])) {
-    $tor_name = $title;
+    $tor_name = $ti;
   }
 
   if(!isset($dest)) {
@@ -293,7 +293,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
   
   switch($config_values['Settings']['Client']) {
     case 'Transmission':
-      $return = transmission_add_torrent($tor, $dest, $title, _isset($fav, '$seedRatio', $seedRatio));
+      $return = transmission_add_torrent($tor, $dest, $ti, _isset($fav, '$seedRatio', $seedRatio));
       break;
     case 'folder':
       if($magnet) {
@@ -310,18 +310,18 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
     add_history($tor_name);
     twxa_debug("Started: $tor_name in $dest\n",0);
     if(isset($fav)) {
-      run_script('favstart', $title);
+      run_script('favstart', $ti);
       if($config_values['Settings']['Email Notifications'] == 1) {
           $subject = "torrentwatch-xa: $tor_name started downloading.";
           $msg = "torrentwatch-xa started downloading $tor_name";
           MailNotify($msg, $subject);
       }
       if(!$any) {
-	updateFavoriteEpisode($fav, $title);
+	updateFavoriteEpisode($fav, $ti);
         twxa_debug("Updated Favorites\n");
       }
     } else {
-        run_script('nonfavstart', $title);
+        run_script('nonfavstart', $ti);
     }
     if($config_values['Settings']['Save Torrents'])
       file_put_contents("$dest/$tor_name.torrent", $tor);
@@ -334,7 +334,7 @@ function client_add_torrent($filename, $dest, $title, $feed = NULL, &$fav = NULL
 
     $subject = "torrentwatch-xa: Error while trying to start $tor_name.";
     MailNotify($msg, $subject);
-    run_script('error', $title, $msg);
+    run_script('error', $ti, $msg);
     return "Error: $return";
   }
 }

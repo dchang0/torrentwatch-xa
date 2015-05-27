@@ -184,23 +184,23 @@ function check_for_torrent(&$item, $key, $opts) {
         return;
     }
     $rs = $opts['Obj'];
-    $title = strtolower($rs['title']);
+    $ti = strtolower($rs['title']);
     switch (_isset($config_values['Settings'], 'MatchStyle')) {
         case 'simple':
-            $hit = (($item['Filter'] != '' && strpos(strtr($title, " .", "__"), strtr(strtolower($item['Filter']), " .", "__")) === 0) &&
-                    ($item['Not'] == '' OR my_strpos($title, strtolower($item['Not'])) === FALSE) &&
-                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR my_strpos($title, strtolower($item['Quality'])) !== FALSE));
+            $hit = (($item['Filter'] != '' && strpos(strtr($ti, " .", "__"), strtr(strtolower($item['Filter']), " .", "__")) === 0) &&
+                    ($item['Not'] == '' OR my_strpos($ti, strtolower($item['Not'])) === FALSE) &&
+                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR my_strpos($ti, strtolower($item['Quality'])) !== FALSE));
             break;
         case 'glob':
-            $hit = (($item['Filter'] != '' && fnmatch(strtolower($item['Filter']), $title)) &&
-                    ($item['Not'] == '' OR ! fnmatch(strtolower($item['Not']), $title)) &&
-                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR strpos($title, strtolower($item['Quality'])) !== FALSE));
+            $hit = (($item['Filter'] != '' && fnmatch(strtolower($item['Filter']), $ti)) &&
+                    ($item['Not'] == '' OR ! fnmatch(strtolower($item['Not']), $ti)) &&
+                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR strpos($ti, strtolower($item['Quality'])) !== FALSE));
             break;
         case 'regexp':
         default:
-            $hit = (($item['Filter'] != '' && preg_match('/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/', $title)) &&
-                    ($item['Not'] == '' OR ! preg_match('/' . strtolower($item['Not']) . '/', $title)) &&
-                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR preg_match('/' . strtolower($item['Quality']) . '/', $title)));
+            $hit = (($item['Filter'] != '' && preg_match('/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/', $ti)) &&
+                    ($item['Not'] == '' OR ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
+                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
             break;
     }
 
@@ -210,7 +210,7 @@ function check_for_torrent(&$item, $key, $opts) {
     }
 
     if ($hit) {
-        $guess = detectMatch($title, TRUE);
+        $guess = detectMatch($ti, TRUE);
     }
 
     if ($hit && episode_filter($guess, $item['Episodes']) == true) {

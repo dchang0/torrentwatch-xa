@@ -36,7 +36,7 @@ function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $i
         $torInfo['clientId'] = $torHash;
     }
     // add word-breaking flags after each period
-    $title = preg_replace('/\./', '.&shy;', $item['title']);
+    $ti = preg_replace('/\./', '.&shy;', $item['title']);
     // Copy feed cookies to item
     $ulink = get_torrent_link($item);
     if (($pos = strpos($feed, ':COOKIE:')) !== False) {
@@ -78,11 +78,11 @@ function show_feed_html($idx) {
         $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . $idx . ", 0)\">\n";
         $html_out .= "<img height='14' src=\"images/blank.gif\"></a></span></td>\n";
         if (!$config_values['Feeds'][$idx]['Name']) {
-            $title = $config_values['Feeds'][$idx]['Link'];
+            $ti = $config_values['Feeds'][$idx]['Link'];
         } else {
-            $title = $config_values['Feeds'][$idx]['Name'];
+            $ti = $config_values['Feeds'][$idx]['Name'];
         }
-        $html_out .= "<td class='feed_title'><span>$title</span><span class='matches'></span></td>\n";
+        $html_out .= "<td class='feed_title'><span>$ti</span><span class='matches'></span></td>\n";
         $html_out .= "<td class='hide_feed'>\n";
         $html_out .= "<span class=\"hide_feed_right\">\n";
         $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . $idx . ", 0)\">\n";
@@ -95,11 +95,11 @@ function show_feed_html($idx) {
 function show_down_feed($idx) {
     global $html_out, $config_values;
     if (!$config_values['Feeds'][$idx]['Name']) {
-        $title = $config_values['Feeds'][$idx]['Link'];
+        $ti = $config_values['Feeds'][$idx]['Link'];
     } else {
-        $title = $config_values['Feeds'][$idx]['Name'];
+        $ti = $config_values['Feeds'][$idx]['Name'];
     }
-    $html_out .= "<div class=\"errorHeader\">$title is not available.</div>\n";
+    $html_out .= "<div class=\"errorHeader\">$ti is not available.</div>\n";
 }
 
 // Closing the div which contains all the feed items
