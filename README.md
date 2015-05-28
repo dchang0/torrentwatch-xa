@@ -28,9 +28,11 @@ NEXT VERSION: 0.1.2 in progress. Will require re-prioritization of TODOs because
 Known Bugs
 ===============
 
-I have found a bug in 0.1.0 that is not too annoying: the "Episodes Only" checkbox in the configuration panel doesn't seem to do anything. This appears to be carried over from TorrentWatch-X.
+Bugs carried over from TorrentWatch-X:
 
-One other small bug carried over from TorrentWatch-X is that the PHP-based Downloading/Downloaded state is incorrect so that Downloaded items end up in the Downloading filter.
+- "Episodes Only" checkbox in the configuration panel doesn't seem to do anything.
+- PHP-based Downloading/Downloaded (not the Javascript-based) state is incorrect so that Downloaded items end up in the Downloading filter.
+- Javascript can crash page in browser if system coming out of standby/sleep. It's not serious--just reload the page. This is NOT a browser crash, just the page within the browser.
 
 And one feature that must be added because the lack of it is very annoying is the automatic removal of Downloaded and seeded torrents.
 
