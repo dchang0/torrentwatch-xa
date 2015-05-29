@@ -76,7 +76,7 @@ Code changes
 - renamed .torStop to .torPause
 - renamed div.delete to div.torDelete
 - renamed div.trash to div.torTrash
-- added twxa_testMatch.php wrapper to make it easier to diagnose mismatches
+- added twxa_test_parser.php wrapper to make it easier to diagnose mismatches
 - renamed _debug.php() to twxa_debug()
 - added strtolower() for resolution matches so that 1080P becomes 1080p and so on
 - moved <div> tag out of $footer to match its closing </div>
@@ -101,6 +101,9 @@ Code changes
 
 Functional changes
 
+IN PROGRESS
+- fix bug where "Download and seed ratio met" items return to the Downloading filter if browser is refreshed (some PHP code is causing this; the Javascript works fine)
+
 Code changes
 
-
+IN PROGRESS
