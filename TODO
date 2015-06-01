@@ -3,46 +3,58 @@ Throughout all versions
 - refactor when reasonable
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
-0.1.2
-- Downloading and Downloaded filters
-  - are redundant with each other due to progress bar--combine into one filter called Downloads and use color-coding to distinguish downloading from downloaded items
-  - are switched! Downloaded shows torrents in progress and completed ones until next browser refresh; Downloading always shows only completed ones.
-  - fix Downloaded items staying in Downloading filter (possibly by merging the two filters)
-- Transmission filter is redundant with Transmission modal window and Downloading and Downloaded--remove Transmission filter
-- fix Episodes Only config toggle
-- remove all NMT support (only supported OS is currently Debian 7.x)
-- clean up all the undefined variable PHP notices spewing into the web server error_log
-- repair phone.css button bar location so it floats just above bottom edge of screen even when scrolling
-- fix New Favorite Last Downloaded Episode: one input field splits into two but doesn't understand SSxEE notation
-- prepopulate global default seed ratio in New Favorite
-- completely add or completely remove normalizing feature from guess_match() to detectMatch()
-- fix annoying bug where browser thinks Cmd is still depressed after switching to browser using Cmd-Tab on Macs
-- pin the Favorites dialog so that it is easier to manage Favorites in bulk
-- strip season and episode data from title when using Add to Favorites button in toolbar
-- pin the Feeds tab in the Configuration dialog
+Unassigned, Realistic (ordered from easiest to hardest)
+
+- verify the settings and complete their hints in the config panels
+- fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
+- fix Undefined variable: magnet in /var/lib/torrentwatch-xa/lib/tor_client.php on line 218
+- clean up and format log output to /tmp/twlog
+
 - add Feed Title input above each Feed URL
+
+- convert all "template" files into real templates like Smarty, etc. Current .tpl files are really just .php files.
+
+- some rows split the title across two lines, even though the source code shows otherwise (soft hyphens)
+
 - add config option "Videos Only" beneath "Episodes Only" to only show items with at least one video quality
-- fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
-- fix feed section header numbers so that they match the number of rows after selected filter has been applied
-- if torrent is deleted using contextMenu, the clientButtons delete and trash buttons sometimes don't know about it until the page is refreshed
-- how does <li id="id_###"> get its class overridden for downloading/downloaded items and why does clientID not match id when it happens?
-- resolve collision between $torInfo in html.php and torInfo() in tools.php
-  - $torInfo has $torInfo['dlStatus'] but torInfo() has status codes
-  - fixed typo of $torInfo['clientId'] in html.php
-  - removed now-defined but still unused $torInfo['clientId'] in feed_item.tpl
-  - fixed infoDiv's display when $torInfo is not set--now displays if $torInfo['dlStatus'] != ''
 
-0.1.3
-- fix debug console in web UI
-- finish tvDB support (commented out as of initial cloning)
-- add Clear Completed Seeding (Downloaded and Seed Ratio Met) to Torrent config panel and rss_dl.php (keeps Transmission clean after seeding complete)
+- fix New Favorite's Last Downloaded Episode: one input field splits into two but doesn't understand SSxEE notation
+- prepopulate global default seed ratio in New Favorite
+
+- strip season and episode data from title and video Qualities when using Add to Favorites button in toolbar
+  - completely add or completely remove normalizing feature from guess_match() to detectMatch()
+
+- remove Episodes (pattern matching filter) from Favorites config panel, as it no longer makes sense 
+
 - add toggle to config for local/remote Transmission and disable features like Deep Directories and Watch Directory for remote Transmission
+- fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
 
-Unassigned, Realistic
-- check to make sure that new decimal PV numbering system works throughout entire app
-- adding a selected line as a favorite should toggle off the Favorites "heart" button
-- harden the filter input against exploits
-- replace all global variables
+- fix the showFilter() redefinition from line 89 (torrentwatch-xa.js:106) and out-of-scope (:127)  problems found by JSLint 
+
+- add auto-refresh of screen (might already auto-refresh when favorite is matched and starts download)
+- if torrent is deleted using contextMenu, the clientButtons delete and trash buttons sometimes don't know about it until the page is refreshed
+- adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
+
+- repair phone.css button bar location so it floats just above bottom edge of screen even when scrolling
+- how does <li id="id_###"> get its class overridden for downloading/downloaded items and why does clientID not match id when it happens?
+
+- fix debug console in web UI
+
+- make the Favorites panel's Update button not close the panel after updating (same behavior as the Delete button)
+- make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)
+- fix jquery-1.7.1.min.js:4 Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+
+- finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
+  - check to make sure that new decimal PV numbering system works throughout entire app
+  - remove "range" detection logic from detection engine (assume all preg_match_all() calls find just one match)
+  - finish counting batches (Seasons, Volumes, ranges of Episodes, ranges of Chapters, etc.) as "Serialized Items"
+  - fix Episodes Only config toggle
+
+- fix annoying bug where browser thinks Cmd is still depressed after switching to browser using Cmd-Tab on Mac OS X
+
+- finish tvDB support (commented out as of initial cloning of TorrentWatch-X 0.8.9)
+
+- replace all global variables with proper parameter passing
   - $twxa_version
   - $platform
   - $config_values
@@ -56,25 +68,22 @@ Unassigned, Realistic
   - $config_out
   - $curl_stuff (maybe not, since this is a library)
   - $verbosity
-- write test suite and automate tests if possible
+
 - add ability to gunzip torrents coming from some feeds (such as ezRSS.it)
 - make the Interface>Font Size actually affect the entire web UI instead of just the Configuration dialog
 - refresh button in toolbar can trigger Test Hit downloads just like browser refresh
 - separate out the torrents that were direct-downloaded and don't match any favorites from the ones that do match favorites
-- fix pop-up playback controls related to Transmission
 - improve history system so that flushing the feed cache and deleting torrents does not easily fool torrentwatch-xa into thinking matching torrents must be downloaded again
-- if it does download again, honor the seed ratio from the favorite that it matched
-- allow user to mark a torrent as the most recent episode downloaded in that season or in every season
-- sqlite for caching and history
+  - if it does download again, honor the seed ratio from the favorite that it matched
+- allow user to easily mark a torrent as the most recent episode downloaded in that season or in every season
 - delete old episodes that are replaced by REPACK or PROPER
-- remove all uses of global
-- add auto-refresh of screen after auto-stop is implemented (might already auto-refresh when favorite is matched and starts download)
-- some rows split the title across two lines, even though the source code shows otherwise--might be presence of accented characters
+- browser vertical scroll-bar leaves white region if it pops-out over the feed list; must refresh browser to resize and move feed list's right edge to the left
 
-Unassigned, Realistic, Unpopular
-- 
-
-Dream on!
+Dream On! (Highly Unrealistic or Unlikely to Happen)
+- harden the filter input against exploits
+- sqlite for caching and history
+- write test suite and automate tests if possible
+- POSSIBLY combine Downloading and Downloaded filters into one, using color-coding to differentiate between states
 - add ability to select a torrent and report just that item as having a detection bug (requires move away from GitHub Issues)
 - REVAMP EPISODE DETECTION TO USE TORRENT CONTENTS (IF TORRENT CONTAINS ONLY ONE FILE >1MB & <1GB, MUST BE ONE EPISODE), BUT THIS REQUIRES DOWNLOADING EVERY TORRENT FILE IN EVERY FEED
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
