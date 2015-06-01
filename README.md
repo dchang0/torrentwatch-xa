@@ -41,7 +41,7 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 Tested Platforms
 ===============
 
-torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 7.8 x86_64 with its OOB transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 7.8 x86_64 with its out-of-the-box transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
 I do not plan on testing on Debian 8.x yet. It will probably work fine without any changes to torrentwatch-xa.
 
@@ -56,11 +56,9 @@ Prerequisites
 
 The following packages are provided by the official Debian 7.x wheezy repos:
 
-transmission-daemon
-apache2
-php5
-
-They were installed just as they are, out-of-the-box.
+- transmission-daemon
+- apache2
+- php5 (currently PHP 5.4)
 
 Installation
 ===============
@@ -68,31 +66,35 @@ Installation
 Installation is fairly straightforward.
 
 - Start with a Debian 7.x installation. (It can run with none of the tasksel bundles selected, but I typically choose only "SSH Server" and "Standard System Utilities".)
-- sudo apt-get install apache2 php5 transmission-daemon
+- `sudo apt-get install apache2 php5 transmission-daemon`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
-  - sudo apt-get install git
-  - git clone https://github.com/dchang0/torrentwatch-xa.git
+  - `sudo apt-get install git`
+  - `git clone https://github.com/dchang0/torrentwatch-xa.git`
 - Copy/move the folders and their contents to their intended locations:
-  - mv ./torrentwatch-xa/var/www/torrentwatch-xa /var/www
-  - mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib
+  - `mv ./torrentwatch-xa/var/www/torrentwatch-xa /var/www`
+  - `mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
 - Allow apache2 to write to the three cache folders.
-  - chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache
+  - `chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
 - Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
-  - sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d
-  - (optional) chmod 755 /etc/cron.d/torrentwatch-xa-cron
+  - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
+  - (optional) `chmod 755 /etc/cron.d/torrentwatch-xa-cron`
 - Restart apache2
-  - sudo service apache2 restart
-- Open a web browser and visit http://[hostname or IP of your Debian instance]/torrentwatch-xa
+  - `sudo service apache2 restart`
+- Open a web browser and visit `http://[hostname or IP of your Debian instance]/torrentwatch-xa`
 - You may see error messages if apache2 is unable to write to the three cache folders. Correct any such errors.
-- Use the Configure panel to set up the Transmission connection. It may be necessary to restart Transmission to get torrentwatch-xa to connect.
-- You should already see some items from the default feeds. Use the Configure panel to set up the RSS or Atom torrent feeds to your liking.
+- Use the Configure panel to set up the Transmission connection.
+  - It may be necessary to restart Transmission to get torrentwatch-xa to connect.
+    - `sudo service transmission-daemon restart`
+  - It may also be necessary to reconfigure Transmission (not described here) to get it to work.
+- You should already see some items from the default RSS feeds. Use the Configure panel to set up the RSS or Atom torrent feeds to your liking.
 - Use the Favorites panel to set up your automatic downloads.
   - Be aware that your favorites may appear to not work if they are configured to be too stringent a match.
   - For instance, when using the "heart" button in the button bar to add a favorite, it currently (as of 0.1.1) copies over all the video qualities and the season + episode number, making it fail to match the very item used to create the favorite! Edit the favorite to cast a wider net:
-    - Change the Qualities field to All
+    - Change the Qualities field to `All`
     - Remove the season and episode number from the title in the Filter field.
     - Remove the Last Downloaded Episode values if present.
+    - Click the Update button to save the changes to the favorite.
     - Then, empty all caches and refresh the browser to trigger the match and start the download.
 - Wait for some downloads to happen automatically or start some manually.
 - Enjoy your downloaded torrents!
