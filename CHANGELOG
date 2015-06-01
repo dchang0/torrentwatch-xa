@@ -26,6 +26,7 @@ Functional changes
     - rewrote resolution and quality detection
     - rewrote Season and Episode and Date detection
     - temporarily removed REPACK, PROPER, RERIP detection because of anime-style 01v2 and 03v3 repacks
+
 Code changes
 - replaced some quickie php tags like <?php echo key; ?> with proper full <?php print([HTML code]) ?> in global_config.tpl, favorites.tpl, and favorites_info.tpl
 - changed Filter input field from type="text" to type="search" to gain Esc key functionality and removed old magnifying glass icon via CSS
@@ -47,7 +48,7 @@ Functional changes
 - renamed var/www/torrentwatch-xa-web to torrentwatch-xa, which means the URL changes
 - fixed Delete Torrent button; it used to trash the downloaded file
 - moved torrent list container down 6px in phone.css so that the filter bar no longer partially obscures it
-- totally revamped detectResolution() xto detect ###x### ####x### or ####x#### and check it for aspect ratios
+- totally revamped detectResolution() to detect ###x### ####x### or ####x#### and check it for aspect ratios
 - added Enhanced Definition TV resolution 576i and 576p
 - temporarily removed font size setting because it only changes the font size of the Configuration UI
 - added removal of audio codecs before episode detection (AC3 is being seen as an episode number)
@@ -66,7 +67,6 @@ Functional changes
   - added $detectedMediaType as groundwork for handling other media types than video
 - removed The Pirate Bay from default feeds as they no longer offer RSS
 - removed BT-Chat from default feeds as they were shut down
-
 
 Code changes
 - fixed undefined $showEpisodeNumber in feed_item.tpl
@@ -97,13 +97,37 @@ Code changes
 - fixed missing mediaType in detectItem() return
 - fixed (changed) $matches[1][] to $matches[0][] in twxa_parse.php
 
-0.1.2
+0.2.0
 
 Functional changes
+- fixed bug where "Download and seed ratio met" items return to the Downloading filter if browser is refreshed (torrentwatch-xa.js:588)
+- replaced incorrect Start Torrent tor_start_10x10.png icon (had resume icon instead of start)
+- moved Donate button from Paypal's website to local file
+- designed new Move File tor_move_20x20.png and tor_move_10x10.png buttons (seen only in the Transmission filter's button bar)
+- added Auto-Delete Seeded Torrents to automatically delete completely downloaded and seeded torrents from Transmission, leaving behind just the torrent's contents
+- updated Transmission icon with latest official design
+- fixed but temporarily removed Episodes Only toggle from config panel (entire concept of Episodes needs to be reworked now that print media can be faved)
+- removed all NMT and Mac OS X support (only supported OS is currently Debian 7.x)
+- fixed feed section header and filter button match counts so that they obey the selected filter
 
 IN PROGRESS
-- fix bug where "Download and seed ratio met" items return to the Downloading filter if browser is refreshed (some PHP code is causing this; the Javascript works fine)
+- color coding for items in Transmission filter doesn't match the Legend
 
 Code changes
+- cleaned up variable declarations and isset checks in feed_item.tpl
+- fixing missing semicolons and curly braces throughout torrentwatch-xa.js (appears to have fixed browser crashes)
+- commented out Javascript function and its call for changing font size in config panels
+- added missing curly braces in various PHP files
+- cleaned up typos in various places
+- removed redundant logic in Update/Delete button Javascript and prepared for future "Update button pins panel" functionality
+- commented out $oldStatus in torrentwatch-xa.js as it is not used
 
 IN PROGRESS
+- fix 'minutes' is out of scope and similar errors with 'hours' and 'seconds' around torrentwatch-xa.js:511 to :529
+- resolve collision between $torInfo in html.php and torInfo() in tools.php (latter happens only on "move torrent" button click on Transmission filter pane)
+  - remove unused torInfo['status'] (meant to contain Transmission status code) from PHP code, leaving all status updates up to Javascript due to JSON
+  - $torInfo has $torInfo['dlStatus'] but torInfo() has status codes
+  - fixed typo of $torInfo['clientId'] in html.php
+  - removed now-defined but still unused $torInfo['clientId'] in feed_item.tpl
+  - fixed infoDiv's display when $torInfo is not set--now displays if $torInfo['dlStatus'] != ''
+- clean up all the undefined variable PHP notices spewing into the web server error_log, especially from config_lib.php
