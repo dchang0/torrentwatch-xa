@@ -19,7 +19,9 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.0 with the changes listed in CHANGELOG. The brand new season and episode detection engine introduced in 0.1.1 has worked well over the past several months, with few false positives. The Javascript repairs in 0.2.0 were especially useful, fixing the browser crashing for good. The biggest new feature is the Auto-Delete Seeded Torrents that will clear out all the torrents that have downloaded 100% and met the seed ratio. Obviously, it does not delete the downloaded files, just the torrents, to keep the interface clean over time. Sadly, several TV torrent sites were shut down, so there are fewer default RSS feeds included now.
+CURRENT VERSION: I've posted 0.2.0 with the changes listed in CHANGELOG. The brand new season and episode detection engine introduced in 0.1.1 has worked well over the past several months, with few false positives. The Javascript repairs in 0.2.0 were especially useful, fixing the browser crashing for good. The biggest new feature is the Auto-Delete Seeded Torrents that will clear out all the torrents that have downloaded 100% and met the seed ratio. Obviously, it does not delete the downloaded files, just the torrents, to keep the interface clean over time.
+
+Sadly, several TV torrent sites were shut down in the past few months, so there are fewer default RSS feeds included now. You can always find new ones and input them in the Feeds configuration pane yourself; it's just getting to be a bit of a whack-a-mole game to supply three feeds by default.
 
 NEXT VERSION: 0.2.1 in progress, focusing on two big bug fixes. 
 
@@ -31,7 +33,7 @@ Rest assured though that even those these are "big" bugs, torrentwatch-xa just p
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
-Design Decisions
+Design Decisions Explained
 ===============
 
 "One man's bug is another man's feature."
@@ -47,7 +49,7 @@ Tested Platforms
 
 torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 7.8 x86_64 with its out-of-the-box transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
-This has been tested on Debian 8.x and works fine, but I have still not shifted the project's focus to supporting Debian 8.x.
+0.2.0 has been tested on Debian 8.x and works fine, but I have not shifted the project's focus to supporting Debian 8.x yet.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
