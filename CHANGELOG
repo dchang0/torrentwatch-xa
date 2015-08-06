@@ -109,19 +109,26 @@ Functional changes
 - fixed but temporarily removed Episodes Only toggle from config panel (entire concept of Episodes needs to be reworked now that print media can be faved)
 - removed all NMT and Mac OS X support (only supported OS is currently Debian 7.x)
 - fixed feed section header and filter button match counts so that they obey the selected filter
-
-IN PROGRESS
-- color coding for items in Transmission filter doesn't match the Legend
+- added horizontal scrolling capability to History panel for long titles
 
 Code changes
 - cleaned up variable declarations and isset checks in feed_item.tpl
-- fixing missing semicolons and curly braces throughout torrentwatch-xa.js (appears to have fixed browser crashes)
+- fixed missing semicolons and curly braces throughout torrentwatch-xa.js (appears to have fixed browser crashes)
 - commented out Javascript function and its call for changing font size in config panels
 - added missing curly braces in various PHP files
 - cleaned up typos in various places
 - removed redundant logic in Update/Delete button Javascript and prepared for future "Update button pins panel" functionality
 - commented out $oldStatus in torrentwatch-xa.js as it is not used
 
+0.2.1
+
+Functional changes
+IN PROGRESS
+- strip season and episode data from title and video Qualities when using Add to Favorites button in toolbar
+  - completely add or completely remove normalizing feature from guess_match() to detectMatch()
+- color coding for items in Transmission filter doesn't match the Legend
+
+Code changes
 IN PROGRESS
 - fix 'minutes' is out of scope and similar errors with 'hours' and 'seconds' around torrentwatch-xa.js:511 to :529
 - resolve collision between $torInfo in html.php and torInfo() in tools.php (latter happens only on "move torrent" button click on Transmission filter pane)

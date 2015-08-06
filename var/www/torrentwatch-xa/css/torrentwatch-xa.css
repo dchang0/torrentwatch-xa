@@ -1799,7 +1799,7 @@ ul#historyItems {
 
 div#history ul li{
     white-space: nowrap;
-    overflow: hidden;
+    overflow: visible; // was hidden, but this cuts off long titles
     font-size: 0.9em
 }
 

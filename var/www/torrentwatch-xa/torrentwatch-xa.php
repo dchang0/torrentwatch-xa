@@ -19,13 +19,7 @@ require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch thi
 
 global $platform;
 
-$twxa_version[0] = "0.1.1";
-
-$twxa_version[1] = "";
-
-if ($platform == 'NMT') {
-    $twxa_version[1] .= 'NMT - ';
-}
+$twxa_version[0] = "0.2.0";
 
 $twxa_version[1] .= php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
@@ -206,6 +200,10 @@ function parse_options() {
             global $config_values;
             echo $config_values['Settings']['Client'];
             exit;
+        case 'get_autodel':
+            global $config_values;
+            echo $config_values['Settings']['Auto-Del Seeded Torrents'];
+            exit;
         case 'version_check':
             echo version_check();
             exit;
@@ -250,7 +248,7 @@ function parse_options() {
                     exit;
             }
         default:
-            $output = "<script type='text/javascript'>alert('Bad Paramaters passed to " . $_SERVER['PHP_SELF'] . ":  " . $_SERVER['REQUEST_URI'] . "');</script>";
+            $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . $_SERVER['PHP_SELF'] . ":  " . $_SERVER['REQUEST_URI'] . "');</script>";
     }
 
     if (isset($exec)) {
@@ -272,8 +270,8 @@ function display_global_config() {
 
     $hidedonate = $savetorrent = $transmission = "";
     $deepfull = $deeptitle = $deepTitleSeason = $deepoff = $verifyepisode = "";
-    $matchregexp = $matchglob = $matchsimple = $dishidelist = $hdiedonate = $mailonhit = "";
-    $favdefaultall = $onlynewer = $fetchproper = $folderclient = $epionly = $combinefeeds = $require_epi_info = "";
+    $matchregexp = $matchglob = $matchsimple = $dishidelist = $mailonhit = "";
+    $favdefaultall = $onlynewer = $fetchproper = $autodel = $folderclient = $epionly = $combinefeeds = $require_epi_info = "";
 
     switch ($config_values['Settings']['Client']) {
         case 'Transmission':
@@ -327,6 +325,9 @@ function display_global_config() {
     }
     if ($config_values['Settings']['Download Proper'] == 1) {
         $fetchproper = 'checked=1';
+    }
+    if ($config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
+        $autodel = 'checked=1';
     }
     if ($config_values['Settings']['Default Feed All'] == 1) {
         $favdefaultall = 'checked=1';
@@ -467,7 +468,7 @@ function episode_info($show, $episode_num, $isShow, $epiInfo) {
 }
 
 function show_info($ti) {
-    //Remove soft hyphens
+    // remove soft hyphens
     $ti = str_replace("\xC2\xAD", "", $ti);
     $episode_data = detectMatch($ti, true);
 
@@ -536,13 +537,13 @@ function close_html() {
 function check_requirements() {
     if (!(function_exists('json_encode'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No json support found. Please make sure php is compiled with json support.<br>
+            No JSON support found. Please make sure PHP is compiled with JSON support.<br>
 	    In some cases there is a package like php5-json that has to be installed.</div>";
         return 1;
     }
     if (!(function_exists('curl_init'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No curl support found. Please make sure php5-curl is installed.</div>";
+            No CURL support found. Please make sure php5-curl is installed.</div>";
         return 1;
     }
 }
@@ -691,8 +692,7 @@ if ($config_values['Settings']['Hide Donate Button'] != 1) {
 	<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
         <input type="hidden" name="cmd" value="_s-xclick">
         <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----MIIHVwYJKoZIhvcNAQcEoIIHSDCCB0QCAQExggEwMIIBLAIBADCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwDQYJKoZIhvcNAQEBBQAEgYC2ntxNTuyKkMLD/LD1IAJ/5nF5eCf2GDOVrI2GIiXC+ElKD2KdtI80wgXMlh8vtv7INutIGLzLnJwNeeujrhjPdX1ui0usjwR0CIcRLEJu8xHFEXMyPXvMGYEDXgvtt/ywBQrTZHGFHB77c9ooVeWDlwojiUJpnzXO51XHrPalBjELMAkGBSsOAwIaBQAwgdQGCSqGSIb3DQEHATAUBggqhkiG9w0DBwQIu8DjsjmmQ+SAgbAOJDyn2pOZNxLLOpAT87fuhP4/h0IMU+TVptNASmu//otz/T3TOAHtWIsYQ1T0VERx+jO0RgWdifmoIdD/Yj8mP3onyDDphcmROoFJXCRwDvBBRMKjyc2dWvJkOOOHTH4JMyUu4UnVBipGkxAapNYY0R+So2+1uplFAXgDW49rUocKetpYbt7K/84A/o2EM2BZKpZysOIzUsgCqKCONqguyZ1+K/lHCyxII890VSc2D6CCA4cwggODMIIC7KADAgECAgEAMA0GCSqGSIb3DQEBBQUAMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbTAeFw0wNDAyMTMxMDEzMTVaFw0zNTAyMTMxMDEzMTVaMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwUdO3fxEzEtcnI7ZKZL412XvZPugoni7i7D7prCe0AtaHTc97CYgm7NsAtJyxNLixmhLV8pyIEaiHXWAh8fPKW+R017+EmXrr9EaquPmsVvTywAAE1PMNOKqo2kl4Gxiz9zZqIajOm1fZGWcGS0f5JQ2kBqNbvbg2/Za+GJ/qwUCAwEAAaOB7jCB6zAdBgNVHQ4EFgQUlp98u8ZvF71ZP1LXChvsENZklGswgbsGA1UdIwSBszCBsIAUlp98u8ZvF71ZP1LXChvsENZklGuhgZSkgZEwgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tggEAMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEAgV86VpqAWuXvX6Oro4qJ1tYVIT5DgWpE692Ag422H7yRIr/9j/iKG4Thia/Oflx4TdL+IFJBAyPK9v6zZNZtBgPBynXb048hsP16l2vi0k5Q2JKiPDsEfBhGI+HnxLXEaUWAcVfCsQFvd2A1sxRr67ip5y2wwBelUecP3AjJ+YcxggGaMIIBlgIBATCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwCQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTAxODIwNTIyOVowIwYJKoZIhvcNAQkEMRYEFF+pYfIDzIg7wo6CH7keXZoNghN0MA0GCSqGSIb3DQEBAQUABIGARYB8u3qcK14VtWpn6/V/O6L3uzzpl4IR4cweoH+ow/rUay+1/YhIQn69ajD32OJCUr0+J6gS6O/ZeHLNiKLu/jVPsz8uPlmHS1UCoX4kFBagwr/Rxag7bc3F3MFp2jb7N9K/L/+75+FMt+zQhlGB0t3zHNEU0m5an4FMgW2Fojk=-----END PKCS7-----">
-        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-        <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+        <input type="image" src="images/donate-button.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
         </form>
     </div>';
 }

@@ -48,7 +48,6 @@ function transmission_sessionId() {
       $handle = fopen($sessionIdFile, "w");
       fwrite($handle, $ID[1]);
       fclose($handle);
-      if($platform == 'NMT') chmod($sessionIdFile, 0666);
       $sessionId = $ID[1];
     }
   }
@@ -277,7 +276,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
     $old_umask = umask(0);
     if(file_exists($dest))
       unlink($dest);
-    mkdir($dest, 0777, TRUE);
+    mkdir($dest, 0777, TRUE); //TODO fix this--probably better to simply change permissions on existing dir rather than delete and recreate
     umask($old_umask);
   }
   

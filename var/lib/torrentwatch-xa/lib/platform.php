@@ -1,22 +1,15 @@
 <?php
 
-if(file_exists("/etc/init_nmt") || is_dir("/nmt/apps"))
-  $platform = "NMT";
-else if(is_dir("/Library/WebServer"))
-  $platform = "OSX";
-else
-  $platform = "Linux";
+$platform = "Linux";
 
 function platform_initialize() {
-  global $platform;
+    global $platform; //TODO what does this function do?
 }
 
 function platform_getConfigFile() {
-  return platform_get_configCacheDir() . "/torrentwatch-xa.config";
+    return platform_get_configCacheDir() . "/torrentwatch-xa.config";
 }
 
 function platform_getConfigCache() {
-  return platform_get_configCacheDir() . "/torrentwatch-xa-config.cache";
+    return platform_get_configCacheDir() . "/torrentwatch-xa-config.cache";
 }
-
-?>

@@ -11,7 +11,7 @@ function MailNotify($msg, $subject) {
         if (function_exists(dns_get_record) && dns_get_record(gethostname) && dns_get_record(gethostname())) {
             $email->From = "torrentwatch-xa@" . gethostname();
         } else {
-            $email->From = "torrentwatch-xa@nxdomain.org";
+            $email->From = "torrentwatch-xa@nxdomain.org"; //TODO fix this domain
         }
         $email->FromName = "torrentwatch-xa";
         $email->AddAddress("$emailAddress");
@@ -75,7 +75,7 @@ function check_for_cookies($url) {
 
 function torInfo($torHash) {
     global $config_values;
-
+    
     switch ($config_values['Settings']['Client']) {
         case 'Transmission':
             $request = array('arguments' => array('fields' => array('id', 'leftUntilDone', 'hashString',
@@ -95,7 +95,13 @@ function torInfo($torHash) {
                 $dlStatus = "downloading";
             }
             if (!($totalSize)) {
-                return array('dlStatus' => 'old_download'); //TODO fill out the rest of the $torInfo array!
+                return [
+                    //'stats' => '',
+                    //'clientId' => '',
+                    //'status' => '',
+                    //'bytesDone' => '',
+                    'dlStatus' => 'old_download' //TODO check to make sure the other key-values are appropriate to this state
+                ];
             } else {
                 if (!($Downloaded) || !($Uploaded)) {
                     $ratio = 0;
@@ -119,7 +125,6 @@ function torInfo($torHash) {
                 $peersConnected = $response['arguments']['torrents']['0']['peersConnected'];
 
                 // Transmission pre-version-2.4 status codes to post-version-2.4 status codes
-                //TODO convert to constants
                 // -1 = All
                 if ($status == 0) // Stopped
                     $status = 16; // Stopped
@@ -132,7 +137,7 @@ function torInfo($torHash) {
                     $status = 8; // Seeding
                 if ($status == 6) // Seeding
                     $status = 8; // Seeding
-//TODO figure out why this next section is necessary if torrentwatch-xa.js is doing the same job
+
                 if ($status == 1) {
                     $stats = "Waiting to verify";
                 } else if ($status == 2) {

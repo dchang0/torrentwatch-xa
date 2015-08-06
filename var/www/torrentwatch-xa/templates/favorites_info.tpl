@@ -27,7 +27,7 @@
         </div>
         <div class="right">
             <input type="text" class="text" name="not" value="<?php echo $item['Not']; ?>"
-                   title="Don't match titles with these words. You can add more the 1 word, seperated by spaces">
+                   title="Don't match titles with these words. You can add more than one word, separated by spaces">
         </div>
     </div>
     <div class="favorite_savein" id="favorite_savein">
@@ -70,9 +70,9 @@
         </div>
         <div class="right">
             <input type="text" class="seedratio text" name="seedratio" value="<?php echo _isset($item, 'seedRatio'); ?>"
-                   title="Set seedratio where you want your client to stop downloading. (-1 is unlimted)">
-            <label class="lastSeason item"> Last Downloaded Episode:</label>
-            <?php if(isset( $item['Episode']) && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
+                   title="Set seed ratio at which to stop downloading. (-1 = unlimited seeding.)">
+            <label class="lastSeason item">Last Downloaded Episode:</label>
+            <?php if(isset($item['Episode']) && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
             <input class='lastSeason text' type="text" name="season" value="<?php echo $item['Season']; ?>">
             <label class="lastEpisode item">x</label>
             <input class='lastEpisode text' type="text" name="episode" value="<?php echo $item['Episode']; ?>">

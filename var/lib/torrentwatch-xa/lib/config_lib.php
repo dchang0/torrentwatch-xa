@@ -10,11 +10,12 @@ function setup_default_config() {
         }
     }
 
-    if (!isset($config_values['Settings']))
+    if (!isset($config_values['Settings'])) {
         $config_values['Settings'] = [];
+    }
     // Sensible Defaults 
     $baseDir = get_baseDir();
-    _default('Episode Only', '0');
+    _default('Episodes Only', '0');
     _default('Combine Feeds', '0');
     _default('Transmission Login', 'transmission'); //default for Debian's transmission-daemon
     _default('Transmission Password', 'transmission');
@@ -22,11 +23,7 @@ function setup_default_config() {
     _default('Transmission Port', '9091');
     _default('Transmission URI', '/transmission/rpc');
     _default('Watch Dir', '');
-    if ($platform == 'NMT') {
-        _default('Download Dir', '/share/Download');
-    } else {
-        _default('Download Dir', '/var/lib/transmission-daemon/downloads');
-    }
+    _default('Download Dir', '/var/lib/transmission-daemon/downloads');
     _default('Cache Dir', $baseDir . "/rss_cache/");
     _default('TVDB Dir', $baseDir . "/tvdb_cache/");
     _default('Save Torrents', "0");
@@ -35,6 +32,7 @@ function setup_default_config() {
     _default('Verify Episode', "1");
     _default('Only Newer', "1");
     _default('Download Proper', "1");
+    _default('Auto-Del Seeded Torrents', "1");
     _default('Default Feed All', "1");
     _default('Deep Directories', "0");
     _default('Require Episode Info', '0');
@@ -160,10 +158,12 @@ function read_config_file() {
 
     // Create the base arrays if not already
 
-    if (!isset($config_values['Favorites']))
+    if (!isset($config_values['Favorites'])) {
         $config_values['Favorites'] = [];
-    if (!isset($config_values['Hidden']))
+    }
+    if (!isset($config_values['Hidden'])) {
         $config_values['Hidden'] = [];
+    }
     if (!isset($config_values['Feeds'])) {
         $config_values['Feeds'] = [
             0 => [
@@ -214,8 +214,9 @@ function write_config_file() {
 
         function group_callback($group, $key) {
             global $config_values, $config_out;
-            if ($key == 'Global')
+            if ($key == 'Global') {
                 return;
+            }
             $config_out .= "[$key]\n";
             array_walk($config_values[$key], 'key_callback');
             $config_out .= "\n\n";
@@ -245,8 +246,9 @@ function write_config_file() {
     $dir = dirname($config_file);
     if (!is_dir($dir)) {
         twxa_debug("Creating configuration directory\n", 1);
-        if (file_exists($dir))
+        if (file_exists($dir)) {
             unlink($dir);
+        }
         if (!mkdir($dir)) {
             twxa_debug("Unable to create config directory\n", 0);
             return FALSE;
@@ -264,11 +266,7 @@ function write_config_file() {
             flock($fp, LOCK_UN);
             rename($config_file . "_tmp", $config_file);
         }
-        if ($platform == 'NMT') {
-            chmod($config_file, 0666);
-        } else {
-            chmod($config_file, 0600);
-        }
+        chmod($config_file, 0600);
         unlink($config_cache);
     }
     unset($config_out);
@@ -290,7 +288,7 @@ function update_global_config() {
         'Deep Directories' => 'deepdir',
         'Default Seed Ratio' => 'defaultratio',
         'Combine Feeds' => 'combinefeeds',
-        'Episode Only' => 'epionly',
+        'Episodes Only' => 'epionly',
         'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
         'Hide Donate Button' => 'hidedonate',
@@ -298,10 +296,11 @@ function update_global_config() {
         'MatchStyle' => 'matchstyle',
         'Only Newer' => 'onlynewer',
         'Download Proper' => 'fetchproper',
+        'Auto-Del Seeded Torrents' => 'autodel',
         'Default Feed All' => 'favdefaultall',
         'Extension' => 'extension');
 
-    $checkboxs = array('Combine Feeds' => 'combinefeeds',
+    $checkboxes = array('Combine Feeds' => 'combinefeeds',
         'Episodes Only' => 'epionly',
         'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
@@ -310,28 +309,32 @@ function update_global_config() {
         'Save Torrents' => 'savetorrents',
         'Only Newer' => 'onlynewer',
         'Download Proper' => 'fetchproper',
+        'Auto-Del Seeded Torrents' => 'autodel',
         'Default Feed All' => 'favdefaultall',
         'Email Notifications' => 'mailonhit');
 
-    foreach ($input as $key => $data)
-        if (isset($_GET[$data]))
+    foreach ($input as $key => $data) {
+        if (isset($_GET[$data])) {
             $config_values['Settings'][$key] = $_GET[$data];
+        }
+    }
 
-    foreach ($checkboxs as $key => $data)
+    foreach ($checkboxes as $key => $data) {
         $config_values['Settings'][$key] = $_GET[$data];
-
+    }
     return;
 }
 
 function update_favorite() {
     global $test_run;
-    if (!isset($_GET['button']))
+    if (!isset($_GET['button'])) {
         return;
+    }
     switch ($_GET['button']) {
         case 'Add':
         case 'Update':
             $response = add_favorite();
-            $test_run = TRUE;
+            $test_run = TRUE; //TODO what does $test_run = TRUE do?
             break;
         case 'Delete':
             del_favorite();
@@ -360,8 +363,9 @@ function add_hidden($name) {
         $name = strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))));
 
         foreach ($config_values['Favorites'] as $fav) {
-            if ($name == strtolower(strtr($fav['Name'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))
+            if ($name == strtolower(strtr($fav['Name'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " ")))) {
                 return($fav['Name'] . " exists in favorites. Not adding to hide list.");
+            }
         }
 
         if (isset($name)) {
@@ -392,8 +396,9 @@ function add_favorite() {
 
     if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
         foreach ($config_values['Favorites'] as $fav) {
-            if ($_GET['name'] == $fav['Name'])
-                return("Error: \"" . $_GET['name'] . "\" Allready exists in favorites");
+            if ($_GET['name'] == $fav['Name']) {
+                return("Error: \"" . $_GET['name'] . "\" already exists in favorites.");
+            }
         }
     }
 
@@ -403,8 +408,9 @@ function add_favorite() {
         $config_values['Favorites'][]['Name'] = $_GET['name'];
         $idx = end(array_keys($config_values['Favorites']));
         $_GET['idx'] = $idx; // So display_favorite_info() can see it
-    } else
-        return("Error: Bad form data, not added to favorites"); // Bad form data
+    } else {
+        return("Error: Bad form data, not added to favorites");
+    } // Bad form data
 
     $list = array("name" => "Name",
         "filter" => "Filter",
@@ -442,8 +448,9 @@ function del_favorite() {
 function updateFavoriteEpisode(&$fav, $ti) {
     global $config_values;
 
-    if (!$guess = detectMatch($ti, TRUE))
+    if (!$guess = detectMatch($ti, TRUE)) {
         return;
+    }
 
     if (preg_match('/^((\d+x)?\d+)p$/', $guess['episode'])) {
         $guess['episode'] = preg_replace('/^((?:\d+x)?\d+)p$/', '\1', $guess['episode']);
@@ -523,14 +530,16 @@ function update_feedData() {
     global $config_values;
     twxa_debug('updating feed: ' . $idx . '\n');
     if (isset($_GET['idx']) AND isset($config_values['Feeds'][$_GET['idx']])) {
-        if (!($_GET['feed_name']) || !($_GET['feed_link']))
+        if (!($_GET['feed_name']) || !($_GET['feed_link'])) {
             return;
+        }
 
         $old_feedurl = $config_values['Feeds'][$_GET['idx']]['Link'];
 
         foreach ($config_values['Favorites'] as &$favorite) {
-            if ($favorite['Feed'] == $old_feedurl)
+            if ($favorite['Feed'] == $old_feedurl) {
                 $favorite['Feed'] = preg_replace('/ /', '%20', $_GET['feed_link']);
+            }
         }
 
         $config_values['Feeds'][$_GET['idx']]['Name'] = $_GET['feed_name'];

@@ -103,7 +103,7 @@ function episode_filter($item, $filter) {
     if (isset($stop)) {
         $stop = '';
     }
-    list($start, $stop) = explode('-', $filter, 2);
+    list($start, $stop) = explode('-', $filter, 2); //TODO fix PHP Notice:  Undefined offset: 1
     @list($startSeason, $startEpisode) = explode('x', $start, 2);
     if (!isset($stop)) {
         $stop = "9999x9999";
@@ -463,7 +463,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
             $alt = 'alt';
         }
     }
-    twxa_debug(print_r($htmlList, true));
+    //twxa_debug(print_r($htmlList, true)); //TODO dumps lots of output into log
     $htmlList = array_reverse($htmlList, true);
     foreach ($htmlList as $item) {
         show_torrent_html($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);

@@ -1,7 +1,4 @@
 <?php
-
-// Return a formatted html link that will call javascript in a normal browser
-
 function setup_rss_list_html() {
     global $html_out;
     $html_out = "<div id='torrentlist_container'>\n";
@@ -16,18 +13,19 @@ function show_transmission_div() {
         global $html_out;
         $html_out .= "</div>\n";
     }
-
 }
 
 function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $id) {
     global $html_out, $test_run, $config_values;
     $guess = detectMatch($item['title']);
-    if ($config_values['Settings']['Episodes Only'] == 1 && ($guess['episode'] == 'noShow' || !$guess))
+    if ($config_values['Settings']['Episodes Only'] == 1 && ($guess['episode'] == 'noShow' || !$guess)) {
         return;
+    }
 
     if (!$config_values['Settings']['Disable Hide List']) {
-        if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))]))
+        if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))])) {
             return;
+        }
     }
 
     if (($matched == "cachehit" || $matched == "downloaded" || $matched == "match") && $config_values['Settings']['Client'] != 'folder') {
@@ -35,8 +33,8 @@ function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $i
         $torInfo['stats'] = 'Waiting for client data...';
         $torInfo['clientId'] = $torHash;
     }
-    // add word-breaking flags after each period
-    $ti = preg_replace('/\./', '.&shy;', $item['title']);
+    // add word-breaking flags (soft hyphens) after each period
+    $ti = preg_replace('/\./', '.&shy;', $item['title']); //TODO improve passing of $ti into feed_item.tpl
     // Copy feed cookies to item
     $ulink = get_torrent_link($item);
     if (($pos = strpos($feed, ':COOKIE:')) !== False) {
@@ -64,7 +62,7 @@ function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $i
     ob_end_clean();
 }
 
-// The opening of the div which contains all the feeditems(one div per feed)
+// the opening of the div which contains all the feed items (one div per feed)
 function show_feed_html($idx) {
     global $html_out, $config_values;
     if ($config_values['Settings']['Combine Feeds'] == 1) {
@@ -102,8 +100,8 @@ function show_down_feed($idx) {
     $html_out .= "<div class=\"errorHeader\">$ti is not available.</div>\n";
 }
 
-// Closing the div which contains all the feed items
+// closing the div that contains all the feed items
 function close_feed_html() {
-    global $html_out, $config_values;
+    global $html_out;
     $html_out .= '</ul></div>';
 }

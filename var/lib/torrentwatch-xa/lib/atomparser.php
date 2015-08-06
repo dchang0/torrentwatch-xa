@@ -194,7 +194,7 @@
         function fixEncoding($input, $output_encoding)
         {
             return $input;
-            // For some reason this is missing in the php4 in NMT
+            //TODO figure out why below code is bypassed by return $input above
             $encoding = mb_detect_encoding($input);
             switch($encoding) {
                 case 'ASCII':
