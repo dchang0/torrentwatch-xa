@@ -19,11 +19,15 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.1.1 with the changes listed in CHANGELOG. This version has a brand new season and episode detection engine that first counts the number of numbers in the title and uses that to improve pattern matching. This should improve accuracy and performance. One design decision this allows me to make is to give up on titles containing large numbers of numbers because they are too confusing to the parser. This behavior is preferable to getting a false-positive match.
+CURRENT VERSION: I've posted 0.2.0 with the changes listed in CHANGELOG. The brand new season and episode detection engine introduced in 0.1.1 has worked well over the past several months, with few false positives. The Javascript repairs in 0.2.0 were especially useful, fixing the browser crashing for good. The biggest new feature is the Auto-Delete Seeded Torrents that will clear out all the torrents that have downloaded 100% and met the seed ratio. Obviously, it does not delete the downloaded files, just the torrents, to keep the interface clean over time. Sadly, several TV torrent sites were shut down, so there are fewer default RSS feeds included now.
 
-I am sure the new detection engine will introduce its own share of bugs, but it has largely worked well over the past several months in testing.
+NEXT VERSION: 0.2.1 in progress, focusing on two big bug fixes. 
 
-NEXT VERSION: 0.2.0 in progress, with focus on minor changes in features/functionality such as automatic deletion of completely downloaded and seeded torrents. Will require re-prioritization of TODOs because there are so many.
+1) The new season and episode detection engine is missing the "title normalization" functionality that feeds the "Add to Favorites" button. This results in the user having to clean up the title after using Add to Favorites to create a new favorite. Not the end of the world, but still a big bug.
+
+2) Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
+
+Rest assured though that even those these are "big" bugs, torrentwatch-xa just plain works at version 0.2.0 once you get your favorites typed in correctly.
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
@@ -43,7 +47,7 @@ Tested Platforms
 
 torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 7.8 x86_64 with its out-of-the-box transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
-I do not plan on testing on Debian 8.x yet. It will probably work fine without any changes to torrentwatch-xa.
+This has been tested on Debian 8.x and works fine, but I have still not shifted the project's focus to supporting Debian 8.x.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
