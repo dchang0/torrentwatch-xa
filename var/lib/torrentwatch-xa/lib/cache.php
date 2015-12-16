@@ -2,22 +2,25 @@
 
 function cache_setup() {
     global $config_values, $test_run;
-    if ($test_run)
+    if ($test_run) {
         return;
+    }
     if (isset($config_values['Settings']['Cache Dir'])) {
         twxa_debug("Enabling cache in: " . $config_values['Settings']['Cache Dir'] . "\n", 2);
         if (!file_exists($config_values['Settings']['Cache Dir']) ||
                 !is_dir($config_values['Settings']['Cache Dir'])) {
-            if (!(file_exists($config_values['Settings']['Cache Dir'])))
+            if (!file_exists($config_values['Settings']['Cache Dir'])) {
                 mkdir($config_values['Settings']['Cache Dir'], 0777, TRUE);
+            }
         }
     }
 }
 
 function add_cache($ti) {
     global $config_values, $test_run;
-    if ($test_run)
+    if ($test_run) {
         return;
+    }
     if (isset($config_values['Settings']['Cache Dir'])) {
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($ti);
         touch($cache_file);
@@ -68,10 +71,12 @@ function check_cache_episode($ti) {
     }
     if ($handle = opendir($config_values['Settings']['Cache Dir'])) {
         while (false !== ($file = readdir($handle))) {
-            if (!(substr($file, 0, 7) == "rss_dl_"))
+            if (!(substr($file, 0, 7) == "rss_dl_")) {
                 continue;
-            if (!(preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['title']))) == preg_replace('/[. ]/', '_', $guess['title'])))
+            }
+            if (!(preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['title']))) == preg_replace('/[. ]/', '_', $guess['title']))) {
                 continue;
+            }
             $cacheguess = detectMatch(substr($file, 7), TRUE);
             if ($cacheguess != false && $guess['episode'] == $cacheguess['episode']) {
                 twxa_debug("Full Episode Match, ignoring " . $guess['episode'] . "\n", 2); //TODO what does this mean?

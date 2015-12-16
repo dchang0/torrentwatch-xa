@@ -103,7 +103,7 @@ function episode_filter($item, $filter) {
     if (isset($stop)) {
         $stop = '';
     }
-    list($start, $stop) = explode('-', $filter, 2); //TODO fix PHP Notice:  Undefined offset: 1
+    @list($start, $stop) = explode('-', $filter, 2);
     @list($startSeason, $startEpisode) = explode('x', $start, 2);
     if (!isset($stop)) {
         $stop = "9999x9999";
@@ -220,7 +220,7 @@ function check_for_torrent(&$item, $key, $opts) {
             $PROPER = 1;
         }
         if (check_cache($rs['title'])) {
-            if (!$any && _isset($config_values['Settings'], 'Only Newer') == 1) {
+            if ((!isset($any) || !$any) && _isset($config_values['Settings'], 'Only Newer') == 1) { //TODO test !isset($any) || logic
                 if (!empty($guess['episode']) && preg_match('/^(\d+)x(\d+)p?$|^(\d{8})p?$/i', $guess['episode'], $regs)) {
                     if (isset($regs[3]) && preg_match('/^(\d{8})$/', $regs[3]) && $item['Episode'] >= $regs[3]) {
                         twxa_debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1);

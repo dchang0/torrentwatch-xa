@@ -123,13 +123,30 @@ Code changes
 0.2.1
 
 Functional changes
+- stripped season and episode data from title when using Add to Favorites button in toolbar
+- added AVI to video qualities list
+
+Code changes
+- restructured most of huge if...else if...else control structure into switch...case in detectItem(), breaking out code into separate functions (this added some undefined variable PHP notices)
+- added missing braces to if blocks in cache.php
+- removed $platform, $config_values where unused in its scope from config_lib.php
+- removed unused $exec variable and related lines from torrentwatch-xa.php
+- removed $html_out where unused in its scope from torrentwatch-xa.php
+- fixed Undefined offset: 1 on line 24 of torrentwatch-xa.php by changing append to assign
+- suppressed error message Undefined offset: 1 on line 106 of feeds.php
+- fixed Undefined variable: any on line 223 of feeds.php and line 318 of tor_client.php by adding !isset($any) || logic
+- fixed No such file or directory on line 269 of config_lib.php with file_exists() check
+- fixed Undefined variable: response on line 345 of config_lib.php with isset() check
+
+0.2.2
+
+Functional changes
 IN PROGRESS
-- strip season and episode data from title and video Qualities when using Add to Favorites button in toolbar
-  - completely add or completely remove normalizing feature from guess_match() to detectMatch()
-- color coding for items in Transmission filter doesn't match the Legend
+- color coding for items in Transmission filter does not match the Legend
 
 Code changes
 IN PROGRESS
+- continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
 - fix 'minutes' is out of scope and similar errors with 'hours' and 'seconds' around torrentwatch-xa.js:511 to :529
 - resolve collision between $torInfo in html.php and torInfo() in tools.php (latter happens only on "move torrent" button click on Transmission filter pane)
   - remove unused torInfo['status'] (meant to contain Transmission status code) from PHP code, leaving all status updates up to Javascript due to JSON

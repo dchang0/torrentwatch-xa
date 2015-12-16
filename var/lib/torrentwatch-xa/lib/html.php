@@ -16,7 +16,7 @@ function show_transmission_div() {
 }
 
 function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $id) {
-    global $html_out, $test_run, $config_values;
+    global $html_out, $config_values;
     $guess = detectMatch($item['title']);
     if ($config_values['Settings']['Episodes Only'] == 1 && ($guess['episode'] == 'noShow' || !$guess)) {
         return;

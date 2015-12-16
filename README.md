@@ -19,17 +19,19 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.0 with the changes listed in CHANGELOG. The brand new season and episode detection engine introduced in 0.1.1 has worked well over the past several months, with few false positives. The Javascript repairs in 0.2.0 were especially useful, fixing the browser crashing for good. The biggest new feature is the Auto-Delete Seeded Torrents that will clear out all the torrents that have downloaded 100% and met the seed ratio. Obviously, it does not delete the downloaded files, just the torrents, to keep the interface clean over time.
+CURRENT VERSION: I've posted 0.2.1 with the changes listed in CHANGELOG. It took a long time, but I went back in and restructured the gigantic if...else control structures in detectItem() into switch...case control structures. This was necessary to break out as much of the pattern matching into individual functions, which itself was necessary in order to mostly restore the "Add to Favorites" button functionality back to how it was in TorrentWatch-X.
 
-Sadly, several TV torrent sites were shut down in the past few months, so there are fewer default RSS feeds included now. You can always find new ones and input them in the Feeds configuration pane yourself; it's just getting to be a bit of a whack-a-mole game to supply three feeds by default.
+Please note that due to the size and scope of this change, there are certain to be small bugs introduced, but by and large, it is easier to use the Add to Favorites button in 0.2.1 than in 0.2.0. You will notice that you will rarely have to edit the newly-added favorite's Filter setting to get it to start matching items. There are definitely fringe cases that still require some editing of the Filter setting--usually titles with symbols in them like ! - . + and so on. It will take months to discover and correct these fringe cases, so please be patient.
 
-NEXT VERSION: 0.2.1 in progress, focusing on two big bug fixes. 
+0.2.1 is by and large the first version of torrentwatch-xa that has no major bugs and no missing functionality. "It just works" still applies as with 0.2.0.
 
-1) The new season and episode detection engine is missing the "title normalization" functionality that feeds the "Add to Favorites" button. This results in the user having to clean up the title after using Add to Favorites to create a new favorite. Not the end of the world, but still a big bug.
+NEXT VERSION: 0.2.2 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
 
-2) Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
+I MAY tackle one or both of the following large changes:
 
-Rest assured though that even those these are "big" bugs, torrentwatch-xa just plain works at version 0.2.0 once you get your favorites typed in correctly.
+1) Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
+
+2) PHP 5.4 has reached end-of-life, so I must migrate torrentwatch-xa to the recommended PHP 5.6. I will probably switch to Debian 8.x in order to get its out-of-the-box PHP 5.6.x and keep the prerequisites as vanilla as possible.
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
@@ -38,11 +40,13 @@ Design Decisions Explained
 
 "One man's bug is another man's feature."
 
-It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. For example, the title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
+1) It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. For example, the title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
 (Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", season 2, episode 3, to further complicate matters.)
 But the engine currently reads it as title = "Holly Stage for" and season 50, episode 3. Why? Because it was determined that the ## - ## pattern much more often means SS - EE.
 
 Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the Favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
+
+2) If one starts an item downloading from a feed list and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
 
 Tested Platforms
 ===============

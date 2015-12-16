@@ -64,7 +64,7 @@ li#filter_bytext { display: none !important; }
 
 div#torrentlist_container { 
     position: static; 
-    margin-top: 38px; // was 32px
+    margin-top: 38px; /* was 32px */
 }
 
 div#torrentlist_container div.header,

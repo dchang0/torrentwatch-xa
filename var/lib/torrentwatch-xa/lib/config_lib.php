@@ -1,7 +1,7 @@
 <?php
 
 function setup_default_config() {
-    global $config_values, $platform;
+    global $config_values;
 
     function _default($a, $b) {
         global $config_values;
@@ -126,8 +126,7 @@ function read_config_file() {
                 $line = trim(fgets($fp));
                 if ($line && !preg_match("/^$comment/", $line)) {
                     if (preg_match("/^\[/", $line) && preg_match("/\]$/", $line)) {
-                        $line = trim($line, "[");
-                        $line = trim($line, "]");
+                        $line = trim(trim($line, "["), "]");
                         $group = trim($line);
                     } else {
                         $pieces = explode("=", $line, 2);
@@ -195,7 +194,7 @@ function get_client_passwd() {
 }
 
 function write_config_file() {
-    global $config_values, $config_out, $platform;
+    global $config_values, $config_out;
     $config_file = platform_getConfigFile();
     $config_cache = platform_getConfigCache();
 
@@ -227,7 +226,7 @@ function write_config_file() {
     if (!function_exists('key_callback')) {
 
         function key_callback($group, $key, $subkey = NULL) {
-            global $config_values, $config_out;
+            global $config_out;
             if (is_array($group)) {
                 array_walk($group, 'key_callback', $key . '[]');
             } else {
@@ -267,7 +266,9 @@ function write_config_file() {
             rename($config_file . "_tmp", $config_file);
         }
         chmod($config_file, 0600);
-        unlink($config_cache);
+        if (file_exists($config_cache)) {
+            unlink($config_cache);
+        }
     }
     unset($config_out);
 }
@@ -320,7 +321,7 @@ function update_global_config() {
     }
 
     foreach ($checkboxes as $key => $data) {
-        $config_values['Settings'][$key] = $_GET[$data];
+        $config_values['Settings'][$key] = $_GET[$data]; //TODO fix Undefined index notices by figuring out why this line is not preceded by isset($_GET[$data])
     }
     return;
 }
@@ -341,7 +342,12 @@ function update_favorite() {
             break;
     }
     write_config_file();
-    return $response;
+    if(isset($response)) {
+        return $response;
+    }
+    else {
+        return;
+    }
 }
 
 function update_feed() {
@@ -446,8 +452,6 @@ function del_favorite() {
 }
 
 function updateFavoriteEpisode(&$fav, $ti) {
-    global $config_values;
-
     if (!$guess = detectMatch($ti, TRUE)) {
         return;
     }
@@ -479,7 +483,7 @@ function updateFavoriteEpisode(&$fav, $ti) {
         $newSeason = $curSeason + 1;
 
         $msg = "Matched \"$show $episode\" but expected \"$expected\".\n";
-        $msg.= "This usualy means that a double episode is downloaded before this one.\n";
+        $msg.= "This usually means that a double episode is downloaded before this one.\n";
         $msg.= "But it could mean that you missed an episode or that \"$episode\" is a special episode.\n";
         $msg.= "If this is the case you need to reset the \"Last Downloaded Episode\" setting to \"$oldSeason x $oldEpisode\" in the Favorites menu.\n";
         $msg.= "If you don't, the next match wil be \"Season: $curSeason Episode: $newEpisode\" or \"Season $newSeason Episode: 1\".\n";

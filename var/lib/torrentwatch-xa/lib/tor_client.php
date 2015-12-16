@@ -315,7 +315,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
           $msg = "torrentwatch-xa started downloading $tor_name";
           MailNotify($msg, $subject);
       }
-      if(!$any) {
+      if(!isset($any) || !$any) { //TODO test !isset($any) || logic 
 	updateFavoriteEpisode($fav, $ti);
         twxa_debug("Updated Favorites\n");
       }

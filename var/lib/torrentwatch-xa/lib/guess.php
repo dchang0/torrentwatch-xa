@@ -4,7 +4,6 @@ require_once('twxa_parse.php');
 // This file purposefully over-commented to help with rewrite of season and episode guessing engine
 
 function detectMatch($ti, $normalize = FALSE) {
-    //TODO param $normalize is not really used any more, but keeping it to maintain compatibility
     $episode_guess = '';
 
     // detect qualities
@@ -70,8 +69,15 @@ function detectMatch($ti, $normalize = FALSE) {
     }
     //TODO handle PV and other numberSequence values
     //TODO handle "noShow", "singleEpisode", "range", or "fullSeason", etc.
+    if($normalize === true) {
+        // normalized title
+        $title = $detectItemOutput['favoriteTitle'];
+    }
+    else {
+        $title = $detectQualitiesOutput['parsedTitle'];
+    }
     return [
-        'title' => $detectQualitiesOutput['parsedTitle'],
+        'title' => $title,
         'qualities' => $detQualitiesJoined,
         'episode' => $episode_guess,
         'isVideo' => $wereQualitiesDetected, //TODO replace this with mediaType

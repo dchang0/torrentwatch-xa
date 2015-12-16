@@ -19,9 +19,9 @@ require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch thi
 
 global $platform;
 
-$twxa_version[0] = "0.2.0";
+$twxa_version[0] = "0.2.1";
 
-$twxa_version[1] .= php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
+$twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 $test_run = 0;
 
@@ -89,7 +89,7 @@ function parse_options() {
             exit;
         case 'updateFavorite':
             $response = update_favorite();
-            if (preg_match("/^Error:", $response)) {
+            if (preg_match("/^Error:/", $response)) {
                 echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
             }
             break;
@@ -127,7 +127,8 @@ function parse_options() {
                 } else {
                     $_GET['filter'] = trim($tmp['title']);
                 }
-                $_GET['quality'] = $tmp['qualities'];
+                //$_GET['quality'] = $tmp['qualities'];
+                $_GET['quality'] = 'All';
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['savein'] = 'Default';
@@ -208,7 +209,7 @@ function parse_options() {
             echo version_check();
             exit;
         case 'post_bug':
-            global $twxa_version;
+            //global $twxa_version;
             $response = post_bug($_POST['Summary'], $_POST['Name'], $_POST['Email'], $_POST['Priority'], $_POST['Description']);
             echo $response;
             exit;
@@ -251,9 +252,9 @@ function parse_options() {
             $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . $_SERVER['PHP_SELF'] . ":  " . $_SERVER['REQUEST_URI'] . "');</script>";
     }
 
-    if (isset($exec)) {
+    /*if (isset($exec)) {
         exec($exec, $output);
-    }
+    }*/
     if (isset($output)) {
         if (is_array($output)) {
             $output = implode($filler, $output);
@@ -266,7 +267,7 @@ function parse_options() {
 }
 
 function display_global_config() {
-    global $config_values, $html_out;
+    global $config_values;
 
     $hidedonate = $savetorrent = $transmission = "";
     $deepfull = $deeptitle = $deepTitleSeason = $deepoff = $verifyepisode = "";
@@ -350,7 +351,7 @@ function display_global_config() {
 }
 
 function display_favorites_info($item, $key) {
-    global $config_values, $html_out;
+    global $config_values;
     $feed_options = '<option value="none">None</option>';
     $feed_options .= '<option value="all"';
     if (preg_match('/all/i', $item['Feed']) || $item['Name'] == "") {
@@ -373,7 +374,7 @@ function display_favorites_info($item, $key) {
 }
 
 function display_favorites() {
-    global $config_values, $html_out;
+    global $config_values, $html_out; //TODO these are required for this function to work, somehow--figure out how and fix
 
     ob_start();
     require('templates/favorites.tpl');
@@ -529,7 +530,8 @@ function display_clearCache() {
 }
 
 function close_html() {
-    global $html_out, $debug_output, $main_timer;
+    //global $html_out, $debug_output, $main_timer;
+    global $html_out;
     echo $html_out;
     $html_out = "";
 }

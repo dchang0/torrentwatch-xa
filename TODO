@@ -31,7 +31,7 @@ Unassigned, Realistic (ordered from easiest to hardest)
 
 - fix the showFilter() redefinition from line 89 (torrentwatch-xa.js:106) and out-of-scope (:127)  problems found by JSLint 
 
-- add auto-refresh of screen (might already auto-refresh when favorite is matched and starts download)
+- add auto-refresh of list (might already auto-refresh when favorite is matched and starts download)
 - if torrent is deleted using contextMenu, the clientButtons delete and trash buttons sometimes don't know about it until the page is refreshed
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 
