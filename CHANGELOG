@@ -127,7 +127,7 @@ Functional changes
 - added AVI to video qualities list
 
 Code changes
-- restructured most of huge if...else if...else control structure into switch...case in detectItem(), breaking out code into separate functions (this added some undefined variable PHP notices)
+- restructured most of huge if...else if...else control structure into switch...case in detectItem(), breaking out code into separate functions
 - added missing braces to if blocks in cache.php
 - removed $platform, $config_values where unused in its scope from config_lib.php
 - removed unused $exec variable and related lines from torrentwatch-xa.php
