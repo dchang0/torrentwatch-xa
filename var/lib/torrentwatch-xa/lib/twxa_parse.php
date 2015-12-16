@@ -889,6 +889,11 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                     if(is_string($result['matFnd'])) {
                         break;
                     }
+                case (true) :
+                    $result = matchTitle2_47($ti, $seps);
+                    if(is_string($result['matFnd'])) {
+                        break;
+                    }
                 default :
                     $result['matFnd'] = "2_";
             }
@@ -2470,11 +2475,10 @@ function matchTitle2_45($ti, $seps) {
 }
 
 function matchTitle2_46($ti, $seps) {
-    // isolated ###, # elsewhere
+    // isolated - EEE, # elsewhere
     $mat=[];
-    if(preg_match_all("/\b(\d{1,3})\b/", $ti, $mat, \PREG_SET_ORDER)) {
+    if(preg_match_all("/[$seps]?\-[$seps]?(\d{1,3})\b/", $ti, $mat, \PREG_SET_ORDER)) {
         if($mat[0][1] > 0) {
-            // isolated ###, # elsewhere
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -2483,25 +2487,61 @@ function matchTitle2_46($ti, $seps) {
                 'episSt' => $mat[0][1],
                 'episEd' => $mat[0][1],
                 'itemVr' => 1,
-                'favTi' => preg_replace("/[\-$seps]*\b(\d{1,3})\b[$seps]*/", '', $ti),
+                'favTi' => preg_replace("/[$seps]*\-[$seps]?(\d{1,3})\b[$seps]*/", '', $ti),
                 'matFnd' => "2_46-1"
             ];
         }
-/*        else {
-            // isolated ### = 0, # elsewhere
-            //TODO: handle else
+        else {
+            // isolated EEE = 0, # elsewhere
+            // treat as PV 0
+            return [
+                'medTyp' => 1,
+                'numSeq' => 8,
+                'seasSt' => 1,
+                'seasEd' => 1,
+                'episSt' => 0,
+                'episEd' => 0,
+                'itemVr' => 1,
+                'favTi' => preg_replace("/[$seps]*\-[$seps]?(\d{1,3})\b[$seps]*/", '', $ti),
+                'matFnd' => "2_46-2"
+            ];
+        }
+    }
+}
+
+function matchTitle2_47($ti, $seps) {
+    // isolated EEE, # elsewhere
+    $mat=[];
+    if(preg_match_all("/[$seps\-\(\)\[\]#\x{3010}\x{3011}\x{7B2C}](\d+)([$seps\-\(\)\[\]\x{3010}\x{3011}]|$)/u", $ti, $mat, \PREG_SET_ORDER)) {
+        if($mat[0][1] > 0) {
+            // isolated EEE, # elsewhere
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
                 'seasSt' => 1,
                 'seasEd' => 1,
-                'episSt' => $mat[0][2],
-                'episEd' => $mat[0][2],
+                'episSt' => $mat[0][1],
+                'episEd' => $mat[0][1],
                 'itemVr' => 1,
-                'favTi' => preg_replace("/\b(\d{1,3})\b/", '', $ti),
-                'matFnd' => "2_46-2"
+                'favTi' => preg_replace("/[$seps\-\(\)\[\]#\x{3010}\x{3011}\x{7B2C}](\d+)([$seps\-\(\)\[\]\x{3010}\x{3011}]|$)/u", '', $ti),
+                'matFnd' => "2_47-1"
             ];
-        } */
+        }
+        else {
+            // isolated EEE = 0, # elsewhere
+            // treat as PV 0
+            return [
+                'medTyp' => 1,
+                'numSeq' => 8,
+                'seasSt' => 1,
+                'seasEd' => 1,
+                'episSt' => 0,
+                'episEd' => 0,
+                'itemVr' => 1,
+                'favTi' => preg_replace("/[$seps\-\(\)\[\]#\x{3010}\x{3011}\x{7B2C}](\d+)([$seps\-\(\)\[\]\x{3010}\x{3011}]|$)/u", '', $ti),
+                'matFnd' => "2_47-2"
+            ];
+        }
     }
 }
 
