@@ -337,8 +337,6 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // 27th October 2014
     // 14Apr3
     // Serie.A.2014.Day08(26 oct).Cesena.v.Inter.400p
-
-    $result = [];
     
     // decode HTML and URL encoded characters to reduce number of extraneous numerals
     $ti = html_entity_decode($ti, ENT_QUOTES);
@@ -485,17 +483,17 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                                         break;
                                     }
                                 case (true) :
-                                    $result = matchTitle1_1_30_2($ti);
+                                    $result = matchTitle1_1_30_2($ti, $seps);
                                     if(is_string($result['matFnd'])) {
                                         break;
                                     }
                                 case (true) :
-                                    $result = matchTitle1_1_30_3($ti);
+                                    $result = matchTitle1_1_30_3($ti, $seps);
                                     if(is_string($result['matFnd'])) {
                                         break;
                                     }
                                 case (true) :
-                                    $result = matchTitle1_1_30_4($ti);
+                                    $result = matchTitle1_1_30_4($ti, $seps);
                                     if(is_string($result['matFnd'])) {
                                         break;
                                     }
@@ -1066,16 +1064,16 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
         } // end if(!isset($matNums[1]))
 
         // trim off leading zeroes
-        if($result['episEd'] != '') {
+        if(isset($result['episEd']) && $result['episEd'] != '') {
             $result['episEd'] += 0;
         }
-        if($result['episSt'] != '') {
+        if(isset($result['episSt']) && $result['episSt'] != '') {
             $result['episSt'] += 0;
         }
-        if($result['seasEd'] != '') {
+        if(isset($result['seasEd']) && $result['seasEd'] != '') {
             $result['seasEd'] += 0;
         }
-        if($result['seasSt'] != '') {
+        if(isset($result['seasSt']) && $result['seasSt'] != '') {
             $result['seasSt'] +=0;
         }
     }
@@ -1096,6 +1094,34 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                 $result['matFnd'] = "0_";
         }
     } //END if(isset($matNums[0]))
+    
+    if(!isset($result['seasSt'])) {
+        $result['seasSt'] = '';
+    }
+    if(!isset($result['seasEd'])) {
+        $result['seasEd'] = '';
+    }
+    if(!isset($result['episSt'])) {
+        $result['episSt'] = '';
+    }
+    if(!isset($result['episEd'])) {
+        $result['episEd'] = '';
+    }
+    if(!isset($result['medTyp'])) {
+        $result['medTyp'] = '';
+    }
+    if(!isset($result['itemVr'])) {
+        $result['itemVr'] = '';
+    }
+    if(!isset($result['numSeq'])) {
+        $result['numSeq'] = '';
+    }
+    if(!isset($result['favTi'])) {
+        $result['favTi'] = '';
+    }
+    if(!isset($result['matFnd'])) {
+        $result['matFnd'] = '';
+    }
 
     return [ 'detectedSeasonBatchStart' => $result['seasSt'],
         'detectedSeasonBatchEnd' => $result['seasEd'],
@@ -1593,7 +1619,7 @@ function matchTitle1_1_30_1($ti, $seps) {
     }
 }
 
-function matchTitle1_1_30_2($ti) {
+function matchTitle1_1_30_2($ti, $seps) {
     // Japanese ## Episode
     $mat=[];
     if(preg_match_all("/\x{7B2C}(\d+)(\x{8a71}|\x{8bdd})/u", $ti, $mat, \PREG_SET_ORDER)) {
@@ -1611,7 +1637,7 @@ function matchTitle1_1_30_2($ti) {
     }
 }
 
-function matchTitle1_1_30_3($ti) {
+function matchTitle1_1_30_3($ti, $seps) {
     // Japanese ## Print Media Book/Volume
     $mat=[];
     if(preg_match_all("/(\x{7B2C}|\x{5168})(\d+)\x{5dfb}/u", $ti, $mat, \PREG_SET_ORDER)) {
@@ -1629,7 +1655,7 @@ function matchTitle1_1_30_3($ti) {
     }
 }
 
-function matchTitle1_1_30_4($ti) {
+function matchTitle1_1_30_4($ti, $seps) {
     // Japanese ##
     $mat=[];
     if(preg_match_all("/\x{7B2C}(\d+)/u", $ti, $mat, \PREG_SET_ORDER)) {
