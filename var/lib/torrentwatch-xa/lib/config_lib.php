@@ -53,7 +53,7 @@ if (!(function_exists('get_baseDir'))) {
 
     //default function
     function get_baseDir() {
-        return "/var/lib/torrentwatch-xa"; //default, meant for Debian 7.x
+        return "/var/lib/torrentwatch-xa"; //default, meant for Debian 8.x
     }
 
 }
@@ -62,7 +62,7 @@ if (!(function_exists('get_webDir'))) {
 
     //default function
     function get_webDir() {
-        return "/var/www/torrentwatch-xa"; //default, meant for Debian 7.x
+        return "/var/www/html/torrentwatch-xa"; //default, meant for Debian 8.x
     }
 
 }

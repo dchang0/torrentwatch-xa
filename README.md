@@ -5,7 +5,7 @@ torrentwatch-xa
 
 torrentwatch-xa is a fork of Joris Vandalon's TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. It will continue to handle live-action TV episodes with nearly all season + episode notations.
 
-To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 7.x LINUX as the only OS and on Transmission as the only torrent client.
+To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 8.x LINUX as the only OS and on Transmission as the only torrent client.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
@@ -19,19 +19,11 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.1 with the changes listed in CHANGELOG. It took a long time, but I went back in and restructured the gigantic if...else control structures in detectItem() into switch...case control structures. This was necessary to break out as much of the pattern matching into individual functions, which itself was necessary in order to mostly restore the "Add to Favorites" button functionality back to how it was in TorrentWatch-X.
+CURRENT VERSION: I've posted 0.2.2 with the changes listed in CHANGELOG. This version is almost entirely devoted to the upgrade from Debian 7.x and PHP 5.4 to Debian 8.x and PHP 5.6.
 
-Please note that due to the size and scope of this change, there are certain to be small bugs introduced, but by and large, it is easier to use the Add to Favorites button in 0.2.1 than in 0.2.0. You will notice that you will rarely have to edit the newly-added favorite's Filter setting to get it to start matching items. There are definitely fringe cases that still require some editing of the Filter setting--usually titles with symbols in them like ! - . + and so on. It will take months to discover and correct these fringe cases, so please be patient.
+NEXT VERSION: 0.2.3 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
 
-0.2.1 is by and large the first version of torrentwatch-xa that has no major bugs and no missing functionality. "It just works" still applies as with 0.2.0.
-
-NEXT VERSION: 0.2.2 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
-
-I MAY tackle one or both of the following large changes:
-
-1) Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
-
-2) PHP 5.4 has reached end-of-life, so I must migrate torrentwatch-xa to the recommended PHP 5.6. I will probably switch to Debian 8.x in order to get its out-of-the-box PHP 5.6.x and keep the prerequisites as vanilla as possible.
+I MAY tackle the following large change: Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
@@ -51,38 +43,38 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 Tested Platforms
 ===============
 
-torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 7.8 x86_64 with its out-of-the-box transmission-daemon, Apache2, and PHP5.4 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.2 x86_64 with its out-of-the-box transmission-daemon, Apache2.4, and PHP5.6 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
-0.2.0 has been tested on Debian 8.x and works fine, but I have not shifted the project's focus to supporting Debian 8.x yet.
+Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/torrentwatch-xa on Debian 7.x and in /var/www/html/torrentwatch-xa in Debian 8.x. The file /var/lib/torrentwatch-xa/config.php has to be changed to reflect this; the value of get_webDir() must be set to the correct path. Since torrentwatch-xa 0.2.2 targets Debian 8.x, the default settings will be for Debian 8.x.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
 Be aware that I rarely test the GitHub copy of the code; I test using my local copy, and I rarely do wipe-and-reinstall torrentwatch-xa testing. So it is possible that permissions and file ownership differences may break the GitHub copy without my knowing it.
 
-The last wipe-and-reinstall test of the GitHub copy occurred with torrentwatch-xa 0.1.1 on Debian 7.8 x86_64 on 2015-06-01 and was a success.
+The last wipe-and-reinstall test of the GitHub copy occurred with torrentwatch-xa 0.2.2 on Debian 8.2 x86_64 on 2015-12-17 and was a success.
 
 Prerequisites
 ===============
 
-The following packages are provided by the official Debian 7.x wheezy repos:
+The following packages are provided by the official Debian 8.x jessie repos:
 
 - transmission-daemon
-- apache2
-- php5 (currently PHP 5.4)
+- apache2 (currently Apache httpd 2.4.x)
+- php5 (currently PHP 5.6)
 
 Installation
 ===============
 
 Installation is fairly straightforward.
 
-- Start with a Debian 7.x installation. (It can run with none of the tasksel bundles selected, but I typically choose only "SSH Server" and "Standard System Utilities".)
+- Start with a Debian 8.x installation. (It can run with none of the tasksel bundles selected, but I typically choose only "SSH Server" and "Standard System Utilities".)
 - `sudo apt-get install apache2 php5 transmission-daemon`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`
   - `git clone https://github.com/dchang0/torrentwatch-xa.git`
 - Copy/move the folders and their contents to their intended locations:
-  - `sudo mv ./torrentwatch-xa/var/www/torrentwatch-xa /var/www`
+  - `sudo mv ./torrentwatch-xa/var/www/html/torrentwatch-xa /var/www/html`
   - `sudo mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
 - Allow apache2 to write to the three cache folders.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
@@ -100,9 +92,10 @@ Installation is fairly straightforward.
 - You should already see some items from the default RSS feeds. Use the Configure panel to set up the RSS or Atom torrent feeds to your liking.
 - Use the Favorites panel to set up your automatic downloads.
   - Be aware that your favorites may appear to not work if they are configured to be too stringent a match.
-  - For instance, when using the "heart" button in the button bar to add a favorite, it currently (as of 0.1.1) copies over all the video qualities and the season + episode number, making it fail to match the very item used to create the favorite! Edit the favorite to cast a wider net:
+  - For instance, when using the "heart" button in the button bar to add a favorite, it MAY not get the title exactly correct in the newly-created favorite's Filter field, making it fail to match the very item used to create the favorite! Edit the favorite to cast a wider net:
     - Change the Qualities field to `All`
-    - Remove the season and episode number from the title in the Filter field.
+    - Remove the season and episode number from the title in the Filter field if present.
+    - Remove any extraneous characters like trailing spaces, dashes, and symbols from the Filter field if present.
     - Remove the Last Downloaded Episode values if present.
     - Click the Update button to save the changes to the favorite.
     - Then, empty all caches and refresh the browser to trigger the match and start the download.

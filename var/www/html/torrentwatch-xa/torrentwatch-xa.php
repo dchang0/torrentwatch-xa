@@ -19,7 +19,7 @@ require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch thi
 
 global $platform;
 
-$twxa_version[0] = "0.2.1";
+$twxa_version[0] = "0.2.2";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
@@ -150,7 +150,6 @@ function parse_options() {
             if ($response) {
                 echo "$response";
             }
-            //break;
             exit;
         case 'hide':
             $response = add_hidden(ucwords($_GET['hide']));

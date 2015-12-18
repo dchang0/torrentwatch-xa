@@ -140,6 +140,12 @@ Code changes
 
 0.2.2
 
+Code changes
+- moved /var/www/torrentwatch-xa to /var/www/html/torrentwatch-xa to match change from Debian 7.x to Debian 8.x
+  - corrected default get_webDir() corresponding to above move
+
+0.2.3
+
 Functional changes
 IN PROGRESS
 - color coding for items in Transmission filter does not match the Legend

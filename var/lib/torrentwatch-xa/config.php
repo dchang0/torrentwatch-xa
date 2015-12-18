@@ -15,7 +15,7 @@ function platform_get_configCacheDir() {
 
 // torrentwatch-xa web UI installation directory; uncomment and modify to override automatic get_webDir function
 //function get_webDir() {
-//    return "/var/www/torrentwatch-xa";
+//    return "/var/www/html/torrentwatch-xa";
 //}
 
 // Transmission session-id cache file
