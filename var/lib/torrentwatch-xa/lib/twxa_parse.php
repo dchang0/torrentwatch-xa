@@ -1091,7 +1091,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                     break;
                 }
             case (true) :
-                $result = matchTitle0_1($ti, $seps);
+                $result = matchTitle0_2($ti, $seps);
                 if(is_string($result['matFnd'])) {
                     break;
                 }
