@@ -43,15 +43,13 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 Tested Platforms
 ===============
 
-torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.2 x86_64 with its out-of-the-box transmission-daemon, Apache2.4, and PHP5.6 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.x x86_64 with its out-of-the-box transmission-daemon, apache2, and php5 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
 
-Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/torrentwatch-xa on Debian 7.x and in /var/www/html/torrentwatch-xa in Debian 8.x. The file /var/lib/torrentwatch-xa/config.php has to be changed to reflect this; the value of get_webDir() must be set to the correct path. Since torrentwatch-xa 0.2.2 targets Debian 8.x, the default settings will be for Debian 8.x.
+Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. Now, the target is Debian 8.x jessie with PHP 5.6. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/torrentwatch-xa on Debian 7.x and in /var/www/html/torrentwatch-xa in Debian 8.x. The file /var/lib/torrentwatch-xa/config.php has to be changed to reflect this; the value of get_webDir() must be set to the correct path. Since torrentwatch-xa 0.2.2 and later target Debian 8.x, the default settings will be for Debian 8.x.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
 Be aware that I rarely test the GitHub copy of the code; I test using my local copy, and I rarely do wipe-and-reinstall torrentwatch-xa testing. So it is possible that permissions and file ownership differences may break the GitHub copy without my knowing it.
-
-The last wipe-and-reinstall test of the GitHub copy occurred with torrentwatch-xa 0.2.2 on Debian 8.2 x86_64 on 2015-12-17 and was a success.
 
 Prerequisites
 ===============
@@ -59,7 +57,7 @@ Prerequisites
 The following packages are provided by the official Debian 8.x jessie repos:
 
 - transmission-daemon
-- apache2 (currently Apache httpd 2.4.x)
+- apache2 (currently Apache httpd 2.4.10)
 - php5 (currently PHP 5.6)
 
 Installation
