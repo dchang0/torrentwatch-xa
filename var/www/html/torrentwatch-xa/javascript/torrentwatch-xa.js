@@ -197,7 +197,7 @@ $(function () {
             $("#filter_downloaded").removeClass('filter_right');
             $("#filter_transmission").addClass('filter_right');
             $("ul.favorite").css("height", 245);
-            $("li#webui").show();
+            adjustWebUIButton();
             window.client = 'Transmission';
             break;
         }
@@ -891,60 +891,46 @@ $(function () {
         return (w1 - w2);
     }
 
-    function toggleUIElements() {
+    function adjustWebUIButton() {
+        switch (window.client) {
+            case "Transmission" :
+                // shrink/expand/hide/show Web UI button to fit window
+                if ($(window).width() < 545) {
+                    $("li#webui").hide();
+                    $("span#webui").hide();
+                }
+                else if ($(window).width() < 620) {
+                    $("li#webui").show();
+                    $("span#webui").hide();
+                }
+                else {
+                    $("li#webui").show();
+                    $("span#webui").show();
+                }
+                break;
+            case "folder" :
+            default :
+            $("li#webui").hide();
+        }
+    }
+    
+    function adjustUIElements() {
         // NOTE: No need to overdo handling below 640px wide due to phone.css
-        // shrink/expand All
-        /*if ($(window).width() < 650) {
-            $("ul#filterbar_container li#filter_all.tab").width(15);
-        }
-        else {
-            $("ul#filterbar_container li#filter_all.tab").removeAttr("style");
-        }*/
-        // shrink/expand Matching
-        /*if($(window).width() < 650) {
-            $("ul#filterbar_container li#filter_matching").width(70);
-        }
-        else {
-            //$("ul#filterbar_container li#filter_matching").removeAttr("style");
-        }*/
         // shrink/expand Downloading
         if ($(window).width() < 650) {
-            //$("ul#filterbar_container li#filter_downloading").width(85);
             $("ul#filterbar_container li#filter_downloading.tab").hide();
         }
         else {
-            //$("ul#filterbar_container li#filter_downloading").removeAttr("style");
             $("ul#filterbar_container li#filter_downloading.tab").show();
         }
         // shrink/expand Downloaded
         if ($(window).width() < 650) {
-            //$("ul#filterbar_container li#filter_downloaded").width(85);
             $("ul#filterbar_container li#filter_downloaded.tab").hide();
         }
         else {
-            //$("ul#filterbar_container li#filter_downloaded").removeAttr("style");
             $("ul#filterbar_container li#filter_downloaded.tab").show();
         }
-        // hide/show Rates
-        /*if ($(window).width() < 545) {
-            $("li#rates").hide();
-        }
-        else {
-            $("li#rates").show();
-        }*/
-        // shrink/expand/hide/show Web UI
-        if ($(window).width() < 545) {
-            $("li#webui").hide();
-            $("span#webui").hide();
-        }
-        else if ($(window).width() < 620) {
-            $("li#webui").show();
-            $("span#webui").hide();
-        }
-        else {
-            $("li#webui").show();
-            $("span#webui").show();
-        }
+        adjustWebUIButton();
         // hide/show Filter field
         if ($(window).width() < 870) {
             $("li#filter_bytext").hide();
@@ -955,12 +941,12 @@ $(function () {
     }
 
     $(document).ready(function () {
-        toggleUIElements();
+        adjustUIElements();
         var supportsOrientationChange = "onorientationchange" in window,
                 orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
         window.addEventListener(orientationEvent, toggleClientButtons, false);
         window.onresize = function (event) {
-            toggleUIElements();
+            adjustUIElements();
         };
         var waitForDynData = setInterval(function () {
             if ($('#dynamicdata').length) {
@@ -1253,7 +1239,7 @@ $(function () {
     };
     $.fn.initForm = function () {
         this.submit(function (e) {
-            e.stopImmediatePropogation();
+            e.stopImmediatePropagation();
             $.submitForm(this);
             return false;
         });
