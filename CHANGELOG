@@ -147,8 +147,22 @@ Code changes
 0.2.3
 
 Functional changes
+- consolidated and improved color coding in Feed List, Transmission List, and Legend
+- improved Legend verbiage
+- added back Transmission label to Web UI button
+- added hide/show or shrink/expand UI elements depending on browser window width (does not apply to when phone.css and tablet.css are used)
+- shortened text in footer for narrow screens
+- lightened tints of alternating list rows
+- removed cutesy icons except Transmission's from main button bar and squared off each button's corners
+
+Code changes
+- removed all code related to the unused "Report Bug" feature that was cloned from TorrentWatch-X
+
+0.2.4
+
+Functional changes
 IN PROGRESS
-- color coding for items in Transmission filter does not match the Legend
+- re-style all CSS following Android Material Design principles
 
 Code changes
 IN PROGRESS

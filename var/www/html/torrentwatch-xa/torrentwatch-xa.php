@@ -19,7 +19,7 @@ require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch thi
 
 global $platform;
 
-$twxa_version[0] = "0.2.2";
+$twxa_version[0] = "0.2.3";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
@@ -207,11 +207,6 @@ function parse_options() {
         case 'version_check':
             echo version_check();
             exit;
-        case 'post_bug':
-            //global $twxa_version;
-            $response = post_bug($_POST['Summary'], $_POST['Name'], $_POST['Email'], $_POST['Priority'], $_POST['Description']);
-            echo $response;
-            exit;
         case 'get_dialog_data':
             switch ($_GET['get_dialog_data']) {
                 case '#favorites':
@@ -232,9 +227,6 @@ function parse_options() {
                 case '#show_legend':
                     display_legend();
                     exit;
-                case '#report_bug':
-                    report_bug();
-                    exit;
                 case '#clear_cache':
                     display_clearCache();
                     exit;
@@ -251,9 +243,6 @@ function parse_options() {
             $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . $_SERVER['PHP_SELF'] . ":  " . $_SERVER['REQUEST_URI'] . "');</script>";
     }
 
-    /*if (isset($exec)) {
-        exec($exec, $output);
-    }*/
     if (isset($output)) {
         if (is_array($output)) {
             $output = implode($filler, $output);
@@ -279,9 +268,6 @@ function display_global_config() {
             break;
         case 'folder':
             $folderclient = 'selected="selected"';
-            break;
-        default:
-            // Shouldn't happen
             break;
     }
     if ($config_values['Settings']['Episodes Only'] == 1) {
@@ -313,8 +299,7 @@ function display_global_config() {
             break;
         case 'Title_Season': $deepTitleSeason = 'selected="selected"';
             break;
-        default:$deepoff = 'selected="selected"';
-            break;
+        default: $deepoff = 'selected="selected"';
     }
 
     if ($config_values['Settings']['Verify Episode'] == 1) {
@@ -340,7 +325,6 @@ function display_global_config() {
             break;
         case 'regexp':
         default: $matchregexp = "selected='selected'";
-            break;
     }
 
     // Include the templates and append the results to html_out
@@ -512,14 +496,6 @@ function cacheImage($url) {
     return $img_url;
 }
 
-function report_bug() {
-    global $html_out;
-
-    ob_start();
-    require('templates/report_bug.tpl');
-    return ob_get_contents();
-}
-
 function display_clearCache() {
     global $html_out;
 
@@ -612,25 +588,6 @@ function version_check() {
     }
 }
 
-function post_bug($Summary, $Name, $Email, $Priority, $Description) {
-    global $twxa_version;
-    $Version = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-
-    $post = curl_init();
-    $postOptions[CURLOPT_URL] = ""; //TODO replace this with anonymous-submission GitHub!!!
-    $postOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-    $postOptions[CURLOPT_POSTFIELDS] = "Summary=$Summary&Name=$Name&Email=$Email&Priority=$Priority&Description=$Description&Version=$Version";
-    get_curl_defaults($postOptions);
-    curl_setopt_array($post, $postOptions);
-    $response = curl_exec($post);
-    $http_code = curl_getinfo($post, CURLINFO_HTTP_CODE);
-    curl_close($post);
-    if ($http_code && $http_code != 200) {
-        $response = "Error: $http_code <br> $response";
-    }
-    return "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$response</div>";
-}
-
 function get_tr_location() {
     global $config_values;
     $host = $config_values['Settings']['Transmission Host'];
@@ -666,7 +623,7 @@ if ($config_values['Settings']['Sanitize Hidelist'] != 1) {
 
 $config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";
-$debug_output = "torrentwatch-xa debug:";
+//$debug_output = "torrentwatch-xa debug:";
 
 parse_options();
 if (check_requirements()) {
@@ -685,7 +642,7 @@ feeds_perform_matching($config_values['Feeds']);
 get_client();
 close_html();
 
-$footer = "Thank you for enjoying and supporting <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> torrentwatch-xa $twxa_version[0]!&nbsp;&nbsp;<a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">Click here</a> to report bugs via GitHub Issues.";
+$footer = "Thank you for enjoying <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> $twxa_version[0]!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.";
 echo "<div id=\"footer\">$footer</div>";
 
 if ($config_values['Settings']['Hide Donate Button'] != 1) {

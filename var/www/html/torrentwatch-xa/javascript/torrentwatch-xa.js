@@ -417,7 +417,7 @@ $(function () {
             window.hideProgressBar = null;
         }
     };
-    
+
     updateMatchCounts = function () {
         // update filter and feed headers with total match counts
         var activeTorrents = $('#transmission_list li').length;
@@ -660,7 +660,7 @@ $(function () {
                 return arrayObj.length;
             }
         });
-        
+
         if (!json['arguments']['torrents'].length) {
             window.gotAllData = 1;
         }
@@ -891,22 +891,72 @@ $(function () {
         return (w1 - w2);
     }
 
-    function toggleFilter() {
-        if ($(window).width() < 900) {
+    function toggleUIElements() {
+        // NOTE: No need to overdo handling below 640px wide due to phone.css
+        // shrink/expand All
+        if ($(window).width() < 650) {
+            $("ul#filterbar_container li#filter_all").width(15);
+        }
+        else {
+            $("ul#filterbar_container li#filter_all").width(90);
+        }
+        // shrink/expand Matching
+        if($(window).width() < 650) {
+            $("ul#filterbar_container li#filter_matching").width(70);
+        }
+        else {
+            $("ul#filterbar_container li#filter_matching").width(90);
+        }
+        // shrink/expand Downloading
+        if ($(window).width() < 650) {
+            $("ul#filterbar_container li#filter_downloading").width(85);
+        }
+        else {
+            $("ul#filterbar_container li#filter_downloading").width(90);
+        }
+        // shrink/expand Downloaded
+        if ($(window).width() < 650) {
+            $("ul#filterbar_container li#filter_downloaded").width(85);
+        }
+        else {
+            $("ul#filterbar_container li#filter_downloaded").width(90);
+        }
+        // hide/show Rates
+        if ($(window).width() < 545) {
+            $("li#rates").hide();
+        }
+        else {
+            $("li#rates").show();
+        }
+        // shrink/expand/hide/show Web UI
+        if ($(window).width() < 545) {
+            $("li#webui").hide();
+            $("span#webui").hide();
+        }
+        else if ($(window).width() < 620) {
+            $("li#webui").show();
+            $("span#webui").hide();
+        }
+        else {
+            $("li#webui").show();
+            $("span#webui").show();
+        }
+        // hide/show Filter field
+        if ($(window).width() < 870) {
             $("li#filter_bytext").hide();
         }
-        if ($(window).width() >= 900) {
+        else {
             $("li#filter_bytext").show();
         }
     }
 
     $(document).ready(function () {
-        toggleFilter();
+        toggleUIElements();
         var supportsOrientationChange = "onorientationchange" in window,
                 orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
         window.addEventListener(orientationEvent, toggleClientButtons, false);
         window.onresize = function (event) {
-            toggleFilter();
+            toggleUIElements();
         };
         var waitForDynData = setInterval(function () {
             if ($('#dynamicdata').length) {
@@ -1486,27 +1536,6 @@ $(function () {
                 $("#feed_" + this.id.match(/feed_(\d)/)[1] + " .header").addClass("header_hidden");
             }
         });
-    };
-
-    $.submitBug = function () {
-        $.post('torrentwatch-xa.php?post_bug', $("#report_form").serialize(),
-        function (data) {
-            if (data.match(/\bError:/)) {
-                $('div#errorDialog').slideUp().remove();
-                $(document.body).append(data);
-                setTimeout(function () {
-                    $('div#errorDialog').slideUp();
-                }, 15000);
-            } else {
-                $('.dialog').remove();
-                $('ul#mainoptions li a').removeClass('selected');
-                $(document.body).append('<div id="successDialog" class="dialog_window" style="display: block;">Success: Thank you for this bug report. You will be contacted by mail.</div>');
-                setTimeout(function () {
-                    $('div#successDialog').remove();
-                }, 10000);
-            }
-        });
-        return;
     };
 
     $.toggleConfigTab = function (tab, button) {

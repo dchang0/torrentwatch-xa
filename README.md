@@ -19,9 +19,9 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.2 with the changes listed in CHANGELOG. This version is almost entirely devoted to the upgrade from Debian 7.x and PHP 5.4 to Debian 8.x and PHP 5.6.
+CURRENT VERSION: I've posted 0.2.3 with the changes listed in CHANGELOG. This version focuses on redesigning the color coding scheme in the Feeds List, Transmission List, and Legend so that they are easier to understand and consistent across all lists. This is a non-trivial task! I suspect there are some rarely-seen bugs in the item states that cause incorrect colors to occasionally show up. Also tackled is the way in which the UI elements behave when the browser is resized horizontally.
 
-NEXT VERSION: 0.2.3 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
+NEXT VERSION: 0.2.4 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
 
 I MAY tackle the following large change: Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
 
@@ -43,9 +43,9 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 Tested Platforms
 ===============
 
-torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.x x86_64 with its out-of-the-box transmission-daemon, apache2, and php5 packages. I have tested it using the local transmission-daemon as well as a remote transmission-daemon running on a separate NAS on the same LAN.
+torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.x x86_64 with its out-of-the-box transmission-daemon, apache2, and php5 packages. I have tested it using a remote transmission-daemon running on a separate NAS on the same LAN, so it will certainly work with a transmission-daemon running locally.
 
-Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. Now, the target is Debian 8.x jessie with PHP 5.6. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/torrentwatch-xa on Debian 7.x and in /var/www/html/torrentwatch-xa in Debian 8.x. The file /var/lib/torrentwatch-xa/config.php has to be changed to reflect this; the value of get_webDir() must be set to the correct path. Since torrentwatch-xa 0.2.2 and later target Debian 8.x, the default settings will be for Debian 8.x.
+Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. Starting with 0.2.2, the target is Debian 8.x jessie with PHP 5.6. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/html/torrentwatch-xa on Debian 8.x and in /var/www/html/torrentwatch-xa in Debian 7.x. It is easy to "downgrade" torrentwatch-xa to Debian 7.x--just put the web UI folder in /var/www and change the output of get_webDir() in /var/lib/torrentwatch-xa/config.php by following the instructions therein.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
@@ -108,6 +108,5 @@ The credits may change as features and assets are removed.
 - Original TorrentWatch-X by Joris Vandalon
 - Original Torrentwatch by Erik Bernhardson
 - Original Torrentwatch CSS styling, images and general html tweaking by Keith Solomon http://reciprocity.be/
-- Some of the icons were made by David Vignoni and are from Nuvola-1.0 available under the LGPL http://icon-king.com/
-- Backgrounds and CSS Layout are borrowed from Clutch http://www.clutchbt.com/
+- Backgrounds and CSS Layout were borrowed from the long-defunct Clutch http://www.clutchbt.com/
 - I have stumbled upon some credits embedded in various files that were put there by prior coders and that will not be re-listed here.

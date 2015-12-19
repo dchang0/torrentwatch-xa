@@ -121,8 +121,8 @@ ul.mainoptions li a {
     border: 1px solid #d5d5d5;
     border-right: 1px solid #e3e3e3;
     border-bottom: 1px solid #e3e3e3;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
+    border-radius: 1px;
+    -moz-border-radius: 1px;
 }
 
 ul.mainoptions li a:hover {
@@ -161,22 +161,19 @@ ul.mainoptions li a .icon {
 }
 
 ul.mainoptions li#favoritesMenu a .icon {
-    background: url(../images/favorites.png) no-repeat left center;
+    /*background: url(../images/favorites.png) no-repeat left center;*/
 }
 ul.mainoptions li#config a .icon {
-    background: url(../images/config.png) no-repeat left center;
+    /*background: url(../images/config.png) no-repeat left center;*/
 }
 ul.mainoptions li#view a .icon {
-    background: url(../images/history.png) no-repeat left center;
+    /*background: url(../images/history.png) no-repeat left center;*/
 }
 ul.mainoptions li#empty a .icon { 
-    background: url(../images/cleanup.png) no-repeat left center;
+    /*background: url(../images/cleanup.png) no-repeat left center;*/
 }
 ul.mainoptions li#legend a .icon {
-    background: url(../images/legend.png) no-repeat left center;
-}
-ul.mainoptions li#report a .icon {
-    background: url(../images/report-bug.png) no-repeat left center;
+    /*background: url(../images/legend.png) no-repeat left center;*/
 }
 ul.mainoptions li#webui a .icon {
     background-image: url(../images/webui.png);
@@ -206,7 +203,7 @@ ul#filterbar_container li.tab:hover {
 
 ul#filterbar_container li.selected:hover,
 ul#filterbar_container li.tab {
-    width: 91px;
+    width: 90px;
 }
 
 ul#filterbar_container li {
@@ -252,10 +249,10 @@ ul#filterbar_container li.selected {
     border: 1px solid #777;
     border-right: 1px solid #ccc;
     border-bottom: 1px solid #d3d3d3;
-    border-bottom-left-radius: 2px;
-    -moz-border-radius-bottomleft: 2px;
-    border-bottom-right-radius: 2px;
-    -moz-border-radius-bottomright: 2px;
+    border-bottom-left-radius: 1px;
+    -moz-border-radius-bottomleft: 1px;
+    border-bottom-right-radius: 1px;
+    -moz-border-radius-bottomright: 1px;
     height: 19px;
 }
 
@@ -276,10 +273,10 @@ ul#filterbar_container li#refresh img {
 ul#filterbar_container li.filter_left:hover,
 ul#filterbar_container li.filter_left {
     border-left:			1px solid #bbb;
-    border-top-left-radius: 		5px;
-    -moz-border-radius-topleft: 	5px;
-    border-bottom-left-radius: 		5px;
-    -moz-border-radius-bottomleft: 	5px;
+    border-top-left-radius: 		1px;
+    -moz-border-radius-topleft: 	1px;
+    border-bottom-left-radius: 		1px;
+    -moz-border-radius-bottomleft: 	1px;
 }
  
 ul#filterbar_container li.filter_left:hover,
@@ -288,10 +285,10 @@ ul#filterbar_container li.filter_left.selected {
 }
 
 ul#filterbar_container li.filter_right {
-    border-top-right-radius:		5px;
-    -moz-border-radius-topright: 	5px;
-    border-bottom-right-radius:		5px;
-    -moz-border-radius-bottomright:	5px;
+    border-top-right-radius:		1px;
+    -moz-border-radius-topright: 	1px;
+    border-bottom-right-radius:		1px;
+    -moz-border-radius-bottomright:	1px;
 }
 
 ul#filterbar_container li a {
@@ -344,8 +341,8 @@ input#filter_search_input {
     height: 17px;
     width: 200px;
     border: 1px solid #5D80A1;
-    border-radius: 10px;
-    -moz-border-radius: 10px;
+    border-radius: 2px;
+    -moz-border-radius: 2px;
     /* background: #FFF url('../images/filter_icon.png') left no-repeat;
     padding: 1px 2px 2px 20px; */
     padding: 1px 2px 2px 1px;
@@ -553,7 +550,8 @@ div#torrentlist_container div.header {
     font-size: 14px;
     padding-bottom: 3px;
     text-align: center;
-    background: #C1E0C1;
+    /*background: #C1E0C1;*/
+    background: #D1F0D1;
 }
 
 div.transmission #waiting {
@@ -597,7 +595,8 @@ ul#transmission_list td.torrent_name {
 }
 
 #torrentlist_container li.torrent.alt {
-    background-color: #F0F1F2;
+    /*background-color: #F0F1F2;*/
+    background-color: #fcfefd;
 }
 
 #torrentlist_container li.torrent:hover,
@@ -617,20 +616,25 @@ li.torrent.hidden_bytext {
     display: none;
 }
 
+/* Paused */
+div#show_legend li.legend.paused,
 ul#transmission_list li.torrent.paused .tr_identifier {
     background-color: #FBBFBF;
 }
 
+/* Downloading */
 ul#transmission_list li.torrent.downloading .tr_identifier {
-    background-color: #E9CFFF;
+    background-color: #c1e0c1;
 }
 
+/* Verifying */
 ul#transmission_list li.torrent.verifying .tr_identifier {
-    background-color: #FFFFBB;
+    background-color: #d8a8d8;
 }
 
+/* Waiting */
 ul#transmission_list li.torrent.waiting .tr_identifier {
-    background-color: #C1E0C1;
+    background-color: #ffffbb;
 }
 
 ul.torrentlist td.buttons {
@@ -648,45 +652,63 @@ ul.torrentlist td.tr_identifier {
     width: 5px;
 }
 
+/* No Match */
 div#show_legend li.legend.match_nomatch,
 ul.torrentlist li.match_nomatch td.identifier {
-    background-color: #D6ABAB;
+    /*background-color: #D6ABAB;*/
+    background-color: #f2f2f2;
 }
 
+/* Full Season or Volume */
 div#show_legend li.legend.match_season,
 ul.torrentlist li.match_season td.identifier {
-    background-color: #99CCBB;
+    /*background-color: #99CCBB;*/
+    background-color: #e1eafc;
 }
 
-div#show_legend li.legend.match_old_download,
-ul.torrentlist li.match_old_download td.identifier {
-    background-color: #bbb;
-}
-
-div#show_legend li.legend.match_match,
-ul.torrentlist li.match_match td.identifier {
-    background-color: #FFEFCF;
-}
-
-div#show_legend li.legend.match_old,
-ul.torrentlist li.match_duplicate td.identifier,
-ul.torrentlist li.match_old td.identifier {
-    background-color: #A2A2E8;
-}
-
+/* Match Ready */
 div#show_legend li.legend.match_test,
 ul.torrentlist li.match_test td.identifier {
-    background-color: #C975C9;
+    /*background-color: #C975C9;*/
+    background-color: #ffc166;
 }
 
-div#show_legend li.legend.match_cachehit,
+/* Match Started / Verifying */
+div#show_legend li.legend.match_match,
+ul.torrentlist li.match_match td.identifier {
+    /*background-color: #FFEFCF;*/
+    background-color: #d8a8d8;
+}
+
+/* Waiting */
 div#show_legend li.legend.match_to_check,
+ul.torrentlist li.match_to_check td.identifier {
+    /*background-color: #C1E0C1;*/
+    background-color: #ffffbb;
+}
+
+/* Downloading / Downloading / Seeding */
+div#show_legend li.legend.match_cachehit,
 ul.torrentlist li.match_cachehit td.identifier,
-ul.torrentlist li.match_to_check td.identifier,
 ul.torrentlist li.match_downloaded td.identifier,
 ul.torrentlist li.match_downloading td.identifier,
 ul.torrentlist li.match_transmission td.tr_identifier {
-    background-color: #C1E0C1;
+    /*background-color: #E9CFFF;*/
+    background-color: #c1e0c1;
+}
+
+/* Previously Downloaded */
+div#show_legend li.legend.match_old,
+ul.torrentlist li.match_duplicate td.identifier,
+ul.torrentlist li.match_old td.identifier {
+    /*background-color: #A2A2E8;*/
+    background-color: #a9b4ff;
+}
+
+/* Cached Download */
+div#show_legend li.legend.match_old_download,
+ul.torrentlist li.match_old_download td.identifier {
+    background-color: #bbb;
 }
 
 ul.torrentlist td.torrent_name {
@@ -1706,58 +1728,6 @@ div.favinfo div.buttonContainer {
 
 div#favClose {
     right: 3px;
-}
-
-/**********************************
- *
- * B U G  R E P O R T   D I A L O G
- *
- **********************************/
- 
-div#report_bug {
-    width: 420px;
-    margin-left: -210px;
-    padding-top: 5px;
-    border-top: 1px solid #979797;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#D3D3D3,endColorstr=#F8F8F8);
-    background: -webkit-gradient(linear, left top, left bottom, from(#D3D3D3), to(#F8F8F8));
-    background:	-moz-linear-gradient(top, #D3D3D3, #F8F8F8);
-}
-
-div#report_bug .bugItem {
-    min-height: 22px;
-}
-
-div#report_bug .right {
-    vertical-align: top;
-}
-
-div#report_bug .left {
-    vertical-align: top;
-    width: 100px;
-}
-
-div#bugDialog .dialogTitle {
-    margin-left: -210px;
-    padding-top: 2px;
-    width: 430px;
-}
-
-div#report_bug textarea {
-    resize: vertical;
-    float: right;
-    width: 300px;
-    margin-left: 3px;
-}
-
-div#report_bug select,
-div#report_bug input[type=text] {
-    float: right;
-    width: 300px;
-}
-
-div#report_bug input[type=submit] {
-    height: 25px;
 }
 
 /******************************

@@ -5,6 +5,10 @@ Throughout all versions
 
 Unassigned, Realistic (ordered from easiest to hardest)
 
+- hide Transmission button for narrow screen widths (just like the Filter search input does)
+- hide Transmission total upload/download speeds for narrow screen widths
+- make the filter bar buttons get skinnier rather than wrap around for narrow screen widths
+
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
 - fix Undefined variable: magnet in /var/lib/torrentwatch-xa/lib/tor_client.php on line 218
@@ -59,7 +63,6 @@ Unassigned, Realistic (ordered from easiest to hardest)
   - $platform
   - $config_values
   - $html_out
-  - $debug_output
   - $main_timer
   - $hit
   - $time_start
