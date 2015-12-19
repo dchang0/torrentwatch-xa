@@ -894,40 +894,44 @@ $(function () {
     function toggleUIElements() {
         // NOTE: No need to overdo handling below 640px wide due to phone.css
         // shrink/expand All
-        if ($(window).width() < 650) {
-            $("ul#filterbar_container li.tab#filter_all").width(15);
+        /*if ($(window).width() < 650) {
+            $("ul#filterbar_container li#filter_all.tab").width(15);
         }
         else {
             $("ul#filterbar_container li#filter_all.tab").removeAttr("style");
-        }
+        }*/
         // shrink/expand Matching
-        if($(window).width() < 650) {
+        /*if($(window).width() < 650) {
             $("ul#filterbar_container li#filter_matching").width(70);
         }
         else {
-            $("ul#filterbar_container li#filter_matching").removeAttr("style");
-        }
+            //$("ul#filterbar_container li#filter_matching").removeAttr("style");
+        }*/
         // shrink/expand Downloading
         if ($(window).width() < 650) {
-            $("ul#filterbar_container li#filter_downloading").width(85);
+            //$("ul#filterbar_container li#filter_downloading").width(85);
+            $("ul#filterbar_container li#filter_downloading.tab").hide();
         }
         else {
-            $("ul#filterbar_container li#filter_downloading").removeAttr("style");
+            //$("ul#filterbar_container li#filter_downloading").removeAttr("style");
+            $("ul#filterbar_container li#filter_downloading.tab").show();
         }
         // shrink/expand Downloaded
         if ($(window).width() < 650) {
-            $("ul#filterbar_container li#filter_downloaded").width(85);
+            //$("ul#filterbar_container li#filter_downloaded").width(85);
+            $("ul#filterbar_container li#filter_downloaded.tab").hide();
         }
         else {
-            $("ul#filterbar_container li#filter_downloaded").removeAttr("style");
+            //$("ul#filterbar_container li#filter_downloaded").removeAttr("style");
+            $("ul#filterbar_container li#filter_downloaded.tab").show();
         }
         // hide/show Rates
-        if ($(window).width() < 545) {
+        /*if ($(window).width() < 545) {
             $("li#rates").hide();
         }
         else {
             $("li#rates").show();
-        }
+        }*/
         // shrink/expand/hide/show Web UI
         if ($(window).width() < 545) {
             $("li#webui").hide();

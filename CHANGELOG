@@ -166,6 +166,7 @@ IN PROGRESS
 
 Code changes
 IN PROGRESS
+- fix when Transmission Web UI button is shown after browser reload when window is narrow, but button does not work and should not show
 - continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
 - fix 'minutes' is out of scope and similar errors with 'hours' and 'seconds' around torrentwatch-xa.js:511 to :529
 - resolve collision between $torInfo in html.php and torInfo() in tools.php (latter happens only on "move torrent" button click on Transmission filter pane)
