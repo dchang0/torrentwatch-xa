@@ -78,7 +78,8 @@ Installation is fairly straightforward.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
 - Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
   - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - (optional) `sudo chmod 755 /etc/cron.d/torrentwatch-xa-cron`
+  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root, or it will not run.
+  - (optional) `sudo chmod 644 /etc/cron.d/torrentwatch-xa-cron`
 - Restart apache2
   - `sudo service apache2 restart`
 - Open a web browser and visit `http://[hostname or IP of your Debian instance]/torrentwatch-xa`
