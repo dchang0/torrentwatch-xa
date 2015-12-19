@@ -203,16 +203,15 @@ ul#filterbar_container li.tab:hover {
 
 ul#filterbar_container li.selected:hover,
 ul#filterbar_container li.tab {
-    width: 90px;
+    width: 91px;
 }
 
 ul#filterbar_container li {
     float: left;
     margin-top: 2px;
     padding: 4px 7px 0 7px;
-    border: 1px solid #CACACA;
-    border-top: 1px solid #bAbAbA;
-    border-left: 0;
+    /*border: 1px solid #CACACA;
+    border-top: 1px solid #bAbAbA;*/
     height: 18px;
     text-align: center;
     font-size: 11px;
@@ -221,8 +220,9 @@ ul#filterbar_container li {
     background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#aaa));
     background: -moz-linear-gradient(top, #eee, #aaa);
     border-top: 1px solid #f5f5f5;
-    border-right: 1px solid #999;
+    border-left: 0;
     border-bottom: 1px solid #999;
+    border-right: 1px solid #999;
     color: #111;
     cursor: pointer;
 }

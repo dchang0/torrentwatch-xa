@@ -895,31 +895,31 @@ $(function () {
         // NOTE: No need to overdo handling below 640px wide due to phone.css
         // shrink/expand All
         if ($(window).width() < 650) {
-            $("ul#filterbar_container li#filter_all").width(15);
+            $("ul#filterbar_container li.tab#filter_all").width(15);
         }
         else {
-            $("ul#filterbar_container li#filter_all").width(90);
+            $("ul#filterbar_container li#filter_all.tab").removeAttr("style");
         }
         // shrink/expand Matching
         if($(window).width() < 650) {
             $("ul#filterbar_container li#filter_matching").width(70);
         }
         else {
-            $("ul#filterbar_container li#filter_matching").width(90);
+            $("ul#filterbar_container li#filter_matching").removeAttr("style");
         }
         // shrink/expand Downloading
         if ($(window).width() < 650) {
             $("ul#filterbar_container li#filter_downloading").width(85);
         }
         else {
-            $("ul#filterbar_container li#filter_downloading").width(90);
+            $("ul#filterbar_container li#filter_downloading").removeAttr("style");
         }
         // shrink/expand Downloaded
         if ($(window).width() < 650) {
             $("ul#filterbar_container li#filter_downloaded").width(85);
         }
         else {
-            $("ul#filterbar_container li#filter_downloaded").width(90);
+            $("ul#filterbar_container li#filter_downloaded").removeAttr("style");
         }
         // hide/show Rates
         if ($(window).width() < 545) {
