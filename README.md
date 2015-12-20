@@ -120,19 +120,19 @@ I decided not to deal with this just yet. You can always download any item you s
 
 ###Common Issues
 
-*"I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."*
+#####"I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
 
-See the section of the instructions called *Use the Favorites panel to set up your automatic downloads* above.
+See the section of the instructions called **Use the Favorites panel to set up your automatic downloads** above.
 
 _However_ there are situations where a correctly-set-up favorite does not match items.
 
 For instance, some items have numbering that cannot be understood by the detection engine. You can tell that these are not recognized by the lack of any sequential-item-numbering directly to the left of the datestamp on the right side.
 
-Also, as mentioned under the *Design Decisions Explained* section, currently, the detection engine does not know how to download batches like Full Seasons or Volumes (batches of Chapters) in sequence. While the detection engine does match the title, it will not show the sequential-item-numbering for that torrent and will not download it automatically.
+Also, as mentioned under the **Design Decisions Explained** section, currently, the detection engine does not know how to download batches like Full Seasons or Volumes (batches of Chapters) in sequence. While the detection engine does match the title, it will not show the sequential-item-numbering for that torrent and will not download it automatically.
 
 Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
 
-*Some items have obviously-incorrect sequential-item-numbering (wrong Season/Episode or Volume/Chapter)*
+#####Some items have obviously-incorrect sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
 
 The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:
 
@@ -140,29 +140,29 @@ The detection engine is good but not perfect. There are some cases where it misr
 - Right-click on the item that won't match correctly and choose "Inspect Element." Every modern web browser has this feature or something similar to it. It will open up the source code underlying the item.
 - Look for the item title in the source code. Usually the line(s) of code that are highlighted initially are the ones that contain the title. It should look something like this:
 
-    <span class="torrent_title" title="Torrent: https://server/path/torrentname.torrentSize: 29.5MBAuthorized: N/AMagnet Link ">Mori Komori-san wa Kotowarenai! - 12.­mkv</span>
+`<span class="torrent_title" title="Torrent: https://server/path/torrentname.torrentSize: 29.5MBAuthorized: N/AMagnet Link ">Mori Komori-san wa Kotowarenai! - 12.­mkv</span>`
 
 Copy and paste that into the bug report.
 
-- Look for the *debugMatch* value for the item in the page source. Usually you will have to look just a few lines below the one(s) that were initially highlighted. You may have to expand some collapsed groups of lines by clicking the arrow buttons next to groups of lines. When you find the debugMatch value, it will look like this:
+- Look for the **debugMatch** value for the item in the page source. Usually you will have to look just a few lines below the one(s) that were initially highlighted. You may have to expand some collapsed groups of lines by clicking the arrow buttons next to groups of lines. When you find the **debugMatch** value, it will look like this:
 
-    <span class="hidden" id="debugMatch">1_1_30_1-1</span>
+`<span class="hidden" id="debugMatch">1_1_30_1-1</span>`
 
 Copy and paste that into the bug report.
 - (optional) Cut and paste the favorite's Filter setting into the bug report.
-- *Submit the bug report. _Thank you for helping to improve the season and episode detection engine._*
+- **Submit the bug report. _Thank you for helping to improve the season and episode detection engine._**
 
-*"Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."*
+#####"Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
 
 Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644). 
 
 Watch the syslog to see CRON attempt to run /etc/cron.d/torrentwatch-xa-cron:
 
-    sudo tail -f /var/log/syslog | grep CRON
+`sudo tail -f /var/log/syslog | grep CRON`
 
 You should see entries like these:
 
-    Dec 20 10:00:01 hostname CRON[4493]: (www-data) CMD (/usr/bin/php -q /var/lib/torrentwatch-xa/rss_dl.php -D >/dev/null 2>&1)
+`Dec 20 10:00:01 hostname CRON[4493]: (www-data) CMD (/usr/bin/php -q /var/lib/torrentwatch-xa/rss_dl.php -D >/dev/null 2>&1)`
 
 Otherwise you will likely see errors with short instructions on how to fix the problem(s).
 
