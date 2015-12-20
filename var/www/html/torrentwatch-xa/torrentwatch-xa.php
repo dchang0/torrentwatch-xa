@@ -642,7 +642,7 @@ feeds_perform_matching($config_values['Feeds']);
 get_client();
 close_html();
 
-$footer = "Thank you for enjoying <img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /> $twxa_version[0]!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.";
+$footer = "Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.";
 echo "<div id=\"footer\">$footer</div>";
 
 if ($config_values['Settings']['Hide Donate Button'] != 1) {

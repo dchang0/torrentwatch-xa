@@ -27,19 +27,6 @@ I MAY tackle the following large change: Carried over in the clone from TorrentW
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
-Design Decisions Explained
-===============
-
-"One man's bug is another man's feature."
-
-1) It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. For example, the title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
-(Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", season 2, episode 3, to further complicate matters.)
-But the engine currently reads it as title = "Holly Stage for" and season 50, episode 3. Why? Because it was determined that the ## - ## pattern much more often means SS - EE.
-
-Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the Favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
-
-2) If one starts an item downloading from a feed list and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
-
 Tested Platforms
 ===============
 
@@ -101,13 +88,92 @@ Installation is fairly straightforward.
 - Wait for some downloads to happen automatically or start some manually.
 - Enjoy your downloaded torrents!
 
+Troubleshooting
+===============
+
+###Design Decisions Explained
+
+"One man's bug is another man's feature."
+
+It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. The below are design decisions that will never be "fixed."
+
+####Some Numbering Schemes Only Make Sense to Humans
+
+The title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
+(Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", season 2, episode 3, to further complicate matters.)
+But the engine currently reads it as title = "Holly Stage for" and season 50, episode 3. Why? Because it was determined that the ## - ## pattern much more often means SS - EE.
+
+Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the Favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
+
+####Items Drop Off the Feed Lists
+
+If one starts an item downloading from a feed list and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
+
+####Can't Match Batches
+
+In many cases, the item's title is matched to a favorite by the detection engine, but because the item contains a batch of episodes, chapters, or volumes, the engine doesn't know how to handle it. For instance, let's say we matched a full season of a show. What should torrentwatch-xa do for the next item in the series? Does it match the first episode of the next season as soon as it comes out, going from Season 1, Episodes 1-13 to Season 2, Episode 1, OR does it wait until the whole second season finishes, going from Season 1 to Season 2?
+
+However, with manga, it is obvious that the user favors downloading entire Volumes (batches of Chapters) in sequence, but with episodic videos, the user probably doesn't want to wait a whole season. Basically, the expectation is to get a _weekly_ download of some favorite media.
+
+I decided not to deal with this just yet. You can always download any item you see in a Feeds List by manually highlighting it and clicking the Download (Play) button.
+
+
+###Common Issues
+
+--"I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."--
+
+See the section of the instructions called "Use the Favorites panel to set up your automatic downloads" above.
+
+_However_ there are situations where a correctly-set-up favorite does not match items.
+
+For instance, some items have numbering that cannot be understood by the detection engine, so they are simply not recognized. You can tell that these are not recognized by the lack of any sequential-item-numbering directly to the left of the datestamp on the right side.
+
+Also, as mentioned under the *Design Decisions Explained* section, currently, the detection engine does not know how to download batches like Full Seasons or Volumes (batches of Chapters) in sequence. While the detection engine does match the title, it will not show the sequential-item-numbering for that torrent and will not download it automatically.
+
+Remember, you can always manually download any item you see in the Feeds List by highlighting it and clicking the Download (Play) button.
+
+--Some items have obviously-incorrect sequential-item-numbering; the detection engine didn't read the Season/Episode or Volume/Chapter properly--
+
+The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:
+
+- Look in the footer at the very end of the Feeds List and click "report bugs here" to go to the torrentwatch-xa Github Issues page.
+- Right-click on the item that won't match correctly and choose "Inspect Element." Every modern web browser has this feature or something similar to it. It will open up the source code underlying the item.
+- Look for the item title in the source code. Usually the line(s) of code that are highlighted initially are the ones that contain the title. It should look something like this:
+
+    <span class="torrent_title" title="Torrent: https://server/path/torrentname.torrentSize: 29.5MBAuthorized: N/AMagnet Link ">Mori Komori-san wa Kotowarenai! - 12.­mkv</span>
+
+Copy and paste that into the bug report.
+
+- Look for the *debugMatch* value for the item in the page source. Usually you will have to look just a few lines below the one(s) that were initially highlighted. You may have to expand some collapsed groups of lines by clicking the arrow buttons next to groups of lines. When you find the debugMatch value, it will look like this:
+
+    <span class="hidden" id="debugMatch">1_1_30_1-1</span>
+
+Copy and paste that into the bug report.
+- (optional) Cut and paste the favorite's Filter setting into the bug report.
+- *Submit the bug report. Thank you for helping to improve the season and episode detection engine.*
+
+--"Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."--
+
+Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644). 
+
+Watch the syslog to see CRON attempt to run /etc/cron.d/torrentwatch-xa-cron:
+
+    sudo tail -f /var/log/syslog | grep CRON
+
+You should see entries like these:
+
+    Dec 20 10:00:01 hostname CRON[4493]: (www-data) CMD (/usr/bin/php -q /var/lib/torrentwatch-xa/rss_dl.php -D >/dev/null 2>&1)
+
+Otherwise you will likely see errors with short instructions on how to fix the problem(s).
+
+
 Credits
 ===============
 
 The credits may change as features and assets are removed.
 
-- Original TorrentWatch-X by Joris Vandalon
-- Original Torrentwatch by Erik Bernhardson
+- Original TorrentWatch-X by Joris Vandalon https://code.google.com/p/torrentwatch-x/
+- Original Torrentwatch by Erik Bernhardson https://code.google.com/p/torrentwatch/
 - Original Torrentwatch CSS styling, images and general html tweaking by Keith Solomon http://reciprocity.be/
 - Backgrounds and CSS Layout were borrowed from the long-defunct Clutch http://www.clutchbt.com/
 - I have stumbled upon some credits embedded in various files that were put there by prior coders and that will not be re-listed here.
