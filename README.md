@@ -19,7 +19,7 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.3 with the changes listed in CHANGELOG. This version focuses on redesigning the color coding scheme in the Feeds List, Transmission List, and Legend so that they are easier to understand and consistent across all lists. This is a non-trivial task! I suspect there are some rarely-seen bugs in the item states that cause incorrect colors to occasionally show up. Also tackled is the way in which the UI elements behave when the browser is resized horizontally.
+CURRENT VERSION: I've posted 0.2.3 with the changes listed in CHANGELOG. This version focuses on redesigning the color coding scheme in the feed list, Transmission List, and Legend so that they are easier to understand and consistent across all lists. This is a non-trivial task! I suspect there are some rarely-seen bugs in the item states that cause incorrect colors to occasionally show up. Also tackled is the way in which the UI elements behave when the browser is resized horizontally.
 
 NEXT VERSION: 0.2.4 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
 
@@ -99,44 +99,44 @@ It's become obvious that there are situations for which a mutually-exclusive des
 
 ####Some Numbering Schemes Only Make Sense to Humans
 
-The title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and episode number 3, with season 1 implied.
-(Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", season 2, episode 3, to further complicate matters.)
-But the engine currently reads it as title = "Holly Stage for" and season 50, episode 3. Why? Because it was determined that the ## - ## pattern much more often means SS - EE.
+The title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and Episode 3, with Season 1 implied.
+(Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", Season 2, Episode 3, to further complicate matters.)
+But the engine currently reads it as title = "Holly Stage for" and Season 50, Episode 3. Why? Because it was determined that the ## - ## pattern much more often means Season ## - Episode ##.
 
-Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the Favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
+Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
 
 ####Items Drop Off the Feed Lists
 
-If one starts an item downloading from a feed list and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
+If one starts an item downloading from a feed list, and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
 
 ####Can't Match Batches
 
-In many cases, the item's title is matched to a favorite by the detection engine, but because the item contains a batch of episodes, chapters, or volumes, the engine doesn't know how to handle it. For instance, let's say we matched a full season of a show. What should torrentwatch-xa do for the next item in the series? Does it match the first episode of the next season as soon as it comes out, going from Season 1, Episodes 1-13 to Season 2, Episode 1, OR does it wait until the whole second season finishes, going from Season 1 to Season 2?
+In many cases, the item's title is matched to a favorite by the detection engine, but because the item contains a batch of episodes, chapters, or volumes, the engine doesn't know how to handle it. For instance, let's say we matched a full season of a show. What should torrentwatch-xa do for the next item in the series? Does it match the first episode of the next season as soon as it comes out, going from Season 1, Episodes 1-13 to Season 2, Episode 1, _or_ does it wait until the whole second season finishes, going from Season 1 to Season 2?
 
-However, with manga, it is obvious that the user favors downloading entire Volumes (batches of Chapters) in sequence, but with episodic videos, the user probably doesn't want to wait a whole season. Basically, the expectation is to get a _weekly_ download of some favorite media.
+However, with manga, it is obvious that the user favors downloading entire volumes (batches of chapters) in sequence, but with episodic videos, the user probably doesn't want to wait a whole season. Basically, the expectation is to get a _weekly_ download of some favorite media.
 
-I decided not to deal with this just yet. You can always download any item you see in a Feeds List by manually highlighting it and clicking the Download (Play) button.
+I decided not to deal with this just yet. You can always download any item you see in a feed list by manually highlighting it and clicking the Download (Play) button.
 
 
 ###Common Issues
 
 --"I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."--
 
-See the section of the instructions called "Use the Favorites panel to set up your automatic downloads" above.
+See the section of the instructions called *Use the Favorites panel to set up your automatic downloads* above.
 
 _However_ there are situations where a correctly-set-up favorite does not match items.
 
-For instance, some items have numbering that cannot be understood by the detection engine, so they are simply not recognized. You can tell that these are not recognized by the lack of any sequential-item-numbering directly to the left of the datestamp on the right side.
+For instance, some items have numbering that cannot be understood by the detection engine. You can tell that these are not recognized by the lack of any sequential-item-numbering directly to the left of the datestamp on the right side.
 
 Also, as mentioned under the *Design Decisions Explained* section, currently, the detection engine does not know how to download batches like Full Seasons or Volumes (batches of Chapters) in sequence. While the detection engine does match the title, it will not show the sequential-item-numbering for that torrent and will not download it automatically.
 
-Remember, you can always manually download any item you see in the Feeds List by highlighting it and clicking the Download (Play) button.
+Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
 
---Some items have obviously-incorrect sequential-item-numbering; the detection engine didn't read the Season/Episode or Volume/Chapter properly--
+--Some items have obviously-incorrect sequential-item-numbering (wrong Season/Episode or Volume/Chapter)--
 
 The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:
 
-- Look in the footer at the very end of the Feeds List and click "report bugs here" to go to the torrentwatch-xa Github Issues page.
+- Look in the footer at the very bottom of the page and click "report bugs here" to go to the torrentwatch-xa Github Issues page.
 - Right-click on the item that won't match correctly and choose "Inspect Element." Every modern web browser has this feature or something similar to it. It will open up the source code underlying the item.
 - Look for the item title in the source code. Usually the line(s) of code that are highlighted initially are the ones that contain the title. It should look something like this:
 
@@ -150,7 +150,7 @@ Copy and paste that into the bug report.
 
 Copy and paste that into the bug report.
 - (optional) Cut and paste the favorite's Filter setting into the bug report.
-- *Submit the bug report. Thank you for helping to improve the season and episode detection engine.*
+- *Submit the bug report. _Thank you for helping to improve the season and episode detection engine._*
 
 --"Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."--
 

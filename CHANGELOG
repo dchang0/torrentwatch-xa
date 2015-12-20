@@ -147,7 +147,7 @@ Code changes
 0.2.3
 
 Functional changes
-- consolidated and improved color coding in Feed List, Transmission List, and Legend
+- consolidated and improved color coding in feed list, Transmission list, and Legend
 - improved Legend verbiage
 - added back Transmission label to Web UI button
 - added hide/show UI elements depending on browser window width (does not apply to when phone.css and tablet.css are used)
