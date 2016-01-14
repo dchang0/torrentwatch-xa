@@ -5,10 +5,6 @@ Throughout all versions
 
 Unassigned, Realistic (ordered from easiest to hardest)
 
-- hide Transmission button for narrow screen widths (just like the Filter search input does)
-- hide Transmission total upload/download speeds for narrow screen widths
-- make the filter bar buttons get skinnier rather than wrap around for narrow screen widths
-
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
 - fix Undefined variable: magnet in /var/lib/torrentwatch-xa/lib/tor_client.php on line 218
@@ -21,14 +17,6 @@ Unassigned, Realistic (ordered from easiest to hardest)
 - some rows split the title across two lines, even though the source code shows otherwise (soft hyphens)
 
 - add config option "Videos Only" beneath "Episodes Only" to only show items with at least one video quality
-
-- fix New Favorite's Last Downloaded Episode: one input field splits into two but doesn't understand SSxEE notation
-- prepopulate global default seed ratio in New Favorite
-
-- strip season and episode data from title and video Qualities when using Add to Favorites button in toolbar
-  - completely add or completely remove normalizing feature from guess_match() to detectMatch()
-
-- remove Episodes (pattern matching filter) from Favorites config panel, as it no longer makes sense 
 
 - add toggle to config for local/remote Transmission and disable features like Deep Directories and Watch Directory for remote Transmission
 - fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
