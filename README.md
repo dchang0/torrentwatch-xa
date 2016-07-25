@@ -5,7 +5,7 @@ torrentwatch-xa
 
 torrentwatch-xa is a fork of Joris Vandalon's TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. It will continue to handle live-action TV episodes with nearly all season + episode notations.
 
-To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 8.x LINUX as the only OS and on Transmission as the only torrent client.
+To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 8.x LINUX as the only OS and on Transmission as the only torrent client. It works on pretty much any modern web browser that has Javascript enabled.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
@@ -19,11 +19,9 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.3 with the changes listed in CHANGELOG. This version focuses on redesigning the color coding scheme in the feed list, Transmission List, and Legend so that they are easier to understand and consistent across all lists. This is a non-trivial task! I suspect there are some rarely-seen bugs in the item states that cause incorrect colors to occasionally show up. Also tackled is the way in which the UI elements behave when the browser is resized horizontally.
+CURRENT VERSION: I've posted 0.2.4 with the changes listed in CHANGELOG. This version focuses on conveniences when adding favorites via the New Favorite form, removing the broken and mostly-useless torInfo() PHP code (leaving the updating of infoDiv entirely to Javascript), and improving logging.
 
-NEXT VERSION: 0.2.4 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
-
-I MAY tackle the following large change: Carried over in the clone from TorrentWatch-X, the torInfo() function was only half-completed. This MUST be fixed to reduce confusion in the torrent download mechanism, but it could take a while to unravel. I can see why it was abandoned half-finished. The new version should be properly interfaced, but it may take many releases before it is fully rewritten.
+NEXT VERSION: 0.2.5 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes.
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 

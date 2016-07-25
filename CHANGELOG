@@ -179,8 +179,3 @@ Code changes
 - removed $func_timer because it does nothing
 - moved /tmp/twlog to /tmp/twxalog
 
-IN PROGRESS
-
-- to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
-- continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
-- clean up all the undefined variable PHP notices spewing into the web server error_log, especially from config_lib.php
