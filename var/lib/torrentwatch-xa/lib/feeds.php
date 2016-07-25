@@ -121,11 +121,8 @@ function episode_filter($item, $filter) {
     // the following reg accepts the 1x1-2x27, 1-2x27, 1-3 or just 1
     $validateReg = '([0-9]+)(?:x([0-9]+))?';
     if (preg_match("/\dx\d-\dx\d/", $filter)) {
-        if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0) {
-            twxa_debug('bad episode filter: ' . $filter . '\n');
-            return True; // bad filter, just accept all
-        } else if (preg_match("/^{$validateReg}/", $filter) === 0) {
-            twxa_debug('bad episode filter: ' . $filter . '\n');
+        if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0 || preg_match("/^{$validateReg}/", $filter) === 0) {
+            twxa_debug('Bad episode filter: ' . $filter . '\n');
             return True; // bad filter, just accept all
         }
     }
@@ -169,9 +166,9 @@ function episode_filter($item, $filter) {
         $itemE = 0 . $itemE;
     }
 
-    // Season filter mis-match
+    // Season filter mismatch
     if (!("$itemS$itemE" >= "$startSeason$startEpisode" && "$itemS$itemE" <= "$stopSeason$stopEpisode")) {
-        twxa_debug("$itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n");
+        twxa_debug("Season filter mismatch: $itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n");
         return False;
     }
     return True;
@@ -223,16 +220,16 @@ function check_for_torrent(&$item, $key, $opts) {
             if ((!isset($any) || !$any) && _isset($config_values['Settings'], 'Only Newer') == 1) { //TODO test !isset($any) || logic
                 if (!empty($guess['episode']) && preg_match('/^(\d+)x(\d+)p?$|^(\d{8})p?$/i', $guess['episode'], $regs)) {
                     if (isset($regs[3]) && preg_match('/^(\d{8})$/', $regs[3]) && $item['Episode'] >= $regs[3]) {
-                        twxa_debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1);
+                        twxa_debug("Not newer by date: " . $item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1);
                         $matched = "old";
                         return FALSE;
                     } else if (isset($regs[1]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] > $regs[1]) {
-                        twxa_debug($item['Name'] . ": " . $item['Season'] . ' > ' . $regs[1] . "\r\n", 1);
+                        twxa_debug("Not newer by season: " . $item['Name'] . ": " . $item['Season'] . ' > ' . $regs[1] . "\r\n", 1);
                         $matched = "old";
                         return FALSE;
                     } else if (isset($regs[2]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] == $regs[1] && $item['Episode'] >= $regs[2]) {
                         if (!preg_match('/proper|repack|rerip/i', $rs['title'])) {
-                            twxa_debug($item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[2] . "\r\n", 1);
+                            twxa_debug("Not newer by season x episode: " . $item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[2] . "\r\n", 1);
                             $matched = "old";
                             return FALSE;
                         } else if ($PROPER == 1) {
@@ -331,7 +328,10 @@ function get_torHash($cache_file) {
 
 function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     global $config_values, $matched;
+    
+    twxa_debug("Processing RSS feed: $feedName\n");
     if (count($rs['items']) == 0) {
+        twxa_debug("Feed is down!\n");
         show_down_feed($idx);
         return;
     }
@@ -405,13 +405,17 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
         close_feed_html($idx, 0);
     }
     unset($item);
+    twxa_debug("Done processing RSS feed: $feedName\n");
 }
 
 function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     global $config_values, $matched;
 
     $atom = array_change_key_case_ext($atom, ARRAY_KEY_LOWERCASE);
+    
+    twxa_debug("Parsing Atom feed: $feedName\n");
     if (count($atom['feed']) == 0) {
+        twxa_debug("Feed is empty!\n");
         return;
     }
 
@@ -425,7 +429,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
         $item['title'] = simplifyTitle($item['title']);
         $torHash = '';
         $matched = "nomatch";
-        array_walk($config_values['Favorites'], 'check_for_torrent', array('Obj' => $item, 'URL' => $feedLink));
+        array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $feedLink ]);
         $client = $config_values['Settings']['Client'];
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($item['title']);
         if (file_exists($cache_file)) {
@@ -472,6 +476,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
         close_feed_html($idx, 0);
     }
     unset($item);
+    twxa_debug("Done processing Atom feed: $feedName\n");
 }
 
 function feeds_perform_matching($feeds) {
@@ -496,7 +501,7 @@ function feeds_perform_matching($feeds) {
                 atom_perform_matching($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
                 break;
             default:
-                twxa_debug("Unknown Feed. Feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
+                twxa_debug("Unknown feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
                 break;
         }
     }
@@ -504,7 +509,6 @@ function feeds_perform_matching($feeds) {
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
         close_feed_html();
     }
-
 
     if ($config_values['Settings']['Client'] == "Transmission") {
         show_transmission_div();
@@ -530,7 +534,7 @@ function load_feeds($feeds, $update = NULL) {
                 parse_one_atom($feed);
                 break;
             default:
-                twxa_debug("Unknown Feed. Feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
+                twxa_debug("Unknown feed: " . $feed['Link'] . "Type: " . $feed['Type'] . "\n", -1);
                 break;
         }
     }

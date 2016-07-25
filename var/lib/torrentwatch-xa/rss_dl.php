@@ -16,7 +16,6 @@ require_once('lib/rss_dl_utils.php');
 $config_values;
 $test_run = 0;
 $verbosity = 0;
-$func_timer = 0;
 
 function usage() {
     twxa_debug( __FILE__ . "<options> - CLI Interface to torrentwatch-xa\n",0);
@@ -109,13 +108,11 @@ function parse_args() {
 
         check_for_torrents($config_values['Settings']['Watch Dir'], $downloadDir);
         if(!$hit)
-            twxa_debug("No New Torrents to add from watch folder\n", 0);
+            twxa_debug("No new torrents to add from watch folder\n", 0);
     } else {
-        twxa_debug("Skipping Watch Folder\n");
+        twxa_debug("Skipping Watch Dir\n");
     }
 
     unlink_temp_files();
-
-    twxa_debug($func_timer."s\n",0);
 
     twxa_debug(timer_get_time($main_timer)."s\n",0);

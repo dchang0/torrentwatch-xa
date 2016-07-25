@@ -13,7 +13,6 @@ $pubDate = NULL; // to contain publication date of the item
 $unixTime = NULL; // to contain UNIX timestamp
 
 //TODO improve passing of $id into this file
-//TODO improve passing of $torInfo into this file
 //TODO figure out what $alt does and improve its passing into this file
 //TODO improve passing of $ulink into this file
 //TODO improve passing of $feed into this file
@@ -39,15 +38,7 @@ if($config_values['Settings']['Combine Feeds'] == 1) {
     $feedItem = "<span class=\"feed_name\">$feedName - </span>";
 }
 
-if($torInfo['dlStatus'] != '') { //TODO is this the best key to check out of $torInfo as to whether to show infoDiv?
-//print_r($torInfo); //TODO remove me
-    $stats = $torInfo['stats'];
-    $infoDiv = "<div class='infoDiv'><span id='tor_$id' class='torInfo tor_$torHash'>$stats</span><span class='torEta'></span></div>";
-    if($torInfo['status'] == 4) { //TODO figure out why 'status' is undefined
-        $matched = "downloading"; //TODO $matched seems to never get set to "downloading" because 'status' is undefined
-    }
-}
-else if((!$config_values['Settings']['Disable Hide List']) && ($matched == "nomatch"))  {
+if(!$config_values['Settings']['Disable Hide List'] && $matched == "nomatch")  {
     $hideItem = "<div class='contextItem hideItem' onclick='$.hideItem(\"$utitle\")' title='Hide show'>Hide show</div>"; // adds Hide Show button to drop-down menu
 }
 
@@ -56,16 +47,10 @@ if($config_values['Settings']['Client'] != 'folder') {
 }
 
 // hide or show choices in contextMenu
-if($matched == "downloading" || $matched == "downloaded" || $matched == "cachehit" || $matched == "match" || $torInfo['dlStatus'] == "to_check") {
+if($matched == "downloading" || $matched == "downloaded" || $matched == "cachehit" || $matched == "match" || $matched == "to_check") {
     $dlTorrent = "dlTorrent hidden";
-    if ($torInfo['status'] == 16) { //TODO figure out why 'status' is undefined
-        $torStart = "torStart";
-        $torPause = "torPause hidden";
-    } 
-    else {
-        $torStart = "torStart hidden";
-        $torPause = "torPause";
-    }
+    $torStart = "torStart hidden";
+    $torPause = "torPause";
     $torDelete = "torDelete";
     $torTrash = "torTrash";
 } else {
@@ -121,7 +106,6 @@ $hideItem
 $epiDiv
 </div>
 $progressBar
-$infoDiv
 <span class='hidden' id='debugMatch'>$debugMatch</span>
 <span class='hidden' id='unixTime'>$unixTime</span>
 </td>

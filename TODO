@@ -3,12 +3,23 @@ Throughout all versions
 - refactor when reasonable
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
+Bugfixes
+
+- somehow [HorribleSubs] Norn9 - Norn+Nonet - 09.5 [480p].mkv became 9x5
+- exclamation point doesn't match, as in [HorribleSubs] New Game! - 02 [480p].mkv
+
+
 Unassigned, Realistic (ordered from easiest to hardest)
+
+- remove all: $client = $config_values['Settings']['Client'];
 
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
-- fix Undefined variable: magnet in /var/lib/torrentwatch-xa/lib/tor_client.php on line 218
-- clean up and format log output to /tmp/twlog
+- fix Undefined index: trash in /var/www/html/torrentwatch-xa/torrentwatch-xa.php on line 75
+- clean up and format log output to /tmp/twlog via twxa_debug()
+
+- when feed is down: PHP Notice:  Undefined index: http://www.nyaa.se/?page=rss in /var/lib/torrentwatch-xa/lib/feeds.php on line 493, referer: http://192.168.13.230/torrentwatch-xa/
+- refactor transmission_rpc request code that is used over and over in tools.php functions
 
 - add Feed Title input above each Feed URL
 
@@ -31,6 +42,8 @@ Unassigned, Realistic (ordered from easiest to hardest)
 - how does <li id="id_###"> get its class overridden for downloading/downloaded items and why does clientID not match id when it happens?
 
 - fix debug console in web UI
+
+- on page reload, Javascript doesn't redraw infoDiv on items that are still downloading or seeding--figure out how to make that function call
 
 - make the Favorites panel's Update button not close the panel after updating (same behavior as the Delete button)
 - make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)

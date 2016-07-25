@@ -29,9 +29,7 @@ function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $i
     }
 
     if (($matched == "cachehit" || $matched == "downloaded" || $matched == "match") && $config_values['Settings']['Client'] != 'folder') {
-        $matched = $torInfo['dlStatus'] = 'to_check'; //TODO this $torInfo overrides the torInfo function with the status codes in tools.php
-        $torInfo['stats'] = 'Waiting for client data...';
-        $torInfo['clientId'] = $torHash;
+        $matched = 'to_check'; //TODO Dark Grey turns to Green if $matched = 'to_check' is commented out
     }
     // add word-breaking flags (soft hyphens) after each period
     $ti = preg_replace('/\./', '.&shy;', $item['title']); //TODO improve passing of $ti into feed_item.tpl
@@ -40,21 +38,6 @@ function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $i
     if (($pos = strpos($feed, ':COOKIE:')) !== False) {
         $ulink .= substr($feed, $pos);
     }
-
-    //TODO remove these after fixing $torInfo and torInfo() collision
-    if (!isset($torInfo['dlStatus'])) {
-        $torInfo['dlStatus'] = '';
-    }
-    if (!isset($torInfo['stats'])) {
-        $torInfo['stats'] = '';
-    }
-    if (!isset($torInfo['status'])) {
-        $torInfo['status'] = '';
-    }
-    if (!isset($torInfo['clientId'])) {
-        $torInfo['clientId'] = '';
-    }
-    //TODO end remove^
 
     ob_start();
     require('templates/feed_item.tpl');

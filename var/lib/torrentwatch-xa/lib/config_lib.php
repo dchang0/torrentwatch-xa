@@ -177,6 +177,12 @@ function read_config_file() {
                 'seedRatio' => '-1',
                 'Name' => 'TokyoTosho.info Anime'
             ],
+            2 => [
+                'Link' => 'http://feeds.feedburner.com/anime-rss-atom-feeds?format=xml',
+                'Type' => 'RSS',
+                'seedRatio' => '-1',
+                'Name' => 'Anime (Aggregated)'
+            ]            
         ];
         write_config_file();
     }
@@ -415,9 +421,10 @@ function add_favorite() {
         $idx = end(array_keys($config_values['Favorites']));
         $_GET['idx'] = $idx; // So display_favorite_info() can see it
     } else {
+        //TODO add check for bad episode format
         return("Error: Bad form data, not added to favorites");
     } // Bad form data
-
+    
     $list = array("name" => "Name",
         "filter" => "Filter",
         "not" => "Not",
@@ -434,6 +441,18 @@ function add_favorite() {
             $config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
         } else {
             $config_values['Favorites'][$idx][$data] = "";
+        }
+    }
+    
+    // parse episode notation
+    if($config_values['Favorites'][$idx]['Season'] == '' && $config_values['Favorites'][$idx]['Episode'] != '') {
+        $tempMatches = [];
+        if(preg_match('/(\d+)\s*[xX]\s*(\d+)/', $config_values['Favorites'][$idx]['Episode'], $tempMatches)) {
+            $config_values['Favorites'][$idx]['Episode'] = $tempMatches[2];
+            $config_values['Favorites'][$idx]['Season'] = $tempMatches[1];
+        }
+        else if(preg_match('/^(\d{8})$/', $config_values['Favorites'][$idx]['Episode'])) {
+            $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0        
         }
     }
 
@@ -508,10 +527,10 @@ function add_feed($link) {
     global $config_values;
     $link = preg_replace('/ /', '%20', $link);
     $link = preg_replace('/^%20|%20$/', '', $link);
-    twxa_debug('adding feed: ' . $link . "\n");
+    twxa_debug('Adding feed: ' . $link . "\n");
 
     if (isset($link) AND ( $tmp = guess_feedtype($link)) != 'Unknown') {
-        twxa_debug('really adding feed\n');
+        twxa_debug('Really adding feed\n');
         $config_values['Feeds'][]['Link'] = $link;
         $idx = end(array_keys($config_values['Feeds']));
         $config_values['Feeds'][$idx]['Type'] = $tmp;
@@ -532,7 +551,7 @@ function add_feed($link) {
 
 function update_feedData() {
     global $config_values;
-    twxa_debug('updating feed: ' . $idx . '\n');
+    twxa_debug('Updating feed: ' . $idx . '\n');
     if (isset($_GET['idx']) AND isset($config_values['Feeds'][$_GET['idx']])) {
         if (!($_GET['feed_name']) || !($_GET['feed_link'])) {
             return;

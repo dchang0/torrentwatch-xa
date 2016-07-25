@@ -58,7 +58,7 @@
     </div>
     <div class="favorite_quality">
         <div class="left">
-            <label class="item" title="Regexp Filter against full title">Quality:</label>
+            <label class="item" title="Search for this quality in the full title">Quality:</label>
         </div>
         <div class="right">
             <input type="text" class="text" name="quality" value="<?php echo $item['Quality']; ?>">
@@ -66,12 +66,11 @@
     </div>
     <div class="favorite_seed_and_episode">
         <div class="left">
-            <label class="seedratio item" title="Maximum seeding ratio, set to -1 to disable">Seed Ratio:</label>
+            <label class="seedratio item" title="Set maximum seed ratio till automatic pause (-1 = unlimited seeding till manually stopped)">Seed Ratio:</label>
         </div>
         <div class="right">
-            <input type="text" class="seedratio text" name="seedratio" value="<?php echo _isset($item, 'seedRatio'); ?>"
-                   title="Set seed ratio at which to stop downloading. (-1 = unlimited seeding.)">
-            <label class="lastSeason item">Last Downloaded Episode:</label>
+            <input type="text" class="seedratio text" name="seedratio" value="<?php echo _isset($item, 'seedRatio'); ?>">
+            <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only">Last Downloaded Episode:</label>
             <?php if(isset($item['Episode']) && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
             <input class='lastSeason text' type="text" name="season" value="<?php echo $item['Season']; ?>">
             <label class="lastEpisode item">x</label>

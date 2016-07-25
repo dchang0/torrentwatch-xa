@@ -19,7 +19,7 @@ require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch thi
 
 global $platform;
 
-$twxa_version[0] = "0.2.3";
+$twxa_version[0] = "0.2.4";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 

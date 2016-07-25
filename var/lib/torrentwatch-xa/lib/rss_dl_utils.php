@@ -116,7 +116,7 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
 
 function twxa_debug($string, $lvl = -1) {
     global $config_values, $debug_output; //TODO fix this!!!
-    file_put_contents('/tmp/twlog', $string, FILE_APPEND);
+    file_put_contents('/tmp/twxalog', $string, FILE_APPEND);
 
     if ($config_values['Settings']['debugLevel'] >= $lvl) {
         if (isset($config_values['Global']['HTMLOutput'])) {

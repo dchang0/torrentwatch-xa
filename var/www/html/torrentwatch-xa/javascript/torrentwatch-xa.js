@@ -508,19 +508,20 @@ $(function () {
 
             if (item.errorString || item.status == 4) {
                 if (item.eta >= 86400) {
-                    var days = Math.floor(item.eta / 60 / 60 / 24);
-                    var hours = Math.floor((item.eta / 60 / 60) - (days * 24));
+                    var days = Math.floor(item.eta / 86400);
+                    var hours = Math.floor((item.eta / 3600) - (days * 24));
+                    var minutes = Math.round((item.eta / 60) - (days * 1440) - (hours * 60));
                     if (minutes <= 9) {
                         minutes = '0' + minutes;
                     }
-                    item.eta = 'Remaining: ' + days + ' days ' + hours + ' hr';
+                    item.eta = 'Remaining: ' + days + ' days ' + hours + ' hr ' + minutes + ' min';
                 } else if (item.eta >= 3600) {
                     var hours = Math.floor(item.eta / 60 / 60);
                     var minutes = Math.round((item.eta / 60) - (hours * 60));
                     item.eta = 'Remaining: ' + hours + ' hr ' + minutes + ' min';
                 } else if (item.eta > 0) {
-                    minutes = Math.round(item.eta / 60);
-                    seconds = item.eta - (minutes * 60);
+                    var minutes = Math.round(item.eta / 60);
+                    var seconds = item.eta - (minutes * 60);
                     if (seconds < 0) {
                         minutes--;
                         seconds = seconds + 60;
@@ -674,6 +675,7 @@ $(function () {
         }
 
         if (window.gotAllData) {
+            //TODO do not hide progressBarContainer for items that are currently downloading (check torrent status after browser refresh)
             $('#torrentlist_container li.match_to_check, #torrentlist_container li.match_to_check .buttons').addClass('match_old_download').removeClass('match_to_check');
             $('#torrentlist_container li.match_old_download .progressBarContainer, #torrentlist_container li.match_old_download .activeTorrent.torDelete, #torrentlist_container li.match_old_download .activeTorrent.torTrash').hide();
             $('#torrentlist_container li.match_old_download div.infoDiv, #torrentlist_container li.match_old_download .torEta').remove();
@@ -681,33 +683,6 @@ $(function () {
             $('#torrentlist_container li.match_old_download div.dlTorrent').show();
         }
 
-        /*setTimeout(function () {
-            // update filter and feed headers with total match counts
-            var activeTorrents = $('#transmission_list li').length;
-            $('#activeTorrents').html("(" + activeTorrents + ")");
-            if (!activeTorrents) {
-                window.gotAllData = 1;
-            }
-            var totalMatching = $('.feed li.torrent').not('.match_nomatch').length;
-            var totalDownloaded = $('.feed li.match_downloaded').length;
-            var totalDownloading = $('.feed li.match_downloading').length;
-            $('#Matching, #Downloaded, #Downloading').html('');
-            if (totalMatching) {
-                $('#Matching').html('(' + totalMatching + ')');
-            }
-            if (totalDownloaded) {
-                $('#Downloaded').html('(' + totalDownloaded + ')');
-            }
-            if (totalDownloading) {
-                $('#Downloading').html('(' + totalDownloading + ')');
-            }
-            $.each($('.feed'), function (i, item) {
-                var matches = $('#' + item.id + ' li.torrent').not('.match_nomatch').not(':hidden').length;
-                $('#' + item.id + ' span.matches').html('(' + matches + ')');
-            });
-            listSelector();
-            updateClientButtons();
-        }, 100);*/
         setTimeout(updateMatchCounts(), 100);
 
         $('#transmission_list>li').tsort('span.dateAdded', {order: 'desc'});
@@ -1243,10 +1218,10 @@ $(function () {
             $.submitForm(this);
             return false;
         });
-        var f = $.cookie('twFontSize');
+        /*var f = $.cookie('twFontSize'); //TODO search for and remove other twFontSize
         if (f) {
             this.find("#config_webui").val(f).change();
-        }
+        }*/
         return this;
     };
     $.fn.toggleFavorite = function () {

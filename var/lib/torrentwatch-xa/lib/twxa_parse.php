@@ -2135,7 +2135,7 @@ function matchTitle2_34($ti, $seps) {
             'episSt' => 0,
             'episEd' => 0,
             'itemVr' => 1,
-            'favTi' => preg_replace("[$seps]*/\x{7B2C}(\d+)\x{5dfb}[$seps]*/u", '', $ti),
+            'favTi' => preg_replace("/[$seps]*\x{7B2C}(\d+)\x{5dfb}[$seps]*/u", '', $ti),
             'matFnd' => "2_34"
         ];
     }
@@ -2156,7 +2156,7 @@ function matchTitle2_35($ti, $seps) {
             'episSt' => $mat[0][2] . $mat[0][3],
             'episEd' => $mat[0][2] . $mat[0][3],
             'itemVr' => 1,
-            'favTi' => preg_replace("[$seps]*(\b|\D)(\d{2}|\d{4})\x{5e74}?[\-$seps]?(\d{1,2})\x{6708}?\x{53f7}[$seps]*/u", '', $ti),
+            'favTi' => preg_replace("/[$seps]*(\b|\D)(\d{2}|\d{4})\x{5e74}?[\-$seps]?(\d{1,2})\x{6708}?\x{53f7}[$seps]*/u", '', $ti),
             'matFnd' => "2_35"
         ];
     }
