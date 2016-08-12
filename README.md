@@ -30,7 +30,7 @@ Tested Platforms
 
 torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.x x86_64 with its out-of-the-box transmission-daemon, apache2, and php5 packages. I have tested it using a remote transmission-daemon running on a separate NAS on the same LAN, so it will certainly work with a transmission-daemon running locally.
 
-It is also developed and tested on an ODROID C1+ running the official ODROID Ubuntu 14.04.4 LTS armhf image with its out-of-the-box apache2 and php5 packages. For this device transmission-daemon is not installed locally due to the lack of storage space--the aforementioned NAS serves as the transmission server. No changes to the code or file locations are necessary to run torrentwatch-xa on the ODROID.
+It is also developed and tested on an ODROID C1+ running the official ODROID Ubuntu 16.04.1 LTS armhf image with its out-of-the-box apache2 and php7.0 packages. For this device transmission-daemon is not installed locally due to the lack of storage space--the aforementioned NAS serves as the transmission server. No changes to the code or file locations are necessary to run torrentwatch-xa on the ODROID.
 
 Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. Starting with 0.2.2, the target is Debian 8.x jessie with PHP 5.6. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/html/torrentwatch-xa on Debian 8.x and in /var/www/torrentwatch-xa in Debian 7.x. It is easy to "downgrade" torrentwatch-xa to Debian 7.x--just put the web UI folder in /var/www and change the output of get_webDir() in /var/lib/torrentwatch-xa/config.php by following the instructions therein.
 
@@ -41,16 +41,28 @@ Be aware that I rarely test the GitHub copy of the code; I test using my local c
 Prerequisites
 ===============
 
+###Debian 7.x and 8.x, Ubuntu 14.04
+
 The following packages are provided by the official Debian 8.x jessie repos:
 
 - transmission-daemon
 - apache2 (currently Apache httpd 2.4.10)
 - php5 (currently PHP 5.6)
 
+###Ubuntu 16.04
+
+On Ubuntu 16.04, which favors PHP 7, you must install these packages:
+
+- transmission-daemon
+- apache2
+- php7.0-mbstring
+- libapache2-mod-php
+- php (defaults to php7.0)
+
 Installation
 ===============
 
-Installation is fairly straightforward.
+Installation on Debian 8.x or Ubuntu 14.04 is fairly straightforward.
 
 - Start with a Debian 8.x installation. (It can run with none of the tasksel bundles selected, but I typically choose only "SSH Server" and "Standard System Utilities".)
 - `sudo apt-get install apache2 php5 transmission-daemon`
