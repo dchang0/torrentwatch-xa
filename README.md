@@ -55,8 +55,8 @@ On Ubuntu 16.04, which favors PHP 7, you must install these packages:
 
 - transmission-daemon
 - apache2
-- php7.0-mbstring
-- libapache2-mod-php
+- php-mbstring (defaults to php7.0-mbstring)
+- libapache2-mod-php (defaults to libapache2-mod-php7.0)
 - php (defaults to php7.0)
 
 Installation
