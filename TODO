@@ -5,23 +5,27 @@ Throughout all versions
 
 Bugfixes
 
-- to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
-- continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
-- clean up all the undefined variable PHP notices spewing into the web server error_log, especially from config_lib.php
-- somehow [HorribleSubs] Norn9 - Norn+Nonet - 09.5 [480p].mkv became 9x5
-- exclamation point doesn't match, as in [HorribleSubs] New Game! - 02 [480p].mkv
-
+- add check for mb_convert_kana() like php5-json
+- WWW.Working!! became WWW Working!! in the Title field and WWW.Working!! in the Filter field, and it did not match.
+- HorribleSubs Girlish Number - 1x01 480p.mkv leaves - and . in Favorites title when added using Add Favorite.
+- fix recap episodes #.5 like "HorribleSubs 3-gatsu no Lion - 11.5 480p.mkv", which becomes 11x5 under debug 3_25-1
 
 Unassigned, Realistic (ordered from easiest to hardest)
 
 - remove all: $client = $config_values['Settings']['Client'];
+- after clearing all caches, PHP Warning:  preg_match(): No ending delimiter '^' found in /var/lib/torrentwatch-xa/lib/tor_client.php on line 376
+- after clearing all caches, PHP Notice:  Undefined variable: http_response_header in /var/lib/torrentwatch-xa/lib/curl.php on line 83
 
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
 - fix Undefined index: trash in /var/www/html/torrentwatch-xa/torrentwatch-xa.php on line 75
 - clean up and format log output to /tmp/twlog via twxa_debug()
+- PHP Strict Standards:  Only variables should be passed by reference in /var/lib/torrentwatch-xa/lib/config_lib.php on line 421
 
-- when feed is down: PHP Notice:  Undefined index: http://www.nyaa.se/?page=rss in /var/lib/torrentwatch-xa/lib/feeds.php on line 493, referer: http://192.168.13.230/torrentwatch-xa/
+- PHP Deprecated:  Methods with the same name as their class will not be constructors in a future version of PHP; myAtomParser has a deprecated constructor in /var/lib/torrentwatch-xa/lib/atomparser.php on line 5
+
+- when feed is down: PHP Notice:  Undefined index: http://www.nyaa.se/?page=rss in /var/lib/torrentwatch-xa/lib/feeds.php on line 493
+
 - refactor transmission_rpc request code that is used over and over in tools.php functions
 
 - add Feed Title input above each Feed URL
