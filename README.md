@@ -41,7 +41,7 @@ Be aware that I rarely test the GitHub copy of the code; I test using my local c
 Prerequisites
 ===============
 
-###Debian 7.x and 8.x, Ubuntu 14.04
+### Debian 7.x and 8.x, Ubuntu 14.04
 
 The following packages are provided by the official Debian 8.x jessie repos:
 
@@ -49,7 +49,7 @@ The following packages are provided by the official Debian 8.x jessie repos:
 - apache2 (currently Apache httpd 2.4.10)
 - php5 (currently PHP 5.6)
 
-###Ubuntu 16.04
+### Ubuntu 16.04
 
 On Ubuntu 16.04, which favors PHP 7, you must install these packages:
 
@@ -103,17 +103,17 @@ Installation on Debian 8.x or Ubuntu 14.04 is fairly straightforward.
 Troubleshooting
 ===============
 
-###Allowed memory size of ... exhausted
+### Allowed memory size of ... exhausted
 
 PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable.
 
-###Design Decisions Explained
+### Design Decisions Explained
 
 "One man's bug is another man's feature."
 
 It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. The below are design decisions that will never be "fixed."
 
-####Some Numbering Schemes Only Make Sense to Humans
+#### Some Numbering Schemes Only Make Sense to Humans
 
 The title "Holly Stage for 50 - 3" is meant to be interpreted as title = "Holly Stage for 50" and Episode 3, with Season 1 implied.
 (Fans know that "Holly Stage for 50 - 3" really should be read as title = "Holly Stage for 49", Season 2, Episode 3, to further complicate matters.)
@@ -121,15 +121,15 @@ But the engine currently reads it as title = "Holly Stage for" and Season 50, Ep
 
 Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
 
-####Items Drop Off the Feed Lists
+#### Items Drop Off the Feed Lists
 
 If one starts an item downloading from a feed list, and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
 
-####Auto-Delete Seeded Torrents Only Works in the Browser
+#### Auto-Delete Seeded Torrents Only Works in the Browser
 
 torrentwatch-xa uses browser-based Javascript to auto-delete seeded torrents. As such, it cannot auto-delete seeded torrents if the browser is not open and the cron job is automatically downloading items. Normally this is not an issue since the transmission-daemon will automatically delete seeded torrents. However, this feature is broken in some versions of transmission-daemon, and that results in seeded torrents piling up in Paused state. At first blush, it may seem like this is torrentwatch-xa's fault, but it is transmission-daemon's bug that is to blame.
 
-####Can't Match Batches
+#### Can't Match Batches
 
 In many cases, the item's title is matched to a favorite by the detection engine, but because the item contains a batch of episodes, chapters, or volumes, the engine doesn't know how to handle it. For instance, let's say we matched a full season of a show. What should torrentwatch-xa do for the next item in the series? Does it match the first episode of the next season as soon as it comes out, going from Season 1, Episodes 1-13 to Season 2, Episode 1, _or_ does it wait until the whole second season finishes, going from Season 1 to Season 2?
 
@@ -138,9 +138,9 @@ However, with manga, it is obvious that the user favors downloading entire volum
 I decided not to deal with this just yet. You can always download any item you see in a feed list by manually highlighting it and clicking the Download (Play) button.
 
 
-###Common Issues
+### Common Issues
 
-#####"I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
+##### "I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
 
 See the section of the instructions called **Use the Favorites panel to set up your automatic downloads** above.
 
@@ -152,7 +152,7 @@ Also, as mentioned under the **Design Decisions Explained** section, currently, 
 
 Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
 
-#####Some items have obviously-incorrect sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
+##### Some items have obviously-incorrect sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
 
 The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:
 
@@ -172,7 +172,7 @@ Copy and paste that into the bug report.
 - (optional) Cut and paste the favorite's Filter setting into the bug report.
 - **Submit the bug report. _Thank you for helping to improve the season and episode detection engine._**
 
-#####"Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
+##### "Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
 
 Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644). 
 
