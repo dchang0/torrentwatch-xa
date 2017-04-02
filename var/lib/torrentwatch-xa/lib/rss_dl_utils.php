@@ -10,7 +10,7 @@ require_once("class.phpmailer.php");
 if (!extension_loaded("curl")) {
     require_once("curl.php");
 }
-//if (file_exists(dirname(__FILE__) . '/config.php')) { //TODO set to use baseDir;
+
 if (file_exists('/var/lib/torrentwatch-xa/config.php')) { //TODO set to use baseDir;
     require_once("/var/lib/torrentwatch-xa/config.php");
 }
@@ -32,8 +32,9 @@ function _isset($array, $key, $default = '') {
 function my_strpos($haystack, $needle) {
     $pieces = explode(" ", $needle);
     foreach ($pieces as $n) {
-        if (strpos($haystack, $n) !== FALSE)
+        if (strpos($haystack, $n) !== FALSE) {
             return TRUE;
+        }
     }
     return FALSE;
 }
@@ -47,9 +48,11 @@ function symlink_force($source, $dest) {
 
 function unlink_temp_files() {
     global $config_values;
-    if (isset($config_values['Global']['Unlink']))
-        foreach ($config_values['Global']['Unlink'] as $file)
+    if (isset($config_values['Global']['Unlink'])) {
+        foreach ($config_values['Global']['Unlink'] as $file) {
             unlink($file);
+        }
+    }
 }
 
 if (!function_exists('fnmatch')) {
@@ -88,11 +91,12 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
     switch ($case) {
         //first-char-to-lowercase
         case 25:
-            //maybee lcfirst is not callable
-            if (!function_exists('lcfirst'))
+            //maybe lcfirst is not callable
+            if (!function_exists('lcfirst')) {
                 $function = create_function('$input', 'return strToLower($input[0]) . substr($input, 1, (strLen($input) - 1));');
-            else
+            } else {
                 $function = 'lcfirst';
+            }
             break;
         //first-char-to-uppercase
         case 20:
@@ -104,19 +108,20 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
     }
     //loop array
     foreach ($array as $key => $value) {
-        if (is_array($value)) //$value is an array, handle keys too
+        if (is_array($value)) { //$value is an array, handle keys too
             $newArray[$function($key)] = array_change_key_case_ext($value, $case);
-        elseif (is_string($key))
+        } elseif (is_string($key)) {
             $newArray[$function($key)] = $value;
-        else
+        } else {
             $newArray[$key] = $value; //$key is not a string
+        } 
     } //end loop
     return $newArray;
 }
 
 function twxa_debug($string, $lvl = -1) {
     global $config_values, $debug_output; //TODO fix this!!!
-    file_put_contents('/tmp/twxalog', $string, FILE_APPEND);
+    file_put_contents('/tmp/twxalog', date("c") . ' ' . $string, FILE_APPEND);
 
     if ($config_values['Settings']['debugLevel'] >= $lvl) {
         if (isset($config_values['Global']['HTMLOutput'])) {
@@ -124,19 +129,20 @@ function twxa_debug($string, $lvl = -1) {
                 $string = trim(strtr($string, array("'" => "\\'")));
                 $debug_output .= "<script type='text/javascript'>alert('$string');</script>";
             } else {
-                $debug_output .= $string;
+                $debug_output .= date("c") . ' ' . $string;
             }
         } else {
-            echo($string);
+            echo(date("c") . ' ' . $string);
         }
     }
 }
 
 function add_history($ti) {
     global $config_values;
-    if (file_exists($config_values['Settings']['History']))
+    if (file_exists($config_values['Settings']['History'])) {
         $history = unserialize(file_get_contents($config_values['Settings']['History']));
-    $history[] = array('Title' => $ti, 'Date' => date("Y.m.d G:i"));
+    }
+    $history[] = array('Title' => $ti, 'Date' => date("Y.m.d H:i"));
     file_put_contents($config_values['Settings']['History'], serialize($history));
 }
 
@@ -152,8 +158,9 @@ function timer_init() {
 
 function timer_get_time($time = NULL) {
     global $time_start;
-    if ($time == NULL)
+    if ($time == NULL) {
         $time = $time_start;
+    }
     return (microtime_float() - $time);
 }
 
@@ -163,11 +170,13 @@ function filename_encode($filename) {
 }
 
 function check_for_torrents($directory, $dest) {
-    if ($handle = opendir($directory)) {
+    $handle = opendir($directory);
+    if ($handle) {
         while (false !== ($file = readdir($handle))) {
             $ti = substr($file, 0, strrpos($file, '.') - 1);
-            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $ti))
+            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $ti)) {
                 unlink("$directory/$file");
+            }
         }
         closedir($handle);
     } else {

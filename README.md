@@ -5,7 +5,7 @@ torrentwatch-xa
 
 torrentwatch-xa is a fork of Joris Vandalon's TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. It will continue to handle live-action TV episodes with nearly all season + episode notations.
 
-To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Debian 8.x LINUX as the only OS and on Transmission as the only torrent client. It works on pretty much any modern web browser that has Javascript enabled.
+To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Ubuntu 16.04.x LINUX as the only OS and on Transmission as the only torrent client. It works on pretty much any modern web browser that has Javascript enabled.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
@@ -28,11 +28,9 @@ Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in Git
 Tested Platforms
 ===============
 
-torrentwatch-xa is developed and tested on an out-of-the-box install of Debian 8.x x86_64 with its out-of-the-box transmission-daemon, apache2, and php5 packages. I have tested it using a remote transmission-daemon running on a separate NAS on the same LAN, so it will certainly work with a transmission-daemon running locally.
+torrentwatch-xa is developed and tested on Ubuntu 16.04.x LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server.
 
-It is also developed and tested on an ODROID C1+ running the official ODROID Ubuntu 16.04.1 LTS armhf image with its out-of-the-box apache2 and php7.0 packages. For this device transmission-daemon is not installed locally due to the lack of storage space--the aforementioned NAS serves as the transmission server. No changes to the code or file locations are necessary to run torrentwatch-xa on the ODROID.
-
-Up until torrentwatch-xa 0.2.1, development was targeted at Debian 7.x wheezy with PHP 5.4. Starting with 0.2.2, the target is Debian 8.x jessie with PHP 5.6. The code seems to work flawlessly on either Debian 7.x or 8.x without any modifications except that the web UI portion of torrentwatch-xa is installed in /var/www/html/torrentwatch-xa on Debian 8.x and in /var/www/torrentwatch-xa in Debian 7.x. It is easy to "downgrade" torrentwatch-xa to Debian 7.x--just put the web UI folder in /var/www and change the output of get_webDir() in /var/lib/torrentwatch-xa/config.php by following the instructions therein.
+torrentwatch-xa should work without modifications on an out-of-the-box install of Debian 8.x x86_64 or Ubuntu 14.04, although I am not actively testing on these platforms.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
@@ -41,17 +39,9 @@ Be aware that I rarely test the GitHub copy of the code; I test using my local c
 Prerequisites
 ===============
 
-### Debian 7.x and 8.x, Ubuntu 14.04
-
-The following packages are provided by the official Debian 8.x jessie repos:
-
-- transmission-daemon
-- apache2 (currently Apache httpd 2.4.10)
-- php5 (currently PHP 5.6)
-
 ### Ubuntu 16.04
 
-On Ubuntu 16.04, which favors PHP 7, you must install these packages:
+From the official repos:
 
 - transmission-daemon
 - apache2
@@ -59,13 +49,23 @@ On Ubuntu 16.04, which favors PHP 7, you must install these packages:
 - libapache2-mod-php (defaults to libapache2-mod-php7.0)
 - php (defaults to php7.0)
 
+### Debian 8.x and Ubuntu 14.04
+
+From the official repos:
+
+- transmission-daemon
+- apache2 (currently Apache httpd 2.4.10)
+- php5 (currently PHP 5.6)
+
 Installation
 ===============
 
-Installation on Debian 8.x or Ubuntu 14.04 is fairly straightforward.
-
-- Start with a Debian 8.x installation. (It can run with none of the tasksel bundles selected, but I typically choose only "SSH Server" and "Standard System Utilities".)
-- `sudo apt-get install apache2 php5 transmission-daemon`
+- For Debian 8.x or Ubuntu 14.04:
+  - Start with a Debian 8.x or Ubuntu 14.04 installation.
+  - `sudo apt-get install apache2 php5 transmission-daemon`
+- For Ubuntu 16.04:
+  - Start with an Ubuntu 16.04 installation.
+  - `sudo apt-get install apache2 php php-mbstring libapache2-mod-php transmission-daemon`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`
@@ -193,6 +193,4 @@ The credits may change as features and assets are removed.
 
 - Original TorrentWatch-X by Joris Vandalon https://code.google.com/p/torrentwatch-x/
 - Original Torrentwatch by Erik Bernhardson https://code.google.com/p/torrentwatch/
-- Original Torrentwatch CSS styling, images and general html tweaking by Keith Solomon http://reciprocity.be/
-- Backgrounds and CSS Layout were borrowed from the long-defunct Clutch http://www.clutchbt.com/
 - I have stumbled upon some credits embedded in various files that were put there by prior coders and that will not be re-listed here.

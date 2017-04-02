@@ -179,3 +179,16 @@ Code changes
 - removed $func_timer because it does nothing
 - moved /tmp/twlog to /tmp/twxalog
 
+0.2.5
+
+Functional changes
+- added leading zero to hour in History list timestamps so that it matches the Feed list timestamps and titles line up
+
+Code changes
+- fixed recap episode decimal numbering #.5 as in "HorribleSubs 3-gatsu no Lion - 11.5 480p.mkv", which becomes 11x5 under debug 3_25-1 due to \-? regex
+- fixed bug where Title - 1x01 480p.mkv leaves - and . in Favorites title when added using Add Favorite.
+- fixed regex bug where Filter field ending in an exclamation point never matches, as with New Game!
+- removed unused $argv in rss_dl.php
+- added missing braces to some conditional blocks in several files
+- fixed PHP Notice:  Undefined index: Feed in /var/lib/torrentwatch-xa/lib/feeds.php on line 183
+- fixed PHP Notice:  Undefined index: Filter in /var/lib/torrentwatch-xa/lib/feeds.php on line 207

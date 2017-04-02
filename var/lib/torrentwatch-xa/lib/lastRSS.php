@@ -64,13 +64,13 @@ class lastRSS {
             // Changed to only support local files
             $timedif = @(time() - filemtime($cache_file));
             if ($timedif < $this->cache_time) {
-                twxa_debug(date(DATE_RFC822) . " - lastRSS: feed loaded from file cache: $rss_url\n", 0);
+                twxa_debug("Feed loaded from file cache: $rss_url\n", 0);
                 // cached file is fresh enough, return cached array
                 $result = unserialize(join('', file($cache_file)));
                 // set 'cached' to 1 only if cached file is correct
                 if ($result) $result['cached'] = 1;
             } else {
-                twxa_debug(date(DATE_RFC822) . " - lastRSS: feed cache is old, loading fresh: $rss_url\n", 0);
+                twxa_debug("Feed cache is old, loading fresh: $rss_url\n", 0);
                 // cached file is too old, create new
                 $result = $this->Parse($rss_url);
                 if($result['items_count'] >= 0) {

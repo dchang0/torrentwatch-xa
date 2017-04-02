@@ -6,4 +6,4 @@ include_once 'rss_dl_utils.php';
 include_once 'twxa_parse.php';
 include_once 'guess.php';
 
-print_r(detectMatch($argv[1]));
+print_r(detectMatch($argv[1],true));

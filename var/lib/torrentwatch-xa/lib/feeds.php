@@ -3,7 +3,7 @@
 require_once('twxa_parse.php');
 
 function human_readable($n) {
-    $scales = [ 'bytes', 'KB', 'MB', 'GB', 'TB' ];
+    $scales = [ 'bytes', 'KB', 'MB', 'GB', 'TB'];
     $scale = $scales[0];
     for ($i = 1; $i < count($scales); $i++) {
         if ($n / 1024 < 1) {
@@ -32,7 +32,7 @@ function get_torrent_link($rs) {
         }
     }
 
-    if (count($links) == 1) {
+    if (count($links) === 1) {
         $link = $links[0];
     } else if (count($links) > 0) {
         $link = choose_torrent_link($links);
@@ -115,7 +115,7 @@ function episode_filter($item, $filter) {
 
     // Perform episode filter
     if (empty($filter)) {
-        return true; // no filter, accept all    
+        return true; // no filter, accept all
     }
 
     // the following reg accepts the 1x1-2x27, 1-2x27, 1-3 or just 1
@@ -177,7 +177,7 @@ function episode_filter($item, $filter) {
 function check_for_torrent(&$item, $key, $opts) {
     global $matched, $test_run, $config_values;
 
-    if (!(strtolower($item['Feed']) == 'all' || $item['Feed'] === '' || $item['Feed'] == $opts['URL'])) {
+    if (!isset($item['Feed']) || !(strtolower($item['Feed']) === 'all' || $item['Feed'] === '' || $item['Feed'] == $opts['URL'])) {
         return;
     }
     $rs = $opts['Obj'];
@@ -195,13 +195,19 @@ function check_for_torrent(&$item, $key, $opts) {
             break;
         case 'regexp':
         default:
-            $hit = (($item['Filter'] != '' && preg_match('/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/', $ti)) &&
+            if (substr($item['Filter'], -1) === '!') {
+                // last character of regex is an exclamation point, which fails to match when in front of \b
+                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '/';
+            } else {
+                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/';
+            }
+            $hit = (($item['Filter'] != '' && preg_match($pattern, $ti)) &&
                     ($item['Not'] == '' OR ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
                     ($item['Quality'] == 'All' OR $item['Quality'] == '' OR preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
             break;
     }
 
-    if (strtolower($item['Filter']) == "any") {
+    if (isset($item['Filter']) && strtolower($item['Filter']) === "any") {
         $hit = 1;
         $any = 1;
     }
@@ -287,8 +293,7 @@ function parse_one_rss($feed, $update = NULL) {
     }
     if (!$config_values['Global']['Feeds'][$feed['Link']] = $rss->get($feed['Link'])) {
         twxa_debug("Error creating rss parser for " . $feed['Link'] . "\n", -1);
-    } 
-    else {
+    } else {
         if ($config_values['Global']['Feeds'][$feed['Link']]['items_count'] == 0) {
             unset($config_values['Global']['Feeds'][$feed['Link']]);
             return False;
@@ -303,15 +308,13 @@ function parse_one_atom($feed) {
     global $config_values;
     if (isset($config_values['Settings']['Cache Dir'])) {
         $atom_parser = new myAtomParser($feed['Link'], $config_values['Settings']['Cache Dir']);
-    }
-    else {
+    } else {
         $atom_parser = new myAtomParser($feed['Link']);
     }
 
     if (!$config_values['Global']['Feeds'][$feed['Link']] = $atom_parser->getRawOutput()) {
         twxa_debug("Error creating atom parser for " . $feed['Link'] . "\n", -1);
-    }
-    else {
+    } else {
         $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
         $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'Atom';
     }
@@ -328,7 +331,7 @@ function get_torHash($cache_file) {
 
 function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     global $config_values, $matched;
-    
+
     twxa_debug("Processing RSS feed: $feedName\n");
     if (count($rs['items']) == 0) {
         twxa_debug("Feed is down!\n");
@@ -348,14 +351,13 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     foreach ($items as $item) {
         if (!isset($item['title'])) {
             $item['title'] = '';
-        }
-        else {
+        } else {
             $item['title'] = simplifyTitle($item['title']);
         }
         $torHash = '';
         $matched = 'nomatch';
         if (isset($config_values['Favorites'])) {
-            array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $rs['URL'] ]);
+            array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $rs['URL']]);
         }
         $client = $config_values['Settings']['Client'];
         if (isset($config_values['Settings']['Cache Dir'])) {
@@ -373,7 +375,7 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
                 $rsnr = 1;
             } else {
                 $rsnr++;
-            };
+            }
             if (strlen($rsnr) <= 1) {
                 $rsnr = 0 . $rsnr;
             }
@@ -412,7 +414,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     global $config_values, $matched;
 
     $atom = array_change_key_case_ext($atom, ARRAY_KEY_LOWERCASE);
-    
+
     twxa_debug("Parsing Atom feed: $feedName\n");
     if (count($atom['feed']) == 0) {
         twxa_debug("Feed is empty!\n");
@@ -429,7 +431,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
         $item['title'] = simplifyTitle($item['title']);
         $torHash = '';
         $matched = "nomatch";
-        array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $feedLink ]);
+        array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $feedLink]);
         $client = $config_values['Settings']['Client'];
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($item['title']);
         if (file_exists($cache_file)) {

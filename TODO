@@ -3,18 +3,24 @@ Throughout all versions
 - refactor when reasonable
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
-Bugfixes
+Assigned
 
+- to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
+- continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
+- clean up all the undefined variable PHP notices spewing into the web server error_log, especially from config_lib.php
+- sometimes blank favorites may be added to the favorites list
+  - This happens when output of items somehow ends up in the Favorites list in the config file (probably crossing of GET or POST data).
+  - seems to happen when Transmission gets hung up with several downloads (Transmission button in top right corner becomes busy)
 - add check for mb_convert_kana() like php5-json
-- WWW.Working!! became WWW Working!! in the Title field and WWW.Working!! in the Filter field, and it did not match.
-- HorribleSubs Girlish Number - 1x01 480p.mkv leaves - and . in Favorites title when added using Add Favorite.
-- fix recap episodes #.5 like "HorribleSubs 3-gatsu no Lion - 11.5 480p.mkv", which becomes 11x5 under debug 3_25-1
 
 Unassigned, Realistic (ordered from easiest to hardest)
 
 - remove all: $client = $config_values['Settings']['Client'];
 - after clearing all caches, PHP Warning:  preg_match(): No ending delimiter '^' found in /var/lib/torrentwatch-xa/lib/tor_client.php on line 376
 - after clearing all caches, PHP Notice:  Undefined variable: http_response_header in /var/lib/torrentwatch-xa/lib/curl.php on line 83
+- after clearing all caches, PHP Notice:  Undefined property: lastRSS::$rsscp in /var/lib/torrentwatch-xa/lib/lastRSS.php on line 115
+- after clearing all caches and refreshing, PHP Notice:  Undefined index: torrent-added in /var/lib/torrentwatch-xa/lib/tor_client.php on line 173
+- after clearing all caches, re-downloaded torrents appear to have seed ratios of Infinity due to item.downloadedEver being 0 at torrentwatch-xa.js on line 480
 
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280

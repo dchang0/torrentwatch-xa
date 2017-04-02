@@ -170,7 +170,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     }
     $response = transmission_rpc($request);
 
-    $torHash = $response['arguments']['torrent-added']['hashString'];
+    $torHash = $response['arguments']['torrent-added']['hashString']; //TODO: fix if torrent-added is not defined
 
     if (isset($response['result']) AND ( $response['result'] == 'success')) {
         $cache = $config_values['Settings']['Cache Dir'] . "/rss_dl_" . filename_encode($ti);
@@ -304,8 +304,9 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
     } else {
         $seedRatio = $config_values['Settings']['Default Seed Ratio'];
     }
-    if (!($seedRatio))
+    if (!($seedRatio)) {
         $seedRatio = -1;
+    }
 
     switch ($config_values['Settings']['Client']) {
         case 'Transmission':
@@ -313,7 +314,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
             break;
         case 'folder':
             if ($magnet) {
-                twxa_debug("Can not save magnet links to a folder\n");
+                twxa_debug("Cannot save magnet links to a folder\n");
             } else {
                 $return = folder_add_torrent($tor, $dest, $tor_name);
             }
@@ -332,7 +333,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
                 $msg = "torrentwatch-xa started downloading $tor_name";
                 MailNotify($msg, $subject);
             }
-            if (!isset($any) || !$any) { //TODO test !isset($any) || logic
+            if (!isset($any) || !$any) { //TODO test !isset($any) || logic -- might be inserting blank favorites in rare instances
                 updateFavoriteEpisode($fav, $ti);
                 twxa_debug("Updated Favorites\n");
             }

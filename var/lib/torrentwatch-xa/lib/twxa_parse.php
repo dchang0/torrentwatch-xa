@@ -744,7 +744,12 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                     }
                 //TODO handle V##.## (Software Version ##.##)
                 case (true) :
-                    $result = matchTitle2_13($ti, $seps);
+                    $result = matchTitle2_13_1($ti, $seps);
+                    if(is_string($result['matFnd'])) {
+                        break;
+                    }
+                case (true) :
+                    $result = matchTitle2_13_2($ti, $seps);
                     if(is_string($result['matFnd'])) {
                         break;
                     }
@@ -1840,7 +1845,26 @@ function matchTitle2_11($ti, $seps) {
     }
 }
 
-function matchTitle2_13($ti, $seps) {
+function matchTitle2_13_1($ti, $seps) {
+    // - ##x##
+    //TODO make sure x264 doesn't match
+    $mat=[];
+    if(preg_match_all("/-[$seps]?(\d+)[$seps]?[xX][$seps]?(\d+)\b/", $ti, $mat, \PREG_SET_ORDER)) {
+        return [
+            'medTyp' => 1,
+            'numSeq' => 1,
+            'seasSt' => $mat[0][1],
+            'seasEd' => $mat[0][1],
+            'episSt' => $mat[0][2],
+            'episEd' => $mat[0][2],
+            'itemVr' => 1,
+            'favTi' => preg_replace("/-[$seps]?(\d+)[$seps]?[xX][$seps]?(\d+)\b[$seps]?/", '', $ti),
+            'matFnd' => "2_13"
+        ];
+    }
+}
+
+function matchTitle2_13_2($ti, $seps) {
     // isolated ##x##
     //TODO make sure x264 doesn't match
     $mat=[];
@@ -1853,7 +1877,7 @@ function matchTitle2_13($ti, $seps) {
             'episSt' => $mat[0][2],
             'episEd' => $mat[0][2],
             'itemVr' => 1,
-            'favTi' => preg_replace("/\b(\d+)[$seps]?[xX][$seps]?(\d+)\b/", '', $ti),
+            'favTi' => preg_replace("/[$seps]?\b(\d+)[$seps]?[xX][$seps]?(\d+)\b[$seps]?/", '', $ti),
             'matFnd' => "2_13"
         ];
     }
@@ -3045,7 +3069,7 @@ function matchTitle3_24($ti, $seps) {
 function matchTitle3_25($ti, $seps) {
     // ## - ##, # elsewhere (must be preceded by SS EE - EE)
     $mat=[];
-    if(preg_match_all("/\b(\d{1,3})\b[$seps]?\-?[$seps]?\b(\d{1,3})\b/", $ti, $mat, PREG_SET_ORDER)) {
+    if(preg_match_all("/\b(\d{1,3})\b[$seps]?\-[$seps]?\b(\d{1,3})\b/", $ti, $mat, PREG_SET_ORDER)) {
         // search for ## - ##, is it SS - EE or EE - EE? Make sure EE - EE first EE < second EE
         if($mat[0][1] >= $mat[0][2]) {
             // probably SS - EE, not EE - EE
@@ -3057,7 +3081,7 @@ function matchTitle3_25($ti, $seps) {
                 'episSt' => $mat[0][2],
                 'episEd' => $mat[0][2],
                 'itemVr' => 1,
-                'favTi' => preg_replace("/[$seps]*\b(\d{1,3})\b[$seps]?\-?[$seps]?\b(\d{1,3})\b[$seps]*/", '', $ti),
+                'favTi' => preg_replace("/[$seps]*\b(\d{1,3})\b[$seps]?\-[$seps]?\b(\d{1,3})\b[$seps]*/", '', $ti),
                 'matFnd' => "3_25-1"
             ];
         }
@@ -3072,7 +3096,7 @@ function matchTitle3_25($ti, $seps) {
                     'episSt' => $mat[0][2],
                     'episEd' => $mat[0][2],
                     'itemVr' => 1,
-                    'favTi' => preg_replace("/[$seps]*\b(\d{1,3})\b[$seps]?\-?[$seps]?\b(\d{1,3})\b[$seps]*/", '', $ti),
+                    'favTi' => preg_replace("/[$seps]*\b(\d{1,3})\b[$seps]?\-[$seps]?\b(\d{1,3})\b[$seps]*/", '', $ti),
                     'matFnd' => "3_25-2"
                 ];
             }
@@ -3086,7 +3110,7 @@ function matchTitle3_25($ti, $seps) {
                     'episSt' => $mat[0][1],
                     'episEd' => $mat[0][2],
                     'itemVr' => 1,
-                    'favTi' => preg_replace("/[$seps]*\b(\d{1,3})\b[$seps]?\-?[$seps]?\b(\d{1,3})\b[$seps]*/", '', $ti),
+                    'favTi' => preg_replace("/[$seps]*\b(\d{1,3})\b[$seps]?\-[$seps]?\b(\d{1,3})\b[$seps]*/", '', $ti),
                     'matFnd' => "3_25-3"
                 ];
             }
