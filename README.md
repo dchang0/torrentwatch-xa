@@ -19,9 +19,9 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.4 with the changes listed in CHANGELOG. This version focuses on conveniences when adding favorites via the New Favorite form, removing the broken and mostly-useless torInfo() PHP code (leaving the updating of infoDiv entirely to Javascript), and improving logging.
+CURRENT VERSION: I've posted 0.2.5 with the changes listed in CHANGELOG. This version is mostly minor bugfixes, two of which affected me last season: recap episodes with decimal numbering and exclamation points as the last character of a Favorite's Filter.
 
-NEXT VERSION: 0.2.5 in progress, focusing on refinement of the season and episode detection engine along with small bug fixes. The most urgent bugs are recap episode numbering, usually #.5 such as 3-Gatsu no Lion episode 11.5, and exclamation points not being matched, such as in New Game!
+NEXT VERSION: 0.2.6 in progress, focusing on refinement of the season and episode detection engine and cleaning up PHP Warnings and Notices.
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
