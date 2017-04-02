@@ -21,7 +21,14 @@ Status and Announcements
 
 CURRENT VERSION: I've posted 0.2.5 with the changes listed in CHANGELOG. This version is mostly minor bugfixes, two of which affected me last season: recap episodes with decimal numbering and exclamation points as the last character of a Favorite's Filter.
 
-NEXT VERSION: 0.2.6 in progress, focusing on refinement of the season and episode detection engine and cleaning up PHP Warnings and Notices.
+NEXT VERSION: 0.2.6 in progress, focusing on:
+- upgrade of JQuery to latest 1.x version
+- upgrade of jquery.form.js from 2.43 to 4.2.1
+- refinement of the season and episode detection engine
+- cleaning up PHP Warnings and Notices
+- improving code quality
+
+The JQuery and JQuery plugin upgrades will require testing over an extended period since there may be unintended breakages. Thus, it will be many months before 0.2.6 is released.
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
@@ -81,7 +88,7 @@ Installation
   - (optional) `sudo chmod 644 /etc/cron.d/torrentwatch-xa-cron`
 - Restart apache2
   - `sudo service apache2 restart`
-- Open a web browser and visit `http://[hostname or IP of your Debian instance]/torrentwatch-xa`
+- Open a web browser and visit `http://[hostname or IP of torrentwatch-xa webserver]/torrentwatch-xa`
 - You may see error messages if apache2 is unable to write to the three cache folders. Correct any such errors.
 - Use the Configure panel to set up the Transmission connection.
   - It may be necessary to restart Transmission to get torrentwatch-xa to connect.
