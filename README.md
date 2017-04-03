@@ -24,6 +24,9 @@ CURRENT VERSION: I've posted 0.2.5 with the changes listed in CHANGELOG. This ve
 NEXT VERSION: 0.2.6 in progress, focusing on:
 - upgrade of JQuery to latest 1.x version
 - upgrade of jquery.form.js from 2.43 to 4.2.1
+- email notifications don't work
+  - upgrade of PHPMailer from 5.2 to 5.2.23
+  - addition of Configure options for email notifications sent via PHPMailer SMTP
 - refinement of the season and episode detection engine
 - cleaning up PHP Warnings and Notices
 - improving code quality
@@ -80,7 +83,7 @@ Installation
 - Copy/move the folders and their contents to their intended locations:
   - `sudo mv ./torrentwatch-xa/var/www/html/torrentwatch-xa /var/www/html`
   - `sudo mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
-- Allow apache2 to write to the three cache folders.
+- Allow apache2 to write to the cache folders.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
 - Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
   - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
@@ -110,13 +113,29 @@ Installation
 Troubleshooting
 ===============
 
+### Can't add some feeds
+
+I have found that some feeds can't be added for various reasons, including:
+
+- rejection of SSL certifcate chain
+- feed format is not recognized as Atom or RSS
+- can't handle HTTP redirects
+
+The plan is to completely rewrite curl.php so that it uses PHP 5.6 and later's built-in CURL functions, but this will not happen soon due to the difficulty.
+
+Please note that due to the difficulty of finding Atom feeds of torrent links, I have not been able to personally test torrentwatch-xa's handling of Atom feeds. It seems that RSS is far more common for torrent feeds.
+
+### Can't handle compressed torrent files
+
+Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same media or content via some other torrent file that is not compressed, possibly even on the same feed.
+
 ### Email notifications not actually sending (SMTP errors)
 
 I haven't modernized the SMTP code yet, and it is currently the same as it was in TorrentWatch-X 0.8.9. Most obviously missing is the ability to use SMTP authentication. torrentwatch-xa currently uses a moderately old version of PHPMailer that does support SMTP authentication, but torrentwatch-xa does not yet take full advantage of what PHPMailer has to offer. 
 
-For now, the simplest way for you to get email notifications going is to install sendmail on the torrentwatch-xa web server and set up SMTP relaying of emails from localhost through a smarthost with SMTP authentication, then configure torrentwatch-xa to use localhost as the SMTP server.
+For now, the simplest way for you to get email notifications going is to install sendmail locally on the torrentwatch-xa web server and set up SMTP relaying of emails from localhost through a smarthost with SMTP authentication, then configure torrentwatch-xa to use localhost as the SMTP server.
 
-I plan on upgrading PHPMailer to the latest 5.x version and adding SMTP authentication soon.
+I plan on upgrading PHPMailer to the latest version and adding SMTP authentication soon.
 
 ### Allowed memory size of ... exhausted
 
