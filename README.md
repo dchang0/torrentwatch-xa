@@ -123,7 +123,7 @@ I have found that some feeds can't be added for various reasons, including:
 
 The plan is to completely rewrite curl.php so that it uses PHP 5.6 and later's built-in CURL functions, but this will not happen soon due to the difficulty.
 
-Please note that due to the difficulty of finding Atom feeds of torrent links, I have not been able to personally test torrentwatch-xa's handling of Atom feeds. It seems that RSS is far more common for torrent feeds.
+Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their rarity. It seems that RSS is far more common for torrent feeds.
 
 ### Can't handle compressed torrent files
 
