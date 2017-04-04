@@ -21,6 +21,12 @@ Status and Announcements
 
 CURRENT VERSION: I've posted 0.2.5 with the changes listed in CHANGELOG. This version is mostly minor bugfixes, two of which affected me last season: recap episodes with decimal numbering and exclamation points as the last character of a Favorite's Filter.
 
+In the process of diagnosing a reproducible Apache2 + PHP 7.0 segmentation fault on Ubuntu 16.04.2 with PHP 7.0, I have tested 0.2.5 on Ubuntu 14.04.5 with PHP 5.6 and found that the SEGFAULT does not occur, so the code is now verified to work on Ubuntu 14.04.5 with PHP 5.6.
+
+As for the SEGFAULT itself, I will have to solve it soon, as the target is still Ubuntu 16.04 with PHP 7.0. Sadly, I am not gaining much visibility into the cause using XDebug--the SEGFAULT is reproducible via a certain series of interactions with torrentwatch-xa, but the actual process that dies is not the one running torrentwatch-xa's PHP code, so it does not get stack-traced by XDebug. It may take a while to diagnose this problem. By that time, I will probably release 0.2.6 with the fix.
+
+For now, if you don't plan on updating torrentwatch-xa frequently, choose Ubuntu 14.04.x and PHP 5.6 as your platform.
+
 NEXT VERSION: 0.2.6 in progress, focusing on:
 - upgrade of JQuery to latest 1.x version
 - upgrade of jquery.form.js from 2.43 to 4.2.1
@@ -37,6 +43,8 @@ Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in Git
 
 Tested Platforms
 ===============
+
+NOTE: read status above about updates on a SEGFAULT bug that affects Ubuntu 16.04.2 with PHP 7.0 but not Ubuntu 14.04.5 with PHP 5.6.
 
 torrentwatch-xa is developed and tested on Ubuntu 16.04.x LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server.
 
@@ -137,9 +145,9 @@ For now, the simplest way for you to get email notifications going is to install
 
 I plan on upgrading PHPMailer to the latest version and adding SMTP authentication soon.
 
-### Allowed memory size of ... exhausted
+### Allowed memory size of ... exhausted or AH00052: child pid ... exit signal Segmentation fault (11)
 
-PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable.
+PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable. 256MB seems to be too low for the default RSS feeds.
 
 ### Design Decisions Explained
 
