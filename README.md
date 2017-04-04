@@ -145,9 +145,13 @@ For now, the simplest way for you to get email notifications going is to install
 
 I plan on upgrading PHPMailer to the latest version and adding SMTP authentication soon.
 
-### Allowed memory size of ... exhausted or AH00052: child pid ... exit signal Segmentation fault (11)
+### Allowed memory size of ... exhausted
 
-PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable. 256MB seems to be too low for the default RSS feeds.
+PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
+
+### apache2 process dies with AH00052: child pid ... exit signal Segmentation fault (11)
+
+This reproducible bug seems to only affect Ubuntu 16.04.2 with PHP 7.0. Please check the status section above for updates on the bug and any workarounds as I diagnose it.
 
 ### Design Decisions Explained
 
