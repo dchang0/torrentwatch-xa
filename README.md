@@ -21,11 +21,15 @@ Status and Announcements
 
 CURRENT VERSION: I've posted 0.2.5 with the changes listed in CHANGELOG. This version is mostly minor bugfixes, two of which affected me last season: recap episodes with decimal numbering and exclamation points as the last character of a Favorite's Filter.
 
-In the process of diagnosing a reproducible Apache2 + PHP 7.0 segmentation fault on Ubuntu 16.04.2 with PHP 7.0, I have tested 0.2.5 on Ubuntu 14.04.5 with PHP 5.6 and found that the SEGFAULT does not occur, so the code is now verified to work on Ubuntu 14.04.5 with PHP 5.6.
+In the process of diagnosing a reproducible Apache2 + PHP 7.0 segmentation fault on Ubuntu 16.04.2 with PHP 7.0, I have tested 0.2.5 (and the not-yet-released 0.2.6) on Ubuntu 14.04.5 with PHP 5.6 and found that the SEGFAULT does not occur, so the code is definitely verified to work properly on Ubuntu 14.04.5 with PHP 5.6.
 
-As for the SEGFAULT itself, I will have to solve it soon, as the target is still Ubuntu 16.04 with PHP 7.0. Sadly, I am not gaining much visibility into the cause using XDebug--the SEGFAULT is reproducible via a certain series of interactions with torrentwatch-xa, but the actual process that dies is not the one running torrentwatch-xa's PHP code, so it does not get stack-traced by XDebug. It may take a while to diagnose this problem. By that time, I will probably release 0.2.6 with the fix.
+As for the SEGFAULT itself, after attempting to examine Apache2 core dumps using php-src/.gdbinit dump_bt, I was not able to find out exactly where in the torrentwatch-xa PHP code the SEGFAULT is occurring because of a lack of function trace data. All I can say for sure is that the problem is with PHP 7.0: it says the "fault is in zend_hash_find () ... libphp7.0.so." I have checked the migration guide from PHP 5.6 to PHP 7.0, and torrentwatch-xa does not appear to be using any deprecated PHP code that is incompatible with PHP 7.0. This may be a bug in PHP 7.0 that is reliably triggered by torrentwatch-xa's supposedly-compatible PHP code.
 
-For now, if you don't plan on updating torrentwatch-xa frequently, choose Ubuntu 14.04.x and PHP 5.6 as your platform.
+The SEGFAULT used to merely be an annoyance; torrentwatch-xa worked fine before on PHP 7.0. But lately, the SEGFAULT appears to be preventing the recording of the latest downloaded episode in each Favorite in the config file. That causes torrentwatch-xa to re-attempt downloading torrents that were successfully downloaded once.
+
+For now, choose Ubuntu 14.04.x or Debian 8.0 with PHP 5.6 as your platform and avoid any OS with PHP 7.0.
+
+My hope is that PHP 7.1 will fix this SEGFAULT bug without me having to develop a workaround.
 
 NEXT VERSION: 0.2.6 in progress, focusing on:
 - upgrade of JQuery to latest 1.x version
@@ -46,9 +50,9 @@ Tested Platforms
 
 NOTE: read status above about updates on a SEGFAULT bug that affects Ubuntu 16.04.2 with PHP 7.0 but not Ubuntu 14.04.5 with PHP 5.6.
 
-torrentwatch-xa is developed and tested on Ubuntu 16.04.x LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server.
+torrentwatch-xa is developed and tested on Ubuntu 14.04.5 LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server.
 
-torrentwatch-xa should work without modifications on an out-of-the-box install of Debian 8.x x86_64 or Ubuntu 14.04, although I am not actively testing on these platforms.
+torrentwatch-xa should work without modifications on an out-of-the-box install of Debian 8.x x86_64 or Ubuntu 14.04.x, although I am only actively testing on Ubuntu 14.04.x with PHP 5.6.
 
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
@@ -57,6 +61,7 @@ Be aware that I rarely test the GitHub copy of the code; I test using my local c
 Prerequisites
 ===============
 
+<del>
 ### Ubuntu 16.04
 
 From the official repos:
@@ -66,6 +71,7 @@ From the official repos:
 - php-mbstring (defaults to php7.0-mbstring)
 - libapache2-mod-php (defaults to libapache2-mod-php7.0)
 - php (defaults to php7.0)
+</del>
 
 ### Debian 8.x and Ubuntu 14.04
 
@@ -81,9 +87,11 @@ Installation
 - For Debian 8.x or Ubuntu 14.04:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 transmission-daemon`
+<del>
 - For Ubuntu 16.04:
   - Start with an Ubuntu 16.04 installation.
   - `sudo apt-get install apache2 php php-mbstring libapache2-mod-php transmission-daemon`
+</del>
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`
@@ -125,7 +133,7 @@ Troubleshooting
 
 I have found that some feeds can't be added for various reasons, including:
 
-- rejection of SSL certifcate chain
+- rejection of SSL certificate chain
 - feed format is not recognized as Atom or RSS
 - can't handle HTTP redirects
 
@@ -151,7 +159,7 @@ PHP memory_limit may be too low to handle some of the larger feeds. Edit your ph
 
 ### apache2 process dies with AH00052: child pid ... exit signal Segmentation fault (11)
 
-This reproducible bug seems to only affect Ubuntu 16.04.2 with PHP 7.0. Please check the status section above for updates on the bug and any workarounds as I diagnose it.
+This reproducible bug seems to only affect PHP 7.0. Please check the status section above for updates on the bug and any workarounds as I diagnose it.
 
 ### Design Decisions Explained
 
