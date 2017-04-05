@@ -5,7 +5,7 @@ torrentwatch-xa
 
 torrentwatch-xa is a fork of Joris Vandalon's TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. It will continue to handle live-action TV episodes with nearly all season + episode notations.
 
-To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Ubuntu 16.04.x LINUX as the only OS and on Transmission as the only torrent client. It works on pretty much any modern web browser that has Javascript enabled.
+To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Ubuntu 14.04.x LINUX as the only OS and on Transmission as the only torrent client. It works on pretty much any modern web browser that has Javascript enabled.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
@@ -61,8 +61,16 @@ Be aware that I rarely test the GitHub copy of the code; I test using my local c
 Prerequisites
 ===============
 
-<del>
-### Ubuntu 16.04
+### Ubuntu 14.04 and Debian 8.x
+
+From the official repos:
+
+- transmission-daemon
+- apache2 (currently Apache httpd 2.4.10)
+- php5 (currently PHP 5.6)
+- php5-json
+
+### Ubuntu 16.04 (does not currently work due to the SEGFAULT bug mentioned above)
 
 From the official repos:
 
@@ -71,27 +79,16 @@ From the official repos:
 - php-mbstring (defaults to php7.0-mbstring)
 - libapache2-mod-php (defaults to libapache2-mod-php7.0)
 - php (defaults to php7.0)
-</del>
-
-### Debian 8.x and Ubuntu 14.04
-
-From the official repos:
-
-- transmission-daemon
-- apache2 (currently Apache httpd 2.4.10)
-- php5 (currently PHP 5.6)
 
 Installation
 ===============
 
-- For Debian 8.x or Ubuntu 14.04:
+- For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
-  - `sudo apt-get install apache2 php5 transmission-daemon`
-<del>
+  - `sudo apt-get install apache2 php5 php5-json transmission-daemon`
 - For Ubuntu 16.04:
   - Start with an Ubuntu 16.04 installation.
   - `sudo apt-get install apache2 php php-mbstring libapache2-mod-php transmission-daemon`
-</del>
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`
