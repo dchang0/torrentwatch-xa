@@ -69,7 +69,7 @@ function parse_args() {
 /// main
 
 $main_timer = timer_init();
-if (file_exists(platform_getConfigFile())) {
+if (file_exists(getConfigFile())) {
     read_config_file();
 } else {
     setup_default_config();

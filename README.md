@@ -19,36 +19,44 @@ The end goal is for torrentwatch-xa to do only what it's supposed to do and do i
 Status and Announcements
 ===============
 
-CURRENT VERSION: I've posted 0.2.5 with the changes listed in CHANGELOG. This version is mostly minor bugfixes, two of which affected me last season: recap episodes with decimal numbering and exclamation points as the last character of a Favorite's Filter.
+### SEGFAULT on PHP 7.0
 
-In the process of diagnosing a reproducible Apache2 + PHP 7.0 segmentation fault on Ubuntu 16.04.2 with PHP 7.0, I have tested 0.2.5 (and the not-yet-released 0.2.6) on Ubuntu 14.04.5 with PHP 5.6 and found that the SEGFAULT does not occur, so the code is definitely verified to work properly on Ubuntu 14.04.5 with PHP 5.6.
+As of 0.2.5, there is a reproducible bug with torrentwatch and PHP 7.0 on Ubuntu 16.04.x. If all the caches are emptied and then the browser is refreshed, there will certainly be a SEGFAULT in the Apache2 error log, and there may be a blank white page in place of the feeds list. Another browser refresh will bring the feeds list back. 
 
-As for the SEGFAULT itself, after attempting to examine Apache2 core dumps using php-src/.gdbinit dump_bt, I was not able to find out exactly where in the torrentwatch-xa PHP code the SEGFAULT is occurring because of a lack of function trace data. All I can say for sure is that the problem is with PHP 7.0: it says the "fault is in zend_hash_find () ... libphp7.0.so." I have checked the migration guide from PHP 5.6 to PHP 7.0, and torrentwatch-xa does not appear to be using any deprecated PHP code that is incompatible with PHP 7.0. This may be a bug in PHP 7.0 that is reliably triggered by torrentwatch-xa's supposedly-compatible PHP code.
+However, it appears that a bug, perhaps the same one or a different one, may prevent the recording of the latest downloaded episode in each Favorite in the config file. That causes torrentwatch-xa to re-attempt downloading torrents that were successfully downloaded once.
 
-The SEGFAULT used to merely be an annoyance; torrentwatch-xa worked fine before on PHP 7.0. But lately, the SEGFAULT appears to be preventing the recording of the latest downloaded episode in each Favorite in the config file. That causes torrentwatch-xa to re-attempt downloading torrents that were successfully downloaded once.
+I've looked at Apache2 core dumps using php-src/.gdbinit dump_bt but did not get any helpful PHP function traces. Right now, I cannot tell whether the bug(s) is wholly within PHP 7.0 on Ubuntu 16.04.x and merely consistently triggered by torrentwatch-xa or a bug wholly in torrentwatch-xa. I have checked the migration guide from PHP 5.6 to PHP 7.0, and torrentwatch-xa does not appear to be using any deprecated PHP code that is incompatible with PHP 7.0. It is supposed to work, and yet it doesn't.
 
-For now, choose Ubuntu 14.04.x or Debian 8.0 with PHP 5.6 as your platform and avoid any OS with PHP 7.0.
+#### The Good News
 
-My hope is that PHP 7.1 will fix this SEGFAULT bug without me having to develop a workaround.
+I have definitely verified 0.2.5 and 0.2.6 work perfectly on Ubuntu 14.04.5 with PHP 5.6. Avoid any OS with PHP 7.0 until I figure this out.
 
-NEXT VERSION: 0.2.6 in progress, focusing on:
-- upgrade of JQuery to latest 1.x version
-- upgrade of jquery.form.js from 2.43 to 4.2.1
-- email notifications don't work
-  - upgrade of PHPMailer from 5.2 to 5.2.23
-  - addition of Configure options for email notifications sent via PHPMailer SMTP
-- refinement of the season and episode detection engine
-- cleaning up PHP Warnings and Notices
-- improving code quality
+Also, testing went so well in spite of the massive changes that I decided to release 0.2.6 early.
 
-The JQuery and JQuery plugin upgrades will require testing over an extended period since there may be unintended breakages. Thus, it will be many months before 0.2.6 is released.
+### Current Version
+
+I've posted 0.2.6 with the changes listed in CHANGELOG. This version is entirely about code improvements and upgrades including:
+
+- upgraded JQuery from 1.7.1 to 1.12.4
+- upgraded jquery.form.js from 2.43 to 4.2.1
+- upgraded PHPMailer from 5.2 to 5.2.23 (but still no SMTP authentication functionality)
+- removed curl.php and switched to PHP 5.6's built-in cURL support
+- cleaned up tons of PHP Warnings and Notices
+
+### Next Version
+
+I hope to:
+
+- add SMTP authentication
+- convert the Configure > Other tab to Configure > Email and add the fields needed for SMTP auth
+- refine the season and episode detection engine
+- clean up the download engine mess with matched states
+- fix the annoying Cmd-Tab "stuck Cmd key" bug on Macs
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
 Tested Platforms
 ===============
-
-NOTE: read status above about updates on a SEGFAULT bug that affects Ubuntu 16.04.2 with PHP 7.0 but not Ubuntu 14.04.5 with PHP 5.6.
 
 torrentwatch-xa is developed and tested on Ubuntu 14.04.5 LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server.
 
@@ -69,26 +77,14 @@ From the official repos:
 - apache2 (currently Apache httpd 2.4.10)
 - php5 (currently PHP 5.6)
 - php5-json
-
-### Ubuntu 16.04 (does not currently work due to the SEGFAULT bug mentioned above)
-
-From the official repos:
-
-- transmission-daemon
-- apache2
-- php-mbstring (defaults to php7.0-mbstring)
-- libapache2-mod-php (defaults to libapache2-mod-php7.0)
-- php (defaults to php7.0)
+- php5-curl
 
 Installation
 ===============
 
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
-  - `sudo apt-get install apache2 php5 php5-json transmission-daemon`
-- For Ubuntu 16.04:
-  - Start with an Ubuntu 16.04 installation.
-  - `sudo apt-get install apache2 php php-mbstring libapache2-mod-php transmission-daemon`
+  - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`
@@ -134,8 +130,6 @@ I have found that some feeds can't be added for various reasons, including:
 - feed format is not recognized as Atom or RSS
 - can't handle HTTP redirects
 
-The plan is to completely rewrite curl.php so that it uses PHP 5.6 and later's built-in CURL functions, but this will not happen soon due to the difficulty.
-
 Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their rarity. It seems that RSS is far more common for torrent feeds.
 
 ### Can't handle compressed torrent files
@@ -148,7 +142,9 @@ I haven't modernized the SMTP code yet, and it is currently the same as it was i
 
 For now, the simplest way for you to get email notifications going is to install sendmail locally on the torrentwatch-xa web server and set up SMTP relaying of emails from localhost through a smarthost with SMTP authentication, then configure torrentwatch-xa to use localhost as the SMTP server.
 
-I plan on upgrading PHPMailer to the latest version and adding SMTP authentication soon.
+Alternately you can use the method TorrentWatch-X 0.8.9 used, which was via a shell script.
+
+I plan on adding SMTP authentication soon.
 
 ### Allowed memory size of ... exhausted
 
@@ -239,8 +235,6 @@ Otherwise you will likely see errors with short instructions on how to fix the p
 
 Credits
 ===============
-
-The credits may change as features and assets are removed.
 
 - Original TorrentWatch-X by Joris Vandalon https://code.google.com/p/torrentwatch-x/
 - Original Torrentwatch by Erik Bernhardson https://code.google.com/p/torrentwatch/

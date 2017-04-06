@@ -1,25 +1,22 @@
 <?php
 
-global $config_values, $platform;
+global $config_values;
 
+// PHP JSON and PHP cURL support are assumed to be installed
 require_once("tools.php");
 require_once("atomparser.php");
 require_once("cache.php");
 require_once("class.bdecode.php");
 require_once("class.phpmailer.php");
-if (!extension_loaded("curl")) {
-    require_once("curl.php");
-}
-
+require_once("class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
 if (file_exists('/var/lib/torrentwatch-xa/config.php')) { //TODO set to use baseDir;
     require_once("/var/lib/torrentwatch-xa/config.php");
 }
 require_once("feeds.php");
-require_once("html.php");
+require_once("twxa_html.php");
 require_once("lastRSS.php");
 require_once("tor_client.php");
-require_once("platform.php");
-require_once("guess.php");
+require_once("twxa_parse.php");
 
 $config_values['Global'] = [];
 $time = 0;
@@ -120,7 +117,7 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
 }
 
 function twxa_debug($string, $lvl = -1) {
-    global $config_values, $debug_output; //TODO fix this!!!
+    global $config_values, $debug_output; //TODO fix global
     file_put_contents('/tmp/twxalog', date("c") . ' ' . $string, FILE_APPEND);
 
     if ($config_values['Settings']['debugLevel'] >= $lvl) {

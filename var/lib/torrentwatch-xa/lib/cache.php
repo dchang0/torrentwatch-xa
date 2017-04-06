@@ -64,7 +64,7 @@ function clear_cache() {
 
 function check_cache_episode($ti) {
     global $config_values, $matched;
-    $guess = detectMatch($ti, TRUE);
+    $guess = detectMatch($ti);
     if ($guess == False) {
         twxa_debug("Unable to guess for $ti\n");
         return 1;
@@ -74,12 +74,12 @@ function check_cache_episode($ti) {
             if (!(substr($file, 0, 7) == "rss_dl_")) {
                 continue;
             }
-            if (!(preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['title']))) == preg_replace('/[. ]/', '_', $guess['title']))) {
+            if (!(preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['favoriteTitle']))) == preg_replace('/[. ]/', '_', $guess['favoriteTitle']))) {
                 continue;
             }
-            $cacheguess = detectMatch(substr($file, 7), TRUE);
+            $cacheguess = detectMatch(substr($file, 7));
             if ($cacheguess != false && $guess['episode'] == $cacheguess['episode']) {
-                twxa_debug("Full Episode Match, ignoring " . $guess['episode'] . "\n", 2); //TODO what does this mean?
+                twxa_debug("Already downloaded; ignoring: $ti (" . $guess['episode'] . ")\n", 2); //TODO what does this mean?
                 $matched = "duplicate";
                 return 0;
             }

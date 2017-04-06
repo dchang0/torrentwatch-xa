@@ -1,41 +1,42 @@
 <?php
+
 /*
- ======================================================================
- lastRSS 0.9.1
+  ======================================================================
+  lastRSS 0.9.1 (modified for torrentwatch-xa)
 
- Simple yet powerfull PHP class to parse RSS files.
- 
- by Vojtech Semecky, webmaster @ webdot . cz
+  Simple yet powerful PHP class to parse RSS files.
 
+  by Vojtech Semecky, webmaster @ oslab . net
 
- *** modified to support rss attributes, 2007-07-09 pbull, http://purplepaste.com ***
+ * Modified to support rss attributes, 2007-07-09 pbull, http://purplepaste.com
+ * Fixed PHP Notice: Undefined property: lastRSS::$rsscp, 2017-04-04, torrentwatch-xa
 
- 
- Latest version, features, manual and examples:
-     http://lastrss.webdot.cz/
+  Latest version, features, manual and examples:
+  http://lastrss.oslab.net/
 
- ----------------------------------------------------------------------
- LICENSE
+  ----------------------------------------------------------------------
+  LICENSE
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License (GPL)
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License (GPL)
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
 
- To read the license please visit http://www.gnu.org/copyleft/gpl.html
- ======================================================================
-*/
+  To read the license please visit http://www.gnu.org/copyleft/gpl.html
+  ======================================================================
+ */
 
 /**
-* lastRSS
-* Simple yet powerful PHP class to parse RSS files.
-*/
+ * lastRSS
+ * Simple yet powerful PHP class to parse RSS files.
+ */
 class lastRSS {
+
     // -------------------------------------------------------------------
     // Public properties
     // -------------------------------------------------------------------
@@ -45,19 +46,19 @@ class lastRSS {
     var $items_limit = 0;
     var $stripHTML = False;
     var $date_format = '';
-
     // -------------------------------------------------------------------
     // Private variables
     // -------------------------------------------------------------------
-    var $channeltags = array ('title', 'link', 'description', 'language', 'copyright', 'managingEditor', 'webMaster', 'lastBuildDate', 'rating', 'docs');
+    var $channeltags = array('title', 'link', 'description', 'language', 'copyright', 'managingEditor', 'webMaster', 'lastBuildDate', 'rating', 'docs');
     var $itemtags = array('title', 'link', 'description', 'author', 'category', 'comments', 'enclosure', 'guid', 'pubDate', 'source');
     var $imagetags = array('title', 'url', 'link', 'width', 'height');
     var $textinputtags = array('title', 'description', 'name', 'link');
+    var $rsscp;
 
     // -------------------------------------------------------------------
     // Parse RSS file and returns associative array.
     // -------------------------------------------------------------------
-    function Get ($rss_url) {
+    function Get($rss_url) {
         // If CACHE ENABLED
         if ($this->cache_dir != '') {
             $cache_file = $this->cache_dir . '/rsscache_' . md5($rss_url);
@@ -68,56 +69,63 @@ class lastRSS {
                 // cached file is fresh enough, return cached array
                 $result = unserialize(join('', file($cache_file)));
                 // set 'cached' to 1 only if cached file is correct
-                if ($result) $result['cached'] = 1;
+                if ($result) {
+                    $result['cached'] = 1;
+                }
             } else {
                 twxa_debug("Feed cache is old, loading fresh: $rss_url\n", 0);
                 // cached file is too old, create new
                 $result = $this->Parse($rss_url);
-                if($result['items_count'] >= 0) {
+                if ($result['items_count'] >= 0) {
                     $serialized = serialize($result);
                     if ($f = @fopen($cache_file, 'w')) {
-                        fwrite ($f, $serialized, strlen($serialized));
+                        fwrite($f, $serialized, strlen($serialized));
                         fclose($f);
                     }
-                    if ($result) $result['cached'] = 0;
+                    if ($result) {
+                        $result['cached'] = 0;
+                    }
                 }
             }
         }
         // If CACHE DISABLED >> load and parse the file directly
         else {
             $result = $this->Parse($rss_url);
-            if ($result) $result['cached'] = 0;
+            if ($result) {
+                $result['cached'] = 0;
+            }
         }
         // return result
         return $result;
     }
-    
+
     // -------------------------------------------------------------------
     // Modification of preg_match(); return trimmed field with index 1
     // from 'classic' preg_match() array output
     // -------------------------------------------------------------------
-    function my_preg_match ($pattern, $subject) {
-        // start regullar expression
+    function my_preg_match($pattern, $subject) {
+        // start regular expression
         preg_match($pattern, $subject, $out);
 
         // if there is some result... process it and return it
-        if(isset($out[1])) {
+        if (isset($out[1])) {
             // Process CDATA (if present)
             if ($this->CDATA == 'content') { // Get CDATA content (without CDATA tag)
-                $out[1] = strtr($out[1], array('<![CDATA['=>'', ']]>'=>''));
+                $out[1] = strtr($out[1], array('<![CDATA[' => '', ']]>' => ''));
             } elseif ($this->CDATA == 'strip') { // Strip CDATA
-                $out[1] = strtr($out[1], array('<![CDATA['=>'', ']]>'=>''));
+                $out[1] = strtr($out[1], array('<![CDATA[' => '', ']]>' => ''));
             }
 
             // If code page is set convert character encoding to required
-            if ($this->cp != '')
-		if (function_exists('iconv')) {
-                    $out[1] = iconv($this->rsscp, $this->cp.'//TRANSLIT', $out[1]);
-		}
+            if ($this->cp != '') {
+                if (function_exists('iconv')) {
+                    $out[1] = iconv($this->rsscp, $this->cp . '//TRANSLIT', $out[1]);
+                }
+            }
             // Return result
             return trim($out[1]);
         } else {
-        // if there is NO result, return empty string
+            // if there is NO result, return empty string
             return '';
         }
     }
@@ -125,74 +133,82 @@ class lastRSS {
     // -------------------------------------------------------------------
     // Replace HTML entities &something; by real characters
     // -------------------------------------------------------------------
-    function unhtmlentities ($string) {
+    function unhtmlentities($string) {
         // Get HTML entities table
-        $trans_tbl = get_html_translation_table (HTML_ENTITIES, ENT_QUOTES);
+        $trans_tbl = get_html_translation_table(HTML_ENTITIES, ENT_QUOTES);
         // Flip keys<==>values
-        $trans_tbl = array_flip ($trans_tbl);
+        $trans_tbl = array_flip($trans_tbl);
         // Add support for &apos; entity (missing in HTML_ENTITIES)
         $trans_tbl += array('&apos;' => "'");
         // Replace entities by values
-        return strtr ($string, $trans_tbl);
+        return strtr($string, $trans_tbl);
     }
 
     // -------------------------------------------------------------------
     // Parse() is private method used by Get() to load and parse RSS file.
     // Don't use Parse() in your scripts - use Get($rss_file) instead.
     // -------------------------------------------------------------------
-    function Parse ($rss_url) {
+    function Parse($rss_url) {
         // Open and load RSS file
         $response = check_for_cookies($rss_url);
-        if($response) $rss_url = $response['url'];
+        if ($response) {
+            $rss_url = $response['url'];
+        }
         $get = curl_init();
         $getOptions[CURLOPT_URL] = $rss_url;
-	if(isset($response['cookies'])) {
-	    $getOptions[CURLOPT_COOKIE] = $response['cookies'];
-	}
+        if (isset($response['cookies'])) {
+            $getOptions[CURLOPT_COOKIE] = $response['cookies'];
+        }
         get_curl_defaults($getOptions);
         curl_setopt_array($get, $getOptions);
         $rss_content = curl_exec($get);
         curl_close($get);
-        
+
         if ($rss_content) {
             // Parse document encoding
             $result['encoding'] = $this->my_preg_match("'encoding=[\'\"](.*?)[\'\"]'si", $rss_content);
             // if document codepage is specified, use it
-            if ($result['encoding'] != '')
-                { $this->rsscp = $result['encoding']; } // This is used in my_preg_match()
+            if ($result['encoding'] != '') {
+                $this->rsscp = $result['encoding'];
+            } // This is used in my_preg_match()
             // otherwise use the default codepage
-            else
-                { $this->rsscp = $this->default_cp; } // This is used in my_preg_match()
-
+            else {
+                $this->rsscp = $this->default_cp;
+            } // This is used in my_preg_match()
             // Parse CHANNEL info
             preg_match("'<channel.*?>(.*?)</channel>'si", $rss_content, $out_channel);
-            foreach($this->channeltags as $channeltag)
-            {
+            foreach ($this->channeltags as $channeltag) {
                 $temp = $this->my_preg_match("'<$channeltag.*?>(.*?)</$channeltag>'si", $out_channel[1]);
-                if ($temp != '') $result[$channeltag] = $temp; // Set only if not empty
+                if ($temp != '') {
+                    $result[$channeltag] = $temp; // Set only if not empty
+                }
             }
             // If date_format is specified and lastBuildDate is valid
-            if ($this->date_format != '' && isset($result['lastBuildDate']) && ($timestamp = strtotime($result['lastBuildDate'])) !==-1) {
-                        // convert lastBuildDate to specified date format
-                        $result['lastBuildDate'] = date($this->date_format, $timestamp);
+            if ($this->date_format != '' && isset($result['lastBuildDate']) && ($timestamp = strtotime($result['lastBuildDate'])) !== -1) {
+                // convert lastBuildDate to specified date format
+                $result['lastBuildDate'] = date($this->date_format, $timestamp);
             }
 
             // Parse TEXTINPUT info
             preg_match("'<textinput(|[^>]*[^/])>(.*?)</textinput>'si", $rss_content, $out_textinfo);
-                // This a little strange regexp means:
-                // Look for tag <textinput> with or without any attributes, but skip truncated version <textinput /> (it's not beggining tag)
+            // This a little strange regexp means:
+            // Look for tag <textinput> with or without any attributes, but skip truncated version <textinput /> (it's not beggining tag)
             if (isset($out_textinfo[2])) {
-                foreach($this->textinputtags as $textinputtag) {
+                foreach ($this->textinputtags as $textinputtag) {
                     $temp = $this->my_preg_match("'<$textinputtag.*?>(.*?)</$textinputtag>'si", $out_textinfo[2]);
-                    if ($temp != '') $result['textinput_'.$textinputtag] = $temp; // Set only if not empty
+                    if ($temp != '') {
+                        $result['textinput_' . $textinputtag] = $temp; // Set only if not empty
+                    }
                 }
             }
             // Parse IMAGE info
             preg_match("'<image.*?>(.*?)</image>'si", $rss_content, $out_imageinfo);
             if (isset($out_imageinfo[1])) {
-                foreach($this->imagetags as $imagetag) {
+                foreach ($this->imagetags as $imagetag) {
                     $temp = $this->my_preg_match("'<$imagetag.*?>(.*?)</$imagetag>'si", $out_imageinfo[1]);
-                    if ($temp != '') $result['image_'.$imagetag] = $temp; // Set only if not empty
+                    if ($temp != '') {
+                        $result['image_' . $imagetag] = $temp; // Set only if not empty
+                    }
                 }
             }
             // Parse ITEMS
@@ -200,10 +216,10 @@ class lastRSS {
             $rss_items = $items[2];
             $i = 0;
             $result['items'] = []; // create array even if there are no items
-            foreach($rss_items as $rss_item) {
+            foreach ($rss_items as $rss_item) {
                 // If number of items is lower then limit: Parse one item
                 if ($i < $this->items_limit || $this->items_limit == 0) {
-                    foreach($this->itemtags as $itemtag) {
+                    foreach ($this->itemtags as $itemtag) {
                         $temp = $this->my_preg_match("'<$itemtag.*?>(.*?)</$itemtag>'si", $rss_item);
 
 
@@ -213,28 +229,32 @@ class lastRSS {
                          */
                         $temp2 = trim($this->my_preg_match("'<$itemtag\s*([^>]*)/?'si", $rss_item));
                         if ($temp2 != '') {
-                            preg_match_all( '/([^\s"=]+)=["\']([^\'"]*?)["\']/' , $temp2, $attr, PREG_SET_ORDER);
+                            preg_match_all('/([^\s"=]+)=["\']([^\'"]*?)["\']/', $temp2, $attr, PREG_SET_ORDER);
                             $result['items'][$i][$itemtag] = [];
-                            if ($temp != '') $result['items'][$i][$itemtag]['value'] = $temp;
-                                foreach($attr as $a) { 
+                            if ($temp != '') {
+                                $result['items'][$i][$itemtag]['value'] = $temp;
+                            }
+                            foreach ($attr as $a) {
                                 $result['items'][$i][$itemtag][$a[1]] = $a[2];
-                                }
+                            }
                         } else {
-                            if ($temp != '') $result['items'][$i][$itemtag] = $temp; // Set only if not empty
+                            if ($temp != '') {
+                                $result['items'][$i][$itemtag] = $temp; // Set only if not empty
+                            }
                         }
-                        /** end rss attribute changes **/
-
-
+                        /** end rss attribute changes * */
                     }
                     // Strip HTML tags and other bullshit from DESCRIPTION
-                    if ($this->stripHTML && isset($result['items'][$i]['description']))
+                    if ($this->stripHTML && isset($result['items'][$i]['description'])) {
                         $result['items'][$i]['description'] = strip_tags($this->unhtmlentities(strip_tags($result['items'][$i]['description'])));
+                    }
                     // Strip HTML tags and other bullshit from TITLE
-                    if ($this->stripHTML && isset($result['items'][$i]['title']))
+                    if ($this->stripHTML && isset($result['items'][$i]['title'])) {
                         $result['items'][$i]['title'] = strip_tags($this->unhtmlentities(strip_tags($result['items'][$i]['title'])));
+                    }
                     // If date_format is specified and pubDate is valid
                     if ($this->date_format != '' && isset($result['items'][$i]['pubDate']) &&
-                        ($timestamp = strtotime($result['items'][$i]['pubDate'])) !==-1) {
+                            ($timestamp = strtotime($result['items'][$i]['pubDate'])) !== -1) {
                         // convert pubDate to specified date format
                         $result['items'][$i]['pubDate'] = date($this->date_format, $timestamp);
                     }
@@ -245,13 +265,12 @@ class lastRSS {
 
             $result['items_count'] = $i;
             return $result;
-        }
-        else // Error in opening return False
-        {
+        } else { // Error in opening return False
             twxa_debug("lastRSS: file_get_contents failed for $rss_url\n", -1);
             return False;
         }
     }
+
 }
 
 ?>

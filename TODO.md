@@ -1,38 +1,75 @@
 Throughout all versions
+==========
+
 - improve debugging and commenting
 - refactor when reasonable
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
 Assigned
+==========
 
+- times shown in feed list might not obey 'Time Zone' setting until next rss_dl.php run, but log datestamps take effect immediately
+  - maybe force a feed cache refresh immediately after 'Time Zone' is changed 
+
+- add SMTP authentication options to Configure > Other for email notifications
+
+- Error connecting to Transmission Javascript alert stays open even after successful connection to Transmission
 - to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
 - continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
-- clean up all the undefined variable PHP notices spewing into the web server error_log, especially from config_lib.php
-- sometimes blank favorites may be added to the favorites list
-  - This happens when output of items somehow ends up in the Favorites list in the config file (probably crossing of GET or POST data).
-  - seems to happen when Transmission gets hung up with several downloads (Transmission button in top right corner becomes busy)
+
+- sometimes blank favorites may be added to the favorites list; these appear to be when $itemtags data gets inserted into $config_values['Favorites'] directly like so:
+
+73[] = title => HorribleSubs Alice to Zouroku - 01 720p.mkv
+73[] = link => http://www.nyaa.se/?page=download&tid=913586
+73[] = description => Torrent: http://www.nyaa.se/?page=download&tid=913586Size: 603.16MBAuthorized: YesMagnet Link Comment: #horriblesubs@irc.rizon.net Proudly translated and presented by the HorribleSubs Fansubbing Team. Visit our website for DDL links, schedules, and latest news.
+73[] = category => Anime
+73[] = guid => http://tokyotosho.info/details.php?id=1084434
+73[] = pubDate => Apr 02, 08:49
+74[] = title => HorribleSubs Sekai no Yami Zukan - 01 720p.mkv
+74[] = link => http://www.nyaa.se/?page=download&tid=913674
+74[] = description => Torrent: http://www.nyaa.se/?page=download&tid=913674Size: 62.45MBAuthorized: YesMagnet Link Comment: #horriblesubs@irc.rizon.net Proudly translated and presented by the HorribleSubs Fansubbing Team. Visit our website for DDL links, schedules, and latest news.
+74[] = category => Anime
+74[] = guid => http://tokyotosho.info/details.php?id=1084498
+74[] = pubDate => Apr 02, 13:36
+
+Seems to be reproducible by: Add a favorite with item tags (HorribleSubs torrents) with Add a favorite Javascript contextual menu; check Favorite in web UI and config file and note index number (77 for a real example; clear all caches; refresh page; check Favorite in web UI and config file and see corruption of the Favorite (also 77, the last index). Looks like a HorribleSubs added-by-JS Favorite that is the last index gets overwritten but not just any last index... Also appears to be accompanied by or caused by a SEGFAULT that may occur in transmission_add_torrent()
+
+Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter what index it has. Yes, it appears that the corruption finds the HorribleSubs added-by-JS Favorite, even if its index number is changed to a lower number AND it is not the last Favorite in the list in the config file. Strangely, another added-by-JS Favorite that is not a HorribleSubs torrent has not been affected in all this testing. It may be related to the torrent that downloads immediately after emptying the cache (the unaffected added-by-JS Favorite might have no episodes in the list)
+
+
+- sometimes the History looks like it downloaded the same episode twice, but this may be due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan or might be only when the caches are emptied
+
 - add check for mb_convert_kana() like php5-json
 
-Unassigned, Realistic (ordered from easiest to hardest)
+- when feed is down: PHP Notice:  Undefined index: http://www.nyaa.se/?page=rss in /var/lib/torrentwatch-xa/lib/feeds.php on line 493
 
-- remove all: $client = $config_values['Settings']['Client'];
-- after clearing all caches, PHP Warning:  preg_match(): No ending delimiter '^' found in /var/lib/torrentwatch-xa/lib/tor_client.php on line 376
-- after clearing all caches, PHP Notice:  Undefined variable: http_response_header in /var/lib/torrentwatch-xa/lib/curl.php on line 83
-- after clearing all caches, PHP Notice:  Undefined property: lastRSS::$rsscp in /var/lib/torrentwatch-xa/lib/lastRSS.php on line 115
-- after clearing all caches and refreshing, PHP Notice:  Undefined index: torrent-added in /var/lib/torrentwatch-xa/lib/tor_client.php on line 173
+
+Unassigned, Realistic (ordered from easiest to hardest)
+==========
+
+- Disable Hide List does disable Hide Show from contextual menus but doesn't hide the Configure > Hide List tab or at least mark it disabled
+- change MailNotify() in tools.php to allow user to set all SMTP settings in Configure pane and use SMTP authentication
+- handle resolution and quality 1080p60 (1080p gets recognized and removed, leaving behind 60)
+- decide what to about folder client, then remove all: $client = $config_values['Settings']['Client'];
+
 - after clearing all caches, re-downloaded torrents appear to have seed ratios of Infinity due to item.downloadedEver being 0 at torrentwatch-xa.js on line 480
 
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
-- fix Undefined index: trash in /var/www/html/torrentwatch-xa/torrentwatch-xa.php on line 75
-- clean up and format log output to /tmp/twlog via twxa_debug()
-- PHP Strict Standards:  Only variables should be passed by reference in /var/lib/torrentwatch-xa/lib/config_lib.php on line 421
 
 - PHP Deprecated:  Methods with the same name as their class will not be constructors in a future version of PHP; myAtomParser has a deprecated constructor in /var/lib/torrentwatch-xa/lib/atomparser.php on line 5
+  - original source code here: http://www.the-art-of-web.com/php/atom/?hilite=atom+parser
+  - upgrade atomparser.php and transfer customized lastRSS code across while doing so
 
-- when feed is down: PHP Notice:  Undefined index: http://www.nyaa.se/?page=rss in /var/lib/torrentwatch-xa/lib/feeds.php on line 493
+
+- add error handling to the Transmission functions
 
 - refactor transmission_rpc request code that is used over and over in tools.php functions
+
+- migrate jquery.tinysort.js to tinysort (no longer dependent on jquery and faster) http://tinysort.sjeiti.com
+- upgrade jquery.cookie.js to js-cookie at https://github.com/js-cookie/js-cookie/tree/v1.5.1
+
+- remove support for Internet Explorer
 
 - add Feed Title input above each Feed URL
 
@@ -70,11 +107,10 @@ Unassigned, Realistic (ordered from easiest to hardest)
 
 - fix annoying bug where browser thinks Cmd is still depressed after switching to browser using Cmd-Tab on Mac OS X
 
-- finish tvDB support (commented out as of initial cloning of TorrentWatch-X 0.8.9)
+- finish or remove tvDB support (commented out as of initial cloning of TorrentWatch-X 0.8.9)
 
 - replace all global variables with proper parameter passing
   - $twxa_version
-  - $platform
   - $config_values
   - $html_out
   - $main_timer
@@ -97,7 +133,9 @@ Unassigned, Realistic (ordered from easiest to hardest)
 - delete old episodes that are replaced by REPACK or PROPER
 - browser vertical scroll-bar leaves white region if it pops-out over the feed list; must refresh browser to resize and move feed list's right edge to the left
 
-Dream On! (Highly Unrealistic or Unlikely to Happen)
+Dream On! (Highly unrealistic and/or unlikely to happen)
+==========
+
 - harden the filter input against exploits
 - sqlite for caching and history
 - write test suite and automate tests if possible

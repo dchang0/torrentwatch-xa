@@ -8,10 +8,10 @@ function MailNotify($msg, $subject) {
     if (!empty($emailAddress)) {
         $email = new PHPMailer();
 
-        if (function_exists(dns_get_record) && dns_get_record(gethostname) && dns_get_record(gethostname())) {
+        if (function_exists('dns_get_record') && dns_get_record(gethostname())) {
             $email->From = "torrentwatch-xa@" . gethostname();
         } else {
-            $email->From = "torrentwatch-xa@nxdomain.org"; //TODO fix this domain
+            $email->From = "torrentwatch-xa@localhost";
         }
         $email->FromName = "torrentwatch-xa";
         $email->AddAddress("$emailAddress");
@@ -28,7 +28,7 @@ function MailNotify($msg, $subject) {
         $email->Body = $mail;
 
         if (!$email->Send()) {
-            twxa_debug("Mailer Error: " . $mail->ErrorInfo . "\n");
+            twxa_debug("Mailer Error: " . $email->ErrorInfo . "\n");
         } else {
             twxa_debug("Mail sent to $emailAddress with subject: $subject via: " . $config_values['Settings']['SMTP Server'] . "\n");
         }

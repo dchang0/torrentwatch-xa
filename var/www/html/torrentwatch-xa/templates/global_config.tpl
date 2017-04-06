@@ -78,6 +78,15 @@
                                 <input type="checkbox" name="hidedonate" value="1" <?php echo $hidedonate; ?>/>
                             </div>
                         </div>
+                        <div id="tz" title="Set your Time Zone (Default UTC). See http://php.net/manual/en/timezones.php for a list of supported timezones. Change won't appear to take effect in feed lists until next feed cache refresh.">
+                            <div class="left">
+                                <label class="item">Time Zone:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" name="tz" class="text"
+                                       value="<?php echo $config_values['Settings']['Time Zone']; ?>"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="config_torClient" class="configTab hidden">
@@ -252,15 +261,15 @@
                     <div class="other_settings">
                         <div>
                             <div class="left">
-                                <label class="item checkbox">Send Mail On Hit:</label>
+                                <label class="item checkbox">Email Notifications:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="mailonhit" value="1" <?php echo $mailonhit; ?>/>
+                                <input type="checkbox" name="emailnotify" value="1" <?php echo $emailnotify; ?>/>
                             </div>
                         </div>
-                        <div id="email_address" title="Enter an email address here to send warnings and errors to.">
+                        <div id="email_address" title="Enter an email address here to send downloads and errors to.">
                             <div class="left">
-                                <label class="item">Email Address:</label>
+                                <label class="item">To: Email Address:</label>
                             </div>
                             <div class="right">
                                 <input type="text" name="emailAddress" class="text"
@@ -276,7 +285,7 @@
                                        value="<?php echo $config_values['Settings']['SMTP Server']; ?>"/>
                             </div>
                         </div>
-                        <div id="script" title="Configured script to run on certain events. (Read doc/script.txt for more info).">
+                        <!--<div id="script" title="Configured script to run on certain events.">
                             <div class="left">
                                 <label class="item">Script:</label>
                             </div>
@@ -284,16 +293,7 @@
                                 <input type="text" class="text" readonly="readonly"
                                        value="<?php echo $config_values['Settings']['Script']; ?>"/>
                             </div>
-                        </div>
-                        <div id="tz" title="Set your TimeZone (Default UTC). See http://nl2.php.net/manual/en/timezones.php for a list of supported timezones.">
-                            <div class="left">
-                                <label class="item">TimeZone:</label>
-                            </div>
-                            <div class="right">
-                                <input type="text" name="TZ" class="text"
-                                       value="<?php echo $config_values['Settings']['TimeZone']; ?>"/>
-                            </div>
-                        </div>
+                        </div>-->
                     </div>
                 </div>
                 <div class="buttonContainer">

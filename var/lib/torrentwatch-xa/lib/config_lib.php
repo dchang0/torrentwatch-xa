@@ -1,5 +1,19 @@
 <?php
 
+require_once("twxa_parse.php"); // for guess_feed_type() in add_feed()
+// dynamic config file and config cache file location
+function getConfigCacheDir() {
+    return get_baseDir() . "/config_cache";
+}
+
+function getConfigCache() {
+    return getConfigCacheDir() . "/torrentwatch-xa-config.cache";
+}
+
+function getConfigFile() {
+    return getConfigCacheDir() . "/torrentwatch-xa.config";
+}
+
 function setup_default_config() {
     global $config_values;
 
@@ -13,7 +27,7 @@ function setup_default_config() {
     if (!isset($config_values['Settings'])) {
         $config_values['Settings'] = [];
     }
-    // Sensible Defaults 
+    // Sensible Defaults
     $baseDir = get_baseDir();
     _default('Episodes Only', '0');
     _default('Combine Feeds', '0');
@@ -25,7 +39,7 @@ function setup_default_config() {
     _default('Watch Dir', '');
     _default('Download Dir', '/var/lib/transmission-daemon/downloads');
     _default('Cache Dir', $baseDir . "/rss_cache/");
-    _default('TVDB Dir', $baseDir . "/tvdb_cache/");
+    _default('TVDB Dir', $baseDir . "/tvdb_cache/"); //TODO remove TVDB
     _default('Save Torrents', "0");
     _default('Run torrentwatch-xa', "True");
     _default('Client', "Transmission");
@@ -45,41 +59,38 @@ function setup_default_config() {
     _default('Script', '');
     _default('Email Notifications', '');
     _default('SMTP Server', 'localhost');
-    _default('TimeZone', 'UTC');
+    _default('Time Zone', 'UTC');
     _default('Sanitize Hidelist', '0');
 }
 
 if (!(function_exists('get_baseDir'))) {
 
-    //default function
     function get_baseDir() {
-        return "/var/lib/torrentwatch-xa"; //default, meant for Debian 8.x
+        return "/var/lib/torrentwatch-xa"; // default path
     }
 
 }
 
 if (!(function_exists('get_webDir'))) {
 
-    //default function
     function get_webDir() {
-        return "/var/www/html/torrentwatch-xa"; //default, meant for Debian 8.x
+        return "/var/www/html/torrentwatch-xa"; // default path
     }
 
 }
 
 if (!(function_exists('get_curl_defaults'))) {
-    global $platform;
 
     function get_curl_defaults(&$curlopt) {
         if (extension_loaded("curl")) {
-            $curlopt['CURLOPT_CONNECTTIMEOUT'] = 15;
+            $curlopt[CURLOPT_CONNECTTIMEOUT] = 15;
         }
-        $curlopt['CURLOPT_SSL_VERIFYPEER'] = false;
-        $curlopt['CURLOPT_SSL_VERIFYHOST'] = false;
-        $curlopt['CURLOPT_FOLLOWLOCATION'] = true;
-        $curlopt['CURLOPT_UNRESTRICTED_AUTH'] = true;
-        $curlopt['CURLOPT_TIMEOUT'] = 20;
-        $curlopt['CURLOPT_RETURNTRANSFER'] = true;
+        $curlopt[CURLOPT_SSL_VERIFYPEER] = false;
+        $curlopt[CURLOPT_SSL_VERIFYHOST] = false;
+        $curlopt[CURLOPT_FOLLOWLOCATION] = true;
+        $curlopt[CURLOPT_UNRESTRICTED_AUTH] = true;
+        $curlopt[CURLOPT_TIMEOUT] = 20;
+        $curlopt[CURLOPT_RETURNTRANSFER] = true;
         return($curlopt);
     }
 
@@ -93,14 +104,14 @@ if (!(function_exists('get_curl_defaults'))) {
 
 function read_config_file() {
     global $config_values;
-    $config_file = platform_getConfigFile();
-    $config_cache = platform_getConfigCache();
+    $config_file = getConfigFile();
+    $config_cache = getConfigCache();
 
     $comment = ";";
     $group = "NONE";
 
     if (!file_exists($config_file)) {
-        twxa_debug("No config file found--creating default config\n", 0);
+        twxa_debug("No config file found--creating default config at $config_file\n", 0);
         write_config_file();
     }
 
@@ -182,13 +193,13 @@ function read_config_file() {
                 'Type' => 'RSS',
                 'seedRatio' => '-1',
                 'Name' => 'Anime (Aggregated)'
-            ]            
+            ]
         ];
         write_config_file();
     }
 
-    if (isset($config_values['Settings']['TimeZone'])) {
-        date_default_timezone_set($config_values['Settings']['TimeZone']);
+    if (isset($config_values['Settings']['Time Zone'])) {
+        date_default_timezone_set($config_values['Settings']['Time Zone']);
     }
 
     return true;
@@ -201,8 +212,8 @@ function get_client_passwd() {
 
 function write_config_file() {
     global $config_values, $config_out;
-    $config_file = platform_getConfigFile();
-    $config_cache = platform_getConfigCache();
+    $config_file = getConfigFile();
+    $config_cache = getConfigCache();
 
     twxa_debug("Preparing to write config file to $config_file\n");
 
@@ -283,8 +294,8 @@ function update_global_config() {
     global $config_values;
     $input = array('Email Address' => 'emailAddress',
         'SMTP Server' => 'smtpServer',
-        'TimeZone' => 'TZ',
-        'Email Notifications' => 'mailonhit',
+        'Time Zone' => 'tz',
+        'Email Notifications' => 'emailnotify',
         'Transmission Login' => 'truser',
         'Transmission Password' => 'trpass',
         'Transmission Host' => 'trhost',
@@ -318,16 +329,21 @@ function update_global_config() {
         'Download Proper' => 'fetchproper',
         'Auto-Del Seeded Torrents' => 'autodel',
         'Default Feed All' => 'favdefaultall',
-        'Email Notifications' => 'mailonhit');
+        'Email Notifications' => 'emailnotify');
 
+    //TODO figure out how the config settings overwrite themselves
     foreach ($input as $key => $data) {
         if (isset($_GET[$data])) {
             $config_values['Settings'][$key] = $_GET[$data];
-        }
+        } // cannot overwrite $config_values['Settings'][$key] with null because $config_values['Settings']['truri'] isn't accessible via Configure pane
     }
 
     foreach ($checkboxes as $key => $data) {
-        $config_values['Settings'][$key] = $_GET[$data]; //TODO fix Undefined index notices by figuring out why this line is not preceded by isset($_GET[$data])
+        if (isset($_GET[$data])) {
+            $config_values['Settings'][$key] = $_GET[$data];
+        } else {
+            $config_values['Settings'][$key] = null; // this works until there is a checkbox that doesn't get set by the Configure pane
+        }
     }
     return;
 }
@@ -348,10 +364,9 @@ function update_favorite() {
             break;
     }
     write_config_file();
-    if(isset($response)) {
+    if (isset($response)) {
         return $response;
-    }
-    else {
+    } else {
         return;
     }
 }
@@ -360,7 +375,7 @@ function update_feed() {
     if ($_GET['button'] == "Delete") {
         del_feed();
     } else if ($_GET['button'] == "Update") {
-        update_feedData();
+        update_feed_data();
     } else {
         $link = $_GET['link'];
         add_feed($link);
@@ -418,13 +433,15 @@ function add_favorite() {
         $idx = $_GET['idx'];
     } else if (isset($_GET['name'])) {
         $config_values['Favorites'][]['Name'] = $_GET['name'];
-        $idx = end(array_keys($config_values['Favorites']));
+        $arrayKeys = array_keys($config_values['Favorites']);
+        $idx = end($arrayKeys);
+        //$idx = end(array_keys($config_values['Favorites']));
         $_GET['idx'] = $idx; // So display_favorite_info() can see it
     } else {
         //TODO add check for bad episode format
         return("Error: Bad form data, not added to favorites");
     } // Bad form data
-    
+
     $list = array("name" => "Name",
         "filter" => "Filter",
         "not" => "Not",
@@ -443,19 +460,18 @@ function add_favorite() {
             $config_values['Favorites'][$idx][$data] = "";
         }
     }
-    
+
     // parse episode notation
-    if($config_values['Favorites'][$idx]['Season'] == '' && $config_values['Favorites'][$idx]['Episode'] != '') {
+    if ($config_values['Favorites'][$idx]['Season'] == '' && $config_values['Favorites'][$idx]['Episode'] != '') {
         $tempMatches = [];
-        if(preg_match('/(\d+)\s*[xX]\s*(\d+)/', $config_values['Favorites'][$idx]['Episode'], $tempMatches)) {
+        if (preg_match('/(\d+)\s*[xX]\s*(\d+)/', $config_values['Favorites'][$idx]['Episode'], $tempMatches)) {
             $config_values['Favorites'][$idx]['Episode'] = $tempMatches[2];
             $config_values['Favorites'][$idx]['Season'] = $tempMatches[1];
-        }
-        else if(preg_match('/^(\d{8})$/', $config_values['Favorites'][$idx]['Episode'])) {
-            $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0        
+        } else if (preg_match('/^(\d{8})$/', $config_values['Favorites'][$idx]['Episode'])) {
+            $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0
         }
     }
-
+    twxa_debug(print_r($config_values['Favorites'], true) . "\n");
     $favInfo['title'] = $_GET['name'];
     $favInfo['quality'] = $_GET['quality'];
     $favInfo['feed'] = urlencode($_GET['feed']);
@@ -471,7 +487,7 @@ function del_favorite() {
 }
 
 function updateFavoriteEpisode(&$fav, $ti) {
-    if (!$guess = detectMatch($ti, TRUE)) {
+    if (!$guess = detectMatch($ti)) {
         return;
     }
 
@@ -520,44 +536,47 @@ function updateFavoriteEpisode(&$fav, $ti) {
     } else {
         $fav['Episode'] .= $PROPER;
     }
+    twxa_debug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n");
     write_config_file();
 }
 
-function add_feed($link) {
-    global $config_values;
-    $link = preg_replace('/ /', '%20', $link);
-    $link = preg_replace('/^%20|%20$/', '', $link);
-    twxa_debug('Adding feed: ' . $link . "\n");
+function add_feed($feedLink) {
+    global $config_values; //TODO fix global
+    $feedLink = preg_replace('/ /', '%20', $feedLink);
+    $feedLink = preg_replace('/^%20|%20$/', '', $feedLink);
+    twxa_debug('Checking feed: ' . $feedLink . "\n");
 
-    if (isset($link) AND ( $tmp = guess_feedtype($link)) != 'Unknown') {
-        twxa_debug('Really adding feed\n');
-        $config_values['Feeds'][]['Link'] = $link;
-        $idx = end(array_keys($config_values['Feeds']));
-        $config_values['Feeds'][$idx]['Type'] = $tmp;
+    if (isset($feedLink) AND ( $guessedFeedType = guess_feed_type($feedLink)) != 'Unknown') {
+        twxa_debug("Adding feed: " . $feedLink . "\n");
+        $config_values['Feeds'][]['Link'] = $feedLink;
+        $arrayKeys = array_keys($config_values['Feeds']);
+        $idx = end($arrayKeys);
+        $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
         $config_values['Feeds'][$idx]['seedRatio'] = $config_values['Settings']['Default Seed Ratio'];
-        load_feeds(array(0 => array('Type' => $tmp, 'Link' => $link)));
-        switch ($tmp) {
+        load_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)));
+        switch ($guessedFeedType) {
             case 'RSS':
-                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$link]['title'];
+                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedLink]['title'];
                 break;
             case 'Atom':
-                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$link]['FEED']['TITLE'];
+                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedLink]['FEED']['TITLE'];
                 break;
         }
     } else {
-        twxa_debug("Could not connect to Feed/guess Feed Type\n", -1);
+        twxa_debug("Could not connect to feed or guess feed type: " . $feedLink . "\n", -1);
     }
 }
 
-function update_feedData() {
-    global $config_values;
-    twxa_debug('Updating feed: ' . $idx . '\n');
-    if (isset($_GET['idx']) AND isset($config_values['Feeds'][$_GET['idx']])) {
+function update_feed_data() {
+    global $config_values; //TODO fix global
+    if (isset($_GET['idx']) && isset($config_values['Feeds'][$_GET['idx']])) {
         if (!($_GET['feed_name']) || !($_GET['feed_link'])) {
             return;
         }
 
         $old_feedurl = $config_values['Feeds'][$_GET['idx']]['Link'];
+
+        twxa_debug('Updating feed: ' . $old_feedurl . "\n");
 
         foreach ($config_values['Favorites'] as &$favorite) {
             if ($favorite['Feed'] == $old_feedurl) {
@@ -569,12 +588,16 @@ function update_feedData() {
         $config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/ /', '%20', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/^%20|%20$/', '', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['seedRatio'] = $_GET['seed_ratio'];
+    } else {
+        twxa_debug("Unable to update feed. Could not find feed index: " . $_GET['idx'] . "\n");
     }
 }
 
 function del_feed() {
-    global $config_values;
-    if (isset($_GET['idx']) AND isset($config_values['Feeds'][$_GET['idx']])) {
+    global $config_values; //TODO fix global
+    if (isset($_GET['idx']) && isset($config_values['Feeds'][$_GET['idx']])) {
         unset($config_values['Feeds'][$_GET['idx']]);
+    } else {
+        twxa_debug("Unable to delete feed. Could not find feed index: " . $_GET['idx'] . "\n");
     }
 }

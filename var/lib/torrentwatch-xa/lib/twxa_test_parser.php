@@ -1,9 +1,8 @@
 <?php
 
-/* simple pseudo-unit-tester for the new twxa parsing engine */
+// simple pseudo-unit-tester for the parsing and matching engine
 
-include_once 'rss_dl_utils.php';
-include_once 'twxa_parse.php';
-include_once 'guess.php';
+require_once 'rss_dl_utils.php';
+require_once 'twxa_parse.php';
 
-print_r(detectMatch($argv[1],true));
+print_r(detectMatch($argv[1]));

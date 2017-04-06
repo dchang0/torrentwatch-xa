@@ -1,16 +1,17 @@
 <?php
 
 /*
- * client.php
- * Client specific functions
+ * tor_client.php
+ * client specific functions
  */
 
 function transmission_sessionId() {
-    global $config_values, $platform;
+    global $config_values;
     $sessionIdFile = get_tr_sessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) {
         $myuid = posix_getuid();
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>";
+        twxa_debug("Transmission Session ID File: " . $sessionIdFile . " is not writable for uid: $myuid\n");
         return;
     }
 
@@ -26,8 +27,7 @@ function transmission_sessionId() {
         $tr_pass = get_client_passwd();
         $tr_host = $config_values['Settings']['Transmission Host'];
         $tr_port = $config_values['Settings']['Transmission Port'];
-        $tr_uri = $config_values['Settings']['Transmission URI'];
-
+        $tr_uri = $config_values['Settings']['Transmission URI']; //TODO what to do if this is blank and not /transmission/rpc ?
 
         $sid = curl_init();
         $curl_options = array(CURLOPT_URL => "http://$tr_host:$tr_port$tr_uri",
@@ -78,7 +78,8 @@ function transmission_rpc($request) {
         $SessionId = transmission_sessionId();
 
         $post = curl_init();
-        $curl_options = array(CURLOPT_URL => "http://$tr_host:$tr_port$tr_uri",
+        $curl_options = array(
+            CURLOPT_URL => "http://$tr_host:$tr_port$tr_uri",
             CURLOPT_USERPWD => "$tr_user:$tr_pass",
             CURLOPT_HTTPHEADER => array(
                 "POST $tr_uri HTTP/1.1",
@@ -111,21 +112,21 @@ function get_deep_dir($dest, $tor_name) {
         case '0':
             break;
         case 'Title_Season':
-            $guess = detectMatch($tor_name, TRUE);
-            if (isset($guess['title']) && isset($guess['episode'])) {
+            $guess = detectMatch($tor_name);
+            if (isset($guess['favoriteTitle']) && isset($guess['episode'])) {
                 if (preg_match('/^(\d{1,3})x\d+p?$/', $guess['episode'], $Season)) {
-                    $dest = $dest . "/" . ucwords(strtolower($guess['title'])) . "/Season " . $Season[1];
+                    $dest = $dest . "/" . ucwords(strtolower($guess['favoriteTitle'])) . "/Season " . $Season[1];
                 } else if (preg_match('/^(\d{4})\d{4}$/', $guess['episode'], $Year)) {
-                    $dest = $dest . "/" . ucwords(strtolower($guess['title'])) . "/" . $Year[1];
+                    $dest = $dest . "/" . ucwords(strtolower($guess['favoriteTitle'])) . "/" . $Year[1];
                 } else {
-                    $dest = $dest . "/" . ucwords(strtolower($guess['title']));
+                    $dest = $dest . "/" . ucwords(strtolower($guess['favoriteTitle']));
                 }
                 break;
             }
             twxa_debug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
         case 'Title':
-            $guess = detectMatch($tor_name, TRUE);
-            if (isset($guess['title'])) {
+            $guess = detectMatch($tor_name);
+            if (isset($guess['favoriteTitle'])) {
                 $dest = $dest . "/" . ucwords(strtolower($guess['title']));
                 break;
             }
@@ -152,8 +153,9 @@ function folder_add_torrent($tor, $dest, $ti) {
 function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     global $config_values;
     // transmission dies with bad folder if it doesn't end in a /
-    if (substr($dest, strlen($dest) - 1, 1) != '/')
+    if (substr($dest, strlen($dest) - 1, 1) != '/') {
         $dest .= '/';
+    }
 
     if (preg_match('/^magnet:/', $tor)) {
         $request = array('method' => 'torrent-add',
@@ -170,10 +172,13 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     }
     $response = transmission_rpc($request);
 
-    $torHash = $response['arguments']['torrent-added']['hashString']; //TODO: fix if torrent-added is not defined
-
-    if (isset($response['result']) AND ( $response['result'] == 'success')) {
+    if (isset($response['result']) && ( $response['result'] == 'success')) {
         $cache = $config_values['Settings']['Cache Dir'] . "/rss_dl_" . filename_encode($ti);
+        if (isset($response['arguments']['torrent-added'])) {
+            $torHash = $response['arguments']['torrent-added']['hashString'];
+        } else {
+            $torHash = null;
+        }
         if ($torHash) {
             $handle = fopen("$cache", "w");
             fwrite($handle, $torHash);
@@ -192,7 +197,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
         }
 
         return 0;
-    } else if ($response['result'] == 'duplicate torrent') {
+    } else if (isset($response['arguments']['torrent-duplicate']) || $response['result'] == 'duplicate torrent') {
         return "Duplicate Torrent";
     } else {
         if (!isset($response['result']))
@@ -213,7 +218,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
         $magnet = 1;
     }
 
-    if (!isset($magnet) || !$magnet) { //TODO test the addition of isset here
+    if (!isset($magnet) || !$magnet) {
         $filename = htmlspecialchars_decode($filename);
 
         // Detect and append cookies from the feed url
@@ -274,10 +279,10 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
     $dest = get_deep_dir(preg_replace('/\/$/', '', $dest), $tor_name);
 
     $transmissionHost = $config_values['Settings']['Transmission Host'];
-    if($transmissionHost == '127.0.0.1' || $transmissionHost == 'localhost') { //TODO add other tests to see if transmission is running locally, such as checking the hostname and IPs on this machine
-        if(file_exists($dest)) { //TODO add error handling
+    if ($transmissionHost == '127.0.0.1' || $transmissionHost == 'localhost') { //TODO add other tests to see if transmission is running locally, such as checking the hostname and IPs on this machine
+        if (file_exists($dest)) { //TODO add error handling
             // path exists, is it a file or directory?
-            if(!is_dir($dest)) {
+            if (!is_dir($dest)) {
                 // it's a file--destroy and recreate it as a directory
                 $old_umask = umask(0);
                 twxa_debug("Attempting to destroy file and recreate as directory: " . $dest . "\n");
@@ -285,13 +290,12 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
                 mkdir($dest, 0777, TRUE);
                 umask($old_umask);
             }
-        }
-        else {
+        } else {
             // path doesn't exist, create it as a directory
             $old_umask = umask(0);
             twxa_debug("Attempting to create directory: " . $dest . "\n");
             mkdir($dest, 0777, TRUE);
-            umask($old_umask);        
+            umask($old_umask);
         }
     }
 
@@ -345,13 +349,15 @@ function client_add_torrent($filename, $dest, $ti, $feed = NULL, &$fav = NULL, $
         return "Success";
     } else {
         twxa_debug("Failed Starting: $tor_name  Error: $return\n", -1);
-
+        //TODO improve error reporting for this block
         $msg = "torrentwatch-xa tried to start \"$tor_name\". But this failed with the following error:\n\n";
         $msg.= "$return\n";
-
-        $subject = "torrentwatch-xa: Error while trying to start $tor_name.";
-        MailNotify($msg, $subject);
-        run_script('error', $ti, $msg);
+        if ($config_values['Settings']['Email Notifications'] == 1) {
+            $subject = "torrentwatch-xa: Error while trying to start $tor_name.";
+            MailNotify($msg, $subject);
+        } else {
+            run_script('error', $ti, $msg);
+        }
         return "Error: $return";
     }
 }
@@ -374,7 +380,7 @@ function find_torrent_link($url_old, $content) {
         if ($ret) {
             foreach ($matches[1] as $match) {
                 if (!preg_match('/^https?:\/\//', $match)) {
-                    if (preg_match('^/', $match)) {
+                    if (preg_match('#^/#', $match)) { //TODO test if adding delimiters worked in accordance with intent of test
                         $match = dirname($url_old) . $match;
                     } else {
                         $match = dirname($url_old) . '/' . $match;

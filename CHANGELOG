@@ -192,3 +192,63 @@ Code changes
 - added missing braces to some conditional blocks in several files
 - fixed PHP Notice:  Undefined index: Feed in /var/lib/torrentwatch-xa/lib/feeds.php on line 183
 - fixed PHP Notice:  Undefined index: Filter in /var/lib/torrentwatch-xa/lib/feeds.php on line 207
+
+0.2.6
+
+No functional changes this release
+
+Code changes
+- completely cleaned up update_hidelist.php and moved its contents into update_hidelist() in torrentwatch-xa.php
+- completely cleaned up twxa_test_parser.php
+- deleted useless $platform global variable and platform_initialize()
+- merged platform.php into config_lib.php 
+- refactored platform_getConfigFile(), platform_getConfigCache(), and platform_get_configCacheDir(), removing platform_ prefix from each
+- deleted unused and obsolete cleanup.sh
+- refactored setup_rss_list_html() into start_feed_list()
+- refactored show_feed_html() into show_feed_list()
+- refactored close_feed_html() into close_feed_list()
+- refactored show_down_feed() into show_feed_down_header()
+- refactored show_torrent_html() into show_feed_item()
+- converted global $html_out in html.php to parameters
+- renamed html.php to twxa_html.php
+- removed $normalize toggle from detectMatch
+- call detectMatch() only once between show_feed_item() and its call to templates/feed_item.tpl to improve performance
+- merged guess.php into twxa_parse.php
+- fixed: after clearing all caches, PHP Warning:  preg_match(): No ending delimiter '^' found in /var/lib/torrentwatch-xa/lib/tor_client.php on line 376 (377)
+- upgraded jquery to latest 1.12.4, following 1.9 upgrade guide http://jquery.com/upgrade-guide/1.9/#live-removed and using JQuery Migrate 1.4.1 plugin
+- upgraded jquery.form.js from 2.43 to 4.2.1 minified per https://github.com/jquery-form/form
+- fixed: PHP Notice:  Undefined offset: 1 in /var/lib/torrentwatch-xa/lib/twxa_parse.php on line 387
+- fixed: PHP Notice:  Undefined variable: idx in /var/lib/torrentwatch-xa/lib/config_lib.php on line 551
+- refactored guess_feedtype() to guess_feed_type() and cleaned it up
+- set default return value of guess_feed_type() back to "Unknown" for add_feed() to properly handle bad feeds, bypassing the following errors:
+    - PHP Notice:  Undefined index: http://eztv.ag/ in /var/lib/torrentwatch-xa/lib/config_lib.php on line 538
+    - PHP Notice:  Undefined index: http://eztv.ag/ in /var/lib/torrentwatch-xa/lib/feeds.php on line 500
+- cleaned up add_feed() and fixed: PHP Notice: Only variables should be passed by reference in /var/lib/torrentwatch-xa/lib/config_lib.php on line 532
+- fixed: PHP Notice: Only variables should be passed by reference in /var/lib/torrentwatch-xa/lib/config_lib.php on line 421
+- refactored update_feedData() to update_feed_data()
+- renamed NMT-mailscript.sh to example-mailscript.sh and improved its comments,
+- hid the Configure > Other > Script field since it is read-only
+- upgraded PHPMailer from 5.2 to 5.2.23, but not using any of the SMTP auth features yet
+- cleaned up all the undefined variable PHP notices that occur when Configuration is saved:
+  - PHP Notice:  Undefined index: combinefeeds in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
+  - PHP Notice:  Undefined index: epionly in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
+  - PHP Notice:  Undefined index: require_epi_info in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
+  - PHP Notice:  Undefined index: dishidelist in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
+  - PHP Notice:  Undefined index: hidedonate in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
+  - PHP Notice:  Undefined index: savetorrents in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
+- fixed fatal typo bugs in MailNotify()
+- fixed: when deleting a downloaded torrent from the Transmission list, PHP Notice:  Undefined index: trash in /var/www/html/torrentwatch-xa/torrentwatch-xa.php on line 67
+- renamed TODO to TODO.md since it was already in Markdown syntax
+- refactored mailonhit to emailnotify
+- changed 'TimeZone' to 'Time Zone' and 'TZ' to 'tz' in $config_values['Settings']
+- moved Time Zone: field from Configure > Other to Configure > Interface
+- changed 'Email Address' label to 'To: Email Address' in Configure > Other
+- fixed: after clearing all caches and refreshing, PHP Notice:  Undefined index: torrent-added in /var/lib/torrentwatch-xa/lib/tor_client.php on line 173
+- fixed: PHP Notice:  Undefined property: lastRSS::$rsscp in /var/lib/torrentwatch-xa/lib/lastRSS.php on line 115 by adding private member $rsscp to lastRSS class
+- cleaned up lastRSS.php a bit
+- deleted curl.php because it is a buggy replacement for PHP's built-in curl support (php5-curl package on Ubuntu)
+- changed CURLOPT_ constants in get_curl_defaults() from strings to integers to conform to spec
+
+
+IN PROGRESS
+

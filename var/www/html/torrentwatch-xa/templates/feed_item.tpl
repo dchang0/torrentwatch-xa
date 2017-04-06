@@ -61,19 +61,16 @@ if($matched == "downloading" || $matched == "downloaded" || $matched == "cachehi
     $torTrash = "torTrash hidden";
 }
 
-$guessed = detectMatch($utitle, TRUE); // $guessed is the normalized version of $guess
-$showTitle = $guessed['title'];
-$showQuality = $guessed['qualities'];
-$debugMatch = $guessed['debugMatch'];
+$showTitle = $guess['favoriteTitle'];
+$showQuality = $guess['qualities'];
+$debugMatch = $guess['debugMatch'];
 
 if($guess['episode'] != 'noShow') {
     if($guess['episode'] != 'fullSeason') {
         if($guess['episode'] != '') {
-        //    $showEpisodeNumber = $guess['episode'] . "&nbsp;&nbsp;&nbsp;(" . $guessed['episode'] . ")" . "&nbsp;&nbsp;&nbsp;";
-        $showEpisodeNumber = $showEpisodeNumber . "<b>" . $guessed['episode'] . "</b>&nbsp;&nbsp;&nbsp;";
+            $showEpisodeNumber = $showEpisodeNumber . "<b>" . $guess['episode'] . "</b>&nbsp;&nbsp;&nbsp;";
         }
     }
-    //$epiDiv = "<div class=\"contextItem episodeInfo\" onclick='javascript:$.episodeInfo(\"$utitle\")'>Episode Info</p></div>"; //TODO part of tvDB
 }
 
 //TODO what does 'client_id" below do if it is the same as $id?

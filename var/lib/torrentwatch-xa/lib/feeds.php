@@ -122,7 +122,7 @@ function episode_filter($item, $filter) {
     $validateReg = '([0-9]+)(?:x([0-9]+))?';
     if (preg_match("/\dx\d-\dx\d/", $filter)) {
         if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0 || preg_match("/^{$validateReg}/", $filter) === 0) {
-            twxa_debug('Bad episode filter: ' . $filter . '\n');
+            twxa_debug('Bad episode filter: ' . $filter . "\n");
             return True; // bad filter, just accept all
         }
     }
@@ -213,7 +213,7 @@ function check_for_torrent(&$item, $key, $opts) {
     }
 
     if ($hit) {
-        $guess = detectMatch($ti, TRUE);
+        $guess = detectMatch($ti);
     }
 
     if ($hit && episode_filter($guess, $item['Episodes']) == true) {
@@ -226,16 +226,16 @@ function check_for_torrent(&$item, $key, $opts) {
             if ((!isset($any) || !$any) && _isset($config_values['Settings'], 'Only Newer') == 1) { //TODO test !isset($any) || logic
                 if (!empty($guess['episode']) && preg_match('/^(\d+)x(\d+)p?$|^(\d{8})p?$/i', $guess['episode'], $regs)) {
                     if (isset($regs[3]) && preg_match('/^(\d{8})$/', $regs[3]) && $item['Episode'] >= $regs[3]) {
-                        twxa_debug("Not newer by date: " . $item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1);
+                        twxa_debug("Not newer by date: " . $item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[3] . "\r\n", 1); //TODO improve verbiage
                         $matched = "old";
                         return FALSE;
                     } else if (isset($regs[1]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] > $regs[1]) {
-                        twxa_debug("Not newer by season: " . $item['Name'] . ": " . $item['Season'] . ' > ' . $regs[1] . "\r\n", 1);
+                        twxa_debug("Not newer by season: " . $item['Name'] . ": " . $item['Season'] . ' > ' . $regs[1] . "\r\n", 1); //TODO improve verbiage
                         $matched = "old";
                         return FALSE;
                     } else if (isset($regs[2]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] == $regs[1] && $item['Episode'] >= $regs[2]) {
                         if (!preg_match('/proper|repack|rerip/i', $rs['title'])) {
-                            twxa_debug("Not newer by season x episode: " . $item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[2] . "\r\n", 1);
+                            twxa_debug("Not newer by season x episode: " . $item['Name'] . ": " . $item['Episode'] . ' >= ' . $regs[2] . "\r\n", 1); //TODO improve verbiage
                             $matched = "old";
                             return FALSE;
                         } else if ($PROPER == 1) {
@@ -330,19 +330,19 @@ function get_torHash($cache_file) {
 }
 
 function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
-    global $config_values, $matched;
+    global $config_values, $matched, $html_out; //TODO fix global
 
     twxa_debug("Processing RSS feed: $feedName\n");
     if (count($rs['items']) == 0) {
-        twxa_debug("Feed is down!\n");
-        show_down_feed($idx);
+        twxa_debug("Feed is down: $feedName\n");
+        $html_out = show_feed_down_header($idx, $html_out);
         return;
     }
 
     $percPerFeed = 80 / count($config_values['Feeds']);
     $percPerItem = $percPerFeed / count($rs['items']);
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        show_feed_html($idx);
+        $html_out = show_feed_list($idx, $html_out);
     }
     $alt = 'alt';
 
@@ -367,7 +367,7 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
             $torHash = get_torHash($cache_file);
             if ($matched != "match" && $matched != 'cachehit' && file_exists($cache_file)) {
                 $matched = 'downloaded';
-                twxa_debug("matched downloaded: " . $item['title'] . "\n", 1);
+                twxa_debug("Already downloaded; ignoring: " . $item['title'] . "\n", 1);
             }
         }
         if (isset($config_values['Global']['HTMLOutput'])) {
@@ -400,18 +400,18 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     }
     $htmlList = array_reverse($htmlList, true);
     foreach ($htmlList as $item) {
-        show_torrent_html($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);
+        $html_out = show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id'], $html_out);
     }
 
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        close_feed_html($idx, 0);
+        $html_out = close_feed_list($html_out);
     }
     unset($item);
     twxa_debug("Done processing RSS feed: $feedName\n");
 }
 
 function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
-    global $config_values, $matched;
+    global $config_values, $matched, $html_out; //TODO fix global
 
     $atom = array_change_key_case_ext($atom, ARRAY_KEY_LOWERCASE);
 
@@ -422,7 +422,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     }
 
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        show_feed_html($idx);
+        $html_out = show_feed_list($idx, $html_out);
     }
     $alt = 'alt';
     $htmlList = [];
@@ -438,7 +438,7 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
             $torHash = get_torHash($cache_file);
             if ($matched != "match" && $matched != 'cachehit' && file_exists($cache_file)) {
                 $matched = 'downloaded';
-                twxa_debug("matched downloaded: " . $item['title'] . "\n", 1);
+                twxa_debug("Already downloaded; ignoring: " . $item['title'] . "\n", 1);
             }
         }
         if (isset($config_values['Global']['HTMLOutput'])) {
@@ -472,25 +472,25 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     //twxa_debug(print_r($htmlList, true)); //TODO dumps lots of output into log
     $htmlList = array_reverse($htmlList, true);
     foreach ($htmlList as $item) {
-        show_torrent_html($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);
+        $html_out = show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id'], $html_out);
     }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        close_feed_html($idx, 0);
+        $html_out = close_feed_list($html_out);
     }
     unset($item);
     twxa_debug("Done processing Atom feed: $feedName\n");
 }
 
 function feeds_perform_matching($feeds) {
-    global $config_values;
+    global $config_values, $html_out; //TODO fix global
 
     if (isset($config_values['Global']['HTMLOutput'])) {
-        echo('<div class="progressBarUpdates">');
-        setup_rss_list_html();
+        echo('<div class="progressBarUpdates">'); //TODO why does this echo to console and not into $html_out?
+        $html_out = show_feed_lists_container();
     }
 
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
-        show_feed_html(0);
+        $html_out = show_feed_list(0, $html_out);
     }
 
     cache_setup();
@@ -509,18 +509,16 @@ function feeds_perform_matching($feeds) {
     }
 
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
-        close_feed_html();
+        $html_out = close_feed_list($html_out);
     }
 
     if ($config_values['Settings']['Client'] == "Transmission") {
-        show_transmission_div();
+        $html_out = show_transmission_div($html_out);
     }
 
     if (isset($config_values['Global']['HTMLOutput'])) {
-        echo('</div>');
-        if (function_exists('finish_rss_list_html')) {
-            finish_rss_list_html();
-        }
+        echo('</div>'); //TODO why does this echo to console and not into $html_out?
+        $html_out = close_feed_lists_container($html_out);
     }
 }
 

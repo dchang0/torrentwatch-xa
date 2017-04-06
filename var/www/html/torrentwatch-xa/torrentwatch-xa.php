@@ -11,15 +11,7 @@ ini_set('include_path', '.:./php');
 error_reporting(E_ALL);
 require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch this to use get_base_dir()
 
-// TVDB and TMDB Disabled for now
-/*
-  require_once('api/TMDb.php');
-  require_once('api/TVDB.php');
- */
-
-global $platform;
-
-$twxa_version[0] = "0.2.5";
+$twxa_version[0] = "0.2.6";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
@@ -72,7 +64,11 @@ function parse_options() {
             echo $response;
             exit;
         case 'delTorrent':
-            $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['batch']);
+            if (isset($_REQUEST['trash'])) {
+                $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['batch']);
+            } else {
+                $response = delTorrent($_REQUEST['delTorrent'], false, $_REQUEST['batch']);
+            }
             echo "$response";
             exit;
         case 'stopTorrent':
@@ -119,13 +115,13 @@ function parse_options() {
             if (!($seedRatio)) {
                 $seedRatio = -1;
             }
-            if (($tmp = detectMatch(html_entity_decode($_GET['title']), TRUE))) {
-                $_GET['name'] = trim(strtr($tmp['title'], "._", "  "));
+            if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
+                $_GET['name'] = trim(strtr($tmp['favoriteTitle'], "._", "  "));
                 if ($config_values['Settings']['MatchStyle'] == "glob") {
-                    $_GET['filter'] = trim(strtr($tmp['title'], " ._", "???"));
+                    $_GET['filter'] = trim(strtr($tmp['favoriteTitle'], " ._", "???"));
                     $_GET['filter'] .= '*';
                 } else {
-                    $_GET['filter'] = trim($tmp['title']);
+                    $_GET['filter'] = trim($tmp['favoriteTitle']);
                 }
                 //$_GET['quality'] = $tmp['qualities'];
                 $_GET['quality'] = 'All';
@@ -156,8 +152,8 @@ function parse_options() {
             if ($response) {
                 echo "ERROR:$response";
             } else {
-                $guess = detectMatch(html_entity_decode($_GET['hide']), TRUE);
-                echo $guess['title'];
+                $guess = detectMatch(html_entity_decode($_GET['hide']));
+                echo $guess['favoriteTitle'];
             }
             exit;
         case 'delHidden':
@@ -259,7 +255,7 @@ function display_global_config() {
 
     $hidedonate = $savetorrent = $transmission = "";
     $deepfull = $deeptitle = $deepTitleSeason = $deepoff = $verifyepisode = "";
-    $matchregexp = $matchglob = $matchsimple = $dishidelist = $mailonhit = "";
+    $matchregexp = $matchglob = $matchsimple = $dishidelist = $emailnotify = "";
     $favdefaultall = $onlynewer = $fetchproper = $autodel = $folderclient = $epionly = $combinefeeds = $require_epi_info = "";
 
     switch ($config_values['Settings']['Client']) {
@@ -289,7 +285,7 @@ function display_global_config() {
         $savetorrent = 'checked=1';
     }
     if ($config_values['Settings']['Email Notifications'] == 1) {
-        $mailonhit = 'checked=1';
+        $emailnotify = 'checked=1';
     }
 
     switch ($config_values['Settings']['Deep Directories']) {
@@ -372,6 +368,16 @@ function display_hidelist() {
     return ob_get_contents();
 }
 
+function update_hidelist() {
+    global $config_values;
+
+    foreach ($config_values['Hidden'] as $key => $hidden) {
+        unset($config_values['Hidden'][$key]);
+        $config_values['Hidden'][strtolower(strtr($key, array(":" => "", "," => "", "'" => "", "." => " ", "_" => " ")))] = "hidden";
+    }
+    return;
+}
+
 function display_feeds() {
     global $config_values, $html_out;
 
@@ -412,49 +418,49 @@ function display_transmission() {
     return ob_get_contents();
 }
 
-function episode_info($show, $episode_num, $isShow, $epiInfo) {
-    $temp = explode('x', $episode_num);
-    $episode = $show->getEpisode($temp[0], $temp[1]);
-    twxa_debug(print_r($episode, TRUE));
+/* function episode_info($show, $episode_num, $isShow, $epiInfo) {
+  $temp = explode('x', $episode_num);
+  $episode = $show->getEpisode($temp[0], $temp[1]);
+  twxa_debug(print_r($episode, TRUE));
 
-    $name = $show->seriesName;
-    $episode_name = $episode->name;
-    $text = empty($episode->overview) ? $show->overview : $episode->overview;
-    $image = empty($episode->filename) ? '' : cacheImage('http://thetvdb.com/banners/' . $episode->filename);
-    $rating = $show->rating;
-    $airdate = date('M d, Y', $episode->firstAired);
-    $actors = [];
-    if ($episode->guestStars) {
-        foreach ($episode->guestStars as $person_name) {
-            $guests[] = $person_name;
-        }
-    }
-    if ($show->actors) {
-        foreach ($show->actors as $person_name) {
-            $actors[] = $person_name;
-        }
-    }
-    $directors = [];
-    if ($episode->directors) {
-        foreach ($episode->directors as $person_name) {
-            $directors[] = $person_name;
-        }
-    }
-    $writers = [];
-    if ($episode->writers) {
-        foreach ($episode->writers as $person_name) {
-            $writers[] = $person_name;
-        }
-    }
-    ob_start();
-    require('templates/episode.tpl');
-    return ob_get_contents();
-}
+  $name = $show->seriesName;
+  $episode_name = $episode->name;
+  $text = empty($episode->overview) ? $show->overview : $episode->overview;
+  $image = empty($episode->filename) ? '' : cacheImage('http://thetvdb.com/banners/' . $episode->filename);
+  $rating = $show->rating;
+  $airdate = date('M d, Y', $episode->firstAired);
+  $actors = [];
+  if ($episode->guestStars) {
+  foreach ($episode->guestStars as $person_name) {
+  $guests[] = $person_name;
+  }
+  }
+  if ($show->actors) {
+  foreach ($show->actors as $person_name) {
+  $actors[] = $person_name;
+  }
+  }
+  $directors = [];
+  if ($episode->directors) {
+  foreach ($episode->directors as $person_name) {
+  $directors[] = $person_name;
+  }
+  }
+  $writers = [];
+  if ($episode->writers) {
+  foreach ($episode->writers as $person_name) {
+  $writers[] = $person_name;
+  }
+  }
+  ob_start();
+  require('templates/episode.tpl');
+  return ob_get_contents();
+  } */
 
 function show_info($ti) {
     // remove soft hyphens
     $ti = str_replace("\xC2\xAD", "", $ti);
-    $episode_data = detectMatch($ti, true);
+    $episode_data = detectMatch($ti);
 
     if ($episode_data === false) {
         $isShow = false;
@@ -467,19 +473,19 @@ function show_info($ti) {
             $epiInfo = 0;
         }
         $isShow = $episode_data['episode'] == 'noShow' ? false : true;
-        $name = $episode_data['title'];
+        $name = $episode_data['favoriteTitle'];
         $data = $episode_data['qualities'];
     }
 
     $episode_num = $episode_data['episode'];
-    $shows = TV_Shows::search($name);
-    if (count($shows) == 1) {
-        episode_info($shows[0], $episode_num, $isShow, $epiInfo);
-    } else if (count($shows) > 1) {
-        episode_info($shows[0], $episode_num, $isShow, $epiInfo);
-    } else {
-        episode_info($shows[0], $episode_num, 0, 0);
-    }
+    /* $shows = TV_Shows::search($name);
+      if (count($shows) == 1) {
+      episode_info($shows[0], $episode_num, $isShow, $epiInfo);
+      } else if (count($shows) > 1) {
+      episode_info($shows[0], $episode_num, $isShow, $epiInfo);
+      } else {
+      episode_info($shows[0], $episode_num, 0, 0);
+      } */ //TODO is this all for TVDB functionality? Can it be removed?
 }
 
 function cacheImage($url) {
@@ -505,8 +511,7 @@ function display_clearCache() {
 }
 
 function close_html() {
-    //global $html_out, $debug_output, $main_timer;
-    global $html_out;
+    global $html_out; //TODO fix global
     echo $html_out;
     $html_out = "";
 }
@@ -514,13 +519,13 @@ function close_html() {
 function check_requirements() {
     if (!(function_exists('json_encode'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No JSON support found. Please make sure PHP is compiled with JSON support.<br>
-	    In some cases there is a package like php5-json that has to be installed.</div>";
+            No JSON support found in your PHP installation.<br>
+	    In Ubuntu 14.04 or Debian 8.x, install php5-json.</div>";
         return 1;
     }
     if (!(function_exists('curl_init'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No CURL support found. Please make sure php5-curl is installed.</div>";
+            No cURL support found in your PHP installation. In Ubuntu 14.04 or Debian 8.x install php5-curl.</div>";
         return 1;
     }
 }
@@ -529,7 +534,7 @@ function check_files() {
     global $config_values;
 
     $myuid = posix_getuid();
-    $configDir = platform_get_configCacheDir() . '/';
+    $configDir = getConfigCacheDir() . '/';
     if (!is_writable($configDir)) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please create the directory $configDir and make sure it's readable and writeable for the user running the webserver (uid: $myuid). </div>";
     }
@@ -608,13 +613,15 @@ function get_client() {
     echo "</div>";
 }
 
-// MAIN routine
+/// main
+
 $main_timer = timer_init();
-platform_initialize();
+//platform_initialize();
 setup_default_config();
 read_config_file();
 if ($config_values['Settings']['Sanitize Hidelist'] != 1) {
-    include '/var/lib/torrentwatch-xa/lib/update_hidelist.php'; //TODO set to use baseDir/lib
+    //include '/var/lib/torrentwatch-xa/lib/update_hidelist.php';
+    update_hidelist(); //TODO test if this really works
     $config_values['Settings']['Sanitize Hidelist'] = 1;
     twxa_debug("Updated Hidelist\n");
     write_config_file();

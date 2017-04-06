@@ -1,30 +1,30 @@
 <?php
-function setup_rss_list_html() {
-    global $html_out;
-    $html_out = "<div id='torrentlist_container'>\n";
+
+function show_feed_lists_container() {
+    return "<div id='torrentlist_container'>\n";
 }
 
-function show_transmission_div() {
-    global $html_out;
+function close_feed_lists_container($html_out) { //TODO why is this inside another function?
+    $html_out .= "</div>\n";
+    return $html_out;
+}
+
+function show_transmission_div($html_out) {
     $html_out .= '<div id="transmission_data" class="transmission">';
     $html_out .= '<ul id="transmission_list" class="torrentlist">';
-
-    function finish_rss_list_html() {
-        global $html_out;
-        $html_out .= "</div>\n";
-    }
+    return $html_out;
 }
 
-function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $id) {
-    global $html_out, $config_values;
-    $guess = detectMatch($item['title']);
+function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id, $html_out) {
+    global $config_values; //TODO fix global
+    $guess = detectMatch($item['title']); //TODO feed this into templates/feed_item.tpl to improve performance
     if ($config_values['Settings']['Episodes Only'] == 1 && ($guess['episode'] == 'noShow' || !$guess)) {
-        return;
+        return $html_out;
     }
 
     if (!$config_values['Settings']['Disable Hide List']) {
         if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))])) {
-            return;
+            return $html_out;
         }
     }
 
@@ -43,11 +43,13 @@ function show_torrent_html($item, $feed, $feedName, $alt, $torHash, $matched, $i
     require('templates/feed_item.tpl');
     $html_out .= ob_get_contents();
     ob_end_clean();
+
+    return $html_out;
 }
 
-// the opening of the div which contains all the feed items (one div per feed)
-function show_feed_html($idx) {
-    global $html_out, $config_values;
+// open and show the div which contains all the feed items (one div per feed list)
+function show_feed_list($idx, $html_out) {
+    global $config_values; //TODO fix global
     if ($config_values['Settings']['Combine Feeds'] == 1) {
         $html_out .= '<div class="header combined">Combined Feeds</div>';
     }
@@ -71,20 +73,22 @@ function show_feed_html($idx) {
         $html_out .= "</tr></table></div>\n";
     }
     $html_out .= "<ul id='torrentlist' class='torrentlist'>";
+    return $html_out;
 }
 
-function show_down_feed($idx) {
-    global $html_out, $config_values;
+function show_feed_down_header($idx, $html_out) {
+    global $config_values; //TODO fix global
     if (!$config_values['Feeds'][$idx]['Name']) {
         $ti = $config_values['Feeds'][$idx]['Link'];
     } else {
         $ti = $config_values['Feeds'][$idx]['Name'];
     }
     $html_out .= "<div class=\"errorHeader\">$ti is not available.</div>\n";
+    return $html_out;
 }
 
-// closing the div that contains all the feed items
-function close_feed_html() {
-    global $html_out;
+// close the div that contains all the feed items
+function close_feed_list($html_out) {
     $html_out .= '</ul></div>';
+    return $html_out;
 }
