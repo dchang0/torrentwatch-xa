@@ -138,7 +138,7 @@ Some feeds link to some torrent files on them that are compressed (usually gzipp
 
 ### Email notifications not actually sending (SMTP errors)
 
-I haven't modernized the SMTP code yet, and it is currently the same as it was in TorrentWatch-X 0.8.9. Most obviously missing is the ability to use SMTP authentication. torrentwatch-xa currently uses a moderately old version of PHPMailer that does support SMTP authentication, but torrentwatch-xa does not yet take full advantage of what PHPMailer has to offer. 
+While I have upgraded PHPMailer from 5.2 to 5.2.23, the SMTP code in torrentwatch-xa is currently the same as it was in TorrentWatch-X 0.8.9. Most obviously missing is the ability to use SMTP authentication. 
 
 For now, the simplest way for you to get email notifications going is to install sendmail locally on the torrentwatch-xa web server and set up SMTP relaying of emails from localhost through a smarthost with SMTP authentication, then configure torrentwatch-xa to use localhost as the SMTP server.
 
@@ -148,11 +148,11 @@ I plan on adding SMTP authentication soon.
 
 ### Allowed memory size of ... exhausted
 
-PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
+PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
 
 ### apache2 process dies with AH00052: child pid ... exit signal Segmentation fault (11)
 
-This reproducible bug seems to only affect PHP 7.0. Please check the status section above for updates on the bug and any workarounds as I diagnose it.
+This reproducible bug seems to only happen with PHP 7.0. Please check the status section above for updates on the bug and any workarounds as I diagnose it.
 
 ### Design Decisions Explained
 
