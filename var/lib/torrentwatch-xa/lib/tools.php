@@ -21,7 +21,7 @@ function MailNotify($msg, $subject) {
             if (filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
                 $email = new PHPMailer();
                 $email->isSMTP();
-                $email->SMTPDebug = 2;
+                $email->SMTPDebug = 0;
 
                 // set the From: email address
                 if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
@@ -32,8 +32,9 @@ function MailNotify($msg, $subject) {
                 //$email->FromName = "torrentwatch-xa";
                 // prepare the HELO FQDN from the From Email
                 $splitEmail = explode('@', $fromEmail);
-                $helo = dns_get_record($splitEmail[1], "DNS_MX");
-                if ($helo) {
+                $getMX = dns_get_record($splitEmail[1], "DNS_MX");
+                if (isset($getMX['target'])) {
+                    $helo = $getMX['target'];
                     twxa_debug("Detected HELO from From Email: $helo\n", 2);
                 } else if ($splitEmail[1]) {
                     $helo = $splitEmail[1];
