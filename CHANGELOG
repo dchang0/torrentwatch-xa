@@ -249,6 +249,39 @@ Code changes
 - deleted curl.php because it is a buggy replacement for PHP's built-in curl support (php5-curl package on Ubuntu)
 - changed CURLOPT_ constants in get_curl_defaults() from strings to integers to conform to spec
 
+0.3.0
 
+Functional changes
+- added check for mb_convert_kana()
+- renamed Configure > Other to Configure > Trigger
+- added SMTP authentication options to Configure > Trigger for email notifications
+- added Script option to Configure > Trigger for shell scripts triggered by downloads or errors
+- commented out soft-hyphen insertions
+
+Code changes
+
+- cleaned up logic in transmission_add_torrent() to match current Transmission RPC spec
+- improved twxa_debug() logic
+- add ERR:, INF:, and DBG: keywords to every twxa_debug() message for easier grep
+- add verbosity setting to all twxa_debug() calls (but twxa_debug() doesn't yet hide messages by verbosity--it is DBG all the time)
+- removed timer_init() and replaced it with timer_get_time(0)
+- minor cleanup in client_add_torrent()
+- fixed: PHP Notice:  Undefined index: ... in /var/lib/torrentwatch-xa/lib/feeds.php on line 498
+- fixed annoying bug where browser thinks Cmd is still depressed after switching to browser using Cmd-Tab on Mac OS X, EXCEPT in the rare case of rotating all the way through the running apps list back to the browser (without switching focus away from the browser)
+- slightly improved default seed ratio limit logic
+- switched back to global $html_out--CPU util is somewhat improved with this change
+- attempted to improve CPU util by switching preg_ functions to strreplace() in sanitizeTitle()
+- converted some preg_ functions to str functions
+
+Next Version
+
+Functional changes
 IN PROGRESS
 
+- to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
+- downloading item doesn't show in Downloading list (to reproduce, start a torrent manually, refresh browser. item will be grey in All, show properly with progress in Transmission, but not show in Downloading or Downloaded; clicking download again on the item in All restores the progress bar to All, so there is some state change that occurs)
+
+Code changes
+IN PROGRESS
+
+- fix boolean use of detectMatch() now that it returns an array

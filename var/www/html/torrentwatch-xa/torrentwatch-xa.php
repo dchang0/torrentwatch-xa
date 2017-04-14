@@ -11,11 +11,11 @@ ini_set('include_path', '.:./php');
 error_reporting(E_ALL);
 require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch this to use get_base_dir()
 
-$twxa_version[0] = "0.2.6";
+$twxa_version[0] = "0.3.0";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
-$test_run = 0;
+$test_run = 0; //TODO make sure $test_run works and then make it useful
 
 if (get_magic_quotes_gpc()) {
     $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
@@ -48,10 +48,11 @@ function parse_options() {
     array_keys($_GET);
     $commands = array_keys($_GET);
     if (empty($commands)) {
-        return FALSE;
+        return false;
     }
 
-    if (preg_match("/^\//", $commands[0])) {
+    //if (preg_match("/^\//", $commands[0])) {
+    if (strpos($commands[0], '/') === 0) {
         $commands[0] = preg_replace("/^\//", '', $commands[0]);
     }
     switch ($commands[0]) {
@@ -85,7 +86,8 @@ function parse_options() {
             exit;
         case 'updateFavorite':
             $response = update_favorite();
-            if (preg_match("/^Error:/", $response)) {
+            //if (preg_match("/^Error:/", $response)) {
+            if (strpos($response, 'Error:') === 0) {
                 echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
             }
             break;
@@ -117,7 +119,7 @@ function parse_options() {
             }
             if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
                 $_GET['name'] = trim(strtr($tmp['favoriteTitle'], "._", "  "));
-                if ($config_values['Settings']['MatchStyle'] == "glob") {
+                if ($config_values['Settings']['Match Style'] == "glob") {
                     $_GET['filter'] = trim(strtr($tmp['favoriteTitle'], " ._", "???"));
                     $_GET['filter'] .= '*';
                 } else {
@@ -172,7 +174,8 @@ function parse_options() {
                     isset($config_values['Settings']['Download Dir'])) {
                 $downloadDir = $config_values['Settings']['Download Dir'];
             }
-            $r = client_add_torrent(preg_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
+            //$r = client_add_torrent(preg_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
+            $r = client_add_torrent(str_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
             if ($r == "Success") {
                 $torHash = get_torHash(add_cache($_GET['title']));
             }
@@ -253,41 +256,34 @@ function parse_options() {
 function display_global_config() {
     global $config_values;
 
-    $hidedonate = $savetorrent = $transmission = "";
-    $deepfull = $deeptitle = $deepTitleSeason = $deepoff = $verifyepisode = "";
-    $matchregexp = $matchglob = $matchsimple = $dishidelist = $emailnotify = "";
-    $favdefaultall = $onlynewer = $fetchproper = $autodel = $folderclient = $epionly = $combinefeeds = $require_epi_info = "";
+    // Interface tab
+    $combinefeeds = $dishidelist = $epionly = $hidedonate = '';
+    if ($config_values['Settings']['Combine Feeds'] == 1) {
+        $combinefeeds = 'checked=1';
+    }
+    if ($config_values['Settings']['Disable Hide List'] == 1) {
+        $dishidelist = 'checked=1';
+    }
+    if ($config_values['Settings']['Episodes Only'] == 1) { // disabled elsewhere for now
+        $epionly = 'checked=1';
+    }
+    if ($config_values['Settings']['Hide Donate Button'] == 1) {
+        $hidedonate = 'checked=1';
+    }
 
+    // Client tab
+    $transmission = $folderclient = '';
     switch ($config_values['Settings']['Client']) {
         case 'Transmission':
             $transmission = 'selected="selected"';
             break;
         case 'folder':
             $folderclient = 'selected="selected"';
-            break;
-    }
-    if ($config_values['Settings']['Episodes Only'] == 1) {
-        $epionly = 'checked=1';
-    }
-    if ($config_values['Settings']['Combine Feeds'] == 1) {
-        $combinefeeds = 'checked=1';
-    }
-    if ($config_values['Settings']['Require Episode Info'] == 1) {
-        $require_epi_info = 'checked=1';
-    }
-    if ($config_values['Settings']['Disable Hide List'] == 1) {
-        $dishidelist = 'checked=1';
-    }
-    if ($config_values['Settings']['Hide Donate Button'] == 1) {
-        $hidedonate = 'checked=1';
-    }
-    if ($config_values['Settings']['Save Torrents'] == 1) {
-        $savetorrent = 'checked=1';
-    }
-    if ($config_values['Settings']['Email Notifications'] == 1) {
-        $emailnotify = 'checked=1';
     }
 
+    // Torrent tab
+    $deepfull = $deeptitle = $deepTitleSeason = $deepoff = '';
+    $autodel = $savetorrent = '';
     switch ($config_values['Settings']['Deep Directories']) {
         case 'Full': $deepfull = 'selected="selected"';
             break;
@@ -297,7 +293,30 @@ function display_global_config() {
             break;
         default: $deepoff = 'selected="selected"';
     }
+    if ($config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
+        $autodel = 'checked=1';
+    }
+    if ($config_values['Settings']['Save Torrents'] == 1) {
+        $savetorrent = 'checked=1';
+    }
 
+    // Favorites tab
+    $matchregexp = $matchglob = $matchsimple = '';
+    $favdefaultall = $require_epi_info = $verifyepisode = $onlynewer = $fetchproper = '';
+    switch ($config_values['Settings']['Match Style']) {
+        case 'glob': $matchglob = "selected='selected'";
+            break;
+        case 'simple': $matchsimple = "selected='selected'";
+            break;
+        case 'regexp':
+        default: $matchregexp = "selected='selected'";
+    }
+    if ($config_values['Settings']['Default Feed All'] == 1) {
+        $favdefaultall = 'checked=1';
+    }
+    if ($config_values['Settings']['Require Episode Info'] == 1) {
+        $require_epi_info = 'checked=1';
+    }
     if ($config_values['Settings']['Verify Episode'] == 1) {
         $verifyepisode = 'checked=1';
     }
@@ -307,20 +326,36 @@ function display_global_config() {
     if ($config_values['Settings']['Download Proper'] == 1) {
         $fetchproper = 'checked=1';
     }
-    if ($config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
-        $autodel = 'checked=1';
-    }
-    if ($config_values['Settings']['Default Feed All'] == 1) {
-        $favdefaultall = 'checked=1';
-    }
 
-    switch ($config_values['Settings']['MatchStyle']) {
-        case 'glob': $matchglob = "selected='selected'";
+    // Trigger tab
+    $enableScript = $enableSMTP = '';
+    $smtpAuthNone = $smtpAuthLOGIN = $smtpAuthPLAIN = '';
+    $smtpEncNone = $smtpEncTLS = $smtpEncSSL = '';
+    if ($config_values['Settings']['Enable Script'] == 1) {
+        $enableScript = 'checked=1';
+    }
+    if ($config_values['Settings']['SMTP Notifications'] == 1) {
+        $enableSMTP = 'checked=1';
+    }
+    switch ($config_values['Settings']['SMTP Authentication']) {
+        case 'None':
+            $smtpAuthNone = 'selected="selected"';
             break;
-        case 'simple': $matchsimple = "selected='selected'";
+        case 'LOGIN':
+            $smtpAuthLOGIN = 'selected="selected"';
             break;
-        case 'regexp':
-        default: $matchregexp = "selected='selected'";
+        case 'PLAIN':
+            $smtpAuthPLAIN = 'selected="selected"';
+    }
+    switch ($config_values['Settings']['SMTP Encryption']) {
+        case 'None':
+            $smtpEncNone = 'selected="selected"';
+            break;
+        case 'TLS':
+            $smtpEncTLS = 'selected="selected"';
+            break;
+        case 'SSL':
+            $smtpEncSSL = 'selected="selected"';
     }
 
     // Include the templates and append the results to html_out
@@ -353,7 +388,7 @@ function display_favorites_info($item, $key) {
 }
 
 function display_favorites() {
-    global $config_values, $html_out; //TODO these are required for this function to work, somehow--figure out how and fix
+    global $config_values, $html_out;
 
     ob_start();
     require('templates/favorites.tpl');
@@ -421,7 +456,7 @@ function display_transmission() {
 /* function episode_info($show, $episode_num, $isShow, $epiInfo) {
   $temp = explode('x', $episode_num);
   $episode = $show->getEpisode($temp[0], $temp[1]);
-  twxa_debug(print_r($episode, TRUE));
+  twxa_debug(print_r($episode, true), 2);
 
   $name = $show->seriesName;
   $episode_name = $episode->name;
@@ -479,7 +514,7 @@ function show_info($ti) {
 
     $episode_num = $episode_data['episode'];
     /* $shows = TV_Shows::search($name);
-      if (count($shows) == 1) {
+      if (count($shows) === 1) {
       episode_info($shows[0], $episode_num, $isShow, $epiInfo);
       } else if (count($shows) > 1) {
       episode_info($shows[0], $episode_num, $isShow, $epiInfo);
@@ -511,7 +546,7 @@ function display_clearCache() {
 }
 
 function close_html() {
-    global $html_out; //TODO fix global
+    global $html_out;
     echo $html_out;
     $html_out = "";
 }
@@ -526,6 +561,11 @@ function check_requirements() {
     if (!(function_exists('curl_init'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
             No cURL support found in your PHP installation. In Ubuntu 14.04 or Debian 8.x install php5-curl.</div>";
+        return 1;
+    }
+    if (!(function_exists('mb_convert_kana'))) {
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
+            No mbstring (multibyte string) support found in your PHP installation. In Ubuntu 16.04 install php-mbstring.</div>";
         return 1;
     }
 }
@@ -596,10 +636,10 @@ function version_check() {
 function get_tr_location() {
     global $config_values;
     $host = $config_values['Settings']['Transmission Host'];
-    if (preg_match('/(localhost|127.0.0.1)/', $host)) {
+    if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
         $host = preg_replace('/:.*/', "", $_SERVER['HTTP_HOST']);
     }
-    if (preg_match('/(localhost|127.0.0.1)/', $host)) {
+    if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
         $host = preg_replace('/:.*/', "", $_SERVER['SERVER_NAME']);
     }
     $host = $host . ':' . $config_values['Settings']['Transmission Port'] . "/transmission/web/";
@@ -615,22 +655,20 @@ function get_client() {
 
 /// main
 
-$main_timer = timer_init();
+$main_timer = timer_get_time(0);
 //platform_initialize();
 setup_default_config();
 read_config_file();
 if ($config_values['Settings']['Sanitize Hidelist'] != 1) {
-    //include '/var/lib/torrentwatch-xa/lib/update_hidelist.php';
-    update_hidelist(); //TODO test if this really works
+    update_hidelist();
     $config_values['Settings']['Sanitize Hidelist'] = 1;
-    twxa_debug("Updated Hidelist\n");
+    twxa_debug("Updated Hide List\n", 2);
     write_config_file();
 }
 //authenticate();
 
 $config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";
-//$debug_output = "torrentwatch-xa debug:";
 
 parse_options();
 if (check_requirements()) {
@@ -641,7 +679,7 @@ check_files();
 echo $html_out;
 $html_out = "";
 flush();
-
+twxa_debug("=====torrentwatch-xa.php started running at $main_timer\n", 2);
 // Feeds
 load_feeds($config_values['Feeds']);
 feeds_perform_matching($config_values['Feeds']);
@@ -662,5 +700,6 @@ if ($config_values['Settings']['Hide Donate Button'] != 1) {
     </div>';
 }
 
-unlink_temp_files();
+//unlink_temp_files();
+twxa_debug("=====torrentwatch-xa.php finished running in " . timer_get_time($main_timer) . "s\n\n", 2);
 exit(0);

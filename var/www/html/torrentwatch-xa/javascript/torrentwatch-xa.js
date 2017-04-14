@@ -1,5 +1,5 @@
 //TODO 'use strict';
-$(function () {
+$(document).ready(function () { // first binding to document ready
     // Menu Bar, and other buttons which show/hide a dialog
     /*$("a.toggleDialog").live('click',
      function () {
@@ -341,7 +341,8 @@ $(function () {
                 '<li id="clientId_' + item.id + '" class="torrent item_' + item.hashString + ' match_transmission ' + liClass + '">' +
                 '<table width="100%" cellspacing="0"><tr><td class="tr_identifier"></td>' +
                 '<td class="torrent_name tor_client">' +
-                '<div class="torrent_name"><span class="torrent_title">' + item.name.replace(/[._]/g, '.&shy;') + '</span></div>' +
+                //'<div class="torrent_name"><span class="torrent_title">' + item.name.replace(/[._]/g, '.&shy;') + '</span></div>' +
+                '<div class="torrent_name"><span class="torrent_title">' + item.name + '</span></div>' +
                 '<div style="width: 100%; margin-top: 2px; border: 1px solid #BFCEE3; background: #DFE3E8;">' +
                 '<div class="progressDiv" style="width: ' + Percentage + '%; height: 3px;"></div></div>' +
                 '<span class="dateAdded hidden">' + item.addedDate + '</span>' +
@@ -400,7 +401,7 @@ $(function () {
                     function (json) {
                         window.updatingClientData = 0;
                         var check = json.match(/\S+/);
-                        if (check == 'null') {
+                        if (check === null) { //TODO was == 'null'; test extensively
                             window.getfail = 1;
                             var error = 'Got no data from ' + window.client;
                             showClientError(error);
@@ -937,7 +938,7 @@ $(function () {
         }
     }
 
-    $(document).ready(function () {
+    $(document).ready(function () { // second, nested binding to document ready
         adjustUIElements();
         var supportsOrientationChange = "onorientationchange" in window,
                 orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
@@ -951,6 +952,16 @@ $(function () {
                 clearInterval(waitForDynData);
             }
         }, 500);
+    });
+
+    $(window).focus(function (e) {
+        // if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
+        window.ctrlKey = 0;
+    });
+
+    $(window).focusout(function (e) {
+        // if browser loses focus, reset Mac Cmd key toggle to partially block Cmd-Tab
+        window.ctrlKey = 0;
     });
 
     $(document).keyup(function (e) {
@@ -972,17 +983,16 @@ $(function () {
                 $('#clientButtons #Move').click();
             }
         }
-        if (e.keyCode == '17' || e.keyCode == '91' || e.keyCode == '224') {
+        if (e.keyCode == '17' || e.keyCode == '91' || e.keyCode == '93' || e.keyCode == '224') { // Mac Cmd key
             window.ctrlKey = 0;
         }
     });
 
     $(document).keydown(function (e) {
-        if (e.keyCode == '17' || e.keyCode == '91' || e.keyCode == '224') {
+        if (e.keyCode == '17' || e.keyCode == '91' || e.keyCode == '93' || e.keyCode == '224') { // Mac Cmd key
             window.ctrlKey = 1;
         }
         if (window.ctrlKey && e.keyCode == '65') {
-            //TODO fix the bug where it thinks Cmd is being held down when it is not immediately after Cmd-Tab to switch to the browser
             if ($('#torrentlist_container li.torrent.selected').length == $('#torrentlist_container li.torrent').length) {
                 $('#torrentlist_container li.torrent').removeClass('selected');
             } else {

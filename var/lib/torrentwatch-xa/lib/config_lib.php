@@ -1,7 +1,8 @@
 <?php
 
-require_once("twxa_parse.php"); // for guess_feed_type() in add_feed()
+require_once("/var/lib/torrentwatch-xa/lib/twxa_parse.php"); // for guess_feed_type() in add_feed()
 // dynamic config file and config cache file location
+
 function getConfigCacheDir() {
     return get_baseDir() . "/config_cache";
 }
@@ -41,7 +42,7 @@ function setup_default_config() {
     _default('Cache Dir', $baseDir . "/rss_cache/");
     _default('TVDB Dir', $baseDir . "/tvdb_cache/"); //TODO remove TVDB
     _default('Save Torrents', "0");
-    _default('Run torrentwatch-xa', "True");
+    _default('Run torrentwatch-xa', "true");
     _default('Client', "Transmission");
     _default('Verify Episode', "1");
     _default('Only Newer', "1");
@@ -52,13 +53,19 @@ function setup_default_config() {
     _default('Require Episode Info', '0');
     _default('Disable Hide List', '0');
     _default('History', $baseDir . "/rss_cache/rss_dl.history");
-    _default('MatchStyle', "regexp");
+    _default('Match Style', "regexp");
     _default('Extension', "torrent");
     _default('debugLevel', '0'); // not sure how this works yet--if higher than $lvl, sends debug to STDOUT, I think
     _default('Default Seed Ratio', '-1');
+    _default('Enable Script', '0');
     _default('Script', '');
-    _default('Email Notifications', '');
+    _default('SMTP Notifications', '0');
+    _default('From Email', '');
+    _default('To Email', '');
     _default('SMTP Server', 'localhost');
+    _default('SMTP Port', '25');
+    _default('SMTP Authentication', 'None');
+    _default('SMTP Encryption', 'TLS');
     _default('Time Zone', 'UTC');
     _default('Sanitize Hidelist', '0');
 }
@@ -111,7 +118,7 @@ function read_config_file() {
     $group = "NONE";
 
     if (!file_exists($config_file)) {
-        twxa_debug("No config file found--creating default config at $config_file\n", 0);
+        twxa_debug("No config file found--creating default config at $config_file\n", 1);
         write_config_file();
     }
 
@@ -128,15 +135,17 @@ function read_config_file() {
         }
     } else {
         if (!($fp = fopen($config_file, "r"))) {
-            twxa_debug("read_config_file: Could not open $config_file\n", 0);
+            twxa_debug("Could not open $config_file\n", -1);
             exit(1);
         }
 
         if (flock($fp, LOCK_EX)) {
             while (!feof($fp)) {
                 $line = trim(fgets($fp));
-                if ($line && !preg_match("/^$comment/", $line)) {
-                    if (preg_match("/^\[/", $line) && preg_match("/\]$/", $line)) {
+                //if ($line && !preg_match("/^$comment/", $line)) {
+                if ($line && strpos($line, $comment) !== 0) { //TODO test this logic
+                    //if (preg_match("/^\[/", $line) && preg_match("/\]$/", $line)) {
+                    if (strpos($line, '[') === 0 && preg_match("/\]$/", $line)) {
                         $line = trim(trim($line, "["), "]");
                         $group = trim($line);
                     } else {
@@ -210,18 +219,31 @@ function get_client_passwd() {
     return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['Transmission Password']));
 }
 
+function get_smtp_passwd() {
+    global $config_values;
+    return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['SMTP Password']));
+}
+
 function write_config_file() {
     global $config_values, $config_out;
     $config_file = getConfigFile();
     $config_cache = getConfigCache();
 
-    twxa_debug("Preparing to write config file to $config_file\n");
+    twxa_debug("Preparing to write config file to $config_file\n", 2);
 
     if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['Transmission Password']))) {
         if ($config_values['Settings']['Transmission Password']) {
             $config_values['Settings']['Transmission Password'] = preg_replace('/^(.*)$/', '\$%&$1\$%&', base64_encode($config_values['Settings']['Transmission Password']));
         } else {
             $config_values['Settings']['Transmission Password'] = "";
+        }
+    }
+
+    if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['SMTP Password']))) {
+        if ($config_values['Settings']['SMTP Password']) {
+            $config_values['Settings']['SMTP Password'] = preg_replace('/^(.*)$/', '\$%&$1\$%&', base64_encode($config_values['Settings']['SMTP Password']));
+        } else {
+            $config_values['Settings']['SMTP Password'] = "";
         }
     }
 
@@ -242,7 +264,7 @@ function write_config_file() {
 
     if (!function_exists('key_callback')) {
 
-        function key_callback($group, $key, $subkey = NULL) {
+        function key_callback($group, $key, $subkey = null) {
             global $config_out;
             if (is_array($group)) {
                 array_walk($group, 'key_callback', $key . '[]');
@@ -261,19 +283,19 @@ function write_config_file() {
     array_walk($config_values, 'group_callback');
     $dir = dirname($config_file);
     if (!is_dir($dir)) {
-        twxa_debug("Creating configuration directory\n", 1);
+        twxa_debug("Creating configuration directory $dir\n", 1);
         if (file_exists($dir)) {
             unlink($dir);
         }
         if (!mkdir($dir)) {
-            twxa_debug("Unable to create config directory\n", 0);
-            return FALSE;
+            twxa_debug("Unable to create config directory $dir\n", -1);
+            return false;
         }
     }
     $config_out = html_entity_decode($config_out);
 
     if (!($fp = fopen($config_file . "_tmp", "w"))) {
-        twxa_debug("read_config_file: Could not open $config_file\n", 0);
+        twxa_debug("Could not open $config_file\n", -1);
         exit(1);
     }
 
@@ -292,10 +314,17 @@ function write_config_file() {
 
 function update_global_config() {
     global $config_values;
-    $input = array('Email Address' => 'emailAddress',
+    $input = array(
+        'Script' => 'script',
+        'From Email' => 'fromEmail',
+        'To Email' => 'toEmail',
         'SMTP Server' => 'smtpServer',
+        'SMTP Port' => 'smtpPort',
+        'SMTP Authentication' => 'smtpAuthentication',
+        'SMTP Encryption' => 'smtpEncryption',
+        'SMTP User' => 'smtpUser',
+        'SMTP Password' => 'smtpPassword',
         'Time Zone' => 'tz',
-        'Email Notifications' => 'emailnotify',
         'Transmission Login' => 'truser',
         'Transmission Password' => 'trpass',
         'Transmission Host' => 'trhost',
@@ -311,14 +340,16 @@ function update_global_config() {
         'Disable Hide List' => 'dishidelist',
         'Hide Donate Button' => 'hidedonate',
         'Client' => 'client',
-        'MatchStyle' => 'matchstyle',
+        'Match Style' => 'matchstyle',
         'Only Newer' => 'onlynewer',
         'Download Proper' => 'fetchproper',
         'Auto-Del Seeded Torrents' => 'autodel',
         'Default Feed All' => 'favdefaultall',
-        'Extension' => 'extension');
+        'Extension' => 'extension'
+    );
 
-    $checkboxes = array('Combine Feeds' => 'combinefeeds',
+    $checkboxes = array(
+        'Combine Feeds' => 'combinefeeds',
         'Episodes Only' => 'epionly',
         'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
@@ -329,7 +360,9 @@ function update_global_config() {
         'Download Proper' => 'fetchproper',
         'Auto-Del Seeded Torrents' => 'autodel',
         'Default Feed All' => 'favdefaultall',
-        'Email Notifications' => 'emailnotify');
+        'Enable Script' => 'enableScript',
+        'SMTP Notifications' => 'enableSMTP'
+    );
 
     //TODO figure out how the config settings overwrite themselves
     foreach ($input as $key => $data) {
@@ -357,7 +390,7 @@ function update_favorite() {
         case 'Add':
         case 'Update':
             $response = add_favorite();
-            $test_run = TRUE; //TODO what does $test_run = TRUE do?
+            $test_run = true; //TODO what does $test_run = true do?
             break;
         case 'Delete':
             del_favorite();
@@ -471,7 +504,7 @@ function add_favorite() {
             $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0
         }
     }
-    twxa_debug(print_r($config_values['Favorites'], true) . "\n");
+    //twxa_debug("\$config_values[\'Favorites\']: " . print_r($config_values['Favorites'], true) . "\n", 2);
     $favInfo['title'] = $_GET['name'];
     $favInfo['quality'] = $_GET['quality'];
     $favInfo['feed'] = urlencode($_GET['feed']);
@@ -523,10 +556,14 @@ function updateFavoriteEpisode(&$fav, $ti) {
         $msg.= "If this is the case you need to reset the \"Last Downloaded Episode\" setting to \"$oldSeason x $oldEpisode\" in the Favorites menu.\n";
         $msg.= "If you don't, the next match wil be \"Season: $curSeason Episode: $newEpisode\" or \"Season $newSeason Episode: 1\".\n";
 
-        $subject = "torrentwatch-xa: got $show $episode, expected $expected";
-        MailNotify($msg, $subject);
-        $msg = escapeshellarg($msg);
-        run_script('error', $ti, $msg);
+        if ($config_values['Settings']['SMTP Notifications']) {
+                $subject = "torrentwatch-xa: got $show $episode, expected $expected";
+                MailNotify($msg, $subject);
+        }
+        if ($config_values['Settings']['Enable Script']) {
+                run_script('error', $ti, $msg);
+        }
+        //TODO add twxa_debug() here
     }
     if (!isset($fav['Season'], $fav['Episode']) || $regs[1] > $fav['Season']) {
         $fav['Season'] = $regs[1];
@@ -536,7 +573,7 @@ function updateFavoriteEpisode(&$fav, $ti) {
     } else {
         $fav['Episode'] .= $PROPER;
     }
-    twxa_debug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n");
+    twxa_debug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n", 2);
     write_config_file();
 }
 
@@ -544,10 +581,10 @@ function add_feed($feedLink) {
     global $config_values; //TODO fix global
     $feedLink = preg_replace('/ /', '%20', $feedLink);
     $feedLink = preg_replace('/^%20|%20$/', '', $feedLink);
-    twxa_debug('Checking feed: ' . $feedLink . "\n");
+    twxa_debug("Checking feed: $feedLink\n", 2);
 
     if (isset($feedLink) AND ( $guessedFeedType = guess_feed_type($feedLink)) != 'Unknown') {
-        twxa_debug("Adding feed: " . $feedLink . "\n");
+        twxa_debug("Adding feed: $feedLink\n", 1);
         $config_values['Feeds'][]['Link'] = $feedLink;
         $arrayKeys = array_keys($config_values['Feeds']);
         $idx = end($arrayKeys);
@@ -563,7 +600,7 @@ function add_feed($feedLink) {
                 break;
         }
     } else {
-        twxa_debug("Could not connect to feed or guess feed type: " . $feedLink . "\n", -1);
+        twxa_debug("Could not connect to feed or guess feed type: $feedLink\n", -1);
     }
 }
 
@@ -576,9 +613,9 @@ function update_feed_data() {
 
         $old_feedurl = $config_values['Feeds'][$_GET['idx']]['Link'];
 
-        twxa_debug('Updating feed: ' . $old_feedurl . "\n");
+        twxa_debug("Updating feed: $old_feedurl\n", 1);
 
-        foreach ($config_values['Favorites'] as &$favorite) {
+        foreach ($config_values['Favorites'] as &$favorite) { //TODO should be able to improve performance by turning this into for loop
             if ($favorite['Feed'] == $old_feedurl) {
                 $favorite['Feed'] = preg_replace('/ /', '%20', $_GET['feed_link']);
             }
@@ -589,7 +626,7 @@ function update_feed_data() {
         $config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/^%20|%20$/', '', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['seedRatio'] = $_GET['seed_ratio'];
     } else {
-        twxa_debug("Unable to update feed. Could not find feed index: " . $_GET['idx'] . "\n");
+        twxa_debug("Unable to update feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
     }
 }
 
@@ -598,6 +635,6 @@ function del_feed() {
     if (isset($_GET['idx']) && isset($config_values['Feeds'][$_GET['idx']])) {
         unset($config_values['Feeds'][$_GET['idx']]);
     } else {
-        twxa_debug("Unable to delete feed. Could not find feed index: " . $_GET['idx'] . "\n");
+        twxa_debug("Unable to delete feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
     }
 }

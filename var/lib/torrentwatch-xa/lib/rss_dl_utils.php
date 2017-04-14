@@ -2,38 +2,37 @@
 
 global $config_values;
 
-// PHP JSON and PHP cURL support are assumed to be installed
-require_once("tools.php");
-require_once("atomparser.php");
-require_once("cache.php");
-require_once("class.bdecode.php");
-require_once("class.phpmailer.php");
-require_once("class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
+// PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
+require_once("/var/lib/torrentwatch-xa/lib/tools.php");
+require_once("/var/lib/torrentwatch-xa/lib/atomparser.php");
+require_once("/var/lib/torrentwatch-xa/lib/cache.php");
+require_once("/var/lib/torrentwatch-xa/lib/class.bdecode.php");
+require_once("/var/lib/torrentwatch-xa/lib/class.phpmailer.php");
+require_once("/var/lib/torrentwatch-xa/lib/class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
 if (file_exists('/var/lib/torrentwatch-xa/config.php')) { //TODO set to use baseDir;
-    require_once("/var/lib/torrentwatch-xa/config.php");
+    require_once("/var/lib/torrentwatch-xa/config.php"); //TODO doesn't config.php always have to exist?
 }
-require_once("feeds.php");
-require_once("twxa_html.php");
-require_once("lastRSS.php");
-require_once("tor_client.php");
-require_once("twxa_parse.php");
+require_once("/var/lib/torrentwatch-xa/lib/feeds.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_html.php");
+require_once("/var/lib/torrentwatch-xa/lib/lastRSS.php");
+require_once("/var/lib/torrentwatch-xa/lib/tor_client.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_parse.php");
 
-$config_values['Global'] = [];
-$time = 0;
+$config_values['Global'] = []; //TODO why do we need this?
 
-// Checks array is a key is set, return value or default
-function _isset($array, $key, $default = '') {
+function _isset($array, $key, $default = '') { //TODO rename this
+    // checks array: if a key is set, return value or default
     return isset($array[$key]) ? $array[$key] : $default;
 }
 
 function my_strpos($haystack, $needle) {
     $pieces = explode(" ", $needle);
     foreach ($pieces as $n) {
-        if (strpos($haystack, $n) !== FALSE) {
-            return TRUE;
+        if (strpos($haystack, $n) !== false) {
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 
 function symlink_force($source, $dest) {
@@ -43,24 +42,26 @@ function symlink_force($source, $dest) {
     symlink($source, $dest);
 }
 
-function unlink_temp_files() {
-    global $config_values;
-    if (isset($config_values['Global']['Unlink'])) {
-        foreach ($config_values['Global']['Unlink'] as $file) {
-            unlink($file);
-        }
-    }
-}
+/* does not appear to do anything since $config_values['Global']['Unlink'] is never set
+ * function unlink_temp_files() {
+  global $config_values;
+  if (isset($config_values['Global']['Unlink'])) {
+  foreach ($config_values['Global']['Unlink'] as $file) {
+  unlink($file);
+  }
+  }
+  } */
 
-if (!function_exists('fnmatch')) {
+/* already a built-in PHP function
+ * if (!function_exists('fnmatch')) {
 
     function fnmatch($pattern, $string) {
         return @preg_match(
-                        '/^' . strtr(addcslashes($pattern, '/\\.+^$(){}=!<>|'), array('*' => '.*', '?' => '.?', '[' => '\[', ']' => '\]')) . '$/i', $string
-        );
+          '/^' . strtr(addcslashes($pattern, '/\\.+^$(){}=!<>|'), array('*' => '.*', '?' => '.?', '[' => '\[', ']' => '\]')) . '$/i', $string
+          );
     }
 
-}
+}*/
 
 // used to lower case all the keys in an array.
 // From http://us.php.net/manual/en/function.array-change-key-case.php
@@ -111,25 +112,43 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
             $newArray[$function($key)] = $value;
         } else {
             $newArray[$key] = $value; //$key is not a string
-        } 
+        }
     } //end loop
     return $newArray;
 }
 
 function twxa_debug($string, $lvl = -1) {
-    global $config_values, $debug_output; //TODO fix global
-    file_put_contents('/tmp/twxalog', date("c") . ' ' . $string, FILE_APPEND);
+    global $config_values;
 
-    if ($config_values['Settings']['debugLevel'] >= $lvl) {
+    switch ($lvl) {
+        case -1: // ALERT:
+        case 0:
+            $errLabel = "ERR:";
+            break;
+        case 1:
+            $errLabel = "INF:";
+            break;
+        case 2:
+        default:
+            $errLabel = "DBG:";
+            break;
+    }
+
+    // write plain text to log file
+    file_put_contents('/tmp/twxalog', date("c") . " $errLabel $string", FILE_APPEND); //TODO don't hard-code the log file location
+
+    if ($config_values['Settings']['debugLevel'] >= $lvl) { //TODO what is this block for, is it for Javascript alerts only?
         if (isset($config_values['Global']['HTMLOutput'])) {
-            if ($lvl == -1) {
+            // write HTML output
+            if ($lvl === -1) {
                 $string = trim(strtr($string, array("'" => "\\'")));
-                $debug_output .= "<script type='text/javascript'>alert('$string');</script>";
+                $debug_output = "<script type='text/javascript'>alert('$string');</script>";
             } else {
-                $debug_output .= date("c") . ' ' . $string;
+                $debug_output = date("c") . " $errLabel $string";
             }
         } else {
-            echo(date("c") . ' ' . $string);
+            // write plain text output
+            echo(date("c") . " $errLabel $string");
         }
     }
 }
@@ -148,21 +167,12 @@ function microtime_float() {
     return ((float) $usec + (float) $sec);
 }
 
-function timer_init() {
-    global $time_start;
-    return $time_start = microtime_float();
-}
-
-function timer_get_time($time = NULL) {
-    global $time_start;
-    if ($time == NULL) {
-        $time = $time_start;
-    }
+function timer_get_time($time) {
     return (microtime_float() - $time);
 }
 
-// Makes a name fit for use as a filename
 function filename_encode($filename) {
+    // makes a name fit for use as a filename
     return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
 }
 
@@ -171,12 +181,12 @@ function check_for_torrents($directory, $dest) {
     if ($handle) {
         while (false !== ($file = readdir($handle))) {
             $ti = substr($file, 0, strrpos($file, '.') - 1);
-            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $ti)) {
+            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $ti)) { //TODO client_add_torrent() returns string errors
                 unlink("$directory/$file");
             }
         }
         closedir($handle);
     } else {
-        twxa_debug("check_for_torrents: Couldn't read Directory: $directory\n", 0);
+        twxa_debug("Cannot read directory: $directory\n", -1);
     }
 }

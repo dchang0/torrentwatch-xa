@@ -10,7 +10,10 @@ $seps = '\s\.\_'; // separator chars: - and () were formerly also separators but
 function sanitizeTitle($ti, $seps = '\s\.\_') {
     // cleans title of symbols, aiming to get the title down to just alphanumerics and reserved separators
     // we sanitize the title to make it easier to use Favorites and match episodes
-    $sanitizeRegExPart = preg_quote('[]{}<>,_/','/');
+    // 
+    // TODO maybe we should forgo santizing the title to improve performance and perform matching even with symbols in place
+    // 
+    //$sanitizeRegExPart = preg_quote('[]{}<>,_/','/');
 
     // Remove soft hyphens
     $ti = str_replace("\xC2\xAD", "", $ti);
@@ -19,13 +22,38 @@ function sanitizeTitle($ti, $seps = '\s\.\_') {
     $ti = str_replace("~", "-", $ti);
 
     // replace with space any back-to-back sanitize chars that if taken singly would result in values getting smashed together
-    $ti = preg_replace("/([a-z0-9\(\)])[$sanitizeRegExPart]+([a-z0-9\(\)])/i", "$1 $2", $ti);
+    //$ti = preg_replace("/([a-z0-9\(\)])[$sanitizeRegExPart]+([a-z0-9\(\)])/i", "$1 $2", $ti);
 
     // remove all remaining sanitize chars
-    $ti = preg_replace("/[$sanitizeRegExPart]/", '', $ti);
-
+    //$ti = preg_replace("/[$sanitizeRegExPart]/", '', $ti);
+    /*$ti = strtr($ti, array(
+        '[' => ' ',
+        ']' => ' ',
+        '{' => ' ',
+        '}' => ' ',
+        '<' => ' ',
+        '>' => ' ',
+        ',' => ' ',
+        '_' => ' ',
+        '/' => ' '
+    ));*/
+    $ti = str_replace('[', ' ', $ti);
+    $ti = str_replace(']', ' ', $ti);
+    $ti = str_replace('{', ' ', $ti);
+    $ti = str_replace('}', ' ', $ti);
+    $ti = str_replace('<', ' ', $ti);
+    $ti = str_replace('>', ' ', $ti);
+    $ti = str_replace(',', ' ', $ti);
+    $ti = str_replace('_', ' ', $ti);
+    $ti = str_replace('/', ' ', $ti);
+    
     // IMPORTANT: reduce multiple separators down to one separator (will break some matches if removed)
-    $ti = preg_replace("/([$seps])+/", "$1", $ti);
+    //$ti = preg_replace("/([$seps])+/", "$1", $ti);
+    $ti = str_replace("   ", " ", $ti);
+    $ti = str_replace("  ", " ", $ti);
+    $ti = str_replace("  ", " ", $ti);
+    $ti = str_replace("..", ".", $ti);
+    $ti = str_replace("__", "_", $ti);
 
     // trim beginning and ending spaces
     $ti = trim($ti);
@@ -355,6 +383,7 @@ function detectMatch($ti) {
     }
     //TODO handle PV and other numberSequence values
     //TODO handle "noShow", "singleEpisode", "range", or "fullSeason", etc.
+    //TODO handle the boolean use of detectMatch()
 
     return [
         'title' => $detectQualitiesOutput['parsedTitle'],
@@ -384,16 +413,18 @@ function guess_feed_type($feedurl) {
 
     // Should be on the second line, but test up to the first 5 in case of doctype, etc.
     for ($i = 0; $i < count($content) && $i < 5; $i++) {
-        twxa_debug("twxa_parse.php: Content of feed from URL: " . $content[$i] . "\n");
-        if (preg_match('/<feed xml/', $content[$i])) {
-            twxa_debug("Feed " . $feedurl . " appears to be an Atom feed\n");
+        twxa_debug("Head of feed from URL: " . $content[$i] . "\n", 2);
+        //if (preg_match('/<feed xml/', $content[$i])) {
+        if (strpos($content[$i], '<feed xml') !== false) {
+            twxa_debug("Feed $feedurl appears to be an Atom feed\n", 2);
             return 'Atom';
-        } else if (preg_match('/<rss/', $content[$i])) {
-            twxa_debug("Feed " . $feedurl . " appears to be an RSS feed\n");
+        //} else if (preg_match('/<rss/', $content[$i])) {
+        } else if (strpos($content[$i], '<rss') !== false) {
+            twxa_debug("Feed $feedurl appears to be an RSS feed\n", 2);
             return 'RSS';
         }
     }
-    twxa_debug("Can't figure out feed type of " . $feedurl . "\n");
+    twxa_debug("Cannot figure out feed type of $feedurl\n", 0);
     return "Unknown"; // was set to "RSS" as default, but this seemed to cause errors in add_feed()
 }
 
@@ -404,9 +435,9 @@ function guess_atom_torrent($summary) {
         twxa_debug("guess_atom_torrent: $regs[1]\n", 2);
         return $regs[1];
     } else {
-        twxa_debug("guess_atom_torrent: failed\n", 2);
+        twxa_debug("guess_atom_torrent: failed\n", 2); //TODO return and fix this function
     }
-    return FALSE;
+    return false;
 }
 
 function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
@@ -483,7 +514,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                     // NOTE: Yes, the switch-case-if-break control structure is stupid, but it is a result
                     // of how PHP handles the assignment of a return value from a function called inside
                     // a conditional. In the statement if ($output = function()), $output = 1 if the
-                    // function call succeeds and NULL if it doesn't, not the value returned by function().
+                    // function call succeeds and null if it doesn't, not the value returned by function().
                     // The cheesy switch-case-if-break still beats a deep if-else if-else control structure.
                     switch (true) {
                         case (true) :
@@ -1305,7 +1336,7 @@ function matchTitle1_1_3($ti, $seps, $detVid) {
     // search for the word Volume, Volumen
     $mat=[];
     if(preg_match_all("/(Volumen|Volume|\bVol)[$seps]?(\d+)/i", $ti, $mat, \PREG_SET_ORDER)) {
-        if($detVid === TRUE) {
+        if($detVid === true) {
             return [
                 'medTyp' => 1, // assume Video Media
                 'numSeq' => 4, // video Season x Volume/Part numbering
@@ -1338,7 +1369,7 @@ function matchTitle1_1_4($ti, $seps, $detVid) {
     // search for V. ##--Volume, not version, and not titles like ARC-V
     $mat=[];
     if(preg_match_all("/[$seps]V[$seps]{1,2}(\d+)/i", $ti, $mat, \PREG_SET_ORDER)) {
-        if($detVid === TRUE) {
+        if($detVid === true) {
             return [
                 'medTyp' => 1, // assume Video Media
                 'numSeq' => 4, // video Season x Volume/Part numbering
@@ -1463,12 +1494,12 @@ function matchTitle1_1_10($ti, $seps) {
     if(preg_match_all("/(Part|\bPt)[$seps]?(\d+)/i", $ti, $mat, \PREG_SET_ORDER)) {
         //TODO handle Part
         return [
-            'medTyp' => NULL,
-            'numSeq' => NULL,
-            'seasSt' => NULL,
-            'seasEd' => NULL,
-            'episSt' => NULL,
-            'episEd' => NULL,
+            'medTyp' => null,
+            'numSeq' => null,
+            'seasSt' => null,
+            'seasEd' => null,
+            'episSt' => null,
+            'episEd' => null,
             'itemVr' => 1,
             'favTi' => "Cannot match Part.",
             'matFnd' => "1_1_10"
@@ -1717,6 +1748,7 @@ function matchTitle1_1_23($ti, $seps) {
 
 function matchTitle1_1_30_1($ti, $seps) {
     // isolated EEE
+    //TODO might need to deal with problem of removing too many separators by splitting the matching further
     $mat=[];
     if(preg_match_all("/[$seps\-\(\)\[\]#\x{3010}\x{3011}\x{7B2C}](\d+)([$seps\-\(\)\[\]\x{3010}\x{3011}]|$)/u", $ti, $mat, \PREG_SET_ORDER)) {
         if($mat[0][1] + 0 > 0) {
@@ -1872,7 +1904,7 @@ function matchTitle2_4($ti, $seps) {
     // Example:
     // Seasons 1 - 4
     // Seas. 1 - 5
-    // assume count($mat) == 1
+    // assume count($mat) === 1
     $mat=[];
     if(preg_match_all("/(Seasons|\bSeas)[$seps]?1[$seps]?\-[$seps]?(\d+)/i", $ti, $mat, \PREG_SET_ORDER)) {
         return [

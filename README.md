@@ -29,29 +29,21 @@ I've looked at Apache2 core dumps using php-src/.gdbinit dump_bt but did not get
 
 #### The Good News
 
-I have definitely verified 0.2.5 and 0.2.6 work perfectly on Ubuntu 14.04.5 with PHP 5.6. Avoid any OS with PHP 7.0 until I figure this out.
-
-Also, testing went so well in spite of the massive changes that I decided to release 0.2.6 early.
+I have definitely verified 0.2.5 and up work perfectly on Ubuntu 14.04.5 with PHP 5.6. Avoid any OS with PHP 7.0 until I figure this SEGFAULT out. It may end up that skipping over PHP 7.0 to PHP 7.1 solves the problem.
 
 ### Current Version
 
-I've posted 0.2.6 with the changes listed in CHANGELOG. This version is entirely about code improvements and upgrades including:
+I've posted 0.3.0 with the changes listed in CHANGELOG. This version has a big new feature: SMTP authentication and an easy way to configure SMTP email notifications on the Configure > Trigger tab. I kept the Script feature too, so you can keep using whatever shell scripts you have. I also finally fixed 99% of the annoying Cmd-Tab "stuck Cmd key" problem on Macs. It is still possible to trigger it, but in a very rare instance.
 
-- upgraded JQuery from 1.7.1 to 1.12.4
-- upgraded jquery.form.js from 2.43 to 4.2.1
-- upgraded PHPMailer from 5.2 to 5.2.23 (but still no SMTP authentication functionality)
-- removed curl.php and switched to PHP 5.6's built-in cURL support
-- cleaned up tons of PHP Warnings and Notices
+I also improved performance somewhat by converting several preg_match() and preg_replace() calls to strpos() and str_replace(), respectively, but there weren't that many places that this could be done. For me to make dramatic performance improvements involves rethinking the approach the season and episode matching engine takes (probably undoing the switch-case and going back to carefully-crafted if-else if-else cascades).
 
 ### Next Version
 
 I hope to:
 
-- add SMTP authentication
-- convert the Configure > Other tab to Configure > Email and add the fields needed for SMTP auth
 - refine the season and episode detection engine
-- clean up the download engine mess with matched states
-- fix the annoying Cmd-Tab "stuck Cmd key" bug on Macs
+- clean up the download engine mess with $matched states
+- add the capability to check for duplicate downloads by torrent hash in the cache
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
@@ -119,6 +111,29 @@ Installation
 - Wait for some downloads to happen automatically or start some manually.
 - Enjoy your downloaded torrents!
 
+Configure > Trigger
+===============
+
+torrentwatch-xa can trigger email notifications by SMTP or shell scripts or both. Shell scripts can be used for post-processing including sending email notifications in place of or in addition to the built-in SMTP notifications.
+
+SMTP Notifications trigger on these events:
+- Favorite item starts downloading (usually started by cron job, but web UI can do it as well)
+- error while downloading
+- error in Script
+
+Scripts trigger on these events:
+- Favorite item starts downloading
+- non-Favorite item starts downloading
+- error while downloading
+
+To run a shell script, check Enable Script, provide the full path to a single shell script with no parameters in the Script field. Your shell script must have rwx permissions for www-data, and no parameters may be supplied in the Script field. See /var/lib/torrentwatch-xa/examples for example shell scripts that you can customize to suit your needs.
+
+To use the built-in SMTP notifications, check SMTP Notifications and fill in the From Email and To Email fields and all the SMTP fields. SMTP Port defaults to 25 if left blank. From Email defaults to To Email if left blank or it is invalid. 
+
+For various in-depth reasons I am not providing any means of testing the SMTP settings at this time. You can trigger a real email notification by initiating a Favorite download (by cron job) and checking the log file at /tmp/twxalog for errors.
+
+torrentwatch-xa uses PHPMailer 5.2.23 to send emails, so you may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear.
+
 Troubleshooting
 ===============
 
@@ -136,15 +151,20 @@ Please note that I have not been able to personally test torrentwatch-xa's handl
 
 Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same media or content via some other torrent file that is not compressed, possibly even on the same feed.
 
-### Email notifications not actually sending (SMTP errors)
+### Email notifications not actually sending (SMTP errors in the log file)
 
-While I have upgraded PHPMailer from 5.2 to 5.2.23, the SMTP code in torrentwatch-xa is currently the same as it was in TorrentWatch-X 0.8.9. Most obviously missing is the ability to use SMTP authentication. 
+SMTP sending is done via PHPMailer 5.2.23. You may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear. See https://github.com/PHPMailer/PHPMailer
 
-For now, the simplest way for you to get email notifications going is to install sendmail locally on the torrentwatch-xa web server and set up SMTP relaying of emails from localhost through a smarthost with SMTP authentication, then configure torrentwatch-xa to use localhost as the SMTP server.
+Typically, you should double-check the following:
 
-Alternately you can use the method TorrentWatch-X 0.8.9 used, which was via a shell script.
+- From Email is valid and correct (if left blank or it is invalid, it defaults to To Email)
+- To Email addresses is valid and correct
+- SMTP Server is valid and correct
+- SMTP Port number is correct (if left blank, it defaults to port 25). Typically SSL uses port 465 and TLS uses port 587.
+- SMTP Authentication is usually PLAIN but might be LOGIN. torrentwatch-xa does not support other authentication such as NTLM, etc.
+- SMTP Encryption is usually TLS. SSL is obsolete and None is banned on most SMTP servers.
 
-I plan on adding SMTP authentication soon.
+There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO field. torrentwatch-xa attempts to automatically generate a valid HELO field based on your From Email, but if the value it provides to the SMTP server is rejected, you may need to modify the source code to set the value.
 
 ### Allowed memory size of ... exhausted
 
@@ -174,7 +194,7 @@ If one starts an item downloading from a feed list, and that item is bumped off 
 
 #### Auto-Delete Seeded Torrents Only Works in the Browser
 
-torrentwatch-xa uses browser-based Javascript to auto-delete seeded torrents. As such, it cannot auto-delete seeded torrents if the browser is not open and the cron job is automatically downloading items. Normally this is not an issue since the transmission-daemon will automatically delete seeded torrents. However, this feature is broken in some versions of transmission-daemon, and that results in seeded torrents piling up in Paused state. At first blush, it may seem like this is torrentwatch-xa's fault, but it is transmission-daemon's bug that is to blame.
+torrentwatch-xa uses browser-based Javascript to auto-delete seeded torrents. As such, it cannot auto-delete seeded torrents if the browser is not open and the cron job is automatically downloading items. Normally this is not an issue since the transmission-daemon will automatically delete seeded torrents. However, this feature is broken or missing in some versions of transmission-daemon, and that results in seeded torrents piling up in Paused state. At first blush, it may seem like this is torrentwatch-xa's fault, but it is transmission-daemon's bug that is to blame.
 
 #### Can't Match Batches
 

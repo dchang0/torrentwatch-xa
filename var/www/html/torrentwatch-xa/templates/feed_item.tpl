@@ -1,24 +1,24 @@
 <?php
 // variables
-//TODO figure out if NULL or '' is better for logic
-$utitle = NULL; // to contain HTML code of un-soft-hyphenated title of the item
-$description = NULL; // to contain HTML code of description of the item
-$infoDiv = NULL; // to contain HTML code of each item's div.infoDiv
-$hideItem = NULL; // to contain HTML code of div for Hide Show button on drop-down menu
-$epiDiv = NULL; // to contain HTML code of div for Episode Info
-$progressBar = NULL; // to contain HTML code of div.progressBarContainer
-$feedItem = NULL; // to contain HTML code of span containing the feed name if Combine Feeds = TRUE
-$showEpisodeNumber = NULL; // to contain HTML code of the show episode number, etc.
-$pubDate = NULL; // to contain publication date of the item
-$unixTime = NULL; // to contain UNIX timestamp
+//TODO figure out if null or '' is better for logic
+$utitle = null; // to contain HTML code of un-soft-hyphenated title of the item
+$description = null; // to contain HTML code of description of the item
+$infoDiv = null; // to contain HTML code of each item's div.infoDiv
+$hideItem = null; // to contain HTML code of div for Hide Show button on drop-down menu
+$epiDiv = null; // to contain HTML code of div for Episode Info
+$progressBar = null; // to contain HTML code of div.progressBarContainer
+$feedItem = null; // to contain HTML code of span containing the feed name if Combine Feeds = true
+$showEpisodeNumber = null; // to contain HTML code of the show episode number, etc.
+$pubDate = null; // to contain publication date of the item
+$unixTime = null; // to contain UNIX timestamp
 
 //TODO improve passing of $id into this file
-//TODO figure out what $alt does and improve its passing into this file
 //TODO improve passing of $ulink into this file
 //TODO improve passing of $feed into this file
 
 if(isset($item['title'])) {
-    $utitle = preg_replace('/&shy;/', '', $item['title']);
+    //$utitle = preg_replace('/&shy;/', '', $item['title']);
+    $utitle = str_replace('&shy;', '', $item['title']);
 }
 
 if(isset($item['description'])) {

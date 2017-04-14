@@ -10,7 +10,7 @@ function cache_setup() {
         if (!file_exists($config_values['Settings']['Cache Dir']) ||
                 !is_dir($config_values['Settings']['Cache Dir'])) {
             if (!file_exists($config_values['Settings']['Cache Dir'])) {
-                mkdir($config_values['Settings']['Cache Dir'], 0777, TRUE);
+                mkdir($config_values['Settings']['Cache Dir'], 0777, true);
             }
         }
     }
@@ -31,7 +31,7 @@ function add_cache($ti) {
 function clear_cache_real($file) {
     global $config_values;
     $fileglob = $config_values['Settings']['Cache Dir'] . '/' . $file;
-    twxa_debug("Clearing $fileglob\n", 1);
+    twxa_debug("Clearing $fileglob\n", 2);
     foreach (glob($fileglob) as $fn) {
         twxa_debug("Removing $fn\n", 2);
         unlink($fn);
@@ -65,21 +65,24 @@ function clear_cache() {
 function check_cache_episode($ti) {
     global $config_values, $matched;
     $guess = detectMatch($ti);
-    if ($guess == False) {
-        twxa_debug("Unable to guess for $ti\n");
+    //twxa_debug("check_cache_episode: detectMatch(): " . print_r($guess, true) . "\n", 2);
+    if ($guess == false) { //TODO detectMatch() now returns an array, not boolean
+        twxa_debug("Unable to guess for $ti\n", 0);
         return 1;
     }
     if ($handle = opendir($config_values['Settings']['Cache Dir'])) {
         while (false !== ($file = readdir($handle))) {
-            if (!(substr($file, 0, 7) == "rss_dl_")) {
+            //if (!(substr($file, 0, 7) == "rss_dl_")) {
+            if (substr($file, 0, 7) !== "rss_dl_") {
                 continue;
             }
-            if (!(preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['favoriteTitle']))) == preg_replace('/[. ]/', '_', $guess['favoriteTitle']))) {
+            //if (!(preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['favoriteTitle']))) == preg_replace('/[. ]/', '_', $guess['favoriteTitle']))) {
+            if (preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['favoriteTitle']))) !== preg_replace('/[. ]/', '_', $guess['favoriteTitle'])) {
                 continue;
             }
             $cacheguess = detectMatch(substr($file, 7));
             if ($cacheguess != false && $guess['episode'] == $cacheguess['episode']) {
-                twxa_debug("Already downloaded; ignoring: $ti (" . $guess['episode'] . ")\n", 2); //TODO what does this mean?
+                twxa_debug("Already downloaded; ignoring: $ti (" . $guess['episode'] . ")\n", 2);
                 $matched = "duplicate";
                 return 0;
             }

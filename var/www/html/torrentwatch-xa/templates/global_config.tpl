@@ -25,8 +25,8 @@
                 <li id="tabHideList" class="toggleConfigTab"
                     onclick='javascript:$.toggleConfigTab("#config_hideList", "#tabHideList")'>Hide List
                 </li>
-                <li id="tabOthers" class="toggleConfigTab right"
-                    onclick='javascript:$.toggleConfigTab("#config_other", "#tabOthers")'>Other
+                <li id="tabTrigger" class="toggleConfigTab right"
+                    onclick='javascript:$.toggleConfigTab("#config_trigger", "#tabTrigger")'>Trigger
                 </li>
             </ul>
         </div>
@@ -257,26 +257,52 @@
                         </div>
                     </div>
                 </div>
-                <div id="config_other" class="configTab hidden">
-                    <div class="other_settings">
-                        <div>
+                <div id="config_trigger" class="configTab hidden">
+                    <div class="trigger_settings">
+                        <div id="enableScript">
                             <div class="left">
-                                <label class="item checkbox">Email Notifications:</label>
+                                <label class="item checkbox">Enable Script:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="emailnotify" value="1" <?php echo $emailnotify; ?>/>
+                                <input type="checkbox" name="enableScript" value="1" <?php echo $enableScript; ?>/>
                             </div>
                         </div>
-                        <div id="email_address" title="Enter an email address here to send downloads and errors to.">
+                        <div id="script" title="Full path to script to run on certain events--must have executable permissions by process owner">
                             <div class="left">
-                                <label class="item">To: Email Address:</label>
+                                <label class="item">Script:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="emailAddress" class="text"
-                                       value="<?php echo $config_values['Settings']['Email Address']; ?>"/>
+                                <input type="text" name="script" class="text"
+                                       value="<?php echo $config_values['Settings']['Script']; ?>"/>
                             </div>
                         </div>
-                        <div id="smtp_server">
+                        <div id="enableSMTP">
+                            <div class="left">
+                                <label class="item checkbox">SMTP Notifications:</label>
+                            </div>
+                            <div class="right">
+                                <input type="checkbox" name="enableSMTP" value="1" <?php echo $enableSMTP; ?>/>
+                            </div>
+                        </div>
+                        <div id="from_email" title="If blank or invalid, defaults to To: Email:">
+                            <div class="left">
+                                <label class="item">From: Email:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" name="fromEmail" class="text"
+                                       value="<?php echo $config_values['Settings']['From Email']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="to_email" title="Valid email address required">
+                            <div class="left">
+                                <label class="item">To: Email:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" name="toEmail" class="text"
+                                       value="<?php echo $config_values['Settings']['To Email']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="smtp_server" title="Valid FQDN or IP address of SMTP server required">
                             <div class="left">
                                 <label class="item">SMTP Server:</label>
                             </div>
@@ -285,15 +311,57 @@
                                        value="<?php echo $config_values['Settings']['SMTP Server']; ?>"/>
                             </div>
                         </div>
-                        <!--<div id="script" title="Configured script to run on certain events.">
+                        <div id="smtp_port" title="Leave blank to default to 25 or specify integer from 0-65535.">
                             <div class="left">
-                                <label class="item">Script:</label>
+                                <label class="item">SMTP Port:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" readonly="readonly"
-                                       value="<?php echo $config_values['Settings']['Script']; ?>"/>
+                                <input type="text" name="smtpPort" class="text"
+                                       value="<?php echo $config_values['Settings']['SMTP Port']; ?>"/>
                             </div>
-                        </div>-->
+                        </div>
+                        <div id="smtp_authentication" title="Only PLAIN or LOGIN are supported, not NTLM, OAUTH etc.">
+                            <div class="left">
+                                <label class="item">SMTP Authentication:</label>
+                            </div>
+                            <div class="right">
+                                <select name="smtpAuthentication" id="smtpAuthentication" onchange="changeClient(this.options[this.selectedIndex].value)">
+                                    <option value="None" <?php echo $smtpAuthNone; ?>>None</option>
+                                    <option value="PLAIN" <?php echo $smtpAuthPLAIN; ?>>PLAIN</option>
+                                    <option value="LOGIN" <?php echo $smtpAuthLOGIN; ?>>LOGIN</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="smtp_encryption">
+                            <div class="left">
+                                <label class="item">SMTP Encryption:</label>
+                            </div>
+                            <div class="right">
+                                <select name="smtpEncryption" id="smtpEncryption" onchange="changeClient(this.options[this.selectedIndex].value)">
+                                    <option value="None" <?php echo $smtpEncNone; ?>>None</option>
+                                    <option value="TLS" <?php echo $smtpEncTLS; ?>>STARTTLS or TLS</option>
+                                    <option value="SSL" <?php echo $smtpEncSSL; ?>>SSL</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="smtp_user" title="Required for SMTP Authentication">
+                            <div class="left">
+                                <label class="item">SMTP User:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" name="smtpUser" class="text"
+                                       value="<?php echo $config_values['Settings']['SMTP User']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="smtp_password" title="Required for SMTP Authentication">
+                            <div class="left">
+                                <label class="item">SMTP Password:</label>
+                            </div>
+                            <div class="right">
+                                <input type="password" class="password" name="smtpPassword" class="text"
+                                       value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="buttonContainer">
