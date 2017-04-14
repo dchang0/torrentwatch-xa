@@ -78,7 +78,7 @@ function MailNotify($msg, $subject) {
                 $email->Body = $mail;
 
                 if (!$email->Send()) {
-                    twxa_debug("Email failed; PHPMailer error: " . $email->ErrorInfo . "\n", 0);
+                    twxa_debug("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
                 } else {
                     twxa_debug("Mail sent to $toEmail with subject: $subject via: " . $config_values['Settings']['SMTP Server'] . "\n", 1); //TODO redo verbiage
                 }
