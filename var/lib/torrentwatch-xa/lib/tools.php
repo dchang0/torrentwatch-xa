@@ -32,7 +32,7 @@ function MailNotify($msg, $subject) {
                 //$email->FromName = "torrentwatch-xa";
                 // prepare the HELO FQDN from the From Email
                 $splitEmail = explode('@', $fromEmail);
-                $getMX = dns_get_record($splitEmail[1], "DNS_MX");
+                $getMX = dns_get_record($splitEmail[1], DNS_MX);
                 if (isset($getMX['target'])) {
                     $helo = $getMX['target'];
                     twxa_debug("Detected HELO from From Email: $helo\n", 2);
