@@ -205,10 +205,8 @@ function check_for_torrent(&$item, $key, $opts) {
                 $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/';
             }
             $hit = (($item['Filter'] !== '' && preg_match($pattern, $ti)) &&
-                    //($item['Not'] == '' OR ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
-                    ($item['Not'] === '' || strpos($ti, strtolower($item['Not']) === false)) &&
-                    //($item['Quality'] == 'All' OR $item['Quality'] == '' OR preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
-                    ($item['Quality'] === 'All' || $item['Quality'] === '' || strpos($ti, strtolower($item['Quality'])) !== false));
+                    ($item['Not'] == '' OR ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
+                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
             break;
     }
 
