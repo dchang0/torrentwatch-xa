@@ -278,6 +278,7 @@ Next Version
 Functional changes
 IN PROGRESS
 
+FIX MATCHING LOGIC
 - to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
 - downloading item doesn't show in Downloading list (to reproduce, start a torrent manually, refresh browser. item will be grey in All, show properly with progress in Transmission, but not show in Downloading or Downloaded; clicking download again on the item in All restores the progress bar to All, so there is some state change that occurs)
 
