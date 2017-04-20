@@ -28,35 +28,36 @@ function setup_default_config() {
     if (!isset($config_values['Settings'])) {
         $config_values['Settings'] = [];
     }
-    // Sensible Defaults
+    // set defaults
     $baseDir = get_baseDir();
-    _default('Episodes Only', '0');
+    // Interface tab
     _default('Combine Feeds', '0');
-    _default('Transmission Login', 'transmission'); //default for Debian's transmission-daemon
-    _default('Transmission Password', 'transmission');
+    _default('Disable Hide List', '0');
+    //_default('Episodes Only', '0');
+    _default('Hide Donate Button', '0');
+    _default('Time Zone', 'UTC');
+    // Client tab
+    _default('Client', "Transmission");
+    _default('Download Dir', '/var/lib/transmission-daemon/downloads');
     _default('Transmission Host', 'localhost');
     _default('Transmission Port', '9091');
-    _default('Transmission URI', '/transmission/rpc');
+    _default('Transmission Login', 'transmission'); //default for Debian's transmission-daemon
+    _default('Transmission Password', 'transmission');
+    _default('Transmission URI', '/transmission/rpc'); // hidden setting
+    // Torrent tab
+    _default('Deep Directories', "0");
+    _default('Default Seed Ratio', '-1');
+    _default('Auto-Del Seeded Torrents', "1");
     _default('Watch Dir', '');
-    _default('Download Dir', '/var/lib/transmission-daemon/downloads');
-    _default('Cache Dir', $baseDir . "/rss_cache/");
-    _default('TVDB Dir', $baseDir . "/tvdb_cache/"); //TODO remove TVDB
     _default('Save Torrents', "0");
-    _default('Run torrentwatch-xa', "true");
-    _default('Client', "Transmission");
-    _default('Verify Episode', "1");
+    // Favorites tab
+    _default('Match Style', "regexp");
+    _default('Default Feed All', "1");
+    _default('Require Episode Info', '0');
+    //_default('Verify Episode', "1");
     _default('Only Newer', "1");
     _default('Download Proper', "1");
-    _default('Auto-Del Seeded Torrents', "1");
-    _default('Default Feed All', "1");
-    _default('Deep Directories', "0");
-    _default('Require Episode Info', '0');
-    _default('Disable Hide List', '0');
-    _default('History', $baseDir . "/rss_cache/rss_dl.history");
-    _default('Match Style', "regexp");
-    _default('Extension', "torrent");
-    _default('debugLevel', '0'); // not sure how this works yet--if higher than $lvl, sends debug to STDOUT, I think
-    _default('Default Seed Ratio', '-1');
+    // Trigger tab
     _default('Enable Script', '0');
     _default('Script', '');
     _default('SMTP Notifications', '0');
@@ -66,8 +67,16 @@ function setup_default_config() {
     _default('SMTP Port', '25');
     _default('SMTP Authentication', 'None');
     _default('SMTP Encryption', 'TLS');
-    _default('Time Zone', 'UTC');
+    _default('SMTP Username', '');
+    _default('SMTP Password', '');
+    // Other hidden settings
+    _default('Process Watch Dir', '1'); // only really used for rss_dl.php
+    _default('debugLevel', '0'); // not sure how this works yet--if higher than $lvl, sends debug to STDOUT, I think
+    _default('Extension', "torrent");
     _default('Sanitize Hidelist', '0');
+    _default('Cache Dir', $baseDir . "/rss_cache/");
+    _default('TVDB Dir', $baseDir . "/tvdb_cache/"); //TODO remove TVDB
+    _default('History', $baseDir . "/rss_cache/rss_dl.history");
 }
 
 if (!(function_exists('get_baseDir'))) {
@@ -145,7 +154,7 @@ function read_config_file() {
                 //if ($line && !preg_match("/^$comment/", $line)) {
                 if ($line && strpos($line, $comment) !== 0) { //TODO test this logic
                     //if (preg_match("/^\[/", $line) && preg_match("/\]$/", $line)) {
-                    if (strpos($line, '[') === 0 && preg_match("/\]$/", $line)) {
+                    if (strpos($line, "[") === 0 && substr($line, -1) === "]") {
                         $line = trim(trim($line, "["), "]");
                         $group = trim($line);
                     } else {
@@ -154,7 +163,8 @@ function read_config_file() {
                         $pieces[1] = trim($pieces[1], "\"");
                         $option = trim($pieces[0]);
                         $value = trim($pieces[1]);
-                        if (preg_match("/\[\]$/", $option)) {
+                        //if (preg_match("/\[\]$/", $option)) {                        
+                        if (substr($option, -2) === "[]") {
                             $option = substr($option, 0, strlen($option) - 2);
                             $pieces = explode("=>", $value, 2);
                             if (isset($pieces[1])) {
@@ -354,7 +364,7 @@ function update_global_config() {
         'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
         'Hide Donate Button' => 'hidedonate',
-        'Verify Episode' => 'verifyepisodes',
+        //'Verify Episode' => 'verifyepisodes',
         'Save Torrents' => 'savetorrents',
         'Only Newer' => 'onlynewer',
         'Download Proper' => 'fetchproper',
@@ -382,7 +392,7 @@ function update_global_config() {
 }
 
 function update_favorite() {
-    global $test_run;
+    //global $test_run;
     if (!isset($_GET['button'])) {
         return;
     }
@@ -390,7 +400,7 @@ function update_favorite() {
         case 'Add':
         case 'Update':
             $response = add_favorite();
-            $test_run = true; //TODO what does $test_run = true do?
+            //$test_run = true; //TODO what does $test_run = true do?
             break;
         case 'Delete':
             del_favorite();
@@ -557,11 +567,11 @@ function updateFavoriteEpisode(&$fav, $ti) {
         $msg.= "If you don't, the next match wil be \"Season: $curSeason Episode: $newEpisode\" or \"Season $newSeason Episode: 1\".\n";
 
         if ($config_values['Settings']['SMTP Notifications']) {
-                $subject = "torrentwatch-xa: got $show $episode, expected $expected";
-                MailNotify($msg, $subject);
+            $subject = "torrentwatch-xa: got $show $episode, expected $expected";
+            MailNotify($msg, $subject);
         }
         if ($config_values['Settings']['Enable Script']) {
-                run_script('error', $ti, $msg);
+            run_script('error', $ti, $msg);
         }
         //TODO add twxa_debug() here
     }
@@ -579,7 +589,8 @@ function updateFavoriteEpisode(&$fav, $ti) {
 
 function add_feed($feedLink) {
     global $config_values; //TODO fix global
-    $feedLink = preg_replace('/ /', '%20', $feedLink);
+    //$feedLink = preg_replace('/ /', '%20', $feedLink);
+    $feedLink = str_replace(' ', '%20', $feedLink);
     $feedLink = preg_replace('/^%20|%20$/', '', $feedLink);
     twxa_debug("Checking feed: $feedLink\n", 2);
 
@@ -590,7 +601,7 @@ function add_feed($feedLink) {
         $idx = end($arrayKeys);
         $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
         $config_values['Feeds'][$idx]['seedRatio'] = $config_values['Settings']['Default Seed Ratio'];
-        load_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)));
+        load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)));
         switch ($guessedFeedType) {
             case 'RSS':
                 $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedLink]['title'];
@@ -617,12 +628,14 @@ function update_feed_data() {
 
         foreach ($config_values['Favorites'] as &$favorite) { //TODO should be able to improve performance by turning this into for loop
             if ($favorite['Feed'] == $old_feedurl) {
-                $favorite['Feed'] = preg_replace('/ /', '%20', $_GET['feed_link']);
+                //$favorite['Feed'] = preg_replace('/ /', '%20', $_GET['feed_link']);
+                $favorite['Feed'] = str_replace(' ', '%20', $_GET['feed_link']);
             }
         }
 
         $config_values['Feeds'][$_GET['idx']]['Name'] = $_GET['feed_name'];
-        $config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/ /', '%20', $_GET['feed_link']);
+        //$config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/ /', '%20', $_GET['feed_link']);
+        $config_values['Feeds'][$_GET['idx']]['Link'] = str_replace(' ', '%20', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/^%20|%20$/', '', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['seedRatio'] = $_GET['seed_ratio'];
     } else {

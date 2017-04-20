@@ -273,16 +273,50 @@ Code changes
 - attempted to improve CPU util by switching preg_ functions to strreplace() in sanitizeTitle()
 - converted some preg_ functions to str functions
 
+0.3.1
+
+Functional changes
+
+- Downloaded filter now includes match_old_download (Cached Download, dark grey) items
+- Downloaded filter total count includes match_old_download items
+- temporarily added back item classes to the Legend for diagnostic purposes
+- added infoDiv to downloading or downloaded items in the filters other than Transmission
+- removed infoDiv from completed items in the filters other than Transmission
+- deleting via context menus removes infoDiv from and changes state of removed torrent items immediately
+- removed $test_run and match_favReady functionality (in the browser, favorites start downloading immediately on page load, rather than going into Ready state)
+- removed Verify Episode option, since we don't want to re-download anything already in the download cache
+
+Code changes
+
+- cleaned up all but two functions in rss_dl_utils.php
+- renamed rss_dl_utils.php to twxa_rss_dl_tools.php
+- made a few more preg_ to str_ conversions to improve performance
+- cleaned up default settings in config_lib.php
+- changed match_season to match_favBatch in preparation for capability of downloading batches automatically
+- changed match_test to match_favReady for clarity
+- changed match_match to match_favStarted for clarity
+- changed match_to_check to match_waitTorCheck for clarity
+- renamed clear_cache_real() to clear_cache_by_feed_type()
+- renamed clear_cache() to clear_cache_by_cache_type()
+- renamed cache_setup() to setup_cache()
+- renamed cache.php to twxa_cache.php
+- cleaned up check_cache() and check_cache_episode() logic a bit
+- renamed perform_feeds_matching() to process_all_feeds()
+- renamed load_feeds() to load_all_feeds()
+- renamed rss_perform_matching() to process_rss_feed()
+- renamed atom_perform_matching() to process_atom_feed()
+
 Next Version
 
 Functional changes
+
 IN PROGRESS
 
-FIX MATCHING LOGIC
-- to_check has different meanings--$matched == to_check for items that are dark grey match_old_download, but yellow match_to_check is Waiting state; might be getting eclipsed by match_nomatch logic
-- downloading item doesn't show in Downloading list (to reproduce, start a torrent manually, refresh browser. item will be grey in All, show properly with progress in Transmission, but not show in Downloading or Downloaded; clicking download again on the item in All restores the progress bar to All, so there is some state change that occurs)
+- why do some items that are in the download cache not get marked properly within PHP upon browser refresh?
+- 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
 
 Code changes
+
 IN PROGRESS
 
 - fix boolean use of detectMatch() now that it returns an array

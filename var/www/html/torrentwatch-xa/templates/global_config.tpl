@@ -231,14 +231,14 @@
                                 <input type="checkbox" name="require_epi_info" value="1" <?php echo $require_epi_info; ?>/>
                             </div>
                         </div>
-                        <div id="config_verifyepisodes" title="Try not to download duplicate episodes.">
+                        <!--<div id="config_verifyepisodes" title="Try not to download duplicate episodes.">
                             <div class="left">
                                 <label class="item checkbox">Verify Episodes:</label>
                             </div>
                             <div class="right">
                                 <input type="checkbox" name="verifyepisodes" value="1" <?php echo $verifyepisode; ?>/>
                             </div>
-                        </div>
+                        </div>-->
                         <div>
                             <div class="left">
                                 <label class="item checkbox">Newer Episodes Only:</label>

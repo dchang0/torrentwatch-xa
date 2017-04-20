@@ -184,6 +184,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
                 $cache = $config_values['Settings']['Cache Dir'] . "/rss_dl_" . filename_encode($ti);
                 $torHash = $response1['arguments']['torrent-added']['hashString'];
                 // write torrent hash to item's cache file
+                // TODO handle if $torHash is empty; cache files should not be empty
                 $handle = fopen("$cache", "w");
                 fwrite($handle, $torHash);
                 fclose($handle);
@@ -236,10 +237,10 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
     global $config_values, $hit, $twxa_version;
-    if (strtolower($fav['Filter']) == "any") {
+    if (strtolower($fav['Filter']) === "any") {
         $any = 1;
     }
-    $hit = 1;
+    $hit = 1; //TODO trace $hit down through this function
 
     //if (preg_match("/^magnet:/", $filename)) {
     if (strpos($filename, 'magnet:') === 0) {
@@ -345,7 +346,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
 
     switch ($config_values['Settings']['Client']) {
         case 'Transmission':
-            $return = transmission_add_torrent($tor, $dest, $ti, _isset($fav, '$seedRatio', $seedRatio));
+            $return = transmission_add_torrent($tor, $dest, $ti, isset_array_key($fav, '$seedRatio', $seedRatio));
             break;
         case 'folder':
             if ($magnet) {
@@ -356,7 +357,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             break;
         default:
             twxa_debug("Invalid Torrent Client: " . $config_values['Settings']['Client'] . "\n", -1);
-            exit(1);
+            exit(1); //TODO deal with this in revamping return of this function
     }
     if ($return['errorCode'] === 0) {
         add_history($tor_name);
@@ -386,7 +387,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         }
         if ($config_values['Settings']['Save Torrents'])
             file_put_contents("$dest/$tor_name.torrent", $tor);
-        return "Success";
+        return "Success"; //TODO deal with this in revamping return of this function
     } else {
         twxa_debug("Failed starting: $tor_name : $return\n", -1);
         //TODO improve error reporting for this block
@@ -399,7 +400,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         if ($config_values['Settings']['Enable Script']) {
             run_script('error', $ti, $msg);
         }
-        return "Error: " . $return['errorMessage'];
+        return "Error: " . $return['errorMessage']; //TODO deal with this in revamping return of this function
     }
 }
 

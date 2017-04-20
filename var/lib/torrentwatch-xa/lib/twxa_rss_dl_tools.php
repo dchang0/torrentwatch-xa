@@ -5,7 +5,7 @@ global $config_values;
 // PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
 require_once("/var/lib/torrentwatch-xa/lib/tools.php");
 require_once("/var/lib/torrentwatch-xa/lib/atomparser.php");
-require_once("/var/lib/torrentwatch-xa/lib/cache.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_cache.php");
 require_once("/var/lib/torrentwatch-xa/lib/class.bdecode.php");
 require_once("/var/lib/torrentwatch-xa/lib/class.phpmailer.php");
 require_once("/var/lib/torrentwatch-xa/lib/class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
@@ -18,50 +18,22 @@ require_once("/var/lib/torrentwatch-xa/lib/lastRSS.php");
 require_once("/var/lib/torrentwatch-xa/lib/tor_client.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_parse.php");
 
-$config_values['Global'] = []; //TODO why do we need this?
+$config_values['Global'] = []; // initialize collection of global arrays
 
-function _isset($array, $key, $default = '') { //TODO rename this
+function isset_array_key($array, $key, $default = '') { //TODO rename this
     // checks array: if a key is set, return value or default
     return isset($array[$key]) ? $array[$key] : $default;
 }
 
-function my_strpos($haystack, $needle) {
-    $pieces = explode(" ", $needle);
-    foreach ($pieces as $n) {
-        if (strpos($haystack, $n) !== false) {
+function multi_str_search($haystack, $needles) {
+    $needlesArray = explode(" ", $needles);
+    foreach ($needlesArray as $needle) {
+        if (strpos($haystack, $needle) !== false) {
             return true;
         }
     }
     return false;
 }
-
-function symlink_force($source, $dest) {
-    if (file_exists($dest)) {
-        unlink($dest);
-    }
-    symlink($source, $dest);
-}
-
-/* does not appear to do anything since $config_values['Global']['Unlink'] is never set
- * function unlink_temp_files() {
-  global $config_values;
-  if (isset($config_values['Global']['Unlink'])) {
-  foreach ($config_values['Global']['Unlink'] as $file) {
-  unlink($file);
-  }
-  }
-  } */
-
-/* already a built-in PHP function
- * if (!function_exists('fnmatch')) {
-
-    function fnmatch($pattern, $string) {
-        return @preg_match(
-          '/^' . strtr(addcslashes($pattern, '/\\.+^$(){}=!<>|'), array('*' => '.*', '?' => '.?', '[' => '\[', ']' => '\]')) . '$/i', $string
-          );
-    }
-
-}*/
 
 // used to lower case all the keys in an array.
 // From http://us.php.net/manual/en/function.array-change-key-case.php
@@ -117,42 +89,6 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
     return $newArray;
 }
 
-function twxa_debug($string, $lvl = -1) {
-    global $config_values;
-
-    switch ($lvl) {
-        case -1: // ALERT:
-        case 0:
-            $errLabel = "ERR:";
-            break;
-        case 1:
-            $errLabel = "INF:";
-            break;
-        case 2:
-        default:
-            $errLabel = "DBG:";
-            break;
-    }
-
-    // write plain text to log file
-    file_put_contents('/tmp/twxalog', date("c") . " $errLabel $string", FILE_APPEND); //TODO don't hard-code the log file location
-
-    if ($config_values['Settings']['debugLevel'] >= $lvl) { //TODO what is this block for, is it for Javascript alerts only?
-        if (isset($config_values['Global']['HTMLOutput'])) {
-            // write HTML output
-            if ($lvl === -1) {
-                $string = trim(strtr($string, array("'" => "\\'")));
-                $debug_output = "<script type='text/javascript'>alert('$string');</script>";
-            } else {
-                $debug_output = date("c") . " $errLabel $string";
-            }
-        } else {
-            // write plain text output
-            echo(date("c") . " $errLabel $string");
-        }
-    }
-}
-
 function add_history($ti) {
     global $config_values;
     if (file_exists($config_values['Settings']['History'])) {
@@ -176,17 +112,56 @@ function filename_encode($filename) {
     return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
 }
 
-function check_for_torrents($directory, $dest) {
+//TODO CLEAN UP FUNCTIONS BELOW THIS LINE; ABOVE FUNCTIONS ARE CLEANED UP
+
+function add_torrents_in_dir($directory, $dest) {
     $handle = opendir($directory);
     if ($handle) {
         while (false !== ($file = readdir($handle))) {
             $ti = substr($file, 0, strrpos($file, '.') - 1);
-            if (preg_match('/\.torrent$/', $file) && client_add_torrent("$directory/$file", $dest, $ti)) { //TODO client_add_torrent() returns string errors
-                unlink("$directory/$file");
+            //if (preg_match('/\.torrent$/', $file) &&
+            if (substr($file, -8) === ".torrent" &&
+                    client_add_torrent("$directory/$file", $dest, $ti)) { //TODO client_add_torrent() returns string errors
+                unlink("$directory/$file"); //TODO add error handling if unlink fails
             }
         }
         closedir($handle);
     } else {
         twxa_debug("Cannot read directory: $directory\n", -1);
+    }
+}
+
+function twxa_debug($string, $lvl = -1) {
+    global $config_values;
+
+    switch ($lvl) {
+        case -1: // ALERT:
+        case 0:
+            $errLabel = "ERR:";
+            break;
+        case 1:
+            $errLabel = "INF:";
+            break;
+        case 2:
+        default:
+            $errLabel = "DBG:";
+    }
+
+    // write plain text to log file
+    file_put_contents('/tmp/twxalog', date("c") . " $errLabel $string", FILE_APPEND); //TODO don't hard-code the log file location
+
+    if ($config_values['Settings']['debugLevel'] >= $lvl) { //TODO what is this block for, is it for Javascript alerts only?
+        if (isset($config_values['Global']['HTMLOutput'])) {
+            // write HTML output
+            if ($lvl === -1) {
+                $string = trim(strtr($string, array("'" => "\\'")));
+                $debug_output = "<script type='text/javascript'>alert('$string');</script>";
+            } else {
+                $debug_output = date("c") . " $errLabel $string";
+            }
+        } else {
+            // write plain text output
+            echo(date("c") . " $errLabel $string");
+        }
     }
 }

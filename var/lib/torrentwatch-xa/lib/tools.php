@@ -154,14 +154,14 @@ function getClientData($recent) {
     return json_encode($response);
 }
 
-function delTorrent($torHash, $trash, $batch = false) {
+function delTorrent($torHash, $toTrash = false, $isBatch = false) {
     global $config_values;
 
-    if ($batch) {
+    if ($isBatch) {
         $torHash = explode(',', $torHash);
     }
 
-    $request = array('arguments' => array('delete-local-data' => $trash, 'ids' => $torHash), 'method' => 'torrent-remove');
+    $request = array('arguments' => array('delete-local-data' => $toTrash, 'ids' => $torHash), 'method' => 'torrent-remove');
     $response = transmission_rpc($request);
     return json_encode($response);
 }

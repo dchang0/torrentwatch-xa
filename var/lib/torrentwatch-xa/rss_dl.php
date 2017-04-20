@@ -8,10 +8,10 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 //ini_set('include_path', 'lib');
 //ini_set("precision", 4); // seems only useful for the timer calculation
 
-require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php');
+require_once('/var/lib/torrentwatch-xa/lib/twxa_rss_dl_tools.php');
 
 //$config_values;
-$test_run = 0;
+//$test_run = 0;
 $verbosity = 0;
 
 function usage() {
@@ -28,7 +28,8 @@ function usage() {
 }
 
 function parse_args() {
-    global $config_values, $argc, $test_run, $verbosity;
+    //global $config_values, $argc, $test_run, $verbosity;
+    global $config_values, $argc, $verbosity;
     for ($i = 1; $i < $argc; $i++) {
         switch ($_SERVER['argv'][$i]) {
             case '-c':
@@ -39,10 +40,10 @@ function parse_args() {
                 unset($config_values['Settings']['Cache Dir']);
                 break;
             case '-d':
-                $config_values['Settings']['Run torrentwatch-xa'] = 0;
+                $config_values['Settings']['Process Watch Dir'] = 0;
                 break;
             case '-D':
-                $config_values['Settings']['Run torrentwatch-xa'] = 1;
+                $config_values['Settings']['Process Watch Dir'] = 1;
                 break;
             case '-h':
                 usage();
@@ -50,9 +51,9 @@ function parse_args() {
             case '-q':
                 $verbosity = -1;
                 break;
-            case '-t':
+            /*case '-t':
                 $test_run = 1;
-                break;
+                break;*/
             case '-v':
                 $verbosity = 1;
                 break;
@@ -61,7 +62,6 @@ function parse_args() {
                 break;
             default:
                 twxa_debug("Invalid command line argument:  " . $_SERVER['argv'][$i] . "\n", 0);
-                break;
         }
     }
 }
@@ -79,17 +79,18 @@ parse_args();
 twxa_debug("Start rss_dl.php\n", 2);
 
 if (isset($config_values['Feeds'])) {
-    load_feeds($config_values['Feeds'], 1);
-    feeds_perform_matching($config_values['Feeds']);
+    load_all_feeds($config_values['Feeds'], 1);
+    process_all_feeds($config_values['Feeds']);
 }
 
-if (_isset($config_values['Settings'], 'Run torrentwatch-xa', false) && ! $test_run && $config_values['Settings']['Watch Dir']) {
+//TODO later, break the watch dir into a function
+if (isset($config_values['Settings']['Process Watch Dir']) &&
+        $config_values['Settings']['Process Watch Dir'] === 1 &&
+        $config_values['Settings']['Watch Dir']) { //TODO test if Watch Dir is a valid directory and exists
     twxa_debug("Checking Watch Dir: " . $config_values['Settings']['Watch Dir'] . "\n", 2);
-    global $hit;
-    $hit = 0;
     foreach ($config_values['Favorites'] as $fav) {
         $guess = detectMatch(html_entity_decode($_GET['title']));
-        $name = trim(strtr($guess['title'], "._", "  "));
+        $name = trim(strtr($guess['title'], "._", "  ")); //TODO title matching is too simple here
         if ($name == $fav['Name']) {
             $downloadDir = $fav['Save In'];
         }
@@ -98,13 +99,10 @@ if (_isset($config_values['Settings'], 'Run torrentwatch-xa', false) && ! $test_
         $downloadDir = $config_values['Settings']['Download Dir'];
     }
 
-    check_for_torrents($config_values['Settings']['Watch Dir'], $downloadDir);
-    if (!$hit) {
-        twxa_debug("No new torrents to add from Watch Dir\n", 2);
-    }
+    add_torrents_in_dir($config_values['Settings']['Watch Dir'], $downloadDir);
+    //TODO add error message if no matching torrents found in dir
 } else {
     twxa_debug("Skipping Watch Dir\n", 2);
 }
 
-//unlink_temp_files();
 twxa_debug("End rss_dl.php: processed in " . timer_get_time($main_timer) . "s\n\n", 2);

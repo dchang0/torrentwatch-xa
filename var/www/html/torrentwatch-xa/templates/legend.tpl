@@ -5,23 +5,30 @@
     </div>
     <div class="dialog_window" id="show_legend">
         <ul id='torrentlist' class='show_legend'>
-            <li class='legend match_nomatch'>
-                <span class='torrent_name'><b>No Match</b> <br> <i>Will not be downloaded.</i></span></li>
-            <li class='legend match_season'>
-                <span class='torrent_name'><b>Full Season or Volume</b> <br> <i>Full season or volume of a favorite title. Will not be downloaded.</i></span></li>
-            <li class='legend match_test'>
-                <span class='torrent_name'><b><!--Test Hit-->Match Ready</b><br><i> Ready to download.  Reload this page in your browser to start all of these.</i></span></li>
-            <li class='legend match_match'>
-                <span class='torrent_name'><b><!--New Hit-->Match Started / Verifying</b><br><i> Item has just been started or is verifying.</i></span></li>
-            <li class='legend match_to_check'>
-                <span class='torrent_name'><b><!--To Check-->Waiting</b> <br> <i>Waiting for data from torrent client.</i></span></li>
-            <li class='legend match_cachehit'>
-                <span class='torrent_name'><b><!--Cache Hit - Download-->Downloading / Downloaded / Seeding</b><br><i> Item is either downloading, was just downloaded, or is seeding.</i></span></li>
-            <li class='legend match_old'>
-                <span class='torrent_name'><b><!--Duplicate or Old Episode-->Previously Downloaded</b><br><i> Same as or older than the most-recently-downloaded item in the series.</i></span></li>
-            <li class='legend match_old_download'>
-                <span class='torrent_name'><b><!--Cache Hit - Old Download-->Cached Download</b><br><i> No longer in the torrent client, or cache emptied while torrent was active.</i></span></li>
-            <li class='legend paused'><span class='torrent_name'><b>Paused</b><br><i> Download paused; can be resumed.</i></span></li>
+            <li class='legend match_notAMatch'>
+                <span class='torrent_name'><b>Not a Match</b><br>Not a favorite nor in download cache. Okay to download manually.</span></li>
+            <li class='legend match_favBatch'>
+                <span class='torrent_name'><b>Favorite Batch</b><br>Batch of favorites not in download cache. Okay to download manually.</span></li>
+            <li class='legend match_favTooOld'>
+                <span class='torrent_name'><b>Old Favorite</b><br>Favorite matches but is not new enough in the series to trigger download.</span></li>
+            <!--<li class='legend match_favReady'>
+                <span class='torrent_name'><b>Favorite Ready</b><br>Ready to download.  Reload this page in your browser to start these.</span></li>-->
+            <li class='legend match_favStarted'>
+                <span class='torrent_name'><b>Favorite Started</b><br>Favorite has just started downloading or is verifying just before starting.</span></li>
+            <li class='legend match_waitTorCheck'>
+                <span class='torrent_name'><b>Waiting</b><br>Waiting for data from torrent client.</span></li>
+            <!--<li class='legend match_cachehit'>
+                <span class='torrent_name'><b>(match_cachehit)</b><br>Not sure what this does yet.</span></li>-->
+            <li class='legend match_downloading'>
+                <span class='torrent_name'><b>Downloading<!-- (match_downloading)--></b><br>Item is downloading.</span></li>
+            <li class='legend match_downloaded'>
+                <span class='torrent_name'><b>Downloaded / Seeding<!-- (match_downloaded, match_transmission)--></b><br>Item was just downloaded and/or is seeding.</span></li>
+            <!--<li class='legend match_duplicate'>
+                <span class='torrent_name'><b>Previously Downloaded (match_duplicate)</b><br>Found in download cache. Will not be downloaded.</span></li>-->
+            <li class='legend match_inCacheNotActive'>
+                <span class='torrent_name'><b>Previously Downloaded</b><br>Seen in download cache but no longer active in the torrent client.</span></li>
+            <li class='legend paused'>
+                <span class='torrent_name'><b>Paused</b><br>Download paused; can be resumed.</span></li>
         </ul>
         <a class="toggleDialog button close" href="#">Close</a>
     </div>

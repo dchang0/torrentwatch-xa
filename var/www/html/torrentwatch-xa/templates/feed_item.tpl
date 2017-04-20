@@ -38,7 +38,7 @@ if($config_values['Settings']['Combine Feeds'] == 1) {
     $feedItem = "<span class=\"feed_name\">$feedName - </span>";
 }
 
-if(!$config_values['Settings']['Disable Hide List'] && $matched == "nomatch")  {
+if(!$config_values['Settings']['Disable Hide List'] && $matched === "notAMatch")  {
     $hideItem = "<div class='contextItem hideItem' onclick='$.hideItem(\"$utitle\")' title='Hide show'>Hide show</div>"; // adds Hide Show button to drop-down menu
 }
 
@@ -47,7 +47,7 @@ if($config_values['Settings']['Client'] != 'folder') {
 }
 
 // hide or show choices in contextMenu
-if($matched == "downloading" || $matched == "downloaded" || $matched == "cachehit" || $matched == "match" || $matched == "to_check") {
+if($matched === "downloading" || $matched === "downloaded" || $matched === "cachehit" || $matched === "favStarted" || $matched === "waitTorCheck") {
     $dlTorrent = "dlTorrent hidden";
     $torStart = "torStart hidden";
     $torPause = "torPause";

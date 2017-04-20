@@ -679,62 +679,70 @@ ul.torrentlist td.tr_identifier {
     width: 5px;
 }
 
-/* No Match */
-div#show_legend li.legend.match_nomatch,
-ul.torrentlist li.match_nomatch td.identifier {
-    /*background-color: #D6ABAB;*/
+/* Not a Match */
+div#show_legend li.legend.match_notAMatch,
+ul.torrentlist li.match_notAMatch td.identifier {
     background-color: #f2f2f2;
 }
 
-/* Full Season or Volume */
-div#show_legend li.legend.match_season,
-ul.torrentlist li.match_season td.identifier {
-    /*background-color: #99CCBB;*/
+/* Favorite Batch */
+div#show_legend li.legend.match_favBatch,
+ul.torrentlist li.match_favBatch td.identifier {
     background-color: #e1eafc;
 }
 
-/* Match Ready */
-div#show_legend li.legend.match_test,
-ul.torrentlist li.match_test td.identifier {
-    /*background-color: #C975C9;*/
+/* Old Favorite */
+div#show_legend li.legend.match_favTooOld,
+ul.torrentlist li.match_favTooOld td.identifier {
+    background-color: #a9b4ff;
+}
+
+/* Favorite Ready */
+div#show_legend li.legend.match_favReady,
+ul.torrentlist li.match_favReady td.identifier {
     background-color: #ffc166;
 }
 
-/* Match Started / Verifying */
-div#show_legend li.legend.match_match,
-ul.torrentlist li.match_match td.identifier {
-    /*background-color: #FFEFCF;*/
+/* Favorite Started */
+div#show_legend li.legend.match_favStarted,
+ul.torrentlist li.match_favStarted td.identifier {
     background-color: #d8a8d8;
 }
 
 /* Waiting */
-div#show_legend li.legend.match_to_check,
-ul.torrentlist li.match_to_check td.identifier {
-    /*background-color: #C1E0C1;*/
+div#show_legend li.legend.match_waitTorCheck,
+ul.torrentlist li.match_waitTorCheck td.identifier {
     background-color: #ffffbb;
 }
 
-/* Downloading / Downloading / Seeding */
+/* cachehit for possible merge into downloaded */
 div#show_legend li.legend.match_cachehit,
-ul.torrentlist li.match_cachehit td.identifier,
+ul.torrentlist li.match_cachehit td.identifier {
+    background-color: #E9CFFF;
+}
+
+/* Downloading */
+div#show_legend li.legend.match_downloading,
+ul.torrentlist li.match_downloading td.identifier {
+    background-color: #a1e0c1;
+}
+
+/* Downloaded / Seeding */
+div#show_legend li.legend.match_downloaded,
 ul.torrentlist li.match_downloaded td.identifier,
-ul.torrentlist li.match_downloading td.identifier,
 ul.torrentlist li.match_transmission td.tr_identifier {
-    /*background-color: #E9CFFF;*/
-    background-color: #c1e0c1;
+    background-color: #d1e9d1; /* was #c1e0c1 */
 }
 
 /* Previously Downloaded */
-div#show_legend li.legend.match_old,
-ul.torrentlist li.match_duplicate td.identifier,
-ul.torrentlist li.match_old td.identifier {
-    /*background-color: #A2A2E8;*/
-    background-color: #a9b4ff;
-}
+/*div#show_legend li.legend.match_duplicate,
+ul.torrentlist li.match_duplicate td.identifier {
+    background-color: #88b4ff;
+}*/
 
-/* Cached Download */
-div#show_legend li.legend.match_old_download,
-ul.torrentlist li.match_old_download td.identifier {
+/* Previously Downloaded */
+div#show_legend li.legend.match_inCacheNotActive,
+ul.torrentlist li.match_inCacheNotActive td.identifier {
     background-color: #bbb;
 }
 
@@ -742,7 +750,7 @@ ul.torrentlist td.torrent_name {
     padding: 2px 5px 2px 5px;
 }
 
-ul.torrentlist li.match_nomatch td.torrent_name {
+ul.torrentlist li.match_notAMatch td.torrent_name {
     vertical-align: middle;
     margin: 0;
     height: 15px;

@@ -178,23 +178,27 @@ function episode_filter($item, $filter) {
 }
 
 function check_for_torrent(&$item, $key, $opts) {
-    global $matched, $test_run, $config_values;
-
+    //TODO third-most function, called by process_rss_feed()/process_atom_feed()
+    //global $matched, $test_run, $config_values;
+    global $matched, $config_values;
+    
     if (!isset($item['Feed']) || !(strtolower($item['Feed']) === 'all' || $item['Feed'] === '' || $item['Feed'] == $opts['URL'])) {
         return;
     }
-    $rs = $opts['Obj'];
+    $rs = $opts['Obj']; // $rs holds each feed list item, $item holds each Favorite item
     $ti = strtolower($rs['title']);
-    switch (_isset($config_values['Settings'], 'Match Style')) { //TODO maybe simplify this
+    
+    // apply initial filtering from Favorites settings, prior to detectMatch(); may be why simplifyTitle() is necessary before this
+    switch (isset_array_key($config_values['Settings'], 'Match Style')) { //TODO maybe simplify this
         case 'simple':
-            $hit = (($item['Filter'] != '' && strpos(strtr($ti, " .", "__"), strtr(strtolower($item['Filter']), " .", "__")) === 0) &&
-                    ($item['Not'] == '' OR my_strpos($ti, strtolower($item['Not'])) === false) &&
-                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR my_strpos($ti, strtolower($item['Quality'])) !== false));
+            $hit = (($item['Filter'] !== '' && strpos(strtr($ti, " .", "__"), strtr(strtolower($item['Filter']), " .", "__")) === 0) &&
+                    ($item['Not'] === '' OR multi_str_search($ti, strtolower($item['Not'])) === false) &&
+                    (strtolower($item['Quality']) == 'all' OR $item['Quality'] === '' OR multi_str_search($ti, strtolower($item['Quality'])) !== false));
             break;
         case 'glob':
-            $hit = (($item['Filter'] != '' && fnmatch(strtolower($item['Filter']), $ti)) &&
-                    ($item['Not'] == '' OR ! fnmatch(strtolower($item['Not']), $ti)) &&
-                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR strpos($ti, strtolower($item['Quality'])) !== false));
+            $hit = (($item['Filter'] !== '' && fnmatch(strtolower($item['Filter']), $ti)) &&
+                    ($item['Not'] === '' OR ! fnmatch(strtolower($item['Not']), $ti)) &&
+                    (strtolower($item['Quality']) == 'all' OR $item['Quality'] === '' OR strpos($ti, strtolower($item['Quality'])) !== false));
             break;
         case 'regexp':
         default:
@@ -205,13 +209,13 @@ function check_for_torrent(&$item, $key, $opts) {
                 $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/';
             }
             $hit = (($item['Filter'] !== '' && preg_match($pattern, $ti)) &&
-                    ($item['Not'] == '' OR ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
-                    ($item['Quality'] == 'All' OR $item['Quality'] == '' OR preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
+                    ($item['Not'] === '' || ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
+                    (strtolower($item['Quality']) === 'all' || $item['Quality'] === '' || preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
             break;
     }
 
     if (isset($item['Filter']) && strtolower($item['Filter']) === "any") {
-        $hit = 1;
+        $hit = 1; // $hit is local and not used above this function
         $any = 1;
     }
 
@@ -220,47 +224,49 @@ function check_for_torrent(&$item, $key, $opts) {
     }
 
     if ($hit && episode_filter($guess, $item['Episodes']) == true) {
-        $matched = 'match';
-        if (preg_match('/^\d+p$/', $item['Episode'])) {
+        $matched = "favStarted"; // used to be 'match'; set as default value here to be overwritten by exceptions below
+        //twxa_debug("start with \$matched = \"favStarted\" for " . $rs['title'] . "\n", 2);
+        if (preg_match('/^\d+p$/', $item['Episode'])) { //TODO improve this old means of recording Proper episodes in the Favorite
             $item['Episode'] = preg_replace('/^(\d+)p/', '\1', $item['Episode']);
             $PROPER = 1;
         }
-        if (check_cache($rs['title'])) {
-            if ((!isset($any) || !$any) && _isset($config_values['Settings'], 'Only Newer') == 1) { //TODO test !isset($any) || logic
+        if (check_cache($rs['title'])) { // check_cache() is false if title is or title and episode are found in cache
+            if ((!isset($any) || !$any) && isset_array_key($config_values['Settings'], 'Only Newer') == 1) { //TODO test !isset($any) || logic
                 if (!empty($guess['episode']) && preg_match('/^(\d+)x(\d+)p?$|^(\d{8})p?$/i', $guess['episode'], $regs)) {
                     if (isset($regs[3]) && preg_match('/^(\d{8})$/', $regs[3]) && $item['Episode'] >= $regs[3]) {
                         twxa_debug("Old by Episode/date; ignoring: " . $item['Name'] . " (" . $item['Episode'] . ' >= ' . $regs[3] . ")\n", 1);
-                        $matched = "old";
+                        $matched = "favTooOld";
                         return false;
                     } else if (isset($regs[1]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] > $regs[1]) {
                         twxa_debug("Old by Season; ignoring: " . $item['Name'] . " (" . $item['Season'] . ' > ' . $regs[1] . ")\n", 1);
-                        $matched = "old";
+                        $matched = "favTooOld";
                         return false;
                     } else if (isset($regs[2]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] == $regs[1] && $item['Episode'] >= $regs[2]) {
-                        if (!preg_match('/proper|repack|rerip/i', $rs['title'])) {
-                            twxa_debug("Old by Season x Episode; ignoring: " . $item['Name'] . " (S: " . $item['Season'] . " = " . $regs[1] . ", E: " . $item['Episode'] . ' >= ' . $regs[2] . ")\n", 1); //TODO this may be wrong
-                            $matched = "old";
+                        if (!preg_match('/proper|repack|rerip/i', $rs['title'])) { //TODO coordinate with check_cache_episode() handling of v2/v3
+                            twxa_debug("Old by Season x Episode; ignoring: " . $item['Name'] . " (S: " . $item['Season'] . " = " . $regs[1] . ", E: " . $item['Episode'] . ' >= ' . $regs[2] . ")\n", 1);
+                            $matched = "favTooOld";
                             return false;
                         } else if ($PROPER == 1) {
                             twxa_debug("Already downloaded Proper, Repack, or Rerip of; ignoring: " . $item['Name'] . " ($regs[1]x$regs[2]$regs[3])\n", 1);
-                            $matched = "old";
+                            $matched = "favTooOld";
                             return false;
                         }
                     }
-                } else if ($guess['episode'] == 'fullSeason') {
-                    $matched = "season";
+                } else if ($guess['episode'] == 'fullSeason') { //TODO handle batches in general, not just full seasons
+                    twxa_debug("Ignoring batch of: " . $item['name'] . "\n", 2);
+                    $matched = "favBatch"; // used to be 'season'
                     return false;
                 } else if (($guess['episode'] != 'noShow' && !preg_match('/^(\d{1,2} \d{1,2} \d{2,4})$/', $guess['episode'])) || $config_values['Settings']['Require Episode Info'] == 1) {
                     twxa_debug("$item is not in a workable format.\n", 0);
-                    $matched = "nomatch";
+                    $matched = "notAMatch";
                     return false;
                 }
             }
             twxa_debug("Match found for " . $rs['title'] . "\n", 2);
-            if ($test_run) {
-                $matched = 'test';
+            /*if ($test_run) {
+                $matched = "favReady"; // used to be 'test'; interrupts default value of "favStarted"
                 return;
-            }
+            }*/
             if ($link = get_torrent_link($rs)) {
                 $response = client_add_torrent($link, null, $rs['title'], $opts['URL'], $item);
                 //if (preg_match('/^Error:/', $response)) {
@@ -272,8 +278,13 @@ function check_for_torrent(&$item, $key, $opts) {
                 }
             } else {
                 twxa_debug("Unable to find URL for " . $rs['title'] . "\n", -1);
-                $matched = "nourl";
+                $matched = "noURL"; // doesn't do anything except overwrite $matched = "favStarted" for future logic
+                //TODO probably add gzip capability here
             }
+        }
+        else {
+            //twxa_debug("cachehit for " . $rs['title'] . "\n", 2);
+            $matched = "cachehit";
         }
     }
 }
@@ -333,8 +344,9 @@ function get_torHash($cache_file) {
     }
 }
 
-function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
-    global $config_values, $matched, $html_out;
+function process_rss_feed($rs, $idx, $feedName, $feedLink) {
+    //TODO this is second-most function for feed processing, run by process_all_feeds()
+    global $config_values, $matched, $html_out; // $matched is not used above this level
 
     twxa_debug("Started processing RSS feed: $feedName\n", 2);
     if (count($rs['items']) === 0) {
@@ -351,22 +363,22 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     $htmlList = [];
     foreach ($items as $item) {
         if (!isset($item['title'])) {
-            $item['title'] = '';
+            $item['title'] = "";
         } else {
-            $item['title'] = simplifyTitle($item['title']);
+            $item['title'] = simplifyTitle($item['title']); //TODO first major function call, simplifyTitle() is needed for favorites matching somehow
         }
-        $torHash = '';
-        $matched = 'nomatch';
+        $torHash = "";
+        $matched = "notAMatch";
         if (isset($config_values['Favorites'])) {
-            array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $rs['URL']]);
+            array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $rs['URL']]); //TODO second major function call, $matched is inside check_for_torrent()
         }
         $client = $config_values['Settings']['Client'];
         if (isset($config_values['Settings']['Cache Dir'])) {
             $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($item['title']);
         }
-        if (file_exists($cache_file)) {
+        if (file_exists($cache_file)) { //TODO why does this not use check_cache() with cachehit?
             $torHash = get_torHash($cache_file);
-            if ($matched != "match" && $matched != 'cachehit' && file_exists($cache_file)) {
+            if ($matched !== "favStarted" && $matched != 'cachehit' && file_exists($cache_file)) { //TODO $matched comes from check_for_torrent() above
                 $matched = 'downloaded';
                 twxa_debug("Already downloaded; ignoring: " . $item['title'] . "\n", 1);
             }
@@ -410,8 +422,9 @@ function rss_perform_matching($rs, $idx, $feedName, $feedLink) {
     twxa_debug("Processed RSS feed: $feedName\n", 1);
 }
 
-function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
-    global $config_values, $matched, $html_out;
+function process_atom_feed($atom, $idx, $feedName, $feedLink) {
+    //TODO this is second-most function for feed processing, run by process_all_feeds()
+    global $config_values, $matched, $html_out; // $matched is not used above this level
 
     $atom = array_change_key_case_ext($atom, ARRAY_KEY_LOWERCASE);
 
@@ -430,13 +443,13 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     foreach ($items as $item) {
         $item['title'] = simplifyTitle($item['title']);
         $torHash = '';
-        $matched = "nomatch";
+        $matched = "notAMatch";
         array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $feedLink]);
         $client = $config_values['Settings']['Client'];
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($item['title']);
         if (file_exists($cache_file)) {
-            $torHash = get_torHash($cache_file);
-            if ($matched != "match" && $matched != 'cachehit' && file_exists($cache_file)) {
+            $torHash = get_torHash($cache_file); //TODO add ability to compare hashes here; why does this not use check_cache() with cachehit?
+            if ($matched !== "favStarted" && $matched != 'cachehit' && file_exists($cache_file)) {
                 $matched = 'downloaded';
                 twxa_debug("Already downloaded; ignoring: " . $item['title'] . "\n", 1);
             }
@@ -481,12 +494,12 @@ function atom_perform_matching($atom, $idx, $feedName, $feedLink) {
     twxa_debug("Processed Atom feed: $feedName\n", 1);
 }
 
-function feeds_perform_matching($feeds) {
-    //TODO this runs once, but below, rss_perform_matching() may run twice somehow
+function process_all_feeds($feeds) {
+    //TODO this is the top-most function for feed processing, happens right after getting list of feeds
     global $config_values, $html_out;
 
     if (isset($config_values['Global']['HTMLOutput'])) {
-        echo('<div class="progressBarUpdates">'); //TODO why does this echo to console and not into $html_out?
+        //echo('<div class="progressBarUpdates">'); //TODO why does this echo to console and not into $html_out?
         show_feed_lists_container();
     }
 
@@ -494,17 +507,17 @@ function feeds_perform_matching($feeds) {
         show_feed_list(0);
     }
 
-    cache_setup();
+    setup_cache();
     foreach ($feeds as $key => $feed) {
         switch ($feed['Type']) {
             case 'RSS':
                 if (isset($config_values['Global']['Feeds'][$feed['Link']])) {
-                    rss_perform_matching($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+                    process_rss_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
                 }
                 break;
             case 'Atom':
                 if (isset($config_values['Global']['Feeds'][$feed['Link']])) {
-                    atom_perform_matching($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+                    process_atom_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
                 }
                 break;
             default:
@@ -522,14 +535,14 @@ function feeds_perform_matching($feeds) {
     }
 
     if (isset($config_values['Global']['HTMLOutput'])) {
-        echo('</div>'); //TODO why does this echo to console and not into $html_out?
+        //echo('</div>'); //TODO why does this echo to console and not into $html_out?
         close_feed_lists_container();
     }
 }
 
-function load_feeds($feeds, $update = null) {
+function load_all_feeds($feeds, $update = null) {
     global $config_values;
-    $count = count($feeds);
+    //$count = count($feeds);
     //twxa_debug("count(\$feeds): $count . \$feeds: " . print_r($feeds, true) . "\n", 2);
     foreach ($feeds as $feed) {
         //twxa_debug("\$feed: " . print_r($feed, true) . "\n", 2);
@@ -542,7 +555,6 @@ function load_feeds($feeds, $update = null) {
                 break;
             default:
                 twxa_debug("Unknown " . $feed['Type'] . " feed: " . $feed['Link'] . "\n", -1);
-                break;
         }
     }
 }

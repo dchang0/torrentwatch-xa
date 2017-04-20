@@ -32,8 +32,8 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) 
         }
     }
 
-    if (($matched == "cachehit" || $matched == "downloaded" || $matched == "match") && $config_values['Settings']['Client'] != 'folder') {
-        $matched = 'to_check'; //TODO Dark Grey turns to Green if $matched = 'to_check' is commented out
+    if (($matched == "cachehit" || $matched == "downloaded" || $matched === "favStarted") && $config_values['Settings']['Client'] != 'folder') {
+        $matched = 'waitTorCheck';
     }
     // add word-breaking flags (soft hyphens) after each period
     //$ti = preg_replace('/\./', '.&shy;', $item['title']);

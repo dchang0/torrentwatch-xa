@@ -9,13 +9,13 @@ header("Pragma: no-cache");
 ini_set('include_path', '.:./php');
 //error_reporting(E_ERROR | E_WARNING | E_PARSE);
 error_reporting(E_ALL);
-require_once('/var/lib/torrentwatch-xa/lib/rss_dl_utils.php'); //TODO switch this to use get_base_dir()
+require_once('/var/lib/torrentwatch-xa/lib/twxa_rss_dl_tools.php'); //TODO switch this to use get_base_dir()
 
-$twxa_version[0] = "0.3.0";
+$twxa_version[0] = "0.3.1";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
-$test_run = 0; //TODO make sure $test_run works and then make it useful
+//$test_run = 0; //TODO make sure $test_run works and then make it useful
 
 if (get_magic_quotes_gpc()) {
     $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
@@ -95,7 +95,7 @@ function parse_options() {
             update_feed();
             break;
         case 'clearCache':
-            clear_cache();
+            clear_cache_by_cache_type();
             break;
         case 'setGlobals':
             update_global_config();
@@ -317,9 +317,9 @@ function display_global_config() {
     if ($config_values['Settings']['Require Episode Info'] == 1) {
         $require_epi_info = 'checked=1';
     }
-    if ($config_values['Settings']['Verify Episode'] == 1) {
+    /*if ($config_values['Settings']['Verify Episode'] == 1) {
         $verifyepisode = 'checked=1';
-    }
+    }*/
     if ($config_values['Settings']['Only Newer'] == 1) {
         $onlynewer = 'checked=1';
     }
@@ -681,8 +681,8 @@ $html_out = "";
 flush();
 twxa_debug("=====torrentwatch-xa.php started running at $main_timer\n", 2);
 // Feeds
-load_feeds($config_values['Feeds']);
-feeds_perform_matching($config_values['Feeds']);
+load_all_feeds($config_values['Feeds']);
+process_all_feeds($config_values['Feeds']);
 
 get_client();
 close_html();

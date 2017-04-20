@@ -43,7 +43,7 @@ input[type=password] {
 input[type=hidden] {
     display: none;
 }
-    
+
 input[type=checkbox] {
     margin-top: 2px;
 }
@@ -77,7 +77,7 @@ label.category {
 .hidden {
     display: none;
 }
-    
+
 /*-----------------
  *
  * T O P   M E N U
@@ -126,23 +126,23 @@ ul.mainoptions li a {
 }
 
 ul.mainoptions li a:hover {
-   border: 1px solid #c0c0c0;
-   border-right: 1px solid #e5e5e5;
-   border-bottom: 1px solid #e5e5e5;
-   background: #E8E8E8;
-   filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#e8e8e8,endColorstr=#CCCCCC)";
-   background: -webkit-gradient(linear, left top, left bottom, from(#e8e8e8), to(#ccc));
-   background:-moz-linear-gradient(top, #e8e8e8, #ccc);
+    border: 1px solid #c0c0c0;
+    border-right: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+    background: #E8E8E8;
+    filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#e8e8e8,endColorstr=#CCCCCC)";
+    background: -webkit-gradient(linear, left top, left bottom, from(#e8e8e8), to(#ccc));
+    background:-moz-linear-gradient(top, #e8e8e8, #ccc);
 }
 
 ul.mainoptions li a.selected {
-   border: 1px solid #888;
-   border-right: 1px solid #e8e8e8;
-   border-bottom: 1px solid #e8e8e8;
-   background: #ccc;
-   filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#e8e8e8,endColorstr=#c8c8c8)";
-   background: -webkit-gradient(linear, left top, left bottom, from(#e8e8e8), to(#c8c8c8));
-   background: -moz-linear-gradient(top, #e8e8e8, #c8c8c8);
+    border: 1px solid #888;
+    border-right: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+    background: #ccc;
+    filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#e8e8e8,endColorstr=#c8c8c8)";
+    background: -webkit-gradient(linear, left top, left bottom, from(#e8e8e8), to(#c8c8c8));
+    background: -moz-linear-gradient(top, #e8e8e8, #c8c8c8);
 }
 
 ul.mainoptions li#webui {
@@ -152,12 +152,12 @@ ul.mainoptions li#webui {
 }
 
 ul.mainoptions li a .icon {
-	display:			block;
-	height:				16px;
-	width:				16px;
-	margin-right:			2px;
-	background-repeat:		no-repeat;
-	float:				left;
+    display:			block;
+    height:				16px;
+    width:				16px;
+    margin-right:			2px;
+    background-repeat:		no-repeat;
+    float:				left;
 }
 
 ul.mainoptions li#favoritesMenu a .icon {
@@ -278,7 +278,7 @@ ul#filterbar_container li.filter_left {
     border-bottom-left-radius: 		1px;
     -moz-border-radius-bottomleft: 	1px;
 }
- 
+
 ul#filterbar_container li.filter_left:hover,
 ul#filterbar_container li.filter_left.selected {
     border-left:		2px solid #aaa;
@@ -500,23 +500,23 @@ div#show_episode {
 }
 
 div#show_episode h1 {
-	font-size: 18px;
+    font-size: 18px;
     font-weight:bold;
-	padding-bottom:5px;
+    padding-bottom:5px;
 }
 
 div#show_episode td {
-	vertical-align: top;
+    vertical-align: top;
 }
 
 div#show_episode strong {
     font-weight:bold;
 }
 div#show_episode .text {
-	font-size: 16px;
+    font-size: 16px;
 }
 div#show_episode .firstletter {
-	font-size: 20px;
+    font-size: 20px;
 }
 
 /*-------------------------
@@ -572,9 +572,9 @@ div#torrentlist_container div.header td.feed_title {
 }
 
 div#torrentlist_container div.header td.feed_title span.matches {
-   color: #666;
-   margin-left: 0.5em;
-   font-size: 12px;
+    color: #666;
+    margin-left: 0.5em;
+    font-size: 12px;
 }
 
 div#torrentlist_container div.header_hidden td.feed_title span {
@@ -652,62 +652,70 @@ ul.torrentlist td.tr_identifier {
     width: 5px;
 }
 
-/* No Match */
-div#show_legend li.legend.match_nomatch,
-ul.torrentlist li.match_nomatch td.identifier {
-    /*background-color: #D6ABAB;*/
+/* Not a Match */
+div#show_legend li.legend.match_notAMatch,
+ul.torrentlist li.match_notAMatch td.identifier {
     background-color: #f2f2f2;
 }
 
-/* Full Season or Volume */
-div#show_legend li.legend.match_season,
-ul.torrentlist li.match_season td.identifier {
-    /*background-color: #99CCBB;*/
+/* Favorite Batch */
+div#show_legend li.legend.match_favBatch,
+ul.torrentlist li.match_favBatch td.identifier {
     background-color: #e1eafc;
 }
 
-/* Match Ready */
-div#show_legend li.legend.match_test,
-ul.torrentlist li.match_test td.identifier {
-    /*background-color: #C975C9;*/
+/* Old Favorite */
+div#show_legend li.legend.match_favTooOld,
+ul.torrentlist li.match_favTooOld td.identifier {
+    background-color: #a9b4ff;
+}
+
+/* Favorite Ready */
+div#show_legend li.legend.match_favReady,
+ul.torrentlist li.match_favReady td.identifier {
     background-color: #ffc166;
 }
 
-/* Match Started / Verifying */
-div#show_legend li.legend.match_match,
-ul.torrentlist li.match_match td.identifier {
-    /*background-color: #FFEFCF;*/
+/* Favorite Started */
+div#show_legend li.legend.match_favStarted,
+ul.torrentlist li.match_favStarted td.identifier {
     background-color: #d8a8d8;
 }
 
 /* Waiting */
-div#show_legend li.legend.match_to_check,
-ul.torrentlist li.match_to_check td.identifier {
-    /*background-color: #C1E0C1;*/
+div#show_legend li.legend.match_waitTorCheck,
+ul.torrentlist li.match_waitTorCheck td.identifier {
     background-color: #ffffbb;
 }
 
-/* Downloading / Downloading / Seeding */
+/* cachehit for possible merge into downloaded */
 div#show_legend li.legend.match_cachehit,
-ul.torrentlist li.match_cachehit td.identifier,
+ul.torrentlist li.match_cachehit td.identifier {
+    background-color: #E9CFFF;
+}
+
+/* Downloading */
+div#show_legend li.legend.match_downloading,
+ul.torrentlist li.match_downloading td.identifier {
+    background-color: #a1e0c1;
+}
+
+/* Downloaded / Seeding */
+div#show_legend li.legend.match_downloaded,
 ul.torrentlist li.match_downloaded td.identifier,
-ul.torrentlist li.match_downloading td.identifier,
 ul.torrentlist li.match_transmission td.tr_identifier {
-    /*background-color: #E9CFFF;*/
-    background-color: #c1e0c1;
+    background-color: #d1e9d1; /* was #c1e0c1 */
 }
 
 /* Previously Downloaded */
-div#show_legend li.legend.match_old,
-ul.torrentlist li.match_duplicate td.identifier,
-ul.torrentlist li.match_old td.identifier {
-    /*background-color: #A2A2E8;*/
-    background-color: #a9b4ff;
-}
+/*div#show_legend li.legend.match_duplicate,
+ul.torrentlist li.match_duplicate td.identifier {
+    background-color: #88b4ff;
+}*/
 
-/* Cached Download */
-div#show_legend li.legend.match_old_download,
-ul.torrentlist li.match_old_download td.identifier {
+/* Previously Downloaded */
+div#show_legend li.legend.match_inCacheNotActive,
+ul.torrentlist li.match_inCacheNotActive td.identifier {
     background-color: #bbb;
 }
 
@@ -715,7 +723,7 @@ ul.torrentlist td.torrent_name {
     padding: 2px 5px 2px 5px;
 }
 
-ul.torrentlist li.match_nomatch td.torrent_name {
+ul.torrentlist li.match_notAMatch td.torrent_name {
     vertical-align: middle;
     margin: 0;
     height: 15px;
@@ -943,9 +951,9 @@ div#donate {
  * ----------------------------*/
 
 div#transmissionDialog {
-	display: inline;
+    display: inline;
 }
-	
+
 div#transmissionDialog .dialogTitle {
     padding-top: 2px;
     top: 50px;
@@ -954,19 +962,19 @@ div#transmissionDialog .dialogTitle {
 }
 
 div#transmissionWindow {
-	width: 800px;
-	height: 550px;
-	top: 71px;
-	margin-left: -400px;
-	padding: 0;
-        border: 1px solid #979797;
+    width: 800px;
+    height: 550px;
+    top: 71px;
+    margin-left: -400px;
+    padding: 0;
+    border: 1px solid #979797;
 }
 
 #transmissionFrame {
-	width: 800px;
-	height: 550px;
+    width: 800px;
+    height: 550px;
 }
-	
+
 
 /*--------------------------
  *
@@ -1102,7 +1110,7 @@ div#cacheDialog .dialogTitle {
 h2.dialog_heading {
     font-size: 1.3em;
     text-align: center;
-    }
+}
 
 div.buttonContainer {
     margin-top: 2px;
@@ -1158,7 +1166,7 @@ input[type=submit] {
 div.legend input {
     clear: left;
 }
-    
+
 div#clientError {
     top: 0px;
     text-align: center;
@@ -1238,21 +1246,21 @@ div.welcome {
     width: 600px;
     border: 3px solid #979797;
     z-index: 2;
-    }
+}
 
 div.welcome input {
     clear: left;
-    }
+}
 
 div#welcome1 label,
 div#welcome5 label {
     margin-top: 0.2em;
     display: block;
-    }
-    
+}
+
 div.form_radio {
     padding-left: 10px;
-    }
+}
 
 div.form_input {
     margin: 10px 0 10px 20px;
@@ -1440,16 +1448,16 @@ form#config_form div {
 }
 
 form#config_form div.configTab {
-   padding: 5px 0 5px 0; 
+    padding: 5px 0 5px 0; 
 }
 
 div#config_feeds {
-   padding-top: 5px;
+    padding-top: 5px;
 }
 
 div#config_feeds #feedItems {
-   max-height: 280px;
-   overflow: auto;
+    max-height: 280px;
+    overflow: auto;
 }
 
 div#addFeed {
@@ -1530,14 +1538,14 @@ div#showURL input[type=checkbox] {
 }
 
 div#configuration div.config_form input#hideSearchText {
-   border: 0;
-   border-top: 1px solid #979797;
-   width: 438px !important;
-   height: 18px;
-   margin: 0;
-   padding: 1px 3px 0 20px;
-   background: #FFF url('../images/filter_icon.png') top left no-repeat;
-   font-size: 0.8em;
+    border: 0;
+    border-top: 1px solid #979797;
+    width: 438px !important;
+    height: 18px;
+    margin: 0;
+    padding: 1px 3px 0 20px;
+    background: #FFF url('../images/filter_icon.png') top left no-repeat;
+    font-size: 0.8em;
 }
 
 div#hideListContainer {
@@ -1546,7 +1554,7 @@ div#hideListContainer {
 }
 
 div#hideListContainer ul.hidelist li {
-     overflow: hidden;
+    overflow: hidden;
 }
 
 div#hideListContainer ul.hidelist li:hover {
@@ -1655,15 +1663,15 @@ form.favinfo {
     margin: 5px 0;
     width: 380px;
     float: right;
-    }
+}
 form.favinfo div {
     height: 24px;
-    }
+}
 
 form.favinfo #mode,
 form.favinfo input#idx {
     display: none;
-    }
+}
 
 form.favinfo select {
     position: absolute;
@@ -1679,10 +1687,10 @@ form.favinfo input[type=text] {
 }
 
 form.favinfo div.favorite_seed_and_episode {
-     position: absolute;
-     float: right;
-     right: 25px;
-     width: 360px;
+    position: absolute;
+    float: right;
+    right: 25px;
+    width: 360px;
 }
 
 form.favinfo label.lastSeason {
@@ -1783,7 +1791,7 @@ div#history a#clearhistory {
 }
 
 div#clear_cache a.toggleDialog {
-   margin-right: 20px;
+    margin-right: 20px;
 }
 
 div#history a.toggleDialog {

@@ -33,17 +33,14 @@ I have definitely verified 0.2.5 and up work perfectly on Ubuntu 14.04.5 with PH
 
 ### Current Version
 
-I've posted 0.3.0 with the changes listed in CHANGELOG. This version has a big new feature: SMTP authentication and an easy way to configure SMTP email notifications on the Configure > Trigger tab. I kept the Script feature too, so you can keep using whatever shell scripts you have. I also finally fixed 99% of the annoying Cmd-Tab "stuck Cmd key" problem on Macs. It is still possible to trigger it, but in a very rare instance.
-
-I also improved performance somewhat by converting several preg_match() and preg_replace() calls to strpos() and str_replace(), respectively, but there weren't that many places that this could be done. For me to make dramatic performance improvements involves rethinking the approach the season and episode matching engine takes (probably undoing the switch-case and going back to carefully-crafted if-else if-else cascades).
+I've posted 0.3.1 with the changes listed in CHANGELOG. This time I chose to finally address some small cosmetic or superficial UI bugs, including fully-Downloaded items not showing up in the Downloaded filter, progress bar and infoDiv misbehavior outside of the Transmission filter, and some of the item states that don't survive a browser refresh. Not all of the UI bugs have been fixed just yet; they will be fixed in small, controlled batches.
 
 ### Next Version
 
 I hope to:
 
-- refine the season and episode detection engine
-- clean up the download engine mess with $matched states
-- add the capability to check for duplicate downloads by torrent hash in the cache
+- continue cleaning up the item states so that they all properly survive browser refreshes
+- improve the core matching process and improve performance by reducing number of calls to the parsing engine
 
 Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
 
