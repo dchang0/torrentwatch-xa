@@ -1425,14 +1425,19 @@ $(document).ready(function () { // first binding to document ready
             },
                     function (json) {
                         if (json.result == "success") {
-                            // remove infoDiv and hide progressBarContainer from completed items in all filters other than Transmission
-                            //if ($('li.item_' + torHash + ' span.torInfo').length) {
-                            $('li.item_' + torHash + ' div.infoDiv').remove();
-                            //}
-                            $('li.item_' + torHash + ' .progressBarContainer').hide();
-                            // change state from match_downloading or match_downloaded to match_inCacheNotActive
-                            $('li.item_' + torHash).removeClass('match_downloading match_downloaded').addClass('match_inCacheNotActive');
-                            $('li.item_' + torHash + ' td.buttons').removeClass('match_downloading match_downloaded').addClass('match_inCacheNotActive');
+                            //TODO does this handle batches?
+                            if ($('li.item_' + torHash).length) {
+                                $('li.item_' + torHash + ' div.infoDiv').remove();
+                                $('li.item_' + torHash + ' div.progressBarContainer').hide();
+                                $('li.item_' + torHash + ' div.activeTorrent').hide();
+                                $('li.item_' + torHash + ' div.dlTorrent').show();
+                                $('li.item_' + torHash + ', li.item_' + torHash + ' td.buttons')
+                                        .removeClass('match_downloading match_downloaded downloading match_cachehit').addClass('match_inCacheNotActive');
+                                //$('li.item_' + torHash).removeClass('clientId_' + item);
+                            }
+                            if ($('#transmission_data li.item_' + torHash).length) {
+                                $('#transmission_data li.item_' + torHash).remove();
+                            }
                             setTimeout(getClientData, 10);
                         } else {
                             alert('Request failed');
