@@ -16,7 +16,7 @@ Status
 
 ### Current Version
 
-I've posted 0.3.1 with the changes listed in CHANGELOG. This time I chose to finally address some small cosmetic or superficial UI bugs, including fully-Downloaded items not showing up in the Downloaded filter, progress bar and infoDiv misbehavior outside of the Transmission filter, and some of the item states that don't survive a browser refresh. Not all of the UI bugs have been fixed just yet; they will be fixed in small, controlled batches.
+I've posted 0.3.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md). This time I chose to finally address some small cosmetic or superficial UI bugs, including fully-Downloaded items not showing up in the Downloaded filter, progress bar and infoDiv misbehavior outside of the Transmission filter, and some of the item states that don't survive a browser refresh. Not all of the UI bugs have been fixed just yet; they will be fixed in small, controlled batches.
 
 ### Next Version
 
@@ -25,7 +25,7 @@ I hope to:
 - continue cleaning up the item states so that they all properly survive browser refreshes
 - improve the core matching process and improve performance by reducing number of calls to the parsing engine
 
-Known bugs are tracked primarily in the TODO.md and CHANGELOG.md files. Tickets in GitHub Issues will remain separate for accountability reasons.
+Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) files. Tickets in GitHub Issues will remain separate for accountability reasons.
 
 Tested Platforms
 ===============
