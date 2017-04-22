@@ -91,7 +91,7 @@ I decided not to deal with this just yet. You can always download any item you s
 Common Issues
 ===============
 
-##### "I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
+#### "I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
 
 See the section of the instructions called **Use the Favorites panel to set up your automatic downloads** above.
 
@@ -104,7 +104,7 @@ Also, as mentioned under the **Design Decisions Explained** section, currently, 
 Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
 
 
-##### Some items have obviously-incorrect detected sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
+#### Some items have obviously-incorrect detected sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
 
 The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:
 
@@ -124,7 +124,7 @@ Copy and paste that into the bug report.
 - (optional) Cut and paste the favorite's Filter setting into the bug report.
 - **Submit the bug report. _Thank you for helping to improve the season and episode detection engine._**
 
-##### "Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
+#### "Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
 
 Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644). 
 
