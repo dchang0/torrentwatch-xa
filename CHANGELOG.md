@@ -318,17 +318,19 @@ Functional changes
 
 IN PROGRESS
 
-- started switchover from detectMatch() to detectItem() season and episode output
 - why do some items that are in the download cache not get marked properly within PHP upon browser refresh?
 - 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
 - partially added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
 
 Code changes
 
-- switched from detectMatch() to detectQualities() in add_hidden() and rss_dl.php
-- switched from detectMatch() to detectItem() in check_for_torrent(), get_deep_dir()
+- added pass-through of detectItem() season and episode output to detectMatch()
+- improved Favorite to item season and episode comparison in check_for_torrent()
+- added extra sanitizeTitle() to detectMatch() for 'title' and 'favTitle'
 
 IN PROGRESS
+
+- finish human-friendly episode notation conversion in detectMatch()
 
 - fix Quality filtering in check_for_torrent() before checking the download cache
 

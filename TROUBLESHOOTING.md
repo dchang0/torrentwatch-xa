@@ -64,6 +64,12 @@ But the engine currently reads it as title = "Holly Stage for" and Season 50, Ep
 
 Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
 
+#### Item Says It's an Old Favorite but is Actually New and Should Be Downloaded
+
+This can happen if there are parallel numbering styles for the same torrent. For instance, with HorribleSubs Boku no Hero Academia 17 (Season 1, Episode 17), some crew on the Feedburner Anime (Aggregated) feed was re-releasing it later as Season 2, Episode 4. What happened then was that once torrentwatch-xa saw the Season 2 track, it jumped onto it and began ignoring the Season 1 numbering. The Season 1-numbered episodes would come out earlier each week and not be downloaded.
+
+I am not sure I should fix this. Technically, the season and episode detection engine is working properly; it's the crew that was renumbering episodes that was causing problems. The episode would download once the Season 2 renumbering was released. The only way I can think of fixing this is to have a setting that locks the Favorites into a season, but this means that there won't be smooth transitions from one season to the next. More people are going to want the latter than experience the renumbering, so I'll leave this problem unsolved.
+
 #### Items Drop Off the Feed Lists
 
 If one starts an item downloading from a feed list, and that item is bumped off the end of the feed list by newer items on the next browser refresh, the item will not appear in the Downloaded or Downloading filtered lists even if the item still shows on the Transmission tab as downloading or downloaded. This is because the item simply is no longer in the list to be filtered and then shown by the Downloading and Downloaded filters. It seems counterintuitive until one understands that the Downloaded and Downloading filters are view filters on the feed list, not historical logs nor connected to Transmission's internal list.
@@ -95,7 +101,8 @@ Also, as mentioned under the **Design Decisions Explained** section, currently, 
 
 Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
 
-##### Some items have obviously-incorrect sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
+
+##### Some items have obviously-incorrect detected sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
 
 The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:
 
