@@ -63,14 +63,14 @@ From the official repos:
 Installation
 ===============
 
-See INSTALL.md for detailed installation steps.
-[INSTALL.md](INSTALL.md)
+See [INSTALL.md](INSTALL.md) for detailed installation steps.
+
 
 Troubleshooting
 ===============
 
-See TROUBLESHOOTING.md for detailed troubleshooting steps and explanations of design decisions and common issues.
-[TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed troubleshooting steps and explanations of design decisions and common issues.
+
 
 Credits
 ===============
