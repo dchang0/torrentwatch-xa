@@ -314,23 +314,23 @@ Next Version
 Functional changes
 
 - temporarily hid Configure > Favorites > Download PROPER/REPACK setting in preparation for itemVersion numbering system
-
+- partially added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
+- removed Favorite Batch from Legend (no need to differentiate now that it is possible to auto-download batches)
 
 IN PROGRESS
 
 - why do some items that are in the download cache not get marked properly within PHP upon browser refresh?
 - 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
-- partially added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
+
 
 Code changes
 
 - added pass-through of detectItem() season and episode output to detectMatch()
 - improved Favorite to item season and episode comparison in check_for_torrent()
 - added extra sanitizeTitle() to detectMatch() for 'title' and 'favTitle'
+- improved human-friendly episode notation conversion in detectMatch()
 
 IN PROGRESS
-
-- finish human-friendly episode notation conversion in detectMatch()
 
 - fix Quality filtering in check_for_torrent() before checking the download cache
 
