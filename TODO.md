@@ -9,7 +9,21 @@ Throughout all versions
 Tasks
 ==========
 
-- after page reload, some items that had already finished in Transmission were still present, in red, but without progressBarContainer or infoDiv; on another refresh they disappeared as they should have (probably due to Javascript removing them); best fix is to run Transmission check immediately on reload rather than waiting a bit
+- new season and episode notation:
+  - SxE = single episode
+  - 0xYYYYMMDD = single date
+  - S1-S1xE1-E2 = batch of episodes within one season
+  - 0-0xYYYYMMDD1-YYYYMMDD2 = batch of dates
+  - S1-S1xFULL = one full season
+  - S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
+                 
+- PROPER/REPACK notation must be rolled into item version numbering somehow
+
+- add ability to turn off batch downloads to avoid large downloads
+
+- after page reload, some items that had already finished in Transmission were still present, in red, but without progressBarContainer or infoDiv; on another refresh they disappeared as they should have (probably due to Javascript removing them); best fix is to run Transmission check immediately on reload rather than waiting a bit (this is probably fixed by now)
+
+- if deleting active torrent manually before it completes, perhaps it should not be labeled as match_inCacheNotActive if it isn't actually in the download cache; in other words, this would require remembering the state of match_inCacheNotActive across the delete action
 
 - rename various uses of the word match or matched to reduce confusion
 
@@ -36,6 +50,7 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by either:
+    - check feed item's notes for torrent hash, then compare this to the cache files
     - adding a "stay in this season" checkbox to each Favorite
     - do not match Favorites in this feed
 
