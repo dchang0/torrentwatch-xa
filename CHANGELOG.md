@@ -1,3 +1,6 @@
+Change Log
+===============
+
 0.1.0
 Functional changes
 - cloned from TorrentWatch-X 0.8.9 (https://code.google.com/p/torrentwatch-x/) to torrentwatch-xa 0.1.0 (https://github.com/dchang0/torrentwatch-xa/)

@@ -1,9 +1,11 @@
-![torrentwatch-xa TWXA logo](http://silverlakecorp.com/torrentwatch-xa/torrentwatch-xa-logo144.png)
+![torrentwatch-xa twxa logo](http://silverlakecorp.com/torrentwatch-xa/torrentwatch-xa-logo144.png)
 
 torrentwatch-xa
 ===============
 
 torrentwatch-xa is an actively-developed fork of Joris Vandalon's abandoned TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. It will continue to handle live-action TV episodes with nearly all season + episode notations.
+
+![torrentwatch-xa twxa ScreenShot 1](http://silverlakecorp.com/torrentwatch-xa/twxaScreenShot1.png)
 
 I resurrected TorrentWatch-X because I could not make Sick Beard-Anime PVR handle anime episode numbering styles well enough for certain titles, and the TorrentWatch-X UI is far easier to use and understand. Over a few years of continual use, torrentwatch-xa has proven to be an excellent set-it-and-forget-it PVR for all my viewing needs.
 
@@ -32,7 +34,7 @@ I hope to:
 - continue cleaning up the item states so that they all properly survive browser refreshes
 - improve the core matching process and improve performance by reducing number of calls to the parsing engine
 
-Known bugs are tracked primarily in the TODO and CHANGELOG files. Tickets in GitHub Issues will remain separate for accountability reasons and will also be referenced in the TODO and CHANGELOG.
+Known bugs are tracked primarily in the TODO.md and CHANGELOG.md files. Tickets in GitHub Issues will remain separate for accountability reasons.
 
 Tested Platforms
 ===============

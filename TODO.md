@@ -1,13 +1,17 @@
-Throughout all versions
-==========
+TODO List
+===============
+
+
+## Throughout all versions
+
 
 - improve performance
 - improve debugging and commenting
 - refactor when reasonable
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
-Tasks
-==========
+## Tasks
+
 
 - new season and episode notation:
   - SxE = single episode
