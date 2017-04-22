@@ -7,20 +7,20 @@ torrentwatch-xa is an actively-developed fork of Joris Vandalon's abandoned Torr
 
 ![torrentwatch-xa twxa ScreenShot 1](http://silverlakecorp.com/torrentwatch-xa/twxaScreenShot1.png)
 
-I resurrected TorrentWatch-X because I could not make Sick Beard-Anime PVR handle anime episode numbering styles well enough for certain titles, and the TorrentWatch-X UI is far easier to use and understand. Over a few years of continual use, torrentwatch-xa has proven to be an excellent set-it-and-forget-it PVR for all my viewing needs.
+I resurrected TorrentWatch-X because I could not make Sick Beard-Anime PVR handle anime episode numbering styles well enough for certain titles, and the TorrentWatch-X UI is far easier to use and understand. Over a few years of continual use and many hours of improvements, torrentwatch-xa has proven to be an excellent set-it-and-forget-it PVR.
 
 To restrict the development and testing scopes in order to improve quality assurance, I am focusing on Ubuntu 14.04.x LINUX as the only OS and on Transmission as the only torrent client. It works on pretty much any modern web browser that has Javascript enabled.
 
 In the process of customizing torrentwatch-xa to fit my needs and workflow, I'll:
 
-- fix some bugs
+- fix bugs
 - refactor some code
-- add some features, mostly UI and workflow improvements
+- add features, mostly UI and workflow improvements
 - let some features languish or remove them outright, especially buggy/unreliable portions of the code
  
 The end goal is for torrentwatch-xa to do only what it's supposed to do and do it well. Over time, this will mean that broken or aging features will probably be removed rather than repaired. While such features still work, they will remain.
 
-Status and Announcements
+Status
 ===============
 
 ### Current Version
