@@ -46,7 +46,8 @@ I've looked at Apache2 core dumps using php-src/.gdbinit dump_bt but did not get
 
 The good news is that I have definitely verified 0.2.5 and up work perfectly on Ubuntu 14.04.5 with PHP 5.6. Avoid any OS with PHP 7.0 until I figure this SEGFAULT out. It may end up that skipping over PHP 7.0 to PHP 7.1 solves the problem.
 
-### Design Decisions Explained
+Design Decisions Explained
+===============
 
 "One man's bug is another man's feature."
 
@@ -87,7 +88,8 @@ However, with manga, it is obvious that the user favors downloading entire volum
 I decided not to deal with this just yet. You can always download any item you see in a feed list by manually highlighting it and clicking the Download (Play) button.
 
 
-### Common Issues
+Common Issues
+===============
 
 ##### "I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
 
