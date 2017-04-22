@@ -48,7 +48,7 @@ The good news is that I have definitely verified 0.2.5 and up work perfectly on 
 
 #### "I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
 
-See the section of the instructions called **Use the Favorites panel to set up your automatic downloads**.
+See the section of the installation instructions called **Use the Favorites panel to set up your automatic downloads**.
 
 _However_ there are situations where a correctly-set-up favorite does not match items.
 
@@ -75,7 +75,7 @@ Copy and paste that into the bug report.
 
 Copy and paste that into the bug report.
 - (optional) Cut and paste the favorite's Filter setting into the bug report.
-- **Submit the bug report. _Thank you for helping to improve the season and episode detection engine._**
+- Submit the bug report. _Thank you for helping to improve the season and episode detection engine!_
 
 #### "Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
 
@@ -96,7 +96,7 @@ Design Decisions Explained
 
 "One man's bug is another man's feature."
 
-It's become obvious that there are situations for which a mutually-exclusive design decision cannot be avoided. The below are design decisions that will never be "fixed."
+There are situations for which a mutually-exclusive design decision cannot be avoided. The below are design decisions that will never be "fixed."
 
 #### Only Public Torrent RSS or Atom Feeds Are Supported
 
