@@ -64,13 +64,13 @@ Installation
 ===============
 
 See INSTALL.md for detailed installation steps.
-(INSTALL.md)[INSTALL.md]
+[INSTALL.md](INSTALL.md)
 
 Troubleshooting
 ===============
 
 See TROUBLESHOOTING.md for detailed troubleshooting steps and explanations of design decisions and common issues.
-(TROUBLESHOOTING.md)[TROUBLESHOOTING.md]
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 Credits
 ===============
