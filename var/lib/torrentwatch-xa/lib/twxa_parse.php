@@ -13,7 +13,6 @@ require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match3.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match4.php");
 
 function collapseExtraSeparators($ti) {
-    //$ti = str_replace("   ", " ", $ti);
     $ti = str_replace("  ", " ", $ti);
     $ti = str_replace(" .", ".", $ti);
     $ti = str_replace(". ", ".", $ti);
@@ -71,7 +70,6 @@ function normalizeCodecs($ti, $seps = '\s\.\_') {
 }
 
 function validateYYYYMMDD($date) {
-    // validates a YYYYMMDD date
     $YYYY = substr($date, 0, 4);
     $MM = substr($date, 4, 2);
     $DD = substr($date, 6, 2);
@@ -80,13 +78,11 @@ function validateYYYYMMDD($date) {
 
 function simplifyTitle($ti) {
     // combines all the title processing functions
-
     $ti = sanitizeTitle($ti);
 
     // MUST normalize these codecs/qualities now so that users get trained to use normalized versions
     $ti = normalizeCodecs($ti);
 
-    //TODO Maybe remove audio codecs (not necessary if episode matching can handle being butted up against a codec)
     // detect and strip out 7 or 8-character checksums
     $mat = [];
     if (preg_match("/([0-9a-f])[0-9a-f]{6,7}/i", $ti, $mat)) {
@@ -106,7 +102,6 @@ function simplifyTitle($ti) {
             }
         }
     }
-
     // run collapse due to possibility of checksum removal leaving back-to-back separators
     return collapseExtraSeparators($ti);
 }
@@ -139,7 +134,6 @@ function detectResolution($ti, $seps = '\s\.\_') {
                 $resolution = strtolower($matches[1] . $matches[2]);
             }
         }
-        //TODO deal with BD#### if #### is not a common vertical lines
     } else if (preg_match($hRegEx, $ti, $matches)) {
         // standalone resolutions in ###p or ###i format
         // shouldn't be more than one resolution in title
@@ -149,7 +143,6 @@ function detectResolution($ti, $seps = '\s\.\_') {
     } else if (preg_match($wByHRegEx, $ti, $matches)) {
         // search arbitrarily for #### x #### (might also be Season x Episode or YYYY x MMDD)
         // check aspect ratios
-
         if (
                 $matches[1] * 9 == $matches[3] * 16 || // 16:9 aspect ratio
                 $matches[1] * 0.75 == $matches[3] || // 4:3 aspect ratio
@@ -363,9 +356,6 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
 }
 
 function detectMatch($ti) {
-    //FOR TESTING A NEW ENGINE
-    file_put_contents('/tmp/tilog', "$ti\n", FILE_APPEND);
-
     $episode_guess = "";
 
     // detect qualities
