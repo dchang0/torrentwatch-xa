@@ -313,9 +313,9 @@ Code changes
 
 Functional changes
 
-- removed Favorite Episodes filter due to new Favorite matching method
 - renamed Configure > Favorites > Download PROPER/REPACK setting to Download Versions >1 in switch to itemVersion numbering system
-- PARTIALLY added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
+- temporarily disabled PROPER/REPACK handling in favor of itemVersion
+- added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
 - can now auto-download Print media (Volume x Chapter or batch of Chapters or full Volume or batch of Volumes)
 - added Configure > Favorites > Ignore Batches
 - changed Favorite Batch to Ignored Favorite Batch in Legend (part of new auto-download batch feature)
