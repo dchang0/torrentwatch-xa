@@ -38,13 +38,13 @@ Also in 0.4.0, I dramatically changed the way the titles are processed:
 
 - The detectItem() logic was drastically reorganized to allow code reuse, changing the order of several matchTitle functions. I expect this to introduce many season and episode detection errors, but the alternative was that I'd end up maintaining an ever-growing list of mostly redundant functions.
 - In many matchTitle functions, the regex used to detect the season and episode numbering is being reused to remove the season and episode numbering and undetected codecs, leaving behind the generated show_title (aka favTitle or 'favTi'). This should reduce bugs in the show_title.
-- Many regex were improved to include more languages and catch more abbreviations. This will probably result in a net gain of bugs, but we may never know since NyaaTorrents is down, and NyaaTorrents had the widest and most challenging range of season and episode numbering styles.
+- Many regexes were improved to include more languages and catch more abbreviations. This will probably result in a net gain of bugs, but we may never know since NyaaTorrents is permanently shut down, and NyaaTorrents had the widest and most challenging range of season and episode numbering styles.
 
 I added a few features to the UI to make it easier to debug the season and episode detection engine. First, every item's episode label now has mouse-hover text that displays the debugMatch value. Each item's debugMatch value is still hidden in the source code as described in the Troubleshooting instructions, but the mouse-hover text makes it easier to see. In addition, there is now the option to display both debugMatch and show_title per line in the feed lists: Configure > Interface > Show Item Debug Info. show_title is generated from the item title by removing all the detected codecs, qualities, and episodic numbering. What is left behind is supposed to be just the show title to be used for various tasks such as checking the download cache and setting the initial Filter value when Add to Favorites is clicked. show_title is important and generating it correctly is key; making it visible will help you debug problems getting Favorites to match items in the feed list that it should be matching and help you craft better Favorite Filters.
 
 Another big new feature is the ability to enable or disable individual feeds in Configure > Feeds. Note that after re-enabling a feed, the browser must be refreshed to see the feed return to the list.
 
-Broken long ago in TorrentWatch-X and carried over into torrentwatch-xa, the 'Require Episode Info' feature is now finally repaired. If it is unchecked, the season and episode number comparisons are completely bypassed so that Favorites can match items with or without episode numbering. This is useful for collectors who want every single item or batch that matches a given se of Favorite Filter, Not and Qualities filters.
+Broken long ago in TorrentWatch-X and carried over into torrentwatch-xa, the 'Require Episode Info' feature is now finally repaired. If it is unchecked, the season and episode number comparisons are completely bypassed so that Favorites can match items with or without episode numbering. This is useful for collectors who want every single item or batch that matches a given set of Favorite Filter, Not and Qualities filters.
 
 Finally, I reduced the number of item states and made sure the ones that are used do show up properly according to the Legend.
 
@@ -55,9 +55,8 @@ In alpha: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Ko
 I hope to:
 
 - rewrite the episode_filter() function to handle the new season and episode notation style
-- add batch matching capability to more of the pattern detectors
-- add the ability to turn off batch auto-downloading (default is currently auto-download)
-- fix bugs introduced by the 0.3.2 changes to the detection engine
+- add more pattern detectors and fix any bugs introduced by the major reorganization in 0.4.0
+- rewrite PROPER/REPACK handling in the new itemVersion method
 - improve performance by breaking functions into smaller ones and calling just the necessary functions
 
 Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) files. Tickets in GitHub Issues will remain separate for accountability reasons.
