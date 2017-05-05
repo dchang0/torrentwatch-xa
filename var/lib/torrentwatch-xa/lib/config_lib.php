@@ -205,7 +205,7 @@ function read_config_file() {
                 'Name' => 'TokyoTosho.info Anime'
             ],
             2 => [
-                'Link' => 'https://anidex.moe/rss/cat/0',
+                'Link' => 'https://anidex.info/rss/cat/0',
                 'Type' => 'RSS',
                 'seedRatio' => "-1",
                 'enabled' => 1,
