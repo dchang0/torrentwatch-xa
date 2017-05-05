@@ -21,7 +21,8 @@ function show_transmission_div() {
 
 function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) {
     global $config_values, $html_out;
-    $guess = detectMatch($item['title']); //TODO feed this into templates/feed_item.tpl to improve performance
+    $guess = detectMatch($item['title']);
+    //twxa_debug($item['title'] . "\n", 2);
     if ($config_values['Settings']['Episodes Only'] == 1 && ($guess['episode'] == 'noShow' || !$guess)) {
         return;
     }
@@ -32,11 +33,10 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) 
         }
     }
 
-    if (($matched == "cachehit" || $matched == "downloaded" || $matched === "favStarted") && $config_values['Settings']['Client'] != 'folder') {
+    if (($matched === "cachehit" || $matched === "downloaded" || $matched === "favStarted") && $config_values['Settings']['Client'] != 'folder') {
         $matched = 'waitTorCheck';
     }
     // add word-breaking flags (soft hyphens) after each period
-    //$ti = preg_replace('/\./', '.&shy;', $item['title']);
     //$ti = str_replace('.', '.&shy;', $item['title']);
     $ti = $item['title'];
     // Copy feed cookies to item
@@ -46,7 +46,6 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) 
     }
 
     ob_start();
-    //TODO improve passing of $ti into feed_item.tpl
     require('templates/feed_item.tpl');
     $html_out .= ob_get_contents();
     ob_end_clean();

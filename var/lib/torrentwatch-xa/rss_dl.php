@@ -11,7 +11,6 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 require_once('/var/lib/torrentwatch-xa/lib/twxa_rss_dl_tools.php');
 
 //$config_values;
-//$test_run = 0;
 $verbosity = 0;
 
 function usage() {
@@ -28,7 +27,6 @@ function usage() {
 }
 
 function parse_args() {
-    //global $config_values, $argc, $test_run, $verbosity;
     global $config_values, $argc, $verbosity;
     for ($i = 1; $i < $argc; $i++) {
         switch ($_SERVER['argv'][$i]) {
@@ -51,9 +49,6 @@ function parse_args() {
             case '-q':
                 $verbosity = -1;
                 break;
-            /*case '-t':
-                $test_run = 1;
-                break;*/
             case '-v':
                 $verbosity = 1;
                 break;

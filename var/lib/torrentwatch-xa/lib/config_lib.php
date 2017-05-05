@@ -31,10 +31,11 @@ function setup_default_config() {
     // set defaults
     $baseDir = get_baseDir();
     // Interface tab
-    _default('Combine Feeds', '0');
-    _default('Disable Hide List', '0');
-    //_default('Episodes Only', '0');
-    _default('Hide Donate Button', '0');
+    _default('Combine Feeds', "0");
+    _default('Disable Hide List', "0");
+    //_default('Episodes Only', "0");
+    _default('Show Debug', "0");
+    _default('Hide Donate Button', "0");
     _default('Time Zone', 'UTC');
     // Client tab
     _default('Client', "Transmission");
@@ -46,21 +47,22 @@ function setup_default_config() {
     _default('Transmission URI', '/transmission/rpc'); // hidden setting
     // Torrent tab
     _default('Deep Directories', "0");
-    _default('Default Seed Ratio', '-1');
+    _default('Default Seed Ratio', "-1");
     _default('Auto-Del Seeded Torrents', "1");
     _default('Watch Dir', '');
     _default('Save Torrents', "0");
     // Favorites tab
     _default('Match Style', "regexp");
     _default('Default Feed All', "1");
-    _default('Require Episode Info', '0');
+    _default('Require Episode Info', "1");
     //_default('Verify Episode', "1");
     _default('Only Newer', "1");
-    _default('Download Proper', "1");
+    _default('Ignore Batches', "1");
+    _default('Download Versions', "1");
     // Trigger tab
-    _default('Enable Script', '0');
+    _default('Enable Script', "0");
     _default('Script', '');
-    _default('SMTP Notifications', '0');
+    _default('SMTP Notifications', "0");
     _default('From Email', '');
     _default('To Email', '');
     _default('SMTP Server', 'localhost');
@@ -70,12 +72,11 @@ function setup_default_config() {
     _default('SMTP Username', '');
     _default('SMTP Password', '');
     // Other hidden settings
-    _default('Process Watch Dir', '1'); // only really used for rss_dl.php
-    _default('debugLevel', '0'); // not sure how this works yet--if higher than $lvl, sends debug to STDOUT, I think
+    _default('Process Watch Dir', "1"); // only really used for rss_dl.php
+    _default('debugLevel', "0"); //TODO not sure how this works yet--if higher than $lvl, sends debug to STDOUT, I think
     _default('Extension', "torrent");
-    _default('Sanitize Hidelist', '0');
+    _default('Sanitize Hidelist', "0");
     _default('Cache Dir', $baseDir . "/rss_cache/");
-    _default('TVDB Dir', $baseDir . "/tvdb_cache/"); //TODO remove TVDB
     _default('History', $baseDir . "/rss_cache/rss_dl.history");
 }
 
@@ -95,30 +96,27 @@ if (!(function_exists('get_webDir'))) {
 
 }
 
-if (!(function_exists('get_curl_defaults'))) {
-
-    function get_curl_defaults(&$curlopt) {
-        if (extension_loaded("curl")) {
-            $curlopt[CURLOPT_CONNECTTIMEOUT] = 15;
-        }
-        $curlopt[CURLOPT_SSL_VERIFYPEER] = false;
-        $curlopt[CURLOPT_SSL_VERIFYHOST] = false;
-        $curlopt[CURLOPT_FOLLOWLOCATION] = true;
-        $curlopt[CURLOPT_UNRESTRICTED_AUTH] = true;
-        $curlopt[CURLOPT_TIMEOUT] = 20;
-        $curlopt[CURLOPT_RETURNTRANSFER] = true;
-        return($curlopt);
+//if (!(function_exists('get_curl_defaults'))) {
+function get_curl_defaults(&$curlopt) {
+    if (extension_loaded("curl")) {
+        $curlopt[CURLOPT_CONNECTTIMEOUT] = 15;
     }
-
+    $curlopt[CURLOPT_SSL_VERIFYPEER] = false;
+    $curlopt[CURLOPT_SSL_VERIFYHOST] = false;
+    $curlopt[CURLOPT_FOLLOWLOCATION] = true;
+    $curlopt[CURLOPT_UNRESTRICTED_AUTH] = true;
+    $curlopt[CURLOPT_TIMEOUT] = 20;
+    $curlopt[CURLOPT_RETURNTRANSFER] = true;
+    return($curlopt);
 }
 
-// This function is from
-// http://www.codewalkers.com/c/a/Miscellaneous/Configuration-File-Processing-with-PHP/2/
-// It has been modified to support multidimensional arrays in the form of
-// group[] = key => data as equivalent of group[key] => data
-
+//}
 
 function read_config_file() {
+    // This function is from
+    // http://www.codewalkers.com/c/a/Miscellaneous/Configuration-File-Processing-with-PHP/2/
+    // It has been modified to support multidimensional arrays in the form of
+    // group[] = key => data as equivalent of group[key] => data
     global $config_values;
     $config_file = getConfigFile();
     $config_cache = getConfigCache();
@@ -151,9 +149,7 @@ function read_config_file() {
         if (flock($fp, LOCK_EX)) {
             while (!feof($fp)) {
                 $line = trim(fgets($fp));
-                //if ($line && !preg_match("/^$comment/", $line)) {
                 if ($line && strpos($line, $comment) !== 0) { //TODO test this logic
-                    //if (preg_match("/^\[/", $line) && preg_match("/\]$/", $line)) {
                     if (strpos($line, "[") === 0 && substr($line, -1) === "]") {
                         $line = trim(trim($line, "["), "]");
                         $group = trim($line);
@@ -163,7 +159,6 @@ function read_config_file() {
                         $pieces[1] = trim($pieces[1], "\"");
                         $option = trim($pieces[0]);
                         $value = trim($pieces[1]);
-                        //if (preg_match("/\[\]$/", $option)) {                        
                         if (substr($option, -2) === "[]") {
                             $option = substr($option, 0, strlen($option) - 2);
                             $pieces = explode("=>", $value, 2);
@@ -196,22 +191,39 @@ function read_config_file() {
     if (!isset($config_values['Feeds'])) {
         $config_values['Feeds'] = [
             0 => [
-                'Link' => 'http://www.nyaa.se/?page=rss',
+                'Link' => 'http://horriblesubs.info/rss.php?res=all',
                 'Type' => 'RSS',
-                'seedRatio' => '-1',
-                'Name' => 'NyaaTorrents'
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'HorribleSubs Latest RSS'
             ],
             1 => [
                 'Link' => 'http://tokyotosho.info/rss.php?filter=1',
                 'Type' => 'RSS',
-                'seedRatio' => '-1',
+                'seedRatio' => "-1",
+                'enabled' => 1,
                 'Name' => 'TokyoTosho.info Anime'
             ],
             2 => [
-                'Link' => 'http://feeds.feedburner.com/anime-rss-atom-feeds?format=xml',
+                'Link' => 'https://anidex.moe/rss/cat/0',
                 'Type' => 'RSS',
-                'seedRatio' => '-1',
-                'Name' => 'Anime (Aggregated)'
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'AniDex'
+            ],
+            3 => [
+                'Link' => 'https://www.torrentfunk.com/anime/rss.xml',
+                'Type' => 'RSS',
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'TorrentFunk RSS - Anime'
+            ],
+            4 => [
+                'Link' => 'https://www.acgnx.se/rss.xml',
+                'Type' => 'RSS',
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'AcgnX Torrent Resources Base.Global'
             ]
         ];
         write_config_file();
@@ -344,43 +356,33 @@ function update_global_config() {
         'Watch Dir' => 'watchdir',
         'Deep Directories' => 'deepdir',
         'Default Seed Ratio' => 'defaultratio',
-        'Combine Feeds' => 'combinefeeds',
-        'Episodes Only' => 'epionly',
-        'Require Episode Info' => 'require_epi_info',
-        'Disable Hide List' => 'dishidelist',
-        'Hide Donate Button' => 'hidedonate',
         'Client' => 'client',
         'Match Style' => 'matchstyle',
-        'Only Newer' => 'onlynewer',
-        'Download Proper' => 'fetchproper',
-        'Auto-Del Seeded Torrents' => 'autodel',
-        'Default Feed All' => 'favdefaultall',
         'Extension' => 'extension'
     );
-
     $checkboxes = array(
         'Combine Feeds' => 'combinefeeds',
         'Episodes Only' => 'epionly',
         'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
+        'Show Debug' => 'showdebug',
         'Hide Donate Button' => 'hidedonate',
         //'Verify Episode' => 'verifyepisodes',
         'Save Torrents' => 'savetorrents',
         'Only Newer' => 'onlynewer',
-        'Download Proper' => 'fetchproper',
+        'Download Versions' => 'fetchversions',
+        'Ignore Batches' => 'ignorebatches',
         'Auto-Del Seeded Torrents' => 'autodel',
         'Default Feed All' => 'favdefaultall',
         'Enable Script' => 'enableScript',
         'SMTP Notifications' => 'enableSMTP'
     );
-
     //TODO figure out how the config settings overwrite themselves
     foreach ($input as $key => $data) {
         if (isset($_GET[$data])) {
             $config_values['Settings'][$key] = $_GET[$data];
         } // cannot overwrite $config_values['Settings'][$key] with null because $config_values['Settings']['truri'] isn't accessible via Configure pane
     }
-
     foreach ($checkboxes as $key => $data) {
         if (isset($_GET[$data])) {
             $config_values['Settings'][$key] = $_GET[$data];
@@ -392,7 +394,6 @@ function update_global_config() {
 }
 
 function update_favorite() {
-    //global $test_run;
     if (!isset($_GET['button'])) {
         return;
     }
@@ -400,7 +401,6 @@ function update_favorite() {
         case 'Add':
         case 'Update':
             $response = add_favorite();
-            //$test_run = true; //TODO what does $test_run = true do?
             break;
         case 'Delete':
             del_favorite();
@@ -437,13 +437,11 @@ function add_hidden($name) {
                 return($fav['Name'] . " exists in favorites. Not adding to hide list.");
             }
         }
-
         if (isset($name)) {
             $config_values['Hidden'][$name] = 'hidden';
         } else {
             return("Bad form data, not added to favorites"); // Bad form data
         }
-
         write_config_file();
     } else {
         return("Unable to add $name to the hide list.");
@@ -457,7 +455,6 @@ function del_hidden($list) {
             unset($config_values['Hidden'][$item]);
         }
     }
-
     write_config_file();
 }
 
@@ -530,66 +527,53 @@ function del_favorite() {
 }
 
 function updateFavoriteEpisode(&$fav, $ti) {
-    if (!$guess = detectMatch($ti)) {
-        return;
-    }
-
-    if (preg_match('/^((\d+x)?\d+)p$/', $guess['episode'])) {
-        $guess['episode'] = preg_replace('/^((?:\d+x)?\d+)p$/', '\1', $guess['episode']);
-        $PROPER = "p";
-    } else {
-        $PROPER = '';
-    }
-
-    if (preg_match('/(^)(\d{8})$/', $guess['episode'], $regs)) {
-        $curEpisode = $regs[2];
-        $expectedEpisode = $regs[2] + 1;
-    } else if (preg_match('/^(\d+)x(\d+)$/i', $guess['episode'], $regs)) {
-        $curEpisode = preg_replace('/(\d+)x/i', "", $guess['episode']);
-        $curSeason = preg_replace('/x(\d+)/i', "", $guess['episode']);
-        $expectedEpisode = sprintf('%02d', $fav['Episode'] + 1);
-    } else {
-        return;
-    }
-    if ($fav['Episode'] && $curEpisode > $expectedEpisode) {
-        $show = $guess['title'];
-        $episode = $guess['episode'];
-        $expected = $curSeason . "x" . $expectedEpisode;
-        $oldEpisode = $fav['Episode'];
-        $oldSeason = $fav['Season'];
-        $newEpisode = $curEpisode + 1;
-        $newSeason = $curSeason + 1;
-
-        $msg = "Matched \"$show $episode\" but expected \"$expected\".\n";
-        $msg.= "This usually means that a double episode is downloaded before this one.\n";
-        $msg.= "But it could mean that you missed an episode or that \"$episode\" is a special episode.\n";
-        $msg.= "If this is the case you need to reset the \"Last Downloaded Episode\" setting to \"$oldSeason x $oldEpisode\" in the Favorites menu.\n";
-        $msg.= "If you don't, the next match wil be \"Season: $curSeason Episode: $newEpisode\" or \"Season $newSeason Episode: 1\".\n";
-
-        if ($config_values['Settings']['SMTP Notifications']) {
-            $subject = "torrentwatch-xa: got $show $episode, expected $expected";
-            MailNotify($msg, $subject);
+    $guess = detectMatch($ti);
+    if ($guess['numberSequence'] > 0) {
+        //twxa_debug("Update favorite: " . print_r($guess, true) . "\n", 2);
+        //TODO handle possibility of empty or non-numeric $fav['Season']
+        if (is_numeric($guess['seasBatEnd'])) {
+            if ($guess['seasBatEnd'] > $fav['Season']) {
+                // item has higher season than favorite
+                if (is_numeric($guess['episBatEnd'])) {
+                    // item episode is numeric, update favorite season and episode
+                    $fav['Season'] = $guess['seasBatEnd'];
+                    $fav['Episode'] = $guess['episBatEnd'];
+                } else if ($guess['episBatEnd'] === '') {
+                    //TODO full season, how do we handle this? I guess for now we leave it blank and update
+                    $fav['Season'] = $guess['seasBatEnd'];
+                    $fav['Episode'] = $guess['episBatEnd'];
+                } else {
+                    //TODO not supposed to happen
+                }
+            } else if ($guess['seasBatEnd'] == $fav['Season']) {
+                // same season, compare episodes
+                if (is_numeric($guess['episBatEnd'])) {
+                    if (is_numeric($fav['Episode'])) {
+                        if ($guess['episBatEnd'] > $fav['Episode']) { // this can handle decimal episodes
+                            // episode is newer, update favorite
+                            $fav['Episode'] = $guess['episBatEnd'];
+                        }
+                    } else {
+                        // favorite episode is not numeric, overwrite it
+                        $fav['Episode'] = $guess['episBatEnd'];
+                    }
+                } else if ($guess['episBatEnd'] === '') {
+                    //TODO full season, how do we handle this? I guess for now we leave it blank and update
+                    $fav['Episode'] = $guess['episBatEnd'];
+                } else {
+                    //TODO not supposed to happen
+                }
+            }
+        } else {
+            //TODO season batch end is not numeric, not sure what to do
         }
-        if ($config_values['Settings']['Enable Script']) {
-            run_script('error', $ti, $msg);
-        }
-        //TODO add twxa_debug() here
+        //twxa_debug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n", 2);
+        write_config_file();
     }
-    if (!isset($fav['Season'], $fav['Episode']) || $regs[1] > $fav['Season']) {
-        $fav['Season'] = $regs[1];
-        $fav['Episode'] = $regs[2] . $PROPER;
-    } else if ($regs[1] == $fav['Season'] && $regs[2] > $fav['Episode']) {
-        $fav['Episode'] = $regs[2] . $PROPER;
-    } else {
-        $fav['Episode'] .= $PROPER;
-    }
-    twxa_debug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n", 2);
-    write_config_file();
 }
 
 function add_feed($feedLink) {
-    global $config_values; //TODO fix global
-    //$feedLink = preg_replace('/ /', '%20', $feedLink);
+    global $config_values;
     $feedLink = str_replace(' ', '%20', $feedLink);
     $feedLink = preg_replace('/^%20|%20$/', '', $feedLink);
     twxa_debug("Checking feed: $feedLink\n", 2);
@@ -601,7 +585,8 @@ function add_feed($feedLink) {
         $idx = end($arrayKeys);
         $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
         $config_values['Feeds'][$idx]['seedRatio'] = $config_values['Settings']['Default Seed Ratio'];
-        load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)));
+        $config_values['Feeds'][$idx]['enabled'] = 1;
+        load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)), 1, true); // pass true for newly added feeds
         switch ($guessedFeedType) {
             case 'RSS':
                 $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedLink]['title'];
@@ -616,7 +601,7 @@ function add_feed($feedLink) {
 }
 
 function update_feed_data() {
-    global $config_values; //TODO fix global
+    global $config_values;
     if (isset($_GET['idx']) && isset($config_values['Feeds'][$_GET['idx']])) {
         if (!($_GET['feed_name']) || !($_GET['feed_link'])) {
             return;
@@ -626,25 +611,28 @@ function update_feed_data() {
 
         twxa_debug("Updating feed: $old_feedurl\n", 1);
 
-        foreach ($config_values['Favorites'] as &$favorite) { //TODO should be able to improve performance by turning this into for loop
+        foreach ($config_values['Favorites'] as &$favorite) {
             if ($favorite['Feed'] == $old_feedurl) {
-                //$favorite['Feed'] = preg_replace('/ /', '%20', $_GET['feed_link']);
                 $favorite['Feed'] = str_replace(' ', '%20', $_GET['feed_link']);
             }
         }
 
         $config_values['Feeds'][$_GET['idx']]['Name'] = $_GET['feed_name'];
-        //$config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/ /', '%20', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['Link'] = str_replace(' ', '%20', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['Link'] = preg_replace('/^%20|%20$/', '', $_GET['feed_link']);
         $config_values['Feeds'][$_GET['idx']]['seedRatio'] = $_GET['seed_ratio'];
+        if (isset($_GET['feed_on']) && $_GET['feed_on'] == "feed_on") {
+            $config_values['Feeds'][$_GET['idx']]['enabled'] = 1;
+        } else {
+            $config_values['Feeds'][$_GET['idx']]['enabled'] = "";
+        }
     } else {
         twxa_debug("Unable to update feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
     }
 }
 
 function del_feed() {
-    global $config_values; //TODO fix global
+    global $config_values;
     if (isset($_GET['idx']) && isset($config_values['Feeds'][$_GET['idx']])) {
         unset($config_values['Feeds'][$_GET['idx']]);
     } else {

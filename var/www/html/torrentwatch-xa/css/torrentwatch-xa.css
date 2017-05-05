@@ -658,10 +658,10 @@ ul.torrentlist li.match_notAMatch td.identifier {
     background-color: #f2f2f2;
 }
 
-/* Favorite Batch */
-div#show_legend li.legend.match_favBatch,
-ul.torrentlist li.match_favBatch td.identifier {
-    background-color: #e1eafc;
+/* Ignored Favorite Batch */
+div#show_legend li.legend.match_ignFavBatch,
+ul.torrentlist li.match_ignFavBatch td.identifier {
+    background-color: #d1daec; /* was #e1eafc */
 }
 
 /* Old Favorite */
@@ -902,6 +902,19 @@ span.feed_name {
     padding: 1px 3px 0 0;
     font-size: 9px;
     color: #777777;
+}
+
+span.debugLabel {
+    color: rgba(0, 0, 0, 0.3);
+    padding: 0 0 0 1em;
+}
+
+span.episodeNum {
+    padding: 0 0 0 1em;
+}
+
+span.pubDate {
+    padding: 0 0 0 1em;
 }
 
 span.torrent_pubDate {
@@ -1472,7 +1485,8 @@ div#feedItemTitles {
 div#feedNameUrl {
     margin-left: 0;
     float: left;
-    width: 315px;
+    /*width: 315px;*/
+    width: 296px;
 }
 
 div#addFeed input.feed_link[type=text] {
@@ -1501,7 +1515,8 @@ div#config_feeds div.feeditem label.item {
 }
 
 div#config_feeds div.feeditem input[type=text] {
-    width: 296px;
+    /*width: 296px;*/
+    width: 280px;
     margin: 3px 0;
     padding: 1px 3px 1px 3px;
     left: 0px;
@@ -1511,6 +1526,10 @@ div#config_feeds div.feeditem input[type=text] {
 div#config_feeds div.feeditem input.feed_url[type=text],
 div#config_feeds div.feeditem input.feed_name[type=text] {
     margin: 1px 3px 1px 10px;
+}
+
+div#config_feeds div.feeditem input.feed_on_off[type=checkbox] {
+    /*margin: 0px 0px 0px 0px;*/
 }
 
 div#config_feeds div.feeditem input.seed_ratio[type=text] {

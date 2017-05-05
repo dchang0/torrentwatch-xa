@@ -3,7 +3,7 @@
 torrentwatch-xa
 ===============
 
-torrentwatch-xa is an actively-developed fork of Joris Vandalon's abandoned TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. It will continue to handle live-action TV episodes with nearly all season and episode numbering styles.
+torrentwatch-xa is an actively-developed fork of Joris Vandalon's abandoned TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. As of 0.4.0, it can also detect and auto-download print media like manga numbered by date or volume x chapter. It will continue to handle live-action TV episodes with nearly all season and episode numbering styles.
 
 ![torrentwatch-xa twxa ScreenShot 1](http://silverlakecorp.com/torrentwatch-xa/twxaScreenShot1.png)
 
@@ -16,14 +16,49 @@ Status
 
 ### Current Version
 
-I've posted 0.3.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md). This time I chose to finally address some small cosmetic or superficial UI bugs, including fully-Downloaded items not showing up in the Downloaded filter, progress bar and infoDiv misbehavior outside of the Transmission filter, and some of the item states that don't survive a browser refresh. Not all of the UI bugs have been fixed just yet; they will be fixed in small, controlled batches.
+I've posted 0.4.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+
+The long-awaited switch from the old season and episode detection engine to the new is finally resuming!
+
+Broadly speaking, there are two major changes ongoing in this gradual switch:
+
+1. The method of passing and comparing season and episode data has changed. The old engine passed season and episode data between its functions in human-friendly SxE notation such as 1x3. This meant that it translated in and out of this notation during each comparison of the record of the last-downloaded episode of a Favorite with a matching item in the feed list. The new engine dispenses with the human-friendly notation and passes season and episode data as discrete numbers.
+
+2. The human-friendly season and episode notation is being updated to handle the new numeric-only item version numbering system. The old engine tracked only PROPER/REPACK versions (effectively the final version of a given item) and referred to PROPER episodes with a "p" at the end of the episode number, as in 1x3p. It did not track item versions numerically, such as v2, v3, and so on. The new engine tracks numeric item versions, so the human-friendly notation is being changed to SxEvV. For instance 1x3v4 means Season 1, Episode 3, Version 4 (of Episode 3). PROPER/REPACK versions will be translated into a numeric value, probably version 99. The old "p" notation will never return.
+
+Switching from the old style of passing and comparing season and episode data to the newer style brings in 0.4.0 two awesome new features:
+
+a. The ability to detect and auto-download batches that contain episodes newer than the last downloaded episode. Thus, if the latest you have is episode 1x8, and a batch 1x5-1x10 comes out, it will download the entire batch to get episodes 1x9 and 1x10. If you do not wish to download batches, set the option Configure > Favorites > Ignore Batches. Batch downloading is very new and only partially implemented, so it may be very buggy. It will be rolled out in chunks and tested over the long term.
+
+b. The ability to detect and auto-download print media, especially manga!
+
+PROPER/REPACK handling is currently disabled during the ongoing transition to the new season and episode notation. Essentially, PROPER/REPACK versions are temporarily being ignored while numeric item versions are now being recognized. Configure > Favorites > Download PROPER/REPACK has been renamed to Configure > Favorites > Download Versions >1. PROPER/REPACK handling will be restored in a future version of torrentwatch-xa.
+
+Also in 0.4.0, I dramatically changed the way the titles are processed:
+
+- The detectItem() logic was drastically reorganized to allow code reuse, changing the order of several matchTitle functions. I expect this to introduce many season and episode detection errors, but the alternative was that I'd end up maintaining an ever-growing list of mostly redundant functions.
+- In many matchTitle functions, the regex used to detect the season and episode numbering is being reused to remove the season and episode numbering and undetected codecs, leaving behind the generated show_title (aka favTitle or 'favTi'). This should reduce bugs in the show_title.
+- Many regex were improved to include more languages and catch more abbreviations. This will probably result in a net gain of bugs, but we may never know since NyaaTorrents is down, and NyaaTorrents had the widest and most challenging range of season and episode numbering styles.
+
+I added a few features to the UI to make it easier to debug the season and episode detection engine. First, every item's episode label now has mouse-hover text that displays the debugMatch value. Each item's debugMatch value is still hidden in the source code as described in the Troubleshooting instructions, but the mouse-hover text makes it easier to see. In addition, there is now the option to display both debugMatch and show_title per line in the feed lists: Configure > Interface > Show Item Debug Info. show_title is generated from the item title by removing all the detected codecs, qualities, and episodic numbering. What is left behind is supposed to be just the show title to be used for various tasks such as checking the download cache and setting the initial Filter value when Add to Favorites is clicked. show_title is important and generating it correctly is key; making it visible will help you debug problems getting Favorites to match items in the feed list that it should be matching and help you craft better Favorite Filters.
+
+Another big new feature is the ability to enable or disable individual feeds in Configure > Feeds. Note that after re-enabling a feed, the browser must be refreshed to see the feed return to the list.
+
+Broken long ago in TorrentWatch-X and carried over into torrentwatch-xa, the 'Require Episode Info' feature is now finally repaired. If it is unchecked, the season and episode number comparisons are completely bypassed so that Favorites can match items with or without episode numbering. This is useful for collectors who want every single item or batch that matches a given se of Favorite Filter, Not and Qualities filters.
+
+Finally, I reduced the number of item states and made sure the ones that are used do show up properly according to the Legend.
+
+In alpha: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like 0x{3010} to satisfy PHP's preg_ functions.
 
 ### Next Version
 
 I hope to:
 
-- continue cleaning up the item states so that they all properly survive browser refreshes
-- improve the core matching process and improve performance by reducing number of calls to the parsing engine
+- rewrite the episode_filter() function to handle the new season and episode notation style
+- add batch matching capability to more of the pattern detectors
+- add the ability to turn off batch auto-downloading (default is currently auto-download)
+- fix bugs introduced by the 0.3.2 changes to the detection engine
+- improve performance by breaking functions into smaller ones and calling just the necessary functions
 
 Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) files. Tickets in GitHub Issues will remain separate for accountability reasons.
 
@@ -56,6 +91,27 @@ Installation
 
 See [INSTALL.md](INSTALL.md) for detailed installation steps.
 
+Usage
+===============
+
+For the most part, torrentwatch-xa is very intuitive and self-explanatory. 
+
+A quick explanation of the new season and episode notation in the "episode label" shown on each line to the left of the timestamp at the right edge of the feed list:
+
+- SxE = single episode
+- SxEv# = single episode with version number
+- YYYYMMDD = single date
+- S1xE1-S1-E2 = batch of episodes within one season
+- YYYYMMD1-YYYYMMD2 = batch of dates
+- S1xFULL = one full season
+- S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
+- S1xE1v2-S2xE2v3 = batch of episodes starting in one season and ending in a later season, with version numbers
+
+For items not recognized as having an episodic numbering, Glummy ("_ ) is displayed.
+
+Internally, the new Favorite matching engine uses direct comparisons of the separate season and episode as discrete numeric values and does not deal with this notation at all.
+
+Later, when the Favorite Episodes filter functionality is implemented, it will also use this notation (except for Glummy, who is for display only).
 
 Troubleshooting
 ===============

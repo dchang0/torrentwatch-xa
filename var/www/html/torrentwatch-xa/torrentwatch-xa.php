@@ -11,11 +11,9 @@ ini_set('include_path', '.:./php');
 error_reporting(E_ALL);
 require_once('/var/lib/torrentwatch-xa/lib/twxa_rss_dl_tools.php'); //TODO switch this to use get_base_dir()
 
-$twxa_version[0] = "0.3.1";
+$twxa_version[0] = "0.4.0";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
-
-//$test_run = 0; //TODO make sure $test_run works and then make it useful
 
 if (get_magic_quotes_gpc()) {
     $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
@@ -51,7 +49,6 @@ function parse_options() {
         return false;
     }
 
-    //if (preg_match("/^\//", $commands[0])) {
     if (strpos($commands[0], '/') === 0) {
         $commands[0] = preg_replace("/^\//", '', $commands[0]);
     }
@@ -86,7 +83,6 @@ function parse_options() {
             exit;
         case 'updateFavorite':
             $response = update_favorite();
-            //if (preg_match("/^Error:/", $response)) {
             if (strpos($response, 'Error:') === 0) {
                 echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
             }
@@ -118,12 +114,12 @@ function parse_options() {
                 $seedRatio = -1;
             }
             if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
-                $_GET['name'] = trim(strtr($tmp['favoriteTitle'], "._", "  "));
+                $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
                 if ($config_values['Settings']['Match Style'] == "glob") {
-                    $_GET['filter'] = trim(strtr($tmp['favoriteTitle'], " ._", "???"));
+                    $_GET['filter'] = trim(strtr($tmp['favTitle'], " ._", "???"));
                     $_GET['filter'] .= '*';
                 } else {
-                    $_GET['filter'] = trim($tmp['favoriteTitle']);
+                    $_GET['filter'] = trim($tmp['favTitle']);
                 }
                 //$_GET['quality'] = $tmp['qualities'];
                 $_GET['quality'] = 'All';
@@ -141,7 +137,7 @@ function parse_options() {
                 $_GET['seedratio'] = $seedRatio;
             }
             if ($config_values['Settings']['Default Feed All'] &&
-                    preg_match('/^(\d+)x(\d+)p?$|^(\d{8})$/i', $tmp['episode'])) {
+                    preg_match('/^(\d+)x(\d+)p?$|^(\d{8})$/i', $tmp['episode'])) { //TODO replace this with proper season and episode checks
                 $_GET['feed'] = 'All';
             }
             $response = update_favorite();
@@ -155,7 +151,8 @@ function parse_options() {
                 echo "ERROR:$response";
             } else {
                 $guess = detectMatch(html_entity_decode($_GET['hide']));
-                echo $guess['favoriteTitle'];
+                //echo $guess['favTitle']; //TODO is this right?
+                echo $guess['title'];
             }
             exit;
         case 'delHidden':
@@ -232,9 +229,9 @@ function parse_options() {
                 case '#show_transmission':
                     display_transmission();
                     exit;
-                case '#show_info':
-                    show_info(urldecode($_GET['episode_name']));
-                    exit;
+                /* case '#show_info':
+                  show_info(urldecode($_GET['episode_name']));
+                  exit; */
                 default:
                     exit;
             }
@@ -257,7 +254,7 @@ function display_global_config() {
     global $config_values;
 
     // Interface tab
-    $combinefeeds = $dishidelist = $epionly = $hidedonate = '';
+    $combinefeeds = $dishidelist = $epionly = $showdebug = $hidedonate = '';
     if ($config_values['Settings']['Combine Feeds'] == 1) {
         $combinefeeds = 'checked=1';
     }
@@ -266,6 +263,9 @@ function display_global_config() {
     }
     if ($config_values['Settings']['Episodes Only'] == 1) { // disabled elsewhere for now
         $epionly = 'checked=1';
+    }
+    if ($config_values['Settings']['Show Debug'] == 1) {
+        $showdebug = 'checked=1';
     }
     if ($config_values['Settings']['Hide Donate Button'] == 1) {
         $hidedonate = 'checked=1';
@@ -302,7 +302,7 @@ function display_global_config() {
 
     // Favorites tab
     $matchregexp = $matchglob = $matchsimple = '';
-    $favdefaultall = $require_epi_info = $verifyepisode = $onlynewer = $fetchproper = '';
+    $favdefaultall = $require_epi_info = $verifyepisode = $onlynewer = $fetchversions = $ignorebatches = '';
     switch ($config_values['Settings']['Match Style']) {
         case 'glob': $matchglob = "selected='selected'";
             break;
@@ -317,14 +317,17 @@ function display_global_config() {
     if ($config_values['Settings']['Require Episode Info'] == 1) {
         $require_epi_info = 'checked=1';
     }
-    /*if ($config_values['Settings']['Verify Episode'] == 1) {
-        $verifyepisode = 'checked=1';
-    }*/
+    /* if ($config_values['Settings']['Verify Episode'] == 1) {
+      $verifyepisode = 'checked=1';
+      } */
     if ($config_values['Settings']['Only Newer'] == 1) {
         $onlynewer = 'checked=1';
     }
-    if ($config_values['Settings']['Download Proper'] == 1) {
-        $fetchproper = 'checked=1';
+    if ($config_values['Settings']['Download Versions'] == 1) {
+        $fetchversions = 'checked=1';
+    }
+    if ($config_values['Settings']['Ignore Batches'] == 1) {
+        $ignorebatches = 'checked=1';
     }
 
     // Trigger tab
@@ -368,7 +371,8 @@ function display_favorites_info($item, $key) {
     global $config_values;
     $feed_options = '<option value="none">None</option>';
     $feed_options .= '<option value="all"';
-    if (preg_match('/all/i', $item['Feed']) || $item['Name'] == "") {
+    //if (preg_match('/all/i', $item['Feed']) || $item['Name'] == "") {
+    if (strtolower($item['Feed']) === "all" || $item['Name'] === "") {
         $feed_options .= ' selected="selected">All</option>';
     } else {
         $feed_options .= '>All</option>';
@@ -492,38 +496,33 @@ function display_transmission() {
   return ob_get_contents();
   } */
 
-function show_info($ti) {
-    // remove soft hyphens
-    $ti = str_replace("\xC2\xAD", "", $ti);
-    $episode_data = detectMatch($ti);
+/* function show_info($ti) {
+  $episode_data = detectMatch($ti);
 
-    if ($episode_data === false) {
-        $isShow = false;
-        $name = $ti;
-        $data = '';
-    } else {
-        if (preg_match('/\d+x\d+/', $episode_data['episode'])) {
-            $epiInfo = 1;
-        } else {
-            $epiInfo = 0;
-        }
-        $isShow = $episode_data['episode'] == 'noShow' ? false : true;
-        $name = $episode_data['favoriteTitle'];
-        $data = $episode_data['qualities'];
-    }
+  if ($episode_data['numberSequence'] === 0) {
+  $isShow = false;
+  $name = $ti;
+  $data = '';
+  $epiInfo = false;
+  } else {
+  $epiInfo = true;
+  $isShow = $episode_data['episode'] == 'noShow' ? false : true;
+  $name = $episode_data['favTitle'];
+  $data = $episode_data['qualities'];
+  }
 
-    $episode_num = $episode_data['episode'];
-    /* $shows = TV_Shows::search($name);
-      if (count($shows) === 1) {
-      episode_info($shows[0], $episode_num, $isShow, $epiInfo);
-      } else if (count($shows) > 1) {
-      episode_info($shows[0], $episode_num, $isShow, $epiInfo);
-      } else {
-      episode_info($shows[0], $episode_num, 0, 0);
-      } */ //TODO is this all for TVDB functionality? Can it be removed?
-}
+  $episode_num = $episode_data['episode'];
+  $shows = TV_Shows::search($name);
+  if (count($shows) === 1) {
+  episode_info($shows[0], $episode_num, $isShow, $epiInfo);
+  } else if (count($shows) > 1) {
+  episode_info($shows[0], $episode_num, $isShow, $epiInfo);
+  } else {
+  episode_info($shows[0], $episode_num, 0, 0);
+  } //TODO is this all for TVDB functionality? Can it be removed?
+  } */
 
-function cacheImage($url) {
+/*function cacheImage($url) {
     global $config_values;
     $path_parts = pathinfo($url);
     $filename = $path_parts['filename'] . "." . $path_parts['extension'];
@@ -535,7 +534,7 @@ function cacheImage($url) {
     }
 
     return $img_url;
-}
+}*/
 
 function display_clearCache() {
     global $html_out;
@@ -656,7 +655,6 @@ function get_client() {
 /// main
 
 $main_timer = timer_get_time(0);
-//platform_initialize();
 setup_default_config();
 read_config_file();
 if ($config_values['Settings']['Sanitize Hidelist'] != 1) {

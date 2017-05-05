@@ -41,7 +41,7 @@ function transmission_sessionId() {
 
         $header = curl_exec($sid);
         curl_close($sid);
-
+        $ID = [];
         preg_match("/X-Transmission-Session-Id:\s(\w+)/", $header, $ID);
 
         if (isset($ID[1])) {
@@ -115,20 +115,30 @@ function get_deep_dir($dest, $tor_name) {
             break;
         case 'Title_Season':
             $guess = detectMatch($tor_name);
-            if (isset($guess['favoriteTitle']) && isset($guess['episode'])) {
-                if (preg_match('/^(\d{1,3})x\d+p?$/', $guess['episode'], $Season)) {
-                    $dest = $dest . "/" . ucwords(strtolower($guess['favoriteTitle'])) . "/Season " . $Season[1];
-                } else if (preg_match('/^(\d{4})\d{4}$/', $guess['episode'], $Year)) {
-                    $dest = $dest . "/" . ucwords(strtolower($guess['favoriteTitle'])) . "/" . $Year[1];
-                } else {
-                    $dest = $dest . "/" . ucwords(strtolower($guess['favoriteTitle']));
+            if(isset($guess['favTitle'])) {
+                switch ($guess['numberSequence']) {
+                    case 1:
+                    case 4:
+                        // season numbering
+                        //TODO fix this so that it can handle Volume x Chapter and Volume x Part (case 128)
+                        $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/Season " . $guess['seasBatEnd'];
+                        break;
+                    case 2:
+                        // date numbering
+                        $year = [];
+                        preg_match('/^(\d{4})\d{4}$/', $guess['episBatEnd'], $year);
+                        $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/" . $year[1];
+                        break;
+                    //TODO handle other numbering styles
+                    default:
+                        $dest = $dest . "/" . ucwords(strtolower($guess['favTitle']));
                 }
                 break;
             }
             twxa_debug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
         case 'Title':
             $guess = detectMatch($tor_name);
-            if (isset($guess['favoriteTitle'])) {
+            if (isset($guess['favTitle'])) {
                 $dest = $dest . "/" . ucwords(strtolower($guess['title']));
                 break;
             }
@@ -159,7 +169,6 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
         $dest .= '/';
     }
 
-    //if (preg_match('/^magnet:/', $tor)) {
     if (strpos($tor, 'magnet:') === 0) {
         $request1 = array(
             'method' => 'torrent-add',
@@ -242,7 +251,6 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
     }
     $hit = 1; //TODO trace $hit down through this function
 
-    //if (preg_match("/^magnet:/", $filename)) {
     if (strpos($filename, 'magnet:') === 0) {
         $tor = $filename;
         $magnet = 1;
@@ -253,7 +261,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
 
         // Detect and append cookies from the feed url
         $url = $filename;
-        //if ($feed && preg_match('/:COOKIE:/', $feed) && (!(preg_match('/:COOKIE:/', $url)))) {
+
         if ($feed && strpos($feed, ':COOKIE:') !== false && strpos($url, ':COOKIE:') === false) {
             $url .= stristr($feed, ':COOKIE:');
         }
@@ -389,7 +397,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             file_put_contents("$dest/$tor_name.torrent", $tor);
         return "Success"; //TODO deal with this in revamping return of this function
     } else {
-        twxa_debug("Failed starting: $tor_name : $return\n", -1);
+        twxa_debug("Failed starting: $tor_name : " . print_r($return, true). "\n", -1);
         //TODO improve error reporting for this block
         $msg = "torrentwatch-xa tried to start \"$tor_name\". But this failed with the following error:\n\n";
         $msg .= $return['errorMessage'] . "\n";
@@ -406,12 +414,11 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
 
 function find_torrent_link($url_old, $content) {
     $url = "";
+    $matches = [];
     if ($ret = preg_match('/["\']([^\'"]*?\.torrent[^\'"]*?)["\']/', $content, $matches)) {
         if (isset($ret)) {
             $url = $matches[1];
-            //if (!preg_match('/^https?:\/\//', $url)) {
             if (stripos($url, 'http://') === false && stripos($url, 'https://') === false) {
-                //if (preg_match('#^/#', $url)) {
                 if (strpos($url, '/') === 0) {
                     $url = dirname($url_old) . $url;
                 } else {
@@ -423,16 +430,13 @@ function find_torrent_link($url_old, $content) {
         $ret = preg_match_all('/href=["\']([^#].+?)["\']/', $content, $matches);
         if ($ret) {
             foreach ($matches[1] as $match) {
-                //if (!preg_match('/^https?:\/\//', $match)) {
                 if (stripos($match, 'http://') === false && stripos($match, 'https://') === false) {
-                    //if (preg_match('#^/#', $match)) {
                     if (strpos($match, '/') === 0) {
                         $match = dirname($url_old) . $match;
                     } else {
                         $match = dirname($url_old) . '/' . $match;
                     }
                 }
-                //if (preg_match('/w3.org/i', $match)) {
                 if (stripos($match, 'w3.org') !== false) {
                     break;
                 }

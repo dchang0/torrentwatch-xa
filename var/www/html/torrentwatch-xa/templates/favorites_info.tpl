@@ -43,7 +43,7 @@
             <label class="item" title="Episode filter. ex.: 1x1-3x24 for Season 1 to 3 episode 24. To just set a starting point use: 2x10. You may use s01e12 instead of 1x12." >Episodes:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="episodes" title="Episode filter. ex.: 1x1-3x24 for Season 1 to 3 episode 24. To just set a starting point use: 2x10. You may use s01e12 instead of 1x12." value="<?php echo $item['Episodes'] ?>">
+            <input type="text" class="text" name="episodes" title="Episodes filter. Please read the instructions on how to use this feature." value="<?php echo $item['Episodes'] ?>">
         </div>
     </div>
     <div class="favorite_feed">
@@ -70,7 +70,7 @@
         </div>
         <div class="right">
             <input type="text" class="seedratio text" name="seedratio" value="<?php echo isset_array_key($item, 'seedRatio'); ?>">
-            <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only">Last Downloaded Episode:</label>
+            <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only">Last Downloaded Item:</label>
             <?php if(isset($item['Episode']) && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
             <input class='lastSeason text' type="text" name="season" value="<?php echo $item['Season']; ?>">
             <label class="lastEpisode item">x</label>

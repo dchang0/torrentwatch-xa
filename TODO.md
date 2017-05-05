@@ -4,7 +4,6 @@ TODO List
 
 ## Throughout all versions
 
-
 - improve performance
 - improve debugging and commenting
 - refactor when reasonable
@@ -12,18 +11,9 @@ TODO List
 
 ## Tasks
 
-
-- new season and episode notation:
-  - SxE = single episode
-  - 0xYYYYMMDD = single date
-  - S1-S1xE1-E2 = batch of episodes within one season
-  - 0-0xYYYYMMDD1-YYYYMMDD2 = batch of dates
-  - S1-S1xFULL = one full season
-  - S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
+- use twxa_parse.php:88 block to make date checker function for reuse elsewhere
                  
-- PROPER/REPACK notation must be rolled into item version numbering somehow
-
-- add ability to turn off batch downloads to avoid large downloads
+- PROPER/REPACK notation must be rolled into item version numbering (probably set as version 99 or 999)
 
 - after page reload, some items that had already finished in Transmission were still present, in red, but without progressBarContainer or infoDiv; on another refresh they disappeared as they should have (probably due to Javascript removing them); best fix is to run Transmission check immediately on reload rather than waiting a bit (this is probably fixed by now)
 
@@ -52,9 +42,10 @@ Seems to be reproducible by: Add a favorite with item tags (HorribleSubs torrent
 
 Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter what index it has. Yes, it appears that the corruption finds the HorribleSubs added-by-JS Favorite, even if its index number is changed to a lower number AND it is not the last Favorite in the list in the config file. Strangely, another added-by-JS Favorite that is not a HorribleSubs torrent has not been affected in all this testing. It may be related to the torrent that downloads immediately after emptying the cache (the unaffected added-by-JS Favorite might have no episodes in the list)
 
-- sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
-  - fix problem of different season and episode numbering by either:
+- sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
+  - fix problem of different season and episode numbering by one or all of the below:
     - check feed item's notes for torrent hash, then compare this to the cache files
+    - rewrite the Favorite Episodes filter functionality so that users can manually filter out other numbering styles via regex
     - adding a "stay in this season" checkbox to each Favorite
     - do not match Favorites in this feed
 

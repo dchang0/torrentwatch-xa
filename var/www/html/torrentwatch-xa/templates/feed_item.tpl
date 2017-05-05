@@ -1,6 +1,4 @@
 <?php
-// variables
-//TODO figure out if null or '' is better for logic
 $utitle = null; // to contain HTML code of un-soft-hyphenated title of the item
 $description = null; // to contain HTML code of description of the item
 $infoDiv = null; // to contain HTML code of each item's div.infoDiv
@@ -12,12 +10,9 @@ $showEpisodeNumber = null; // to contain HTML code of the show episode number, e
 $pubDate = null; // to contain publication date of the item
 $unixTime = null; // to contain UNIX timestamp
 
-//TODO improve passing of $id into this file
-//TODO improve passing of $ulink into this file
-//TODO improve passing of $feed into this file
+//TOOD improve passing of $guess[], $id, $ulink, and $feed into this file
 
 if(isset($item['title'])) {
-    //$utitle = preg_replace('/&shy;/', '', $item['title']);
     $utitle = str_replace('&shy;', '', $item['title']);
 }
 
@@ -26,7 +21,7 @@ if(isset($item['description'])) {
 }
 
 if(isset($item['pubDate'])) {
-    $pubDate = $item['pubDate'];
+    $pubDate = "<span class='pubDate'>" . $item['pubDate'] . "</span>";
     $unixTime = strtotime($item['pubDate']);
 }
 
@@ -35,7 +30,7 @@ if(!($torHash)) { //TODO improve passing of $torHash into this file
 }
 
 if($config_values['Settings']['Combine Feeds'] == 1) {
-    $feedItem = "<span class=\"feed_name\">$feedName - </span>";
+    $feedItem = "<span class=\"feed_name\">$feedName</span>";
 }
 
 if(!$config_values['Settings']['Disable Hide List'] && $matched === "notAMatch")  {
@@ -61,19 +56,21 @@ if($matched === "downloading" || $matched === "downloaded" || $matched === "cach
     $torTrash = "torTrash hidden";
 }
 
-$showTitle = $guess['favoriteTitle'];
+$showTitle = $guess['favTitle'];
 $showQuality = $guess['qualities'];
 $debugMatch = $guess['debugMatch'];
 
-if($guess['episode'] != 'noShow') {
-    if($guess['episode'] != 'fullSeason') {
-        if($guess['episode'] != '') {
-            $showEpisodeNumber = $showEpisodeNumber . "<b>" . $guess['episode'] . "</b>&nbsp;&nbsp;&nbsp;";
-        }
-    }
+if($config_values['Settings']['Show Debug']) {
+    $showEpisodeNumber = "<span class=\"debugLabel\">$showTitle</span><span class=\"debugLabel\"><b>$debugMatch</b></span>";
+} else {
+    $showEpisodeNumber = '';
 }
 
-//TODO what does 'client_id" below do if it is the same as $id?
+if($guess['episode'] != '' && $guess['episode'] != 'noShow') {
+    $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>" . $guess['episode'] . "</b></span>";
+} else {
+    $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>(\"_&nbsp;)</b></span>";
+}
 
 print <<< EOH
 <li id=id_$id name=$id class="torrent match_$matched $alt item_$torHash">

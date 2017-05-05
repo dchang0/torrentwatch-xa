@@ -11,6 +11,10 @@ I have found that some feeds can't be added for various reasons, including:
 
 Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their rarity. It seems that RSS is far more common for torrent feeds.
 
+#### Feed is totally missing; "Feed inaccessible" in log
+
+From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed, I learned the hard way that if the feed URL is not even valid, and the UI will never get the chance to show the section header that says "Feed is not available" in red. I will have to rewrite certain functions to handle this, but for now, if a feed is totally missing from the list, first, refresh the browser, which may force the reload of the feed cache. Then, check the log file, which should say "Feed inaccessible: " instead of "Feed down: ". If it still says Feed inaccessible, the feed URL is likely not valid.
+
 #### Can't handle compressed torrent files
 
 Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same media or content via some other torrent file that is not compressed, possibly even on the same feed.
@@ -46,16 +50,19 @@ I've looked at Apache2 core dumps using php-src/.gdbinit dump_bt but did not get
 
 The good news is that I have definitely verified 0.2.5 and up work perfectly on Ubuntu 14.04.5 with PHP 5.6. Avoid any OS with PHP 7.0 until I figure this SEGFAULT out. It may end up that skipping over PHP 7.0 to PHP 7.1 solves the problem.
 
-#### "I created a favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't match."
+#### "I created a Favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't start the auto-download."
 
-See the section of the installation instructions called **Use the Favorites panel to set up your automatic downloads**.
+First, please review the section of the installation instructions called **Use the Favorites panel to set up your automatic downloads**.
 
-_However_ there are situations where a correctly-set-up favorite does not match items.
+If you have followed the instructions correctly and are still having trouble, turn on Configure > Interface > Show Item Debug Info and refresh the browser so that you can see the show_title that must be matched by your Favorite Filter. You will likely find a typo in your Favorite's Filter that needs correcting.
 
-For instance, some items have numbering that cannot be understood by the detection engine. You can tell that these are not recognized by the lack of any sequential-item-numbering directly to the left of the datestamp on the right side. Also, see **Item Says It's an Old Favorite but is Actually New and Should Be Downloaded** in the **Design Decisions Explained** section.
+_However_ there _are_ situations where a correctly-set-up favorite does not match items.
+
+For instance, some items have numbering that cannot be understood by the detection engine. You can tell that these are not recognized by the lack of any season and episode notation directly to the left of the datestamp on the right side. Instead, Glummy ("_ ) is displayed.
+
+Also, see **Item Says It's an Old Favorite but is Actually New and Should Be Downloaded** in the **Design Decisions Explained** section.
 
 Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
-
 
 #### Some items have obviously-incorrect detected sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
 
@@ -112,9 +119,11 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 
 #### Item Says It's an Old Favorite but is Actually New and Should Be Downloaded
 
-This can happen if there are parallel numbering styles for the same torrent. For instance, with HorribleSubs Boku no Hero Academia 17 (Season 1, Episode 17), some crew on the Feedburner Anime (Aggregated) feed was re-releasing it later as Season 2, Episode 4. What happened then was that once torrentwatch-xa saw the Season 2 track, it jumped onto it and began ignoring the Season 1 numbering. The Season 1-numbered episodes would come out earlier each week and not be downloaded.
+This can happen if there are parallel numbering styles for the same torrent. For instance, with HorribleSubs Boku no Hero Academia 17 (Season 1, Episode 17), some crew on the Feedburner Anime (Aggregated) feed was re-releasing it later as Season 2, Episode 4. What happened then was that once torrentwatch-xa saw the Season 2 track, it jumped onto it and began ignoring the Season 1 numbering. The Season 1-numbered episodes would come out a few hours earlier than the re-release each week and not be auto-downloaded, making it seem like a detection failure.
 
-I am not sure I should fix this. Technically, the season and episode detection engine is working properly; it's the crew that was renumbering episodes that was causing problems. The episode would download once the Season 2 renumbering was released. The only way I can think of fixing this is to have a setting that locks the Favorites into a season, but this means that there won't be smooth transitions from one season to the next. More people are going to want the latter than experience the renumbering, so I'll leave this problem unsolved.
+This is not a bug. Technically, the season and episode detection engine is working properly; it's the crew that was renumbering episodes that was causing problems. The episode would auto-download once the Season 2 renumbering was released.
+
+One easy workaround is to use the Favorite Episodes filter to restrict the downloads to just the Season 1 numbering: 1x1-1x99 would "trap" the series into Season 1 numbering.
 
 #### Items Drop Off the Feed Lists
 

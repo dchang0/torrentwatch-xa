@@ -70,6 +70,14 @@
                                 <input type="checkbox" name="epionly" value="1" <?php echo $epionly; ?>/>
                             </div>
                         </div>-->
+                        <div id="config_show_debug" title="Show season and episode detection engine's 'debugMatch' and 'show_title' values for each item in feed list.">
+                            <div class="left">
+                                <label class="item checkbox">Show Item Debug Info:</label>
+                            </div>
+                            <div class="right">
+                                <input type="checkbox" name="showdebug" value="1" <?php echo $showdebug; ?>/>
+                            </div>
+                        </div>
                         <div id="config_hide_donate" title="I have already donated.">
                             <div class="left">
                                 <label class="item checkbox">Hide Donate Button:</label>
@@ -248,11 +256,19 @@
                             </div>
                         </div>
                         <div>
-                            <div class="left">
-                                <label class="item checkbox">Download Proper/Repack:</label>
+                            <div class="left" title="Download later versions of items, even if first version is already downloaded.">
+                                <label class="item checkbox">Download Versions &gt;1:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="fetchproper" value="1" <?php echo $fetchproper; ?>/>
+                                <input type="checkbox" name="fetchversions" value="1" <?php echo $fetchversions; ?>/>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="left">
+                                <label class="item checkbox">Ignore Batches</label>
+                            </div>
+                            <div class="right">
+                                <input type="checkbox" name="ignorebatches" value="1" <?php echo $ignorebatches; ?>/>
                             </div>
                         </div>
                     </div>
@@ -385,6 +401,7 @@
                             <label class="item">Name</label>
                             <label class="item hidden">Link</label>
                         </div>
+                        <label class="item">On</label>
                         <label class="item">Ratio</label>
                     </div>
                     <?php if(isset($config_values['Feeds'])): ?>
@@ -393,11 +410,16 @@
                     <form action="torrentwatch-xa.php?updateFeed=1" class="feedform">
                         <input type="hidden" name="idx" value="<?php echo $key; ?>">
                         <input class="feed_name" type="text" name="feed_name"
-                               title="<?php echo $feed['Link']; ?>" value="<?php echo $feed['Name']; ?>"</input>
+                               title="<?php echo $feed['Link']; ?>" value="<?php echo $feed['Name']; ?>"></input>
                         <input class="feed_url hidden" type="text" name="feed_link"
-                               title="<?php echo $feed['Name']; ?>" value="<?php echo $feed['Link']; ?>"</input>
+                               title="<?php echo $feed['Name']; ?>" value="<?php echo $feed['Link']; ?>"></input>
+                        <?php if($feed['enabled'] == 1): ?>
+                        <input class="feed_on_off" type="checkbox" name="feed_on" value="feed_on" checked></input>
+                        <?php else: ?>
+                        <input class="feed_on_off" type="checkbox" name="feed_on" value="feed_on"></input>
+                        <?php endif; ?>
                         <input class="seed_ratio" type="text" name="seed_ratio" title="Set default seed ratio for this feed."
-                               value="<?php echo $feed['seedRatio']; ?>"</input>
+                        value="<?php echo $feed['seedRatio']; ?>"></input>
                         <a class="submitForm button" id="Delete" href="#feedItem_<?php echo $key; ?>">Del</a>
                         <a class="submitForm button" id="Update" href="#">Upd</a>
                     </form>

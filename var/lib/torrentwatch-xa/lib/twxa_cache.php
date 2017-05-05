@@ -1,11 +1,7 @@
 <?php
 
 function setup_cache() {
-    //global $config_values, $test_run;
     global $config_values;
-    /* if ($test_run) {
-      return;
-      } */
     if (isset($config_values['Settings']['Cache Dir'])) {
         twxa_debug("Enabling cache in: " . $config_values['Settings']['Cache Dir'] . "\n", 2);
         if (!file_exists($config_values['Settings']['Cache Dir']) ||
@@ -18,11 +14,7 @@ function setup_cache() {
 }
 
 function add_cache($ti) {
-    //global $config_values, $test_run;
     global $config_values;
-    /* if ($test_run) {
-      return;
-      } */
     if (isset($config_values['Settings']['Cache Dir'])) {
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($ti);
         touch($cache_file);
@@ -60,51 +52,49 @@ function clear_cache_by_cache_type() {
 
 function check_cache_episode($ti) {
     // attempts to find previous downloads that have the same parsed title but different episode numbering styles
-    //global $config_values, $matched;
     global $config_values;
     $guess = detectMatch($ti);
-    //twxa_debug("check_cache_episode: detectMatch(): " . print_r($guess, true) . "\n", 2);
-    if ($guess['favoriteTitle'] === "") {
+    if ($guess['favTitle'] === "") {
         twxa_debug("Unable to guess a favoriteTitle for $ti\n", 0);
         return true; // do download
     }
-    if ($handle = opendir($config_values['Settings']['Cache Dir'])) {
+    $handle = opendir($config_values['Settings']['Cache Dir']);
+    if ($handle !== false) {
         while (false !== ($file = readdir($handle))) {
             // loop through each cache file in the Cache Directory
             if (substr($file, 0, 7) !== "rss_dl_") {
                 continue;
             }
             // check for a match by parsed title
-            if (preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['favoriteTitle']))) !== preg_replace('/[. ]/', '_', $guess['favoriteTitle'])) {
+            if (preg_replace('/[. ]/', '_', substr($file, 7, strlen($guess['favTitle']))) !== preg_replace('/[. ]/', '_', $guess['favTitle'])) {
                 continue;
             }
-            //twxa_debug("check_cache_episode: matched by title: " . $guess['favoriteTitle'] . "\n", 2);
             // if match by title, check for a match by episode
             $cacheguess = detectMatch(substr($file, 7)); // ignores first 7 characters, 'rss_dl_'
-            if ($cacheguess['episode'] !== "" &&
-                    $guess['episode'] === $cacheguess['episode']) {
-                if($config_values['Settings']['Download Proper'] && $guess['itemVersion'] === $cacheguess['itemVersion']) {
-                    //TODO handle Proper/Repack
-                    return true; // difference in item version, do download
+            if ($cacheguess['numberSequence'] > 0 &&
+                    $guess['numberSequence'] === $cacheguess['numberSequence'] &&
+                    $guess['seasBatEnd'] === $cacheguess['seasBatEnd'] &&
+                    $guess['episBatEnd'] === $cacheguess['episBatEnd']) { //TODO add in better logic so that an episode in a middle of a batch is counted
+                if ($guess['itemVersion'] > $cacheguess['itemVersion']) {
+                    if ($config_values['Settings']['Download Versions']) {
+                        return true; // difference in item version, do download
+                    } else {
+                        twxa_debug("Older version in cache: ignoring newer: $ti (" . $guess['episode'] . "v" . $guess['version'] . ")\n", 2);
+                        return false; // title is found in cache, version is newer, Download Versions is off, so don't download
+                    }
                 } else {
-                twxa_debug("Found in download cache; ignoring: $ti (" . $guess['episode'] . ")\n", 2);
-                //$matched = "duplicate";
-                return false; // title is found in cache, don't download
+                    twxa_debug("Equiv. in cache: ignoring: $ti (" . $guess['episode'] . "v" . $guess['version'] . ")\n", 2);
+                    return false; // title and same version is found in cache, don't download
                 }
             }
-            //twxa_debug("Found by title but not a match by episode: $ti (" . $guess['episode'] . ")\n", 2);
-            //return true; //TODO remove later
         }
     } else {
         twxa_debug("Unable to open Cache Directory: " . $config_values['Settings']['Cache Dir'] . "\n", -1);
-        //return true; //TODO remove later
     }
-    //twxa_debug("Never found by title: ". $guess['favoriteTitle'] . "\n", 2);
     return true; // do download
 }
 
 function check_cache($ti) {
-    //global $config_values, $matched;
     global $config_values;
     if (isset($config_values['Settings']['Cache Dir'])) {
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($ti);
@@ -115,7 +105,6 @@ function check_cache($ti) {
             //    return true; // title is not found in cache, do download
             //}
         } else {
-            //$matched = "cachehit"; // title is found in cache, don't download
             return false;
         }
     } else {

@@ -7,8 +7,8 @@
         <ul id='torrentlist' class='show_legend'>
             <li class='legend match_notAMatch'>
                 <span class='torrent_name'><b>Not a Match</b><br>Not a favorite nor in download cache. Okay to download manually.</span></li>
-            <li class='legend match_favBatch'>
-                <span class='torrent_name'><b>Favorite Batch</b><br>Batch of favorites not in download cache. Okay to download manually.</span></li>
+            <li class='legend match_ignFavBatch'>
+                <span class='torrent_name'><b>Ignored Favorite Batch</b><br>Batch of favorites ignored by matching engine. Okay to download manually.</span></li>
             <li class='legend match_favTooOld'>
                 <span class='torrent_name'><b>Old Favorite</b><br>Favorite matches but is not new enough in the series to trigger download.</span></li>
             <!--<li class='legend match_favReady'>

@@ -3,98 +3,93 @@
 function MailNotify($msg, $subject) {
     global $config_values;
 
-    //if ($config_values['Settings']['SMTP Notifications']) {
-        $fromEmail = $config_values['Settings']['From Email'];
-        $toEmail = $config_values['Settings']['To Email'];
-        $smtpPort = $config_values['Settings']['SMTP Port']; //TODO validate port is blank or a number between 0 and 65535
+    $fromEmail = $config_values['Settings']['From Email'];
+    $toEmail = $config_values['Settings']['To Email'];
+    $smtpPort = $config_values['Settings']['SMTP Port'];
 
-        if (
-                (
-                $smtpPort != '' &&
-                preg_match("/^\d*$/", $smtpPort) &&
-                $smtpPort >= 0 &&
-                $smtpPort <= 65535
-                ) ||
-                $smtpPort == '' // if left blank, defaults to 25
-        ) {
-            // SMTP Port is valid
-            if (filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
-                $email = new PHPMailer();
-                $email->isSMTP();
-                $email->SMTPDebug = 0;
+    if (
+            (
+            $smtpPort != '' &&
+            preg_match("/^\d*$/", $smtpPort) &&
+            $smtpPort >= 0 &&
+            $smtpPort <= 65535
+            ) ||
+            $smtpPort == '' // if left blank, defaults to 25
+    ) {
+        // SMTP Port is valid
+        if (filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+            $email = new PHPMailer();
+            $email->isSMTP();
+            $email->SMTPDebug = 0;
 
-                // set the From: email address
-                if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
-                    twxa_debug("From Email is invalid, using To Email as From Email\n", 0);
-                    $fromEmail = $toEmail;
-                }
-                $email->From = $fromEmail;
-                //$email->FromName = "torrentwatch-xa";
-                // prepare the HELO FQDN from the From Email
-                $splitEmail = explode('@', $fromEmail);
-                $getMX = dns_get_record($splitEmail[1], DNS_MX);
-                if (isset($getMX['target'])) {
-                    $helo = $getMX['target'];
-                    twxa_debug("Detected HELO from From Email: $helo\n", 2);
-                } else if ($splitEmail[1]) {
-                    $helo = $splitEmail[1];
-                    twxa_debug("Detected HELO from From Email: $helo\n", 2);
-                } else {
-                    $helo = "localhost.localdomain";
-                    twxa_debug("Unable to detect HELO from From Email, using default: $helo\n", 2);
-                }
-                $email->Helo = $helo;
-
-                $email->AddAddress("$toEmail");
-
-                $email->Host = $config_values['Settings']['SMTP Server'];
-                $email->Port = $smtpPort;
-
-                if ($config_values['Settings']['SMTP Authentication'] !== 'None') {
-                    $email->SMTPAuth = true;
-                    $email->AuthType = $config_values['Settings']['SMTP Authentication'];
-                    $email->Username = $config_values['Settings']['SMTP User'];
-                    $email->Password = get_smtp_passwd();
-
-                    switch ($config_values['Settings']['SMTP Encryption']) {
-                        case 'None':
-                            $email->SMTPSecure = '';
-                            break;
-                        case 'SSL':
-                            $email->SMTPSecure = "ssl";
-                            break;
-                        case 'TLS':
-                        default:
-                            $email->SMTPSecure = "tls";
-                    }
-                }
-
-                $email->Subject = $subject;
-
-                $mail = @file_get_contents("templates/email.tpl"); //TODO use webDir because rss_dl.php can't access this
-                $mail = str_replace('[MSG]', $msg, $mail);
-                if (empty($mail)) {
-                    $mail = $msg;
-                }
-                $email->Body = $mail;
-
-                if (!$email->Send()) {
-                    twxa_debug("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
-                } else {
-                    twxa_debug("Mail sent to $toEmail with subject: $subject via: " . $config_values['Settings']['SMTP Server'] . "\n", 1); //TODO redo verbiage
-                }
+            // set the From: email address
+            if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+                twxa_debug("From Email is invalid, using To Email as From Email\n", 0);
+                $fromEmail = $toEmail;
+            }
+            $email->From = $fromEmail;
+            //$email->FromName = "torrentwatch-xa";
+            // prepare the HELO FQDN from the From Email
+            $splitEmail = explode('@', $fromEmail);
+            $getMX = dns_get_record($splitEmail[1], DNS_MX);
+            if (isset($getMX['target'])) {
+                $helo = $getMX['target'];
+                twxa_debug("Detected HELO from From Email: $helo\n", 2);
+            } else if ($splitEmail[1]) {
+                $helo = $splitEmail[1];
+                twxa_debug("Detected HELO from From Email: $helo\n", 2);
             } else {
-                // To Email is not valid
-                twxa_debug("Cannot send email: required To Email is not valid\n", -1);
+                $helo = "localhost.localdomain";
+                twxa_debug("Unable to detect HELO from From Email, using default: $helo\n", 2);
+            }
+            $email->Helo = $helo;
+
+            $email->AddAddress("$toEmail");
+
+            $email->Host = $config_values['Settings']['SMTP Server'];
+            $email->Port = $smtpPort;
+
+            if ($config_values['Settings']['SMTP Authentication'] !== 'None') {
+                $email->SMTPAuth = true;
+                $email->AuthType = $config_values['Settings']['SMTP Authentication'];
+                $email->Username = $config_values['Settings']['SMTP User'];
+                $email->Password = get_smtp_passwd();
+
+                switch ($config_values['Settings']['SMTP Encryption']) {
+                    case 'None':
+                        $email->SMTPSecure = '';
+                        break;
+                    case 'SSL':
+                        $email->SMTPSecure = "ssl";
+                        break;
+                    case 'TLS':
+                    default:
+                        $email->SMTPSecure = "tls";
+                }
+            }
+
+            $email->Subject = $subject;
+
+            $mail = @file_get_contents("templates/email.tpl"); //TODO use webDir because rss_dl.php can't access this
+            $mail = str_replace('[MSG]', $msg, $mail);
+            if (empty($mail)) {
+                $mail = $msg;
+            }
+            $email->Body = $mail;
+
+            if (!$email->Send()) {
+                twxa_debug("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
+            } else {
+                twxa_debug("Mail sent to $toEmail: $subject\n", 1);
             }
         } else {
-            // SMTP Port is not valid
-            twxa_debug("Cannot send email: SMTP Port is not valid; leave blank for default of 25 or provide integer from 0-65535\n", -1);
+            // To Email is not valid
+            twxa_debug("Email failed: required To Email is not valid\n", -1);
         }
-    /*}
-    else {
-        twxa_debug("Not using SMTP Notifications\n", 2);
-    }*/
+    } else {
+        // SMTP Port is not valid
+        twxa_debug("Email failed: SMTP Port not valid; leave blank for default of 25 or provide integer from 0-65535\n", -1);
+    }
 }
 
 function run_script($param, $torrent, $error = "") {

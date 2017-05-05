@@ -119,7 +119,6 @@ function add_torrents_in_dir($directory, $dest) {
     if ($handle) {
         while (false !== ($file = readdir($handle))) {
             $ti = substr($file, 0, strrpos($file, '.') - 1);
-            //if (preg_match('/\.torrent$/', $file) &&
             if (substr($file, -8) === ".torrent" &&
                     client_add_torrent("$directory/$file", $dest, $ti)) { //TODO client_add_torrent() returns string errors
                 unlink("$directory/$file"); //TODO add error handling if unlink fails

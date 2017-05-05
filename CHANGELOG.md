@@ -309,33 +309,70 @@ Code changes
 - renamed rss_perform_matching() to process_rss_feed()
 - renamed atom_perform_matching() to process_atom_feed()
 
-Next Version
+0.4.0
 
 Functional changes
 
-- temporarily hid Configure > Favorites > Download PROPER/REPACK setting in preparation for itemVersion numbering system
-- partially added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
-- removed Favorite Batch from Legend (no need to differentiate now that it is possible to auto-download batches)
-
-IN PROGRESS
-
-- why do some items that are in the download cache not get marked properly within PHP upon browser refresh?
-- 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
-
+- removed Favorite Episodes filter due to new Favorite matching method
+- renamed Configure > Favorites > Download PROPER/REPACK setting to Download Versions >1 in switch to itemVersion numbering system
+- PARTIALLY added ability to auto-download batches as long as one episode in a batch is newer than the Favorite's last downloaded episode
+- can now auto-download Print media (Volume x Chapter or batch of Chapters or full Volume or batch of Volumes)
+- added Configure > Favorites > Ignore Batches
+- changed Favorite Batch to Ignored Favorite Batch in Legend (part of new auto-download batch feature)
+- drastically reorganized pattern detection engine logic for code reuse
+- corrected, streamlined, or added pattern detection regexes for many numbering styles
+- partially fixed removal of multiple selected active torrents from display when deleted via context menu
+- added batch capability to all current pattern detectors
+- added favTi (aka show_title) processing to all current pattern detectors
+- added Configure > Interface > Show Item Debug Info to make it easier to diagnose detection engine errors
+- added always-available on-hover debugMatch values to the episode labels
+- added Glummy face as episode label for items that didn't match so that hover debugMatch works
+- added ability to match multibyte characters in RegEx mode, which allows matching Japanese/Chinese/Korean titles
+- removed default feed NyaaTorrents RSS because it got shut down
+- removed default feed Feedburner Anime (Aggregated) because it got shut down
+- added AniDex as a new default feed
+- added TorrentFunk RSS - Anime as a new default feed
+- added HorribleSubs Latest RSS as a new default feed
+- added AcgnX Torrent Resources Base.Global as a new default feed
+- added checkbox to turn a feed on or off (if off, any Favorites assigned to only that feed will not be processed)
+- added back Require Episode Info: if unchecked, Favorite items without episode numbering will also be matched 
 
 Code changes
 
 - added pass-through of detectItem() season and episode output to detectMatch()
-- improved Favorite to item season and episode comparison in check_for_torrent()
-- added extra sanitizeTitle() to detectMatch() for 'title' and 'favTitle'
+- improved Favorite to item season and episode comparison in check_for_torrent() and updateFavoriteEpisode()
+- added extra collapseExtraSeparators() to several parsing functions to remove extra separators from the title
 - improved human-friendly episode notation conversion in detectMatch()
+- fixed boolean use of detectMatch() now that it returns an array
+- rearranged order of resolution checks and improved pattern detection in detectResolution()
+- added ability to detect, remove, and re-insert crew names with numerals such as (C88)
+- improved check_cache_episode() logic to make it more reliably detect an item in the download cache
+- performance improvement by switching more preg_ to str_ functions
+- moved the matchTitle functions to their own files, grouped by number of numbers
+- moved much of detectItem()'s logic to its own file
+- corrected pre-2.4 Transmission TR_STATUS code translations so that 2.4 codes are now the norm
+- removed torrentwatch-xa-md.css since it appears to be unused
+- added is_numeric() checks of the season and episode values
+
+Next Version
+
+Functional changes
 
 IN PROGRESS
 
+- rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
+- validate ALL favTi processing to make sure only the pertinent data is removed from the title
+- clean up the 1 and 2 numbers sections of the pattern detection engine
+- search title for PROPER or Repack and make it version 99 if found
+
+- 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
+- fixed removal of multiple selected active torrents from display when deleted via context menu; still happens due to...
+  - context menu on items in the Transmission filter should not close automatically after a few seconds have passed; might be in listSelector at 732
+
+Code changes
+
+IN PROGRESS
+
+- 1_1_30_6-1 fails to remove minus signs before and after the number IF there is text to the right of the number
+- still cleaning up $matched states, specifically difference between downloaded and cachehit
 - fix Quality filtering in check_for_torrent() before checking the download cache
-
-- context menu on items in the Transmission filter should not close automatically after a few seconds have passed
-
-- minor changes to detectMatch() batch detection and batch notation in preparation for matching batches and full seasons
-
-- fix boolean use of detectMatch() now that it returns an array

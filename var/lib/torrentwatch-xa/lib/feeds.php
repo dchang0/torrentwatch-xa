@@ -2,19 +2,6 @@
 
 require_once('/var/lib/torrentwatch-xa/lib/twxa_parse.php');
 
-function human_readable($n) {
-    $scales = [ 'bytes', 'KB', 'MB', 'GB', 'TB'];
-    $scale = $scales[0];
-    for ($i = 1; $i < count($scales); $i++) {
-        if ($n / 1024 < 1) {
-            break;
-        }
-        $n = $n / 1024;
-        $scale = $scales[$i];
-    }
-    return round($n, 2) . " $scale";
-}
-
 function get_torrent_link($rs) {
     $links = [];
     $link = '';
@@ -42,15 +29,15 @@ function get_torrent_link($rs) {
 }
 
 function choose_torrent_link($links) {
+    //TODO probably add gzip capability here
     $link_best = "";
     $word_matches = 0;
     if (count($links) === 0) {
         return "";
     }
-    //Check how many links has ".torrent" in them
+    //Check how many links have ".torrent" in them
     foreach ($links as $link) {
-        //if (preg_match("/\.torrent/", $link)) {
-        if (stripos($link, "/\.torrent/") !== false) { //TODO maybe use stripos() for case-insensitive search
+        if (stripos($link, "/\.torrent/") !== false) {
             $link_best = $link;
             $word_matches++;
         }
@@ -81,113 +68,160 @@ function choose_torrent_link($links) {
 }
 
 function episode_filter($item, $filter) {
-    $filter = preg_replace('/\s/', '', $filter);
+    /*
+     * NEW NOTATION:
+     * SxE = single episode
+     * SxEv# = single episode with version number
+     * YYYYMMDD = single date
+     * S1xE1-S1-E2 = batch of episodes within one season
+     * YYYYMMD1-YYYYMMD2 = batch of dates
+     * S1xFULL = one full season
+     * S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
+     * S1xE1v2-S2xE2v3 = batch of episodes starting in one season and ending in a later season, with version numbers
+     */
+    if ($item['episode']) {
+        $filter = preg_replace('/\s/', '', $filter);
 
-    if (!isset($itemS)) {
-        $itemS = '';
-    }
-    if (!isset($itemE)) {
-        $itemE = '';
-    }
-    list($itemS, $itemE) = explode('x', $item['episode']);
-
-    if (preg_match('/^S\d*/i', $filter)) {
-        //$filter = preg_replace('/S/i', '', $filter);
-        $filter = strtr($filter, array('S' => '', 's' => ''));
-        if (preg_match('/^\d*E\d*/i', $filter)) {
-            //$filter = preg_replace('/E/i', 'x', $filter);
-            $filter = strtr($filter, array('E' => 'x', 'e' => 'x'));
+        //list($itemS, $itemE) = explode('x', $item['episode']);
+        $itemEpisodePieces = explode('x', $item['episode']);
+        if (isset($itemEpisodePieces[0])) {
+            $itemS = $itemEpisodePieces[0];
+        } else {
+            $itemS = "";
         }
-    }
-    // Split the filter(ex. 3x4-4x15 into 3,3 4,15).  @ to suppress error when no second item
-    if (isset($start)) {
-        $start = '';
-    }
-    if (isset($stop)) {
-        $stop = '';
-    }
-    @list($start, $stop) = explode('-', $filter, 2);
-    @list($startSeason, $startEpisode) = explode('x', $start, 2);
-    if (!isset($stop)) {
-        $stop = "9999x9999";
-    }
-    @list($stopSeason, $stopEpisode) = explode('x', $stop, 2);
-    if (!($item['episode'])) {
+        if (isset($itemEpisodePieces[1])) {
+            $itemE = $itemEpisodePieces[1];
+        } else {
+            $itemE = "";
+        }
+
+        if (preg_match('/^S\d*/i', $filter)) {
+            //$filter = preg_replace('/S/i', '', $filter);
+            $filter = strtr($filter, array('S' => '', 's' => ''));
+            if (preg_match('/^\d*E\d*/i', $filter)) {
+                //$filter = preg_replace('/E/i', 'x', $filter);
+                $filter = strtr($filter, array('E' => 'x', 'e' => 'x'));
+            }
+        }
+        // Split the filter(ex. 3x4-4x15 into 3,3 4,15).  @ to suppress error when no second item
+        //@list($start, $stop) = explode('-', $filter, 2);
+        $filterPieces = explode('-', $filter, 2);
+        if (isset($filterPieces[0])) {
+            $start = $filterPieces[0];
+        } else {
+            $start = "";
+        }
+        if (isset($filterPieces[1])) {
+            $stop = $filterPieces[1];
+        } else {
+            $stop = "9999x9999";
+        }
+        //@list($startSeason, $startEpisode) = explode('x', $start, 2);
+        $startPieces = explode('x', $start, 2);
+        if (isset($startPieces[0])) {
+            $startSeason = $startPieces[0];
+        } else {
+            $startSeason = "";
+        }
+        if (isset($startPieces[1])) {
+            $startEpisode = $startPieces[1];
+        } else {
+            $startEpisode = "";
+        }
+        /* if (!isset($stop)) {
+          $stop = "9999x9999";
+          } */
+        //@list($stopSeason, $stopEpisode) = explode('x', $stop, 2);
+        $stopPieces = explode('x', $stop, 2);
+        if (isset($stopPieces[0])) {
+            $stopSeason = $stopPieces[0];
+        } else {
+            $stopSeason = "";
+        }
+        if (isset($stopPieces[1])) {
+            $stopEpisode = $stopPieces[1];
+        } else {
+            $stopEpisode = "";
+        }
+
+        /* if (!($item['episode'])) {
+          return false;
+          } */
+
+        // Perform episode filter
+        if (empty($filter)) {
+            return true; // no filter left, accept all
+        }
+
+        // the following reg accepts the 1x1-2x27, 1-2x27, 1-3 or just 1
+        $validateReg = '([0-9]+)(?:x([0-9]+))?';
+        if (preg_match("/\dx\d-\dx\d/", $filter)) {
+            if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0 || preg_match("/^{$validateReg}/", $filter) === 0) {
+                twxa_debug("Bad episode filter: $filter\n", 0);
+                return true; // bad filter, just accept all
+            }
+        }
+
+        if (!($stopSeason)) {
+            $stopSeason = $startSeason;
+        }
+        if (!($startEpisode)) {
+            $startEpisode = 1;
+        }
+        if (!($stopEpisode)) {
+            $stopEpisode = $startEpisode - 1;
+        }
+
+        $startEpisodeLen = strlen($startEpisode);
+        if ($startEpisodeLen == 1) {
+            $startEpisode = "0$startEpisode";
+        }
+        $stopEpisodeLen = strlen($stopEpisode);
+        if ($stopEpisodeLen == 1) {
+            $stopEpisode = "0$stopEpisode";
+        }
+
+        if (!preg_match('/^\d\d$/', $startSeason)) {
+            $startSeason = 0 . $startSeason;
+        }
+        if (!preg_match('/^\d\d$/', $startEpisode)) {
+            $startEpisode = 0 . $startEpisode;
+        }
+        if (!preg_match('/^\d\d$/', $stopSeason)) {
+            $stopSeason = 0 . $stopSeason;
+        }
+        if (!preg_match('/^\d\d$/', $stopEpisode)) {
+            $stopEpisode = 0 . $stopEpisode;
+        }
+        if (!preg_match('/^\d\d$/', $itemS)) {
+            $itemS = 0 . $itemS;
+        }
+        if (!preg_match('/^\d\d$/', $itemE)) {
+            $itemE = 0 . $itemE;
+        }
+
+        // Season filter mismatch
+        if (!("$itemS$itemE" >= "$startSeason$startEpisode" && "$itemS$itemE" <= "$stopSeason$stopEpisode")) {
+            twxa_debug("Season filter mismatch: $itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n", 1);
+            return false;
+        }
+        return true;
+    } else {
+        // $item['episode'] evaluates to false; should only happen for debugMatch of 0_, 1_, and so on
         return false;
     }
-
-    // Perform episode filter
-    if (empty($filter)) {
-        return true; // no filter, accept all
-    }
-
-    // the following reg accepts the 1x1-2x27, 1-2x27, 1-3 or just 1
-    $validateReg = '([0-9]+)(?:x([0-9]+))?';
-    if (preg_match("/\dx\d-\dx\d/", $filter)) {
-        if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0 || preg_match("/^{$validateReg}/", $filter) === 0) {
-            twxa_debug("Bad episode filter: $filter\n", 0);
-            return true; // bad filter, just accept all
-        }
-    }
-
-    if (!($stopSeason)) {
-        $stopSeason = $startSeason;
-    }
-    if (!($startEpisode)) {
-        $startEpisode = 1;
-    }
-    if (!($stopEpisode)) {
-        $stopEpisode = $startEpisode - 1;
-    }
-
-
-    $startEpisodeLen = strlen($startEpisode);
-    if ($startEpisodeLen == 1) {
-        $startEpisode = "0$startEpisode";
-    }
-    $stopEpisodeLen = strlen($stopEpisode);
-    if ($stopEpisodeLen == 1) {
-        $stopEpisode = "0$stopEpisode";
-    }
-
-    if (!preg_match('/^\d\d$/', $startSeason)) {
-        $startSeason = 0 . $startSeason;
-    }
-    if (!preg_match('/^\d\d$/', $startEpisode)) {
-        $startEpisode = 0 . $startEpisode;
-    }
-    if (!preg_match('/^\d\d$/', $stopSeason)) {
-        $stopSeason = 0 . $stopSeason;
-    }
-    if (!preg_match('/^\d\d$/', $stopEpisode)) {
-        $stopEpisode = 0 . $stopEpisode;
-    }
-    if (!preg_match('/^\d\d$/', $itemS)) {
-        $itemS = 0 . $itemS;
-    }
-    if (!preg_match('/^\d\d$/', $itemE)) {
-        $itemE = 0 . $itemE;
-    }
-
-    // Season filter mismatch
-    if (!("$itemS$itemE" >= "$startSeason$startEpisode" && "$itemS$itemE" <= "$stopSeason$stopEpisode")) {
-        twxa_debug("Season filter mismatch: $itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n", 1);
-        return false;
-    }
-    return true;
 }
 
 function check_for_torrent(&$item, $key, $opts) {
     //TODO third-most function, called by process_rss_feed()/process_atom_feed()
-    //global $matched, $test_run, $config_values;
     global $matched, $config_values;
-    
+
     if (!isset($item['Feed']) || !(strtolower($item['Feed']) === 'all' || $item['Feed'] === '' || $item['Feed'] == $opts['URL'])) {
         return;
     }
     $rs = $opts['Obj']; // $rs holds each feed list item, $item holds each Favorite item
     $ti = strtolower($rs['title']);
-    
+
     // apply initial filtering from Favorites settings, prior to detectMatch(); may be why simplifyTitle() is necessary before this
     switch (isset_array_key($config_values['Settings'], 'Match Style')) { //TODO maybe simplify this
         case 'simple':
@@ -204,87 +238,167 @@ function check_for_torrent(&$item, $key, $opts) {
         default:
             if (substr($item['Filter'], -1) === '!') {
                 // last character of regex is an exclamation point, which fails to match when in front of \b
-                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '/';
+                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '/u';
             } else {
-                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/';
+                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/u';
             }
             $hit = (($item['Filter'] !== '' && preg_match($pattern, $ti)) &&
-                    ($item['Not'] === '' || ! preg_match('/' . strtolower($item['Not']) . '/', $ti)) &&
-                    (strtolower($item['Quality']) === 'all' || $item['Quality'] === '' || preg_match('/' . strtolower($item['Quality']) . '/', $ti)));
+                    ($item['Not'] === '' || !preg_match('/' . strtolower($item['Not']) . '/u', $ti)) &&
+                    (strtolower($item['Quality']) === 'all' || $item['Quality'] === '' || preg_match('/' . strtolower($item['Quality']) . '/u', $ti)));
             break;
     }
 
     if (isset($item['Filter']) && strtolower($item['Filter']) === "any") {
-        $hit = 1; // $hit is local and not used above this function
+        $hit = 1; // $hit is local and not used above this function; it might not be used in check_cache() either
         $any = 1;
     }
 
     if ($hit) {
-        $guess = detectMatch($ti);
-    }
+        $guessedItem = detectMatch($ti);
+        //TODO add 'Require Episode Info' handling here to match items that don't have episode numbering at all
+        //if ($hit && episode_filter($guess, $item['Episodes']) == true) {
+        if (
+                $config_values['Settings']['Require Episode Info'] != 1 ||
+                (
+                $guessedItem['numberSequence'] > 0 &&
+                episode_filter($guessedItem, $item['Episodes']) == true
+                )
+        ) {
+            $matched = "favStarted"; // used to be 'match'; this is set as default value here to be overwritten by exceptions below
+            //twxa_debug("start with \$matched = \"favStarted\" for " . $rs['title'] . "\n", 2);
+            if (check_cache($rs['title'])) { // check_cache() is false if title is or title and episode and version are found in cache
+                if (
+                        (!isset($any) || !$any) && 
+                        $config_values['Settings']['Require Episode Info'] == 1 &&
+                        isset_array_key($config_values['Settings'], 'Only Newer') == 1
+                        ) {
+                    if (is_numeric($guessedItem['seasBatEnd']) && is_numeric($guessedItem['seasBatStart'])) {
+                        if ($guessedItem['seasBatEnd'] === $guessedItem['seasBatStart']) {
+                            // within one season
+                            if (is_numeric($guessedItem['episBatEnd'])) {
+                                if ($guessedItem['episBatEnd'] === $guessedItem['episBatStart']) {
+                                    // single episode of a single season
+                                    if ($item['Season'] > $guessedItem['seasBatEnd']) {
+                                        // too old by season
+                                        twxa_debug("Ignoring: " . $item['Name'] . " (Fav:Cur S" . $item['Season'] . '>S' . $guessedItem['seasBatEnd'] . ")\n", 1);
+                                        $matched = "favTooOld";
+                                        return false;
+                                    } else if ($item['Season'] == $guessedItem['seasBatEnd']) { // must not use === here
+                                        // seasons match, compare episodes
+                                        if ($item['Episode'] > $guessedItem['episBatEnd']) {
+                                            // too old by episode within same season
+                                            if ($guessedItem['itemVersion'] === 1) {
+                                                twxa_debug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
+                                                $matched = "favTooOld";
+                                                return false;
+                                            } else if ($config_values['Settings']['Download Versions'] !== 1) {
+                                                twxa_debug("Ignoring version: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . " v" . $guessedItem['itemVersion'] . ")\n", 1);
+                                                $matched = "favTooOld";
+                                                return false;
+                                            } else {
+                                                // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
+                                            }
+                                        } else if ($item['Episode'] == $guessedItem['episBatEnd']) {
+                                            // same season and episode, compare itemVersion
+                                            if ($guessedItem['itemVersion'] === 1) {
+                                                twxa_debug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . "=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
+                                                $matched = "favTooOld";
+                                                return false;
+                                            } else if ($config_values['Settings']['Download Versions'] !== 1) {
+                                                twxa_debug("Ignoring version: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . "=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . " v" . $guessedItem['itemVersion'] . ")\n", 1);
+                                                $matched = "favTooOld";
+                                                return false;
+                                            } else {
+                                                // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
+                                            }
+                                        } else {
+                                            // episode is newer than Favorite, do download
+                                        }
+                                    } else {
+                                        // season is newer, but might be a jump from 1xEE to 2017xEE notation; use episode_filter() to prevent this
+                                    }
+                                } else if ($guessedItem['episBatEnd'] > $guessedItem['episBatStart']) {
+                                    // batch of episodes in a single season
+                                    if ($config_values['Settings']['Ignore Batches'] == 0) {
+                                        if ($item['Episode'] >= $guessedItem['episBatEnd']) {
+                                            // nothing in the batch is newer than the favorite
+                                            twxa_debug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
+                                            $matched = "favTooOld";
+                                            return false;
+                                        } else {
+                                            // at least one episode in the batch is newer by episode, do download
+                                            //TODO for now, we don't care about itemVersion when dealing with batches
+                                        }
+                                    } else {
+                                        // ignore batches
+                                        twxa_debug("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
+                                        $matched = "ignFavBatch";
+                                        return false;
+                                    }
+                                }
+                            } else {
+                                // probably empty string, do download
+                            }
+                        } else if ($guessedItem['seasBatEnd'] > $guessedItem['seasBatStart']) {
+                            if ($config_values['Settings']['Ignore Batches'] == 0) {
 
-    if ($hit && episode_filter($guess, $item['Episodes']) == true) {
-        $matched = "favStarted"; // used to be 'match'; set as default value here to be overwritten by exceptions below
-        //twxa_debug("start with \$matched = \"favStarted\" for " . $rs['title'] . "\n", 2);
-        if (preg_match('/^\d+p$/', $item['Episode'])) { //TODO improve this old means of recording Proper episodes in the Favorite
-            $item['Episode'] = preg_replace('/^(\d+)p/', '\1', $item['Episode']);
-            $PROPER = 1;
-        }
-        if (check_cache($rs['title'])) { // check_cache() is false if title is or title and episode are found in cache
-            if ((!isset($any) || !$any) && isset_array_key($config_values['Settings'], 'Only Newer') == 1) { //TODO test !isset($any) || logic
-                if (!empty($guess['episode']) && preg_match('/^(\d+)x(\d+)p?$|^(\d{8})p?$/i', $guess['episode'], $regs)) {
-                    if (isset($regs[3]) && preg_match('/^(\d{8})$/', $regs[3]) && $item['Episode'] >= $regs[3]) {
-                        twxa_debug("Old by Episode/date; ignoring: " . $item['Name'] . " (" . $item['Episode'] . ' >= ' . $regs[3] . ")\n", 1);
-                        $matched = "favTooOld";
-                        return false;
-                    } else if (isset($regs[1]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] > $regs[1]) {
-                        twxa_debug("Old by Season; ignoring: " . $item['Name'] . " (" . $item['Season'] . ' > ' . $regs[1] . ")\n", 1);
-                        $matched = "favTooOld";
-                        return false;
-                    } else if (isset($regs[2]) && preg_match('/^(\d{1,3})$/', $regs[1]) && $item['Season'] == $regs[1] && $item['Episode'] >= $regs[2]) {
-                        if (!preg_match('/proper|repack|rerip/i', $rs['title'])) { //TODO coordinate with check_cache_episode() handling of v2/v3
-                            twxa_debug("Old by Season x Episode; ignoring: " . $item['Name'] . " (S: " . $item['Season'] . " = " . $regs[1] . ", E: " . $item['Episode'] . ' >= ' . $regs[2] . ")\n", 1);
-                            $matched = "favTooOld";
-                            return false;
-                        } else if ($PROPER == 1) {
-                            twxa_debug("Already downloaded Proper, Repack, or Rerip of; ignoring: " . $item['Name'] . " ($regs[1]x$regs[2]$regs[3])\n", 1);
-                            $matched = "favTooOld";
-                            return false;
+                                // batch that spans seasons
+                                if ($item['Season'] > $guessedItem['seasBatEnd']) {
+                                    // last season in batch is older than favorite season
+                                    twxa_debug("Ignoring: " . $item['Name'] . " (Fav:Cur S" . $item['Season'] . '>S' . $guessedItem['seasBatEnd'] . ")\n", 1);
+                                    $matched = "favTooOld";
+                                    return false;
+                                } else if ($item['Season'] == $guessedItem['seasBatEnd']) { // must not use === here
+                                    // last season in batch is equal to the favorite season, compare last episode
+                                    if ($item['Episode'] >= $guessedItem['episBatEnd']) {
+                                        // nothing in the batch is newer than the favorite
+                                        twxa_debug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
+                                        $matched = "favTooOld";
+                                        return false;
+                                    } else {
+                                        // at least one episode in the batch is newer, do download
+                                        //TODO for now, we don't care about itemVersion when dealing with batches
+                                    }
+                                }
+                            } else {
+                                // ignore batches
+                                twxa_debug("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
+                                $matched = "ignFavBatch";
+                                return false;
+                            }
+                        } else {
+                            if ($config_values['Settings']['Ignore Batches'] == 0) {
+                                // $guessedItem['seasBatEnd'] < $guessedItem['seasBatStart']; this should never occur, do download anyway
+                            } else {
+                                // ignore batches
+                                twxa_debug("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
+                                $matched = "ignFavBatch";
+                                return false;
+                            }
                         }
+                    } else {
+                        twxa_debug("Season start or end is not numeric: S" . $guessedItem['seasBatStart'] . "-S" . $guessedItem['seasBatStart'] . "\n", 2);
                     }
-                } else if ($guess['episode'] == 'fullSeason') { //TODO handle batches in general, not just full seasons
-                    twxa_debug("Ignoring batch of: " . $item['name'] . "\n", 2);
-                    $matched = "favBatch"; // used to be 'season'
-                    return false;
-                } else if (($guess['episode'] != 'noShow' && !preg_match('/^(\d{1,2} \d{1,2} \d{2,4})$/', $guess['episode'])) || $config_values['Settings']['Require Episode Info'] == 1) {
-                    twxa_debug("$item is not in a workable format.\n", 0);
-                    $matched = "notAMatch";
-                    return false;
                 }
-            }
-            twxa_debug("Match found for " . $rs['title'] . "\n", 2);
-            /*if ($test_run) {
-                $matched = "favReady"; // used to be 'test'; interrupts default value of "favStarted"
-                return;
-            }*/
-            if ($link = get_torrent_link($rs)) {
-                $response = client_add_torrent($link, null, $rs['title'], $opts['URL'], $item);
-                //if (preg_match('/^Error:/', $response)) {
-                if (strpos($response, 'Error:') === 0) {
-                    twxa_debug("Failed adding torrent $link\n", -1);
-                    return false;
+                twxa_debug("Match found for " . $rs['title'] . "\n", 2);
+                $link = get_torrent_link($rs);
+                if ($link) {
+                    $response = client_add_torrent($link, null, $rs['title'], $opts['URL'], $item);
+                    if (strpos($response, 'Error:') === 0) {
+                        twxa_debug("Failed adding torrent $link\n", -1);
+                        return false;
+                    } else {
+                        add_cache($rs['title']);
+                    }
                 } else {
-                    add_cache($rs['title']);
+                    twxa_debug("Unable to find URL for " . $rs['title'] . "\n", -1);
+                    $matched = "noURL"; // doesn't do anything except overwrite $matched = "favStarted" for future logic
+                    //TODO probably add gzip capability here
                 }
             } else {
-                twxa_debug("Unable to find URL for " . $rs['title'] . "\n", -1);
-                $matched = "noURL"; // doesn't do anything except overwrite $matched = "favStarted" for future logic
-                //TODO probably add gzip capability here
+                //twxa_debug("cachehit for " . $rs['title'] . "\n", 2);
+                $matched = "cachehit";
             }
-        }
-        else {
-            //twxa_debug("cachehit for " . $rs['title'] . "\n", 2);
-            $matched = "cachehit";
         }
     }
 }
@@ -365,24 +479,28 @@ function process_rss_feed($rs, $idx, $feedName, $feedLink) {
         if (!isset($item['title'])) {
             $item['title'] = "";
         } else {
-            $item['title'] = simplifyTitle($item['title']); //TODO first major function call, simplifyTitle() is needed for favorites matching somehow
+            $item['title'] = simplifyTitle($item['title']); //TODO first major function call, simplifyTitle() is somehow needed for accurate favorites matching
         }
         $torHash = "";
         $matched = "notAMatch";
         if (isset($config_values['Favorites'])) {
             array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $rs['URL']]); //TODO second major function call, $matched is inside check_for_torrent()
         }
-        $client = $config_values['Settings']['Client'];
+        //$client = $config_values['Settings']['Client'];
         if (isset($config_values['Settings']['Cache Dir'])) {
             $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($item['title']);
         }
-        if (file_exists($cache_file)) { //TODO why does this not use check_cache() with cachehit?
+        if (file_exists($cache_file)) { //TODO why does this not use check_cache() with cachehit, rewrite check_cache to return values
             $torHash = get_torHash($cache_file);
-            if ($matched !== "favStarted" && $matched != 'cachehit' && file_exists($cache_file)) { //TODO $matched comes from check_for_torrent() above
+            //if ($matched !== "favStarted" && $matched != 'cachehit' && file_exists($cache_file)) { //TODO $matched comes from check_for_torrent() above
+            if ($matched !== "favStarted" && $matched != 'cachehit') {
                 $matched = 'downloaded';
-                twxa_debug("Already downloaded; ignoring: " . $item['title'] . "\n", 1);
+                twxa_debug("Exact in cache; ignoring: " . $item['title'] . "\n", 1);
+            } else if ($matched === 'cachehit') {
+                //TODO if not going to use check_cache(), add item version handling here
+                twxa_debug("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1);
             }
-        }
+        } //TODO check this block's logic and $matched states, when finished, copy to process_atom_feed() below
         if (isset($config_values['Global']['HTMLOutput'])) {
             if (!isset($rsnr)) {
                 $rsnr = 1;
@@ -445,13 +563,13 @@ function process_atom_feed($atom, $idx, $feedName, $feedLink) {
         $torHash = '';
         $matched = "notAMatch";
         array_walk($config_values['Favorites'], 'check_for_torrent', [ 'Obj' => $item, 'URL' => $feedLink]);
-        $client = $config_values['Settings']['Client'];
+        //$client = $config_values['Settings']['Client'];
         $cache_file = $config_values['Settings']['Cache Dir'] . '/rss_dl_' . filename_encode($item['title']);
         if (file_exists($cache_file)) {
-            $torHash = get_torHash($cache_file); //TODO add ability to compare hashes here; why does this not use check_cache() with cachehit?
+            $torHash = get_torHash($cache_file);
             if ($matched !== "favStarted" && $matched != 'cachehit' && file_exists($cache_file)) {
                 $matched = 'downloaded';
-                twxa_debug("Already downloaded; ignoring: " . $item['title'] . "\n", 1);
+                twxa_debug("Exact in cache; ignoring: " . $item['title'] . "\n", 1);
             }
         }
         if (isset($config_values['Global']['HTMLOutput'])) {
@@ -473,7 +591,8 @@ function process_atom_feed($atom, $idx, $feedName, $feedLink) {
                 'matched' => $matched,
                 'id' => $id
             ];
-            array_push($htmlList, $htmlItems);
+            //array_push($htmlList, $htmlItems);
+            $htmlList[] = $htmlItems;
         }
 
         if ($alt === 'alt') {
@@ -482,7 +601,6 @@ function process_atom_feed($atom, $idx, $feedName, $feedLink) {
             $alt = 'alt';
         }
     }
-    //twxa_debug("\$htmlList: " . print_r($htmlList, true), 2); //TODO dumps lots of output into log
     $htmlList = array_reverse($htmlList, true);
     foreach ($htmlList as $item) {
         show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);
@@ -496,10 +614,10 @@ function process_atom_feed($atom, $idx, $feedName, $feedLink) {
 
 function process_all_feeds($feeds) {
     //TODO this is the top-most function for feed processing, happens right after getting list of feeds
-    global $config_values, $html_out;
+    //global $config_values, $html_out;
+    global $config_values;
 
     if (isset($config_values['Global']['HTMLOutput'])) {
-        //echo('<div class="progressBarUpdates">'); //TODO why does this echo to console and not into $html_out?
         show_feed_lists_container();
     }
 
@@ -511,13 +629,21 @@ function process_all_feeds($feeds) {
     foreach ($feeds as $key => $feed) {
         switch ($feed['Type']) {
             case 'RSS':
-                if (isset($config_values['Global']['Feeds'][$feed['Link']])) {
+                if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == "1") {
                     process_rss_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+                } else if ($feed['enabled'] != "1") {
+                    twxa_debug("Feed disabled: " . $feed['Name'] . "\n", 1);
+                } else {
+                    twxa_debug("Feed inaccessible: " . $feed['Name'] . "\n", 1);
                 }
                 break;
             case 'Atom':
-                if (isset($config_values['Global']['Feeds'][$feed['Link']])) {
+                if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == "1") {
                     process_atom_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+                } else if ($feed['enabled'] != "1") {
+                    twxa_debug("Feed disabled: " . $feed['Name'] . "\n", 1);
+                } else {
+                    twxa_debug("Feed inaccessible: " . $feed['Name'] . "\n", 1);
                 }
                 break;
             default:
@@ -535,23 +661,27 @@ function process_all_feeds($feeds) {
     }
 
     if (isset($config_values['Global']['HTMLOutput'])) {
-        //echo('</div>'); //TODO why does this echo to console and not into $html_out?
         close_feed_lists_container();
     }
 }
 
-function load_all_feeds($feeds, $update = null) {
-    global $config_values;
-    //$count = count($feeds);
-    //twxa_debug("count(\$feeds): $count . \$feeds: " . print_r($feeds, true) . "\n", 2);
+function load_all_feeds($feeds, $update = null, $enabled = false) {
+    //global $config_values;
     foreach ($feeds as $feed) {
-        //twxa_debug("\$feed: " . print_r($feed, true) . "\n", 2);
         switch ($feed['Type']) {
             case 'RSS':
-                parse_one_rss($feed, $update);
+                if ($enabled === true || $feed['enabled'] == "1") {
+                    parse_one_rss($feed, $update);
+                } else {
+                    twxa_debug("Feed disabled: " . $feed['Name'] . "\n", 1);
+                }
                 break;
             case 'Atom':
-                parse_one_atom($feed);
+                if ($enabled === true || $feed['enabled'] == "1") {
+                    parse_one_atom($feed);
+                } else {
+                    twxa_debug("Feed disabled: " . $feed['Name'] . "\n", 1);
+                }
                 break;
             default:
                 twxa_debug("Unknown " . $feed['Type'] . " feed: " . $feed['Link'] . "\n", -1);
