@@ -611,7 +611,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 }
             }
             //$result['favTi'] = str_replace($matNum[1], "", $ti);
-            $result['favTi'] = preg_replace("/\d+/.*", "", $ti);
+            $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 8 :
             //TODO maybe rewrite this section to use validateYYYYMMDD()
@@ -664,7 +664,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 $result['matFnd'] = "1_3-5";
             }
             //$result['favTi'] = str_replace($matNum[1], "", $ti);
-            $result['favTi'] = preg_replace("/\d+/.*", "", $ti);
+            $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 6 :
             //TODO maybe rewrite this section to use validateYYYYMMDD()
@@ -728,7 +728,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 $result['matFnd'] = "1_4-7";
             }
             //$result['favTi'] = str_replace($matNum[1], "", $ti);
-            $result['favTi'] = preg_replace("/\d+/.*", "", $ti);
+            $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 12 :
             // YYYYMMDDHHMM
@@ -736,7 +736,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
             $result['episEd'] = $result['episSt'] = substr($matNum[1], 0, 8); // truncate the lengthy Date notation
             //$result['favTi'] = str_replace($matNum[1], "", $ti);
-            $result['favTi'] = preg_replace("/\d+/.*", "", $ti);
+            $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             $result['matFnd'] = "1_5";
             break;
         case 14 :
@@ -745,7 +745,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
             $result['episEd'] = $result['episSt'] = substr($matNum[1], 0, 8); // truncate the lengthy Date notation
             //$result['favTi'] = str_replace($matNum[1], "", $ti);
-            $result['favTi'] = preg_replace("/\d+/.*", "", $ti);
+            $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             $result['matFnd'] = "1_6";
             break;
         default:
