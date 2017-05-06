@@ -11,6 +11,8 @@ require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match1.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match2.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match3.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match4.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match5.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match6.php");
 
 function collapseExtraSeparators($ti) {
     $ti = str_replace("  ", " ", $ti);
@@ -57,6 +59,7 @@ function sanitizeTitle($ti) {
     $ti = str_replace(',', ' ', $ti);
     $ti = str_replace('_', ' ', $ti);
     $ti = str_replace('/', ' ', $ti);
+    $ti = str_replace('|', ' ', $ti);
     // IMPORTANT: reduce multiple reserved separators down to one separator
     return collapseExtraSeparators($ti);
 }
@@ -356,11 +359,11 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
 }
 
 function detectMatch($ti) {
-    $episode_guess = "";
+    $episGuess = "";
 
     // detect qualities
-    $detectQualitiesOutput = detectQualities(simplifyTitle($ti));
-    $detQualitiesJoined = implode(' ', $detectQualitiesOutput['detectedQualities']);
+    $detQualitiesOutput = detectQualities(simplifyTitle($ti));
+    $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']);
     // don't use count() on arrays because it returns 1 if not countable; it is enough to know if any quality was detected
     if (strlen($detQualitiesJoined) > 0) {
         $wereQualitiesDetected = true;
@@ -370,128 +373,89 @@ function detectMatch($ti) {
 
     //TODO detect video-related words like Sub and Dub
     // strip out audio codecs
-    $detectAudioCodecsOutput = detectAudioCodecs($detectQualitiesOutput['parsedTitle']);
+    $detAudioCodecsOutput = detectAudioCodecs($detQualitiesOutput['parsedTitle']);
 
     // after removing Qualities and Audio Codecs, there may be ( ) or () left behind
-    $detectAudioCodecsOutput['parsedTitle'] = removeEmptyParens(collapseExtraMinuses($detectAudioCodecsOutput['parsedTitle']));
+    $detAudioCodecsOutput['parsedTitle'] = removeEmptyParens(collapseExtraMinuses($detAudioCodecsOutput['parsedTitle']));
 
     // strip the crew name
-    $detectNumericCrewOutput = detectNumericCrew($detectAudioCodecsOutput['parsedTitle']);
+    $detNumericCrewOutput = detectNumericCrew($detAudioCodecsOutput['parsedTitle']);
 
     // detect episode
-    $detectItemOutput = detectItem($detectNumericCrewOutput['parsedTitle'], $wereQualitiesDetected);
-    $detectItemOutput['favTitle'] = removeEmptyParens($detectItemOutput['favTitle']);
-    $seasonBatchEnd = $detectItemOutput['seasBatEnd'];
-    $seasonBatchStart = $detectItemOutput['seasBatStart'];
-    $episodeBatchEnd = $detectItemOutput['episBatEnd'];
-    $episodeBatchStart = $detectItemOutput['episBatStart'];
+    $detItemOutput = detectItem($detNumericCrewOutput['parsedTitle'], $wereQualitiesDetected);
+    $detItemOutput['favTitle'] = removeEmptyParens($detItemOutput['favTitle']);
+    $seasBatEnd = $detItemOutput['seasBatEnd'];
+    $seasBatStart = $detItemOutput['seasBatStart'];
+    $episBatEnd = $detItemOutput['episBatEnd'];
+    $episBatStart = $detItemOutput['episBatStart'];
 
     // parse episode output into human-friendly notation
     // our numbering style is 1x2v2-2x3v3
-    if ($seasonBatchEnd > -1) {
+    if ($seasBatEnd > -1) {
         // found a ending season, probably detected other three values too
-        if ($seasonBatchEnd == $seasonBatchStart) {
+        if ($seasBatEnd == $seasBatStart) {
             // within one season
-            if ($episodeBatchEnd == $episodeBatchStart && $episodeBatchEnd > -1) {
+            if ($episBatEnd == $episBatStart && $episBatEnd > -1) {
                 // single episode
-                if ($seasonBatchEnd == 0) {
+                if ($seasBatEnd == 0) {
                     // date notation
-                    $episode_guess = $episodeBatchEnd;
+                    $episGuess = $episBatEnd;
                 } else {
-                    $episode_guess = $seasonBatchEnd . 'x' . $episodeBatchEnd;
+                    $episGuess = $seasBatEnd . 'x' . $episBatEnd;
                 }
-                if ($detectItemOutput['itemVersion'] > 1) {
-                    $episode_guess .= "v" . $detectItemOutput['itemVersion'];
+                if ($detItemOutput['itemVersion'] > 1) {
+                    $episGuess .= "v" . $detItemOutput['itemVersion'];
                 }
-            } else if ($episodeBatchEnd > $episodeBatchStart && $episodeBatchStart > -1) {
+            } else if ($episBatEnd > $episBatStart && $episBatStart > -1) {
                 // batch of episodes within one season
-                if ($seasonBatchEnd == 0) {
+                if ($seasBatEnd == 0) {
                     // date notation
-                    $episode_guess = $episodeBatchStart . '-' . $episodeBatchEnd;
+                    $episGuess = $episBatStart . '-' . $episBatEnd;
                 } else {
-                    $episode_guess = $seasonBatchStart . 'x' . $episodeBatchStart . '-' . $seasonBatchStart . 'x' . $episodeBatchEnd;
+                    $episGuess = $seasBatStart . 'x' . $episBatStart . '-' . $seasBatStart . 'x' . $episBatEnd;
                 }
-            } else if ($episodeBatchEnd == "") {
+            } else if ($episBatEnd == "") {
                 // assume full season
-                $episode_guess = $seasonBatchEnd . 'xFULL';
+                $episGuess = $seasBatEnd . 'xFULL';
             } else {
-                //TODO not sure of what exceptions there might be to the above
+                // not sure of what exceptions there might be to the above
             }
-        } else if ($seasonBatchEnd > $seasonBatchStart) {
+        } else if ($seasBatEnd > $seasBatStart) {
             // batch spans multiple seasons, treat EpisodeStart as paired with SeasonStart and EpisodeEnd as paired with SeasonEnd
-            if ($episodeBatchEnd == "") {
-                $episode_guess = $seasonBatchStart . 'xFULL-' . $seasonBatchEnd . 'xFULL';
+            if ($episBatEnd == "") {
+                $episGuess = $seasBatStart . 'xFULL-' . $seasBatEnd . 'xFULL';
             } else {
-                $episode_guess = $seasonBatchStart . 'x' . $episodeBatchStart . '-' . $seasonBatchEnd . 'x' . $episodeBatchEnd;
+                $episGuess = $seasBatStart . 'x' . $episBatStart . '-' . $seasBatEnd . 'x' . $episBatEnd;
             }
         }
     } else {
-        $episode_guess = "noShow";
+        $episGuess = "noShow";
     }
     //TODO handle PV and other numberSequence values
     //TODO add itemVersion handling to batches such as 1x03v2-1x05v2
     // add the removed crew name back if one was removed
-    $favTitle = collapseExtraSeparators($detectItemOutput['favTitle']);
-    if ($detectNumericCrewOutput['rmCrewName'] !== "") {
-        $favTitle = $detectNumericCrewOutput['rmCrewName'] . $favTitle;
+    $favTitle = collapseExtraSeparators($detItemOutput['favTitle']);
+    if ($detNumericCrewOutput['rmCrewName'] !== "") {
+        $favTitle = $detNumericCrewOutput['rmCrewName'] . $favTitle;
     }
 
     //TODO strip off remaining unmatched codecs from favTitle if at the end and in parentheses
 
     return [
-        'title' => collapseExtraSeparators($detectAudioCodecsOutput['parsedTitle']),
+        'title' => collapseExtraSeparators($detAudioCodecsOutput['parsedTitle']),
         'favTitle' => $favTitle,
         'qualities' => $detQualitiesJoined,
-        'episode' => $episode_guess,
-        'seasBatEnd' => $detectItemOutput['seasBatEnd'],
-        'seasBatStart' => $detectItemOutput['seasBatStart'],
-        'episBatEnd' => $detectItemOutput['episBatEnd'],
-        'episBatStart' => $detectItemOutput['episBatStart'],
+        'episode' => $episGuess,
+        'seasBatEnd' => $detItemOutput['seasBatEnd'],
+        'seasBatStart' => $detItemOutput['seasBatStart'],
+        'episBatEnd' => $detItemOutput['episBatEnd'],
+        'episBatStart' => $detItemOutput['episBatStart'],
         'isVideo' => $wereQualitiesDetected, //TODO replace this with mediaType
-        'mediaType' => $detectItemOutput['mediaType'],
-        'itemVersion' => $detectItemOutput['itemVersion'],
-        'numberSequence' => $detectItemOutput['numberSequence'],
-        'debugMatch' => $detectItemOutput['debugMatch']
+        'mediaType' => $detItemOutput['mediaType'],
+        'itemVersion' => $detItemOutput['itemVersion'],
+        'numberSequence' => $detItemOutput['numberSequence'],
+        'debugMatch' => $detItemOutput['debugMatch']
     ];
-}
-
-function guess_feed_type($feedurl) {
-    $response = check_for_cookies($feedurl);
-    if (isset($response)) {
-        $feedurl = $response['url'];
-    }
-    $get = curl_init();
-    $getOptions[CURLOPT_URL] = $feedurl;
-    get_curl_defaults($getOptions);
-    curl_setopt_array($get, $getOptions);
-    $content = explode("\n", curl_exec($get));
-    curl_close($get);
-    // Should be on the second line, but test up to the first 5 in case of doctype, etc.
-    for ($i = 0; $i < count($content) && $i < 5; $i++) {
-        twxa_debug("Head of feed from URL: " . $content[$i] . "\n", 2);
-        if (strpos($content[$i], '<feed xml') !== false) {
-            twxa_debug("Feed $feedurl appears to be an Atom feed\n", 2);
-            return 'Atom';
-        } else if (strpos($content[$i], '<rss') !== false) {
-            twxa_debug("Feed $feedurl appears to be an RSS feed\n", 2);
-            return 'RSS';
-        }
-    }
-    twxa_debug("Cannot figure out feed type of $feedurl\n", 0);
-    return "Unknown"; // was set to "RSS" as default, but this seemed to cause errors in add_feed()
-}
-
-function guess_atom_torrent($summary) {
-    $wc = '[\/\:\w\.\+\?\&\=\%\;]+';
-    // Detects: A HREF=\"http://someplace/with/torrent/in/the/name\"
-    $regs = [];
-    if (preg_match('/A HREF=\\\"(http' . $wc . 'torrent' . $wc . ')\\\"/', $summary, $regs)) {
-        twxa_debug("guess_atom_torrent: $regs[1]\n", 2);
-        return $regs[1];
-    } else {
-        twxa_debug("guess_atom_torrent: failed\n", 2); //TODO return and fix this function
-    }
-    return false;
 }
 
 function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
@@ -588,28 +552,28 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
             if (is_numeric($result['episEd'])) {
                 $result['episEd'] += 0;
             } else {
-                twxa_debug($result['matFnd'] . ": " . $result['episEd'] . " is not numeric in $ti\n", -1);
+                twxaDebug($result['matFnd'] . ": " . $result['episEd'] . " is not numeric in $ti\n", -1);
             }
         }
         if (isset($result['episSt']) && $result['episSt'] != "") {
             if (is_numeric($result['episSt'])) {
                 $result['episSt'] += 0;
             } else {
-                twxa_debug($result['matFnd'] . ": " . $result['episSt'] . " is not numeric in $ti\n", -1);
+                twxaDebug($result['matFnd'] . ": " . $result['episSt'] . " is not numeric in $ti\n", -1);
             }
         }
         if (isset($result['seasEd']) && $result['seasEd'] != "") {
             if (is_numeric($result['seasEd'])) {
                 $result['seasEd'] += 0;
             } else {
-                twxa_debug($result['matFnd'] . ": " . $result['seasEd'] . " is not numeric in $ti\n", -1);
+                twxaDebug($result['matFnd'] . ": " . $result['seasEd'] . " is not numeric in $ti\n", -1);
             }
         }
         if (isset($result['seasSt']) && $result['seasSt'] != "") {
             if (is_numeric($result['seasSt'])) {
                 $result['seasSt'] += 0;
             } else {
-                twxa_debug($result['matFnd'] . ": " . $result['seasSt'] . " is not numeric in $ti\n", -1);
+                twxaDebug($result['matFnd'] . ": " . $result['seasSt'] . " is not numeric in $ti\n", -1);
             }
         }
     } else {
