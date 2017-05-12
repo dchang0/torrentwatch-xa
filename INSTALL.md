@@ -1,7 +1,7 @@
 Installation
 ===============
 
-NOTE: As of 0.4.1, there is a simple install/upgrade script meant for Debian 8 (but not Debian 7) and Ubuntu 14.04/16.04 called install_twxa.sh that has potentially dangerous rm -fr commands inside. **Use this script at your own risk!** It is far safer to perform the following installation manually, without the script.
+NOTE: As of 0.4.1, there is a simple install/upgrade script meant for Debian 8 (but not Debian 7) and Ubuntu 14.04/16.04 called install_twxa.sh that has potentially dangerous `rm -fr` commands inside. **Use this script at your own risk!** It is far safer to perform the following installation manually, without the script.
 
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.

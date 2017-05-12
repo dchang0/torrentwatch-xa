@@ -26,7 +26,7 @@ However, the directory and file renames certainly mean that **it is best to wipe
 
 My apologies for the trouble--it was finally time to do away with these vestiges of TorrentWatch or TorrentWatch-X from when they could only handle RSS and not Atom feeds. I do not expect any major directory renames in the future. 
 
-To help with this upgrade, I added a very simple install script called install_twxa.sh. **Use this at your own risk--it has rm -fr commands inside, which can be quite dangerous if misused.** I'll improve the install script over time.
+To help with this upgrade, I added a very simple install script called install_twxa.sh. **Use this at your own risk--it has `rm -fr` commands inside, which can be quite dangerous if misused.** I'll improve the install script over time.
 
 I did finally run a PHP 7.0 compatibility checker on torrentwatch-xa and found that all the code is and has been compatible excepting the deprecated constructor function name in the 3rd-party library atomparser.php. That has been corrected in 0.4.1.
 
