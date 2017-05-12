@@ -73,8 +73,6 @@ From the official repos:
 
 ### Ubuntu 16.04
 
-Ubuntu 16.04 has PHP 7.0 and is not officially supported yet, but I have confirmed that it works as of torrentwatch-xa 0.4.1 on Ubuntu 16.04.2 with PHP 7.0.15.
-
 From the official repos:
 
 - transmission-daemon
@@ -83,8 +81,6 @@ From the official repos:
 - libapache2-mod-php (defaults to libapache2-mod-php7.0)
 - php (defaults to php7.0)
 - php-curl (defaults to php7.0-curl)
-
-Also as of 0.4.1, torrentwatch-xa has been confirmed to be fully PHP 7.0 compliant with php7cc compatibility checker. The sole problem was deprecation of the constructor function name inside of the customized atomparser.php.
 
 Installation
 ===============
