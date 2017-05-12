@@ -1,4 +1,4 @@
 # /etc/cron.d/torrentwatch-xa: crontab fragment for torrentwatch-xa
 # Checks for new torrents every 15 minutes, which is a good starting
-# point because rss_cache is marked old every 14 minutes, 50 seconds.
+# point because the feed cache(s) is marked old every 14 minutes, 50 seconds.
 */15 * * * * www-data /usr/bin/php -q /var/lib/torrentwatch-xa/twxacli.php -D >/dev/null 2>&1
