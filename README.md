@@ -22,7 +22,7 @@ I've posted 0.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 0.4.1 is primarily about fixing bugs introduced in 0.4.0 (as well as an annoying bug introduced in 0.3.1 where highlighted items in the Transmission filter will lose the highlight after a few seconds) and moving/renaming/refactoring directories, files, functions, and variables for clarity, especially to delineate which parts belong to torrentwatch-xa and which are 3rd-party libraries. There are no major changes in 0.4.1 in terms of functionality. 
 
-However, the directory and file renames certainly mean that *it is best to wipe out an older version of torrentwatch-xa and do a fresh install of 0.4.1 rather than do an overwrite upgrade.* Even the torrentwatch-xa.config file saw some changes that require either editing the file to replace all occurrences of "rss_cache" with "dl_cache" or starting over with a fresh default config and adding back feeds and Favorites via the web UI.
+However, the directory and file renames certainly mean that **it is best to wipe out an older version of torrentwatch-xa and do a fresh install of 0.4.1 rather than do an overwrite upgrade.** For instance, the cron job file requires a path change or it won't work, and even the torrentwatch-xa.config file saw some changes that require either editing the file to replace all occurrences of "rss_cache" with "dl_cache" or starting over with a fresh default config and adding back feeds and Favorites via the web UI.
 
 My apologies for the trouble--it was finally time to do away with these vestiges of TorrentWatch when it could only handle RSS and not Atom feeds. I do not expect any major directory renames in the future.
 
