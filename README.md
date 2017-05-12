@@ -30,7 +30,7 @@ I did finally run a PHP 7.0 compatibility checker on torrentwatch-xa and found t
 
 Still in alpha: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like 0x{3010} to satisfy PHP's preg_ functions.
 
-Please note that if you keep the default RSS feeds provided by a fresh default config, some of them are not 100% reliable (TokyoTosho.info goes down quite often). This is sadly the new normal after NyaaTorrents shut down, until the rumored replacement is built and comes online.
+Please note that if you keep the default RSS feeds provided by a fresh default config, some of them are not 100% reliable (TokyoTosho.info goes down quite often due to high traffic). This is sadly the new normal after NyaaTorrents shut down and all its fans were forced to find new homes, at least until the rumored replacement is built and comes online.
 
 ### Next Version
 
