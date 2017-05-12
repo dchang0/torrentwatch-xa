@@ -24,7 +24,9 @@ I've posted 0.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 However, the directory and file renames certainly mean that **it is best to wipe out an older version of torrentwatch-xa and do a fresh install of 0.4.1 rather than do an overwrite upgrade.** For instance, the cron job file requires a change from "rss_dl.php" to "twxacli.php" or it won't work, and even the torrentwatch-xa.config file saw some changes that require either editing the file to replace all occurrences of "rss_cache" with "dl_cache" or starting over with a fresh default config and adding back feeds and Favorites via the web UI.
 
-My apologies for the trouble--it was finally time to do away with these vestiges of TorrentWatch or TorrentWatch-X from when they could only handle RSS and not Atom feeds. I do not expect any major directory renames in the future. To help with this, I added a very simple install script called install_twxa.sh. Use this at your own risk--it has rm -fr commands inside, which can be quite dangerous if misused. I'll improve the install script over time.
+My apologies for the trouble--it was finally time to do away with these vestiges of TorrentWatch or TorrentWatch-X from when they could only handle RSS and not Atom feeds. I do not expect any major directory renames in the future. 
+
+To help with this upgrade, I added a very simple install script called install_twxa.sh. **Use this at your own risk--it has rm -fr commands inside, which can be quite dangerous if misused.** I'll improve the install script over time.
 
 I did finally run a PHP 7.0 compatibility checker on torrentwatch-xa and found that all the code is and has been compatible excepting the deprecated constructor function name in the 3rd-party library atomparser.php. That has been corrected in 0.4.1.
 
