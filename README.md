@@ -69,7 +69,9 @@ From the official repos:
 - php5-json
 - php5-curl
 
-### Ubuntu 16.04 (not officially supported yet, but works as of torrentwatch-xa 0.4.1 on Ubuntu 16.04.2 with PHP 7.0.15)
+### Ubuntu 16.04
+
+Ubuntu 16.04 has PHP 7.0 and is not officially supported yet, but I have confirmed that it works as of torrentwatch-xa 0.4.1 on Ubuntu 16.04.2 with PHP 7.0.15.
 
 From the official repos:
 
