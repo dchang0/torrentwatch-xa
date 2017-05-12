@@ -50,7 +50,7 @@ Tested Platforms
 
 torrentwatch-xa is developed and tested on Ubuntu 14.04.5 LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server. The UI works on pretty much any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
 
-torrentwatch-xa should work without modifications on an out-of-the-box install of Debian 8.x x86_64 or Ubuntu 14.04.x, although I am only actively testing on Ubuntu 14.04.x with PHP 5.6.
+torrentwatch-xa should work without modifications on an out-of-the-box, up-to-date install of Debian 8.x x86_64, Ubuntu 14.04.x, or Ubuntu 16.04.2, although I am only actively testing on Ubuntu 14.04.x with PHP 5.6.
 
 As of 0.4.0, it has also been confirmed to run correctly on Ubuntu 16.04.2 with PHP 7.0.15, but this is not a development target at this time.
 
