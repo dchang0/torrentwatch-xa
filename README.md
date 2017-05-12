@@ -82,8 +82,9 @@ From the official repos:
 - php-mbstring (defaults to php7.0-mbstring)
 - libapache2-mod-php (defaults to libapache2-mod-php7.0)
 - php (defaults to php7.0)
+- php-curl (defaults to php7.0-curl)
 
-Also of 0.4.1, torrentwatch-xa has been confirmed to be fully PHP 7.0 compliant with php7cc compatibility checker. The sole problem was deprecation of the constructor function name inside of the customized atomparser.php.
+Also as of 0.4.1, torrentwatch-xa has been confirmed to be fully PHP 7.0 compliant with php7cc compatibility checker. The sole problem was deprecation of the constructor function name inside of the customized atomparser.php.
 
 Installation
 ===============

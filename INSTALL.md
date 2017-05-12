@@ -1,15 +1,16 @@
 Installation
 ===============
 
-NOTE: As of 0.4.1, there is a simple install/upgrade script meant for Debian 8 (but not Debian 7) and Ubuntu 14.04/16.04 called install_twxa.sh that has potentially dangerous `rm -fr` commands inside. **Use this script at your own risk!** It is far safer to perform the following installation manually, without the script.
+NOTE: As of 0.4.1, there is a simple install/upgrade script meant for Debian 8 (but not Debian 7) and Ubuntu 14.04/16.04 called install_twxa.sh that has potentially dangerous `rm -fr` commands inside. **Use this script at your own risk!** It is far safer to perform the following installation manually, without the script. The script does not install prerequisites.
 
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon`
 - For Ubuntu 16.04:
   - Start with an Ubuntu 16.04 installation.
-  - `sudo apt-get install apache2 php php-mbstring libapache2-mod-php transmission-daemon`
-  - `sudo apt-get update; sudo apt-get upgrade`
+  - If your OS is not up to date, it's a good idea to do so.
+    - `sudo apt-get update; sudo apt-get upgrade`
+  - `sudo apt-get install apache2 php php-mbstring php-curl libapache2-mod-php transmission-daemon`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`
