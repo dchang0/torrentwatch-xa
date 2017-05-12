@@ -15,14 +15,18 @@
             </ul>
         </div>
         <div class=favinfo>
-            <?php display_favorites_info(array('Name' => '',
+            <?php display_favorites_info(
+            [
+            'Name' => '',
             'Filter' => '',
             'Not' => '',
             'Save In' => 'Default',
             'Episodes' => '',
             'Feed' => '',
             'Quality' => 'All',
-            'seedRatio' => $config_values['Settings']['Default Seed Ratio']), "new"); ?>
+            'seedRatio' => $config_values['Settings']['Default Seed Ratio']
+            ],
+            "new"); ?>
             <?php if(isset($config_values['Favorites']))
             array_walk($config_values['Favorites'], 'display_favorites_info'); ?>
             <div id="favClose" class="buttonContainer">

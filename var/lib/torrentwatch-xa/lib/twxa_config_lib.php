@@ -1,7 +1,38 @@
 <?php
 
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse.php"); // for guess_feed_type() in add_feed()
-// dynamic config file and config cache file location
+// configuration-related functions
+// OVERRIDABLE dynamic config file and config cache file location
+if (!(function_exists('get_baseDir'))) {
+
+    function get_baseDir() {
+        return "/var/lib/torrentwatch-xa"; // default path
+    }
+
+}
+
+if (!(function_exists('get_webDir'))) {
+
+    function get_webDir() {
+        return "/var/www/html/torrentwatch-xa"; // default path
+    }
+
+}
+
+if (!(function_exists('get_logFile'))) {
+
+    function get_logFile() {
+        return "/tmp/twxalog"; // default path
+    }
+
+}
+
+if (!(function_exists('get_tr_sessionIdFile'))) {
+
+    function get_tr_sessionIdFile() {
+        return '/tmp/.Transmission-Session-Id';
+    }
+
+} // END OVERRIDABLE
 
 function getConfigCacheDir() {
     return get_baseDir() . "/config_cache";
@@ -33,7 +64,6 @@ function setup_default_config() {
     // Interface tab
     _default('Combine Feeds', "0");
     _default('Disable Hide List', "0");
-    //_default('Episodes Only', "0");
     _default('Show Debug', "0");
     _default('Hide Donate Button', "0");
     _default('Time Zone', 'UTC');
@@ -55,7 +85,6 @@ function setup_default_config() {
     _default('Match Style', "regexp");
     _default('Default Feed All', "1");
     _default('Require Episode Info', "1");
-    //_default('Verify Episode', "1");
     _default('Only Newer', "1");
     _default('Ignore Batches', "1");
     _default('Download Versions', "1");
@@ -69,48 +98,16 @@ function setup_default_config() {
     _default('SMTP Port', '25');
     _default('SMTP Authentication', 'None');
     _default('SMTP Encryption', 'TLS');
-    _default('SMTP Username', '');
+    _default('SMTP User', '');
     _default('SMTP Password', '');
     // Other hidden settings
-    _default('Process Watch Dir', "1"); // only really used for rss_dl.php
-    _default('debugLevel', "0"); //TODO not sure how this works yet--if higher than $lvl, sends debug to STDOUT, I think
+    _default('Process Watch Dir', "1"); // only really used for twxacli.php
+    _default('debugLevel', "0"); //TODO remove this if twxaDebug() doesn't need it any more
     _default('Extension', "torrent");
     _default('Sanitize Hidelist', "0");
-    _default('Cache Dir', $baseDir . "/rss_cache/");
-    _default('History', $baseDir . "/rss_cache/rss_dl.history");
+    _default('Cache Dir', $baseDir . "/dl_cache/");
+    _default('History', $baseDir . "/dl_cache/dl_history");
 }
-
-if (!(function_exists('get_baseDir'))) {
-
-    function get_baseDir() {
-        return "/var/lib/torrentwatch-xa"; // default path
-    }
-
-}
-
-if (!(function_exists('get_webDir'))) {
-
-    function get_webDir() {
-        return "/var/www/html/torrentwatch-xa"; // default path
-    }
-
-}
-
-//if (!(function_exists('get_curl_defaults'))) {
-function get_curl_defaults(&$curlopt) {
-    if (extension_loaded("curl")) {
-        $curlopt[CURLOPT_CONNECTTIMEOUT] = 15;
-    }
-    $curlopt[CURLOPT_SSL_VERIFYPEER] = false;
-    $curlopt[CURLOPT_SSL_VERIFYHOST] = false;
-    $curlopt[CURLOPT_FOLLOWLOCATION] = true;
-    $curlopt[CURLOPT_UNRESTRICTED_AUTH] = true;
-    $curlopt[CURLOPT_TIMEOUT] = 20;
-    $curlopt[CURLOPT_RETURNTRANSFER] = true;
-    return($curlopt);
-}
-
-//}
 
 function read_config_file() {
     // This function is from
@@ -125,7 +122,7 @@ function read_config_file() {
     $group = "NONE";
 
     if (!file_exists($config_file)) {
-        twxa_debug("No config file found--creating default config at $config_file\n", 1);
+        twxaDebug("No config file found--creating default config at $config_file\n", 1);
         write_config_file();
     }
 
@@ -142,14 +139,14 @@ function read_config_file() {
         }
     } else {
         if (!($fp = fopen($config_file, "r"))) {
-            twxa_debug("Could not open $config_file\n", -1);
+            twxaDebug("Could not open $config_file\n", -1);
             exit(1);
         }
 
         if (flock($fp, LOCK_EX)) {
             while (!feof($fp)) {
                 $line = trim(fgets($fp));
-                if ($line && strpos($line, $comment) !== 0) { //TODO test this logic
+                if ($line && \strpos($line, $comment) !== 0) {
                     if (strpos($line, "[") === 0 && substr($line, -1) === "]") {
                         $line = trim(trim($line, "["), "]");
                         $group = trim($line);
@@ -251,7 +248,7 @@ function write_config_file() {
     $config_file = getConfigFile();
     $config_cache = getConfigCache();
 
-    twxa_debug("Preparing to write config file to $config_file\n", 2);
+    twxaDebug("Preparing to write config file to $config_file\n", 2);
 
     if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['Transmission Password']))) {
         if ($config_values['Settings']['Transmission Password']) {
@@ -272,7 +269,7 @@ function write_config_file() {
     $config_out = ";;\n;; torrentwatch-xa config file\n;;\n\n";
     if (!function_exists('group_callback')) {
 
-        function group_callback($group, $key) {
+        function group_callback($group, $key) { // $group is used in key_callback() below
             global $config_values, $config_out;
             if ($key == 'Global') {
                 return;
@@ -305,19 +302,19 @@ function write_config_file() {
     array_walk($config_values, 'group_callback');
     $dir = dirname($config_file);
     if (!is_dir($dir)) {
-        twxa_debug("Creating configuration directory $dir\n", 1);
+        twxaDebug("Creating configuration directory $dir\n", 1);
         if (file_exists($dir)) {
             unlink($dir);
         }
         if (!mkdir($dir)) {
-            twxa_debug("Unable to create config directory $dir\n", -1);
+            twxaDebug("Unable to create config directory $dir\n", -1);
             return false;
         }
     }
     $config_out = html_entity_decode($config_out);
 
     if (!($fp = fopen($config_file . "_tmp", "w"))) {
-        twxa_debug("Could not open $config_file\n", -1);
+        twxaDebug("Could not open $config_file\n", -1);
         exit(1);
     }
 
@@ -362,12 +359,10 @@ function update_global_config() {
     );
     $checkboxes = array(
         'Combine Feeds' => 'combinefeeds',
-        'Episodes Only' => 'epionly',
         'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
         'Show Debug' => 'showdebug',
         'Hide Donate Button' => 'hidedonate',
-        //'Verify Episode' => 'verifyepisodes',
         'Save Torrents' => 'savetorrents',
         'Only Newer' => 'onlynewer',
         'Download Versions' => 'fetchversions',
@@ -511,7 +506,7 @@ function add_favorite() {
             $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0
         }
     }
-    //twxa_debug("\$config_values[\'Favorites\']: " . print_r($config_values['Favorites'], true) . "\n", 2);
+    //twxaDebug("\$config_values[\'Favorites\']: " . print_r($config_values['Favorites'], true) . "\n", 2);
     $favInfo['title'] = $_GET['name'];
     $favInfo['quality'] = $_GET['quality'];
     $favInfo['feed'] = urlencode($_GET['feed']);
@@ -529,7 +524,7 @@ function del_favorite() {
 function updateFavoriteEpisode(&$fav, $ti) {
     $guess = detectMatch($ti);
     if ($guess['numberSequence'] > 0) {
-        //twxa_debug("Update favorite: " . print_r($guess, true) . "\n", 2);
+        //twxaDebug("Update favorite: " . print_r($guess, true) . "\n", 2);
         //TODO handle possibility of empty or non-numeric $fav['Season']
         if (is_numeric($guess['seasBatEnd'])) {
             if ($guess['seasBatEnd'] > $fav['Season']) {
@@ -567,7 +562,7 @@ function updateFavoriteEpisode(&$fav, $ti) {
         } else {
             //TODO season batch end is not numeric, not sure what to do
         }
-        //twxa_debug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n", 2);
+        //twxaDebug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n", 2);
         write_config_file();
     }
 }
@@ -576,10 +571,10 @@ function add_feed($feedLink) {
     global $config_values;
     $feedLink = str_replace(' ', '%20', $feedLink);
     $feedLink = preg_replace('/^%20|%20$/', '', $feedLink);
-    twxa_debug("Checking feed: $feedLink\n", 2);
+    twxaDebug("Checking feed: $feedLink\n", 2);
 
     if (isset($feedLink) AND ( $guessedFeedType = guess_feed_type($feedLink)) != 'Unknown') {
-        twxa_debug("Adding feed: $feedLink\n", 1);
+        twxaDebug("Adding feed: $feedLink\n", 1);
         $config_values['Feeds'][]['Link'] = $feedLink;
         $arrayKeys = array_keys($config_values['Feeds']);
         $idx = end($arrayKeys);
@@ -596,7 +591,7 @@ function add_feed($feedLink) {
                 break;
         }
     } else {
-        twxa_debug("Could not connect to feed or guess feed type: $feedLink\n", -1);
+        twxaDebug("Could not connect to feed or guess feed type: $feedLink\n", -1);
     }
 }
 
@@ -609,7 +604,7 @@ function update_feed_data() {
 
         $old_feedurl = $config_values['Feeds'][$_GET['idx']]['Link'];
 
-        twxa_debug("Updating feed: $old_feedurl\n", 1);
+        twxaDebug("Updating feed: $old_feedurl\n", 1);
 
         foreach ($config_values['Favorites'] as &$favorite) {
             if ($favorite['Feed'] == $old_feedurl) {
@@ -627,7 +622,7 @@ function update_feed_data() {
             $config_values['Feeds'][$_GET['idx']]['enabled'] = "";
         }
     } else {
-        twxa_debug("Unable to update feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
+        twxaDebug("Unable to update feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
     }
 }
 
@@ -636,6 +631,6 @@ function del_feed() {
     if (isset($_GET['idx']) && isset($config_values['Feeds'][$_GET['idx']])) {
         unset($config_values['Feeds'][$_GET['idx']]);
     } else {
-        twxa_debug("Unable to delete feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
+        twxaDebug("Unable to delete feed. Could not find feed index: " . $_GET['idx'] . "\n", -1);
     }
 }

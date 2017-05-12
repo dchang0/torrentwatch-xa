@@ -198,13 +198,16 @@ function detectQualities($ti, $seps = '\s\.\_') {
     $ti = $qualitiesFromResolution['parsedTitle'];
     $detQualities = $qualitiesFromResolution['detectedQualities'];
     $qualityList = [
+        'BD-rip',
         'BDRip',
         'BRRip',
         'BluRay',
+        'Blu-ray',
         'BD',
         'HR.HDTV',
-        'HDTV',
         'HDTVRip',
+        'HDTV',
+        'HDrip',
         'DSRIP',
         'DVB',
         'DVBRip',
@@ -328,12 +331,11 @@ function detectAudioCodecs($ti) {
 function detectNumericCrew($ti, $seps = '\s\.\_') {
     // detect crew name with numerals in title and remove it
     // assume crew name is always at the beginning of the title and is often in parentheses or brackets
-    $origTitle = $ti;
     $rmCrewName = "";
     $mat = [];
     $crewNameList = [
         "(C72)",
-        "&#40;C72&#41;",
+        "&#40;C72&#41;", //TODO why do these HTML entities make it into our $ti in the first place?
         "(C88)",
         "&#40;C88&#41;",
         "(C91)",
@@ -341,7 +343,8 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
         "Al3asq",
         "F4A-MDS",
         "blad761",
-        "bonkai77"
+        "bonkai77",
+        "Ch4" // Channel 4 documentaries
     ];
     foreach ($crewNameList as $crewName) {
         $quotedCrewName = preg_quote($crewName);
@@ -439,8 +442,6 @@ function detectMatch($ti) {
         $favTitle = $detNumericCrewOutput['rmCrewName'] . $favTitle;
     }
 
-    //TODO strip off remaining unmatched codecs from favTitle if at the end and in parentheses
-
     return [
         'title' => collapseExtraSeparators($detAudioCodecsOutput['parsedTitle']),
         'favTitle' => $favTitle,
@@ -471,12 +472,12 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // 0 = Unknown
     // 1 = Video: Season x Episode or FULL, Print Media: Volume x Chapter or FULL, Audio: Season x Episode or FULL
     // 2 = Video: Date, Print Media: Date, Audio: Date (all these get Season = 0)
-    // 4 = Video: Season x Volume or Part, Print Media: N/A, Audio: N/A
+    // 4 = Video: Season x Volume (x Episode), Print Media: N/A, Audio: N/A
     // 8 = Video: Preview, Print Media: N/A, Audio: Opening songs
     // 16 = Video: Special, Print Media: N/A, Audio: Ending songs
     // 32 = Video: OVA episode sequence, Print Media: N/A, Audio: Character songs
     // 64 = Video: Movie sequence (Season = 0), Print Media: N/A, Audio: OST
-    // 128 = Video: Volume x Disc sequence, Print Media: N/A, Audio: N/A
+    // 128 = Video: (Season x) Volume x Disc/Part sequence, Print Media: N/A, Audio: N/A
     // IMPORTANT NOTES:
     // treat anime notation as Season 1
     // treat date-based episodes as Season 0 EXCEPT...
@@ -618,4 +619,149 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
         'favTitle' => sanitizeTitle($result['favTi']), // favorite title
         'debugMatch' => $result['matFnd']
     ];
+}
+
+function episode_filter($item, $filter) {
+    /*
+     * NEW NOTATION:
+     * SxE = single episode
+     * SxEv# = single episode with version number
+     * YYYYMMDD = single date
+     * S1xE1-S1-E2 = batch of episodes within one season
+     * YYYYMMD1-YYYYMMD2 = batch of dates
+     * S1xFULL = one full season
+     * S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
+     * S1xE1v2-S2xE2v3 = batch of episodes starting in one season and ending in a later season, with version numbers
+     */
+    if ($item['episode']) {
+        $filter = preg_replace('/\s/', '', $filter);
+
+        //list($itemS, $itemE) = explode('x', $item['episode']);
+        $itemEpisodePieces = explode('x', $item['episode']);
+        if (isset($itemEpisodePieces[0])) {
+            $itemS = $itemEpisodePieces[0];
+        } else {
+            $itemS = "";
+        }
+        if (isset($itemEpisodePieces[1])) {
+            $itemE = $itemEpisodePieces[1];
+        } else {
+            $itemE = "";
+        }
+
+        if (preg_match('/^S\d*/i', $filter)) {
+            //$filter = preg_replace('/S/i', '', $filter);
+            $filter = strtr($filter, array('S' => '', 's' => ''));
+            if (preg_match('/^\d*E\d*/i', $filter)) {
+                //$filter = preg_replace('/E/i', 'x', $filter);
+                $filter = strtr($filter, array('E' => 'x', 'e' => 'x'));
+            }
+        }
+        // Split the filter(ex. 3x4-4x15 into 3,3 4,15).  @ to suppress error when no second item
+        //@list($start, $stop) = explode('-', $filter, 2);
+        $filterPieces = explode('-', $filter, 2);
+        if (isset($filterPieces[0])) {
+            $start = $filterPieces[0];
+        } else {
+            $start = "";
+        }
+        if (isset($filterPieces[1])) {
+            $stop = $filterPieces[1];
+        } else {
+            $stop = "9999x9999";
+        }
+        //@list($startSeason, $startEpisode) = explode('x', $start, 2);
+        $startPieces = explode('x', $start, 2);
+        if (isset($startPieces[0])) {
+            $startSeason = $startPieces[0];
+        } else {
+            $startSeason = "";
+        }
+        if (isset($startPieces[1])) {
+            $startEpisode = $startPieces[1];
+        } else {
+            $startEpisode = "";
+        }
+        /* if (!isset($stop)) {
+          $stop = "9999x9999";
+          } */
+        //@list($stopSeason, $stopEpisode) = explode('x', $stop, 2);
+        $stopPieces = explode('x', $stop, 2);
+        if (isset($stopPieces[0])) {
+            $stopSeason = $stopPieces[0];
+        } else {
+            $stopSeason = "";
+        }
+        if (isset($stopPieces[1])) {
+            $stopEpisode = $stopPieces[1];
+        } else {
+            $stopEpisode = "";
+        }
+
+        /* if (!($item['episode'])) {
+          return false;
+          } */
+
+        // Perform episode filter
+        if (empty($filter)) {
+            return true; // no filter left, accept all
+        }
+
+        // the following reg accepts the 1x1-2x27, 1-2x27, 1-3 or just 1
+        $validateReg = '([0-9]+)(?:x([0-9]+))?';
+        if (preg_match("/\dx\d-\dx\d/", $filter)) {
+            if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0 || preg_match("/^{$validateReg}/", $filter) === 0) {
+                twxaDebug("Bad episode filter: $filter\n", 0);
+                return true; // bad filter, just accept all
+            }
+        }
+
+        if (!($stopSeason)) {
+            $stopSeason = $startSeason;
+        }
+        if (!($startEpisode)) {
+            $startEpisode = 1;
+        }
+        if (!($stopEpisode)) {
+            $stopEpisode = $startEpisode - 1;
+        }
+
+        $startEpisodeLen = strlen($startEpisode);
+        if ($startEpisodeLen == 1) {
+            $startEpisode = "0$startEpisode";
+        }
+        $stopEpisodeLen = strlen($stopEpisode);
+        if ($stopEpisodeLen == 1) {
+            $stopEpisode = "0$stopEpisode";
+        }
+
+        if (!preg_match('/^\d\d$/', $startSeason)) {
+            $startSeason = 0 . $startSeason;
+        }
+        if (!preg_match('/^\d\d$/', $startEpisode)) {
+            $startEpisode = 0 . $startEpisode;
+        }
+        if (!preg_match('/^\d\d$/', $stopSeason)) {
+            $stopSeason = 0 . $stopSeason;
+        }
+        if (!preg_match('/^\d\d$/', $stopEpisode)) {
+            $stopEpisode = 0 . $stopEpisode;
+        }
+        if (!preg_match('/^\d\d$/', $itemS)) {
+            $itemS = 0 . $itemS;
+        }
+        if (!preg_match('/^\d\d$/', $itemE)) {
+            $itemE = 0 . $itemE;
+        }
+
+        // Season filter mismatch
+        if (!("$itemS$itemE" >= "$startSeason$startEpisode" && "$itemS$itemE" <= "$stopSeason$stopEpisode")) {
+            twxaDebug("Season filter mismatch: $itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n", 1);
+            return false;
+        }
+        return true;
+    } else {
+        // $item['episode'] evaluates to false; should only happen for debugMatch of 0_, 1_, and so on
+        return false;
+    }
 }

@@ -8,25 +8,25 @@
         <div id="configTabs">
             <ul>
                 <li id="tabInt" class="toggleConfigTab left selTab"
-                    onclick='javascript:$.toggleConfigTab("#config_interface", "#tabInt")'>Interface
+                    onclick='javascript:$.toggleConfigTab("#config_interface", "#tabInt");'>Interface
                 </li>
                 <li id="tabClient" class="toggleConfigTab"
-                    onclick='javascript:$.toggleConfigTab("#config_torClient", "#tabClient")'>Client
+                    onclick='javascript:$.toggleConfigTab("#config_torClient", "#tabClient");'>Client
                 </li>
                 <li id="tabTor" class="toggleConfigTab"
-                    onclick='javascript:$.toggleConfigTab("#config_tor", "#tabTor")'>Torrent
+                    onclick='javascript:$.toggleConfigTab("#config_tor", "#tabTor");'>Torrent
                 </li>
                 <li id="tabFavs" class="toggleConfigTab"
-                    onclick='javascript:$.toggleConfigTab("#config_favorites", "#tabFavs")'>Favorites
+                    onclick='javascript:$.toggleConfigTab("#config_favorites", "#tabFavs");'>Favorites
                 </li>
                 <li id="tabFeeds" class="toggleConfigTab"
-                    onclick='javascript:$.toggleConfigTab("#config_feeds", "#tabFeeds")'>Feeds
+                    onclick='javascript:$.toggleConfigTab("#config_feeds", "#tabFeeds");'>Feeds
                 </li>
                 <li id="tabHideList" class="toggleConfigTab"
-                    onclick='javascript:$.toggleConfigTab("#config_hideList", "#tabHideList")'>Hide List
+                    onclick='javascript:$.toggleConfigTab("#config_hideList", "#tabHideList");'>Hide List
                 </li>
                 <li id="tabTrigger" class="toggleConfigTab right"
-                    onclick='javascript:$.toggleConfigTab("#config_trigger", "#tabTrigger")'>Trigger
+                    onclick='javascript:$.toggleConfigTab("#config_trigger", "#tabTrigger");'>Trigger
                 </li>
             </ul>
         </div>
@@ -34,18 +34,6 @@
             <form action="torrentwatch-xa.php?setGlobals=1" id="config_form" name="config_form">
                 <div id="config_interface" class="configTab">
                     <div class="int_settings">
-                        <!--<div id="config_webui">
-                            <div class="left">
-                                <label class="item select">Font Size:</label>
-                            </div>
-                            <div class="right">
-                                <select name="webui" id="config_webui" onchange="changeFontSize(this.options[this.selectedIndex].value)">
-                                    <option value="Small">Small</option>
-                                    <option value="Medium" selected>Medium</option>
-                                    <option value="Large">Large</option>
-                                </select>
-                            </div>
-                        </div>--> <!-- TODO either make it so font size works everywhere or remove it -->
                         <div id="config_combinefeeds" title="Combine all feeds into one list.">
                             <div class="left">
                                 <label class="item checkbox">Combine Feeds:</label>
@@ -62,14 +50,6 @@
                                 <input type="checkbox" name="dishidelist" value="1" <?php echo $dishidelist; ?>/>
                             </div>
                         </div>
-                        <!--<div id="config_epi_only" title="Hide items without episode info.">
-                            <div class="left">
-                                <label class="item checkbox">Episodes Only:</label>
-                            </div>
-                            <div class="right">
-                                <input type="checkbox" name="epionly" value="1" <?php echo $epionly; ?>/>
-                            </div>
-                        </div>-->
                         <div id="config_show_debug" title="Show season and episode detection engine's 'debugMatch' and 'show_title' values for each item in feed list.">
                             <div class="left">
                                 <label class="item checkbox">Show Item Debug Info:</label>
@@ -104,7 +84,7 @@
                                 <label class="item select">Client:</label>
                             </div>
                             <div class="right">
-                                <select name="client" id="client" onchange="changeClient(this.options[this.selectedIndex].value)">
+                                <select name="client" id="client" onchange="changeClient(this.options[this.selectedIndex].value);">
                                     <option value="Transmission" <?php echo $transmission; ?>>Transmission</option>
                                     <option value="folder" <?php echo $folderclient; ?>>Save torrent in folder</option>
                                 </select>
@@ -239,14 +219,6 @@
                                 <input type="checkbox" name="require_epi_info" value="1" <?php echo $require_epi_info; ?>/>
                             </div>
                         </div>
-                        <!--<div id="config_verifyepisodes" title="Try not to download duplicate episodes.">
-                            <div class="left">
-                                <label class="item checkbox">Verify Episodes:</label>
-                            </div>
-                            <div class="right">
-                                <input type="checkbox" name="verifyepisodes" value="1" <?php echo $verifyepisode; ?>/>
-                            </div>
-                        </div>-->
                         <div>
                             <div class="left">
                                 <label class="item checkbox">Newer Episodes Only:</label>
@@ -341,7 +313,7 @@
                                 <label class="item">SMTP Authentication:</label>
                             </div>
                             <div class="right">
-                                <select name="smtpAuthentication" id="smtpAuthentication" onchange="changeClient(this.options[this.selectedIndex].value)">
+                                <select name="smtpAuthentication" id="smtpAuthentication" onchange="changeClient(this.options[this.selectedIndex].value);">
                                     <option value="None" <?php echo $smtpAuthNone; ?>>None</option>
                                     <option value="PLAIN" <?php echo $smtpAuthPLAIN; ?>>PLAIN</option>
                                     <option value="LOGIN" <?php echo $smtpAuthLOGIN; ?>>LOGIN</option>
@@ -353,7 +325,7 @@
                                 <label class="item">SMTP Encryption:</label>
                             </div>
                             <div class="right">
-                                <select name="smtpEncryption" id="smtpEncryption" onchange="changeClient(this.options[this.selectedIndex].value)">
+                                <select name="smtpEncryption" id="smtpEncryption" onchange="changeClient(this.options[this.selectedIndex].value);">
                                     <option value="None" <?php echo $smtpEncNone; ?>>None</option>
                                     <option value="TLS" <?php echo $smtpEncTLS; ?>>STARTTLS or TLS</option>
                                     <option value="SSL" <?php echo $smtpEncSSL; ?>>SSL</option>

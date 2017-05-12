@@ -22,10 +22,7 @@ function show_transmission_div() {
 function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) {
     global $config_values, $html_out;
     $guess = detectMatch($item['title']);
-    //twxa_debug($item['title'] . "\n", 2);
-    if ($config_values['Settings']['Episodes Only'] == 1 && ($guess['episode'] == 'noShow' || !$guess)) {
-        return;
-    }
+    //twxaDebug($item['title'] . "\n", 2);
 
     if (!$config_values['Settings']['Disable Hide List']) {
         if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))])) {

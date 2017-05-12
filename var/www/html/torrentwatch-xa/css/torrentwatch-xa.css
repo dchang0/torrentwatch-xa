@@ -1,9 +1,9 @@
 /*---------------------
  * Some debugging info
  * --------------------*/
-div.rss_debug {
+/*div.rss_debug {
     display: none;
-}
+}*/
 
 /*-----------------
  *
@@ -477,48 +477,6 @@ ul.show_legend li {
     font-size: 12px;
 }
 
-/*------------
- *
- * E P I S O D E
- *
- *------------*/
-
-div#episodeDialog .dialogTitle {
-    padding-top: 2px;
-    width: 740px;
-    margin-left: -350px;
-}
-
-div#show_episode {
-    width: 730px;
-    margin-left: -350px;
-    padding-top: 5px;
-    border-top: 1px solid #979797;
-    filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#D3D3D3,endColorstr=#F8F8F8)";
-    background: -webkit-gradient(linear, left top, left bottom, from(#D3D3D3), to(#F8F8F8));
-    background:	-moz-linear-gradient(top, #D3D3D3, #F8F8F8);
-}
-
-div#show_episode h1 {
-    font-size: 18px;
-    font-weight:bold;
-    padding-bottom:5px;
-}
-
-div#show_episode td {
-    vertical-align: top;
-}
-
-div#show_episode strong {
-    font-weight:bold;
-}
-div#show_episode .text {
-    font-size: 16px;
-}
-div#show_episode .firstletter {
-    font-size: 20px;
-}
-
 /*-------------------------
  *
  * T O R R E N T   L I S T
@@ -906,6 +864,7 @@ span.feed_name {
 
 span.debugLabel {
     color: rgba(0, 0, 0, 0.3);
+    font-size: 9px;
     padding: 0 0 0 1em;
 }
 

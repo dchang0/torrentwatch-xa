@@ -5,7 +5,7 @@
 function matchTitle1_1_1($ti, $seps) {
     // Season, Temporada; should also catch Season ## Complete
     $mat = [];
-    $re = "/(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?S?(\d+).*/i";
+    $re = "/\(?[$seps]?(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?S?(\d+)\b[$seps]?\)?.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1, // assume Video Media
@@ -209,8 +209,8 @@ function matchTitle1_1_10($ti, $seps) {
             'numSeq' => 4,
             'seasSt' => 1,
             'seasEd' => 1,
-            'episSt' => $mat[3],
-            'episEd' => $mat[3],
+            'episSt' => $mat[2],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_10"
@@ -261,7 +261,7 @@ function matchTitle1_1_12($ti, $seps) {
 function matchTitle1_1_13($ti, $seps) {
     // 02 - Special
     $mat = [];
-    $re = "/\b(\d+)[$seps]?-?[$seps]?(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.|Sp\b).*/i";
+    $re = "/\b(\d{1,2})[\-$seps]{0,3}(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.|Sp\b).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
@@ -283,7 +283,7 @@ function matchTitle1_1_14($ti, $seps) {
     // Spec02
     // SP# (Special #)
     $mat = [];
-    $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.)[$seps]?-?[$seps]?(\d+).*/i";
+    $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.)[\-$seps]{0,3}(\d{1,2}).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
@@ -293,7 +293,7 @@ function matchTitle1_1_14($ti, $seps) {
             'episSt' => $mat[2],
             'episEd' => $mat[2],
             'itemVr' => 1,
-            //'favTi' => preg_replace("/[$seps]?-?[$seps]?(\d+)/i", "", $ti),
+            //'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,2})/i", "", $ti),
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_14"
         ];
@@ -313,10 +313,43 @@ function matchTitle1_1_15($ti, $seps) {
             'episSt' => 1, // assume OVA Episode 1
             'episEd' => 1,
             'itemVr' => $mat[2], // only number is the version number
-            //'favTi' => preg_replace("/\bv(\d+)/i", "", $ti),
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_15"
         ];
+    }
+}
+
+function matchTitle1_1_16($ti, $seps) {
+    // OVA (####) or OVA (YYYY) or OVA ####
+    $mat = [];
+    $re = "/\b(OVA|OAV)[$seps]?\(?[$seps]?(\d{1,4})[$seps]?\)?.*/i";
+    if (preg_match($re, $ti, $mat)) {
+        if ($mat[2] > 1895 && $mat[2] <= getdate()['year']) {
+            // probably a date, use as Season
+            return [
+                'medTyp' => 1,
+                'numSeq' => 32,
+                'seasSt' => $mat[2],
+                'seasEd' => $mat[2],
+                'episSt' => 1, // assume OVA Episode 1
+                'episEd' => 1,
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "1_1_16-1"
+            ];
+        } else {
+            return [
+                'medTyp' => 1,
+                'numSeq' => 32,
+                'seasSt' => 1, // assume Season 1
+                'seasEd' => 1,
+                'episSt' => $mat[2],
+                'episEd' => $mat[2],
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "1_1_16-2"
+            ];
+        }
     }
 }
 
@@ -328,7 +361,7 @@ function matchTitle1_1_18($ti, $seps) {
     // Use "Sword Art Online" instead. But this is counterintuitive--people would think of the "II" as being
     // part of the title.
     $mat = [];
-    $re = "/\b(I{1,3})[$seps]?\-?[$seps]?(\d+).*/";
+    $re = "/\b(I{1,3})[\-$seps]{0,3}(\d+).*/";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,

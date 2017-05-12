@@ -1,5 +1,5 @@
 config_cache/*
 !config_cache/README.md
-rss_cache/*
-!rss_cache/README.md
+dl_cache/*
+!dl_cache/README.md
 netbeans-metadata/

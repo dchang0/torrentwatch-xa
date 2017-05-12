@@ -10,6 +10,7 @@
 
  * Modified to support rss attributes, 2007-07-09 pbull, http://purplepaste.com
  * Fixed PHP Notice: Undefined property: lastRSS::$rsscp, 2017-04-04, torrentwatch-xa
+ * Fixed PHP Notice: Undefined index '1': $out_channel[1] on line 183, 2017-05-06, torrentwatch-xa
 
   Latest version, features, manual and examples:
   http://lastrss.oslab.net/
@@ -65,7 +66,7 @@ class lastRSS {
             // Changed to only support local files
             $timedif = @(time() - filemtime($cache_file));
             if ($timedif < $this->cache_time) {
-                twxa_debug("Feed loaded from file cache: $rss_url\n", 2);
+                twxaDebug("Feed loaded from file cache: $rss_url\n", 2);
                 // cached file is fresh enough, return cached array
                 $result = unserialize(join('', file($cache_file)));
                 // set 'cached' to 1 only if cached file is correct
@@ -73,7 +74,7 @@ class lastRSS {
                     $result['cached'] = 1;
                 }
             } else {
-                twxa_debug("Feed cache is old, loading fresh: $rss_url\n", 2);
+                twxaDebug("Feed cache is old, loading fresh: $rss_url\n", 2);
                 // cached file is too old, create new
                 $result = $this->Parse($rss_url);
                 if ($result['items_count'] >= 0) {
@@ -178,9 +179,11 @@ class lastRSS {
             // Parse CHANNEL info
             preg_match("'<channel.*?>(.*?)</channel>'si", $rss_content, $out_channel);
             foreach ($this->channeltags as $channeltag) {
-                $temp = $this->my_preg_match("'<$channeltag.*?>(.*?)</$channeltag>'si", $out_channel[1]);
-                if ($temp != '') {
-                    $result[$channeltag] = $temp; // Set only if not empty
+                if (isset($out_channel[1])) {
+                    $temp = $this->my_preg_match("'<$channeltag.*?>(.*?)</$channeltag>'si", $out_channel[1]);
+                    if ($temp != '') {
+                        $result[$channeltag] = $temp; // Set only if not empty
+                    }
                 }
             }
             // If date_format is specified and lastBuildDate is valid
@@ -266,7 +269,7 @@ class lastRSS {
             $result['items_count'] = $i;
             return $result;
         } else { // Error in opening return False
-            twxa_debug("Cannot open feed: $rss_url\n", -1);
+            twxaDebug("Cannot open feed: $rss_url\n", -1);
             return False;
         }
     }

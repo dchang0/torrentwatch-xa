@@ -4,6 +4,10 @@ Installation
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon`
+- For Ubuntu 16.04:
+  - Start with an Ubuntu 16.04 installation.
+  - `sudo apt-get install apache2 php php-mbstring libapache2-mod-php transmission-daemon`
+  - `sudo apt-get update; sudo apt-get upgrade`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `sudo apt-get install git`

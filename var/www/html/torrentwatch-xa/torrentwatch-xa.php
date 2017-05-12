@@ -9,14 +9,14 @@ header("Pragma: no-cache");
 ini_set('include_path', '.:./php');
 //error_reporting(E_ERROR | E_WARNING | E_PARSE);
 error_reporting(E_ALL);
-require_once('/var/lib/torrentwatch-xa/lib/twxa_rss_dl_tools.php'); //TODO switch this to use get_base_dir()
+require_once('/var/lib/torrentwatch-xa/lib/twxa_tools.php'); //TODO switch this to use get_baseDir()
 
-$twxa_version[0] = "0.4.0";
+$twxa_version[0] = "0.4.1";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
-    $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
+    $process = [ &$_GET, &$_POST, &$_COOKIE, &$_REQUEST ];
     while (list($key, $val) = each($process)) {
         foreach ($val as $k => $v) {
             unset($process[$key][$k]);
@@ -31,7 +31,7 @@ if (get_magic_quotes_gpc()) {
     unset($process);
 }
 
-if (!(file_exists('/var/lib/torrentwatch-xa/config.php'))) { //TODO set to use baseDir
+if (!(file_exists('/var/lib/torrentwatch-xa/config.php'))) { //TODO set to use get_baseDir()
     $config = '/var/lib/torrentwatch-xa/config.php';
     echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please copy $config.dist to $config and edit it to match your environment. Then click your browser's reload button.</div>";
     return;
@@ -97,7 +97,7 @@ function parse_options() {
             update_global_config();
             write_config_file();
             break;
-        case 'matchTitle':
+        case 'addFavorite':
             $feedLink = $_GET['rss'];
             foreach ($config_values['Feeds'] as $key => $feed) {
                 if ($feed['Link'] == "$feedLink") {
@@ -121,8 +121,8 @@ function parse_options() {
                 } else {
                     $_GET['filter'] = trim($tmp['favTitle']);
                 }
-                //$_GET['quality'] = $tmp['qualities'];
-                $_GET['quality'] = 'All';
+                $_GET['quality'] = $tmp['qualities']; // Add to Favorites uses the qualities from the item for the new Favorite
+                //$_GET['quality'] = 'All'; // Add to Favorites makes the new Favorite accept all qualities
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['savein'] = 'Default';
@@ -151,8 +151,7 @@ function parse_options() {
                 echo "ERROR:$response";
             } else {
                 $guess = detectMatch(html_entity_decode($_GET['hide']));
-                //echo $guess['favTitle']; //TODO is this right?
-                echo $guess['title'];
+                echo $guess['favTitle']; // use favTitle, not title
             }
             exit;
         case 'delHidden':
@@ -171,7 +170,6 @@ function parse_options() {
                     isset($config_values['Settings']['Download Dir'])) {
                 $downloadDir = $config_values['Settings']['Download Dir'];
             }
-            //$r = client_add_torrent(preg_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
             $r = client_add_torrent(str_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
             if ($r == "Success") {
                 $torHash = get_torHash(add_cache($_GET['title']));
@@ -229,9 +227,6 @@ function parse_options() {
                 case '#show_transmission':
                     display_transmission();
                     exit;
-                /* case '#show_info':
-                  show_info(urldecode($_GET['episode_name']));
-                  exit; */
                 default:
                     exit;
             }
@@ -254,15 +249,12 @@ function display_global_config() {
     global $config_values;
 
     // Interface tab
-    $combinefeeds = $dishidelist = $epionly = $showdebug = $hidedonate = '';
+    $combinefeeds = $dishidelist = $showdebug = $hidedonate = '';
     if ($config_values['Settings']['Combine Feeds'] == 1) {
         $combinefeeds = 'checked=1';
     }
     if ($config_values['Settings']['Disable Hide List'] == 1) {
         $dishidelist = 'checked=1';
-    }
-    if ($config_values['Settings']['Episodes Only'] == 1) { // disabled elsewhere for now
-        $epionly = 'checked=1';
     }
     if ($config_values['Settings']['Show Debug'] == 1) {
         $showdebug = 'checked=1';
@@ -302,7 +294,7 @@ function display_global_config() {
 
     // Favorites tab
     $matchregexp = $matchglob = $matchsimple = '';
-    $favdefaultall = $require_epi_info = $verifyepisode = $onlynewer = $fetchversions = $ignorebatches = '';
+    $favdefaultall = $require_epi_info = $onlynewer = $fetchversions = $ignorebatches = '';
     switch ($config_values['Settings']['Match Style']) {
         case 'glob': $matchglob = "selected='selected'";
             break;
@@ -317,9 +309,6 @@ function display_global_config() {
     if ($config_values['Settings']['Require Episode Info'] == 1) {
         $require_epi_info = 'checked=1';
     }
-    /* if ($config_values['Settings']['Verify Episode'] == 1) {
-      $verifyepisode = 'checked=1';
-      } */
     if ($config_values['Settings']['Only Newer'] == 1) {
         $onlynewer = 'checked=1';
     }
@@ -367,11 +356,10 @@ function display_global_config() {
     return ob_get_contents();
 }
 
-function display_favorites_info($item, $key) {
+function display_favorites_info($item, $key) { // $key gets fed into favorites_info.tpl
     global $config_values;
     $feed_options = '<option value="none">None</option>';
     $feed_options .= '<option value="all"';
-    //if (preg_match('/all/i', $item['Feed']) || $item['Name'] == "") {
     if (strtolower($item['Feed']) === "all" || $item['Name'] === "") {
         $feed_options .= ' selected="selected">All</option>';
     } else {
@@ -386,7 +374,6 @@ function display_favorites_info($item, $key) {
             $feed_options .= '>' . $feed['Name'] . '</option>';
         }
     }
-
     // Dont handle with object buffer, is called inside display_favorites ob_start
     require('templates/favorites_info.tpl');
 }
@@ -396,7 +383,7 @@ function display_favorites() {
 
     ob_start();
     require('templates/favorites.tpl');
-    return ob_get_contents(); //TODO figure out why ob_get_clean() or ob_get_contents() followed by ob_end_clean() doesn't work
+    return ob_get_contents();
 }
 
 function display_hidelist() {
@@ -412,7 +399,7 @@ function update_hidelist() {
 
     foreach ($config_values['Hidden'] as $key => $hidden) {
         unset($config_values['Hidden'][$key]);
-        $config_values['Hidden'][strtolower(strtr($key, array(":" => "", "," => "", "'" => "", "." => " ", "_" => " ")))] = "hidden";
+        $config_values['Hidden'][strtolower(strtr($key, [ ":" => "", "," => "", "'" => "", "." => " ", "_" => " " ] ))] = "hidden";
     }
     return;
 }
@@ -456,85 +443,6 @@ function display_transmission() {
     require('templates/transmission.tpl');
     return ob_get_contents();
 }
-
-/* function episode_info($show, $episode_num, $isShow, $epiInfo) {
-  $temp = explode('x', $episode_num);
-  $episode = $show->getEpisode($temp[0], $temp[1]);
-  twxa_debug(print_r($episode, true), 2);
-
-  $name = $show->seriesName;
-  $episode_name = $episode->name;
-  $text = empty($episode->overview) ? $show->overview : $episode->overview;
-  $image = empty($episode->filename) ? '' : cacheImage('http://thetvdb.com/banners/' . $episode->filename);
-  $rating = $show->rating;
-  $airdate = date('M d, Y', $episode->firstAired);
-  $actors = [];
-  if ($episode->guestStars) {
-  foreach ($episode->guestStars as $person_name) {
-  $guests[] = $person_name;
-  }
-  }
-  if ($show->actors) {
-  foreach ($show->actors as $person_name) {
-  $actors[] = $person_name;
-  }
-  }
-  $directors = [];
-  if ($episode->directors) {
-  foreach ($episode->directors as $person_name) {
-  $directors[] = $person_name;
-  }
-  }
-  $writers = [];
-  if ($episode->writers) {
-  foreach ($episode->writers as $person_name) {
-  $writers[] = $person_name;
-  }
-  }
-  ob_start();
-  require('templates/episode.tpl');
-  return ob_get_contents();
-  } */
-
-/* function show_info($ti) {
-  $episode_data = detectMatch($ti);
-
-  if ($episode_data['numberSequence'] === 0) {
-  $isShow = false;
-  $name = $ti;
-  $data = '';
-  $epiInfo = false;
-  } else {
-  $epiInfo = true;
-  $isShow = $episode_data['episode'] == 'noShow' ? false : true;
-  $name = $episode_data['favTitle'];
-  $data = $episode_data['qualities'];
-  }
-
-  $episode_num = $episode_data['episode'];
-  $shows = TV_Shows::search($name);
-  if (count($shows) === 1) {
-  episode_info($shows[0], $episode_num, $isShow, $epiInfo);
-  } else if (count($shows) > 1) {
-  episode_info($shows[0], $episode_num, $isShow, $epiInfo);
-  } else {
-  episode_info($shows[0], $episode_num, 0, 0);
-  } //TODO is this all for TVDB functionality? Can it be removed?
-  } */
-
-/*function cacheImage($url) {
-    global $config_values;
-    $path_parts = pathinfo($url);
-    $filename = $path_parts['filename'] . "." . $path_parts['extension'];
-    //TODO Use non-hardcoded cache path
-    $img_url = 'tvdb_cache/' . $filename;
-    $img_local = $config_values['Settings']['TVDB Dir'] . $filename;
-    if (!file_exists($img_local)) {
-        $x = file_put_contents($img_local, file_get_contents($url));
-    }
-
-    return $img_url;
-}*/
 
 function display_clearCache() {
     global $html_out;
@@ -582,7 +490,6 @@ function check_files() {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please edit the config.php file and change the webDir from " . get_webDir() . " to:<br /> \"$cwd\".<br />Then click your browser's reload button.</div>";
         return;
     }
-
 
     $toCheck['cache_dir'] = $config_values['Settings']['Cache Dir'];
     if (strtolower($config_values['Settings']['Transmission Host']) == 'localhost' ||
@@ -660,7 +567,7 @@ read_config_file();
 if ($config_values['Settings']['Sanitize Hidelist'] != 1) {
     update_hidelist();
     $config_values['Settings']['Sanitize Hidelist'] = 1;
-    twxa_debug("Updated Hide List\n", 2);
+    twxaDebug("Updated Hide List\n", 2);
     write_config_file();
 }
 //authenticate();
@@ -677,7 +584,7 @@ check_files();
 echo $html_out;
 $html_out = "";
 flush();
-twxa_debug("=====torrentwatch-xa.php started running at $main_timer\n", 2);
+twxaDebug("=====torrentwatch-xa.php started running at $main_timer\n", 2);
 // Feeds
 load_all_feeds($config_values['Feeds']);
 process_all_feeds($config_values['Feeds']);
@@ -698,6 +605,5 @@ if ($config_values['Settings']['Hide Donate Button'] != 1) {
     </div>';
 }
 
-//unlink_temp_files();
-twxa_debug("=====torrentwatch-xa.php finished running in " . timer_get_time($main_timer) . "s\n\n", 2);
+twxaDebug("=====torrentwatch-xa.php finished running in " . timer_get_time($main_timer) . "s\n\n", 2);
 exit(0);

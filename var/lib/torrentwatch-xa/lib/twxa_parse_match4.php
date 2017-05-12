@@ -20,3 +20,29 @@ function matchTitle4_1($ti, $seps) {
         ];
     }
 }
+
+function matchTitle4_2($ti, $seps) {
+    // isolated E1 E2 E3 E4
+    $mat = [];
+    $re = "/\b(\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})\b.*/";
+    if (preg_match($re, $ti, $mat)) {
+        if (
+                $mat[1] + 1 === $mat[2] + 0 &&
+                $mat[1] + 2 === $mat[3] + 0 &&
+                $mat[1] + 3 === $mat[4] + 0
+        ) {
+            // almost certainly sequence of episodes
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => 1,
+                'seasEd' => 1,
+                'episSt' => $mat[1],
+                'episEd' => $mat[4],
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "4_2"
+            ];
+        }
+    }
+}

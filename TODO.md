@@ -1,7 +1,6 @@
 TODO List
 ===============
 
-
 ## Throughout all versions
 
 - improve performance
@@ -11,11 +10,11 @@ TODO List
 
 ## Tasks
 
+- improve handling of "Feed inaccessible" (usually 403 or 404 errors on the URL)
+
 - use twxa_parse.php:88 block to make date checker function for reuse elsewhere
                  
 - PROPER/REPACK notation must be rolled into item version numbering (probably set as version 99 or 999)
-
-- after page reload, some items that had already finished in Transmission were still present, in red, but without progressBarContainer or infoDiv; on another refresh they disappeared as they should have (probably due to Javascript removing them); best fix is to run Transmission check immediately on reload rather than waiting a bit (this is probably fixed by now)
 
 - if deleting active torrent manually before it completes, perhaps it should not be labeled as match_inCacheNotActive if it isn't actually in the download cache; in other words, this would require remembering the state of match_inCacheNotActive across the delete action
 
@@ -26,8 +25,6 @@ TODO List
 - times shown in feed list might not obey 'Time Zone' setting until next rss_dl.php run, but log datestamps take effect immediately; maybe force a feed cache refresh immediately after 'Time Zone' is changed 
 
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
-
-- ON HOLD FOR PERFORMANCE REASONS: continue converting detectItem() if...else control structures to switch...case, breaking out code into separate functions
 
 - sometimes blank favorites may be added to the favorites list; these appear to be when $itemtags data gets inserted into $config_values['Favorites'] directly like so:
 
@@ -85,11 +82,9 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 
 - finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
   - check to make sure that new decimal PV numbering system works throughout entire app
-  - remove "range" detection logic from detection engine (assume all preg_match_all() calls find just one match)
-  - finish counting batches (Seasons, Volumes, ranges of Episodes, ranges of Chapters, etc.) as "Serialized Items"
   - fix Episodes Only config toggle
 
-- finish or remove tvDB support (commented out as of initial cloning of TorrentWatch-X 0.8.9)
+- convert Hide List from hiding individual titles to hiding by pattern matching (just like the Favorites Filter)
 
 - replace global variables EXCEPT $html_out with proper parameter passing
   - $twxa_version

@@ -90,13 +90,13 @@ function matchTitle2_5($ti, $seps) {
     // short-circuit Seasons # - ##
     // Seasons 1 - 4
     $mat = [];
-    $re = "/Seasons[$seps]?(\d{1,2})[$seps]?\-[$seps]?(\d{1,2})\b.*/i";
+    $re = "/\(?[$seps]?(Seasons|Saisons)[$seps]?(\d{1,2})[$seps]?\-[$seps]?(\d{1,2})\b[$seps]?\)?.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
             'numSeq' => 1,
-            'seasSt' => $mat[1],
-            'seasEd' => $mat[2],
+            'seasSt' => $mat[2],
+            'seasEd' => $mat[3],
             'episSt' => 1,
             'episEd' => "",
             'itemVr' => 1,
@@ -303,17 +303,17 @@ function matchTitle2_22($ti, $seps) {
 function matchTitle2_23($ti, $seps, $detVid) {
     // Volume ## - ##
     $mat = [];
-    $re = "/(Volumes|Volumens|Volume|\bVols\.|Vols|\bVol\.|Vol|\bV\.|\bV)[$seps]?(\d{1,3})[$seps]?(-|to|thru|through)[$seps]?(\d{1,3})\b.*/i";
+    $re = "/(Volumes|Volumens|Volume|\bVols\.|Vols|\bVol\.|Vol|\bV\.|\bV)[$seps]?(\d{1,3})[$seps]?(-|to|thru|through)[$seps]?(Volumes|Volumens|Volume|\bVols\.|Vols|\bVol\.|Vol|\bV\.|\bV|)[$seps]?(\d{1,3})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         if ($detVid == true) {
             return [
                 // video Volumes
                 'medTyp' => 1,
-                'numSeq' => 128,
-                'seasSt' => $mat[2],
-                'seasEd' => $mat[4],
-                'episSt' => 1,
-                'episEd' => "",
+                'numSeq' => 4,
+                'seasSt' => 1, // assume Season 1
+                'seasEd' => 1,
+                'episSt' => $mat[2],
+                'episEd' => $mat[5],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "2_23-1"
@@ -324,7 +324,7 @@ function matchTitle2_23($ti, $seps, $detVid) {
                 'medTyp' => 1,
                 'numSeq' => 1,
                 'seasSt' => $mat[2],
-                'seasEd' => $mat[4],
+                'seasEd' => $mat[5],
                 'episSt' => 1,
                 'episEd' => "",
                 'itemVr' => 1,
@@ -790,9 +790,9 @@ function matchTitle2_48($ti, $seps) {
 function matchTitle2_49($ti, $seps) {
     // isolated ##-##
     $mat = [];
-    $re = "/\b[$seps]?(\d{1,2})[$seps]?\-[$seps]?(\d{1,4})[$seps]?\b.*/";
+    $re = "/\b[$seps]?(\d{1,3})[$seps]?\-[$seps]?(\d{1,4})[$seps]?\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        //TODO MUST keep first ### less than 4 digits to prevent Magic Kaito 1412 - EE from matching, but may need to intercept it above
+        // MUST keep first ### less than 4 digits to prevent Magic Kaito 1412 - EE from matching, but may need to intercept it above
         if (substr($mat[2], 0, 1) == '0' && substr($mat[1], 0, 1) != '0') {
             // certainly S - 0EE
             // Examples:

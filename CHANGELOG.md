@@ -353,6 +353,50 @@ Code changes
 - corrected pre-2.4 Transmission TR_STATUS code translations so that 2.4 codes are now the norm
 - removed torrentwatch-xa-md.css since it appears to be unused
 - added is_numeric() checks of the season and episode values
+- shortened $detect prefix on several variables to $det
+- shortened $seasonBatch prefix on variables to $seasBat
+- shortened $episodeBatch prefix on variables to $episBat
+- renamed $episode_guess to $episGuess
+
+0.4.1
+
+Functional changes
+
+- removed Episodes Only functionality (all items will be shown, including those without episode numbering, as those are in the small minority)
+- removed Verify Episodes functionality (check_cache_episode() will always be run to avoid double-downloading same torrent under different numbering)
+- minor changes to numbering system involving Volumes
+- changed Add to Favorites' Qualities filter back to the qualities of the selected item from "All"
+- validated favTi processing to make sure only the pertinent data is removed from the title
+- renamed rss_dl.php to twxacli.php (especially since we're not limited to RSS feeds only)
+- renamed rss_cache to dl_cache (will require all personalized config files to be updated/re-created)
+- renamed rss_dl.history to dl_history
+- changed rss_dl_ prefixes to dl_
+- removed tvDB code that has been commented out for a long time
+- removed Configure panel font size selector that has been commented out for a long time
+- fixed bug introduced in 0.3.1 where highlighted items in Transmission filter lose the highlight after a few seconds have passed
+
+Code changes
+
+- renamed tools.php to twxa_tools.php
+- finally renamed twxa_debug() to twxaDebug()
+- commented out unused portion of twxaDebug()
+- merged contents of twxa_rss_dl_tools.php into twxa_tools.php
+- moved torrent-related functions from twxa_tools.php (after merge of twxa_rss_dl_tools.php) into tor_client.php
+- moved get_curl_defaults() from config_lib.php to twxa_tools.php
+- moved add_history() from config_lib.php to twxa_cache.php
+- renamed config_lib.php to twxa_config_lib.php
+- moved add_torrents_in_dir() from twxa_tools.php to tor_client.php
+- moved guess_feed_type() from twxa_parse.php to feeds.php
+- moved guess_atom_torrent() from twxa_parse.php to feeds.php and commented it out since nothing seems to use it
+- moved get_torHash() from twxa_parse.php to twxa_cache.php
+- moved episode_filter() from feeds.php to twxa_parse.php
+- cleaned up get_torrent_link() and choose_torrent_link()
+- corrected typo ['SMTP Username'] to ['SMTP User'] in twxa_config_lib.php
+- replaced array() functions with brackets
+- repaired customized atomparser.php by comparing it to the latest official version
+  - renamed constructor function to fix PHP deprecation
+  - put back missing "if (!function_exists('mb_detect_encoding'))" on line 204
+  - can't really test these fixes because of rarity of Atom feeds with torrents
 
 Next Version
 
@@ -361,18 +405,14 @@ Functional changes
 IN PROGRESS
 
 - rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
-- validate ALL favTi processing to make sure only the pertinent data is removed from the title
-- clean up the 1 and 2 numbers sections of the pattern detection engine
 - search title for PROPER or Repack and make it version 99 if found
-
 - 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
-- fixed removal of multiple selected active torrents from display when deleted via context menu; still happens due to...
-  - context menu on items in the Transmission filter should not close automatically after a few seconds have passed; might be in listSelector at 732
+- re-test removal of multiple selected active torrents from display when deleted via context menu
 
 Code changes
 
 IN PROGRESS
 
-- 1_1_30_6-1 fails to remove minus signs before and after the number IF there is text to the right of the number
+- validate and rename the remaining tor_client.php and feeds.php files
 - still cleaning up $matched states, specifically difference between downloaded and cachehit
 - fix Quality filtering in check_for_torrent() before checking the download cache

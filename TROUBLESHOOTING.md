@@ -13,7 +13,7 @@ Please note that I have not been able to personally test torrentwatch-xa's handl
 
 #### Feed is totally missing; "Feed inaccessible" in log
 
-From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed, I learned the hard way that if the feed URL is not even valid, and the UI will never get the chance to show the section header that says "Feed is not available" in red. I will have to rewrite certain functions to handle this, but for now, if a feed is totally missing from the list, first, refresh the browser, which may force the reload of the feed cache. Then, check the log file, which should say "Feed inaccessible: " instead of "Feed down: ". If it still says Feed inaccessible, the feed URL is likely not valid.
+From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed, I learned the hard way that if the feed URL is not even valid (usually returning a 404 or 403 HTTP status code), and the UI will never get the chance to show the section header that says "Feed is not available" in red. I will have to rewrite certain functions to handle this, but for now, if a feed is totally missing from the list, first, wait for the cron job to force a reload of the feed cache, then refresh the browser, which should then show the missing feed. If not, check the log file, which might say "Feed inaccessible: " instead of "Feed down: ". If it says "Feed inaccessible," the feed URL is likely not valid or experiencing serious server problems or traffic congestion.
 
 #### Can't handle compressed torrent files
 
@@ -36,23 +36,15 @@ There is one SMTP setting that can affect sending that is not accessible via the
 
 #### Allowed memory size of ... exhausted
 
-PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
+PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file for Apache2 (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
 
 #### apache2 process dies with AH00052: child pid ... exit signal Segmentation fault (11)
 
-This reproducible bug seems to only happen with PHP 7.0, not PHP 5.6.
-
-As of 0.2.5, there is a reproducible bug with torrentwatch-xa and PHP 7.0 on Ubuntu 16.04.x. If all the caches are emptied and then the browser is refreshed, there will certainly be a SEGFAULT in the Apache2 error log, and there may be a blank white page in place of the feeds list. Another browser refresh will bring the feeds list back. 
-
-However, it appears that a bug, perhaps the same one or a different one, may prevent the recording of the latest downloaded episode in each Favorite in the config file. That causes torrentwatch-xa to re-attempt downloading torrents that were successfully downloaded once.
-
-I've looked at Apache2 core dumps using php-src/.gdbinit dump_bt but did not get any helpful PHP function traces. Right now, I cannot tell whether the bug(s) is wholly within PHP 7.0 on Ubuntu 16.04.x and merely consistently triggered by torrentwatch-xa or a bug wholly in torrentwatch-xa. I have checked the migration guide from PHP 5.6 to PHP 7.0, and torrentwatch-xa does not appear to be using any deprecated PHP code that is incompatible with PHP 7.0. It is supposed to work, and yet it doesn't.
-
-The good news is that I have definitely verified 0.2.5 and up work perfectly on Ubuntu 14.04.5 with PHP 5.6. Avoid any OS with PHP 7.0 until I figure this SEGFAULT out. It may end up that skipping over PHP 7.0 to PHP 7.1 solves the problem.
+This bug appears to have gone away on its own with recent PHP 7.0 updates to Ubuntu 16.04.x LTS. At the time of the successful testing, I was running torrentwatch-xa 0.4.0. If you get this error in your Apache2 error log, try updating PHP 7.0 to 7.0.15 or later first. If you still get the error, try upgrading to torrentwatch-xa 0.4.0 or later.
 
 #### "I created a Favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't start the auto-download."
 
-First, please review the section of the installation instructions called **Use the Favorites panel to set up your automatic downloads**.
+First, please review the section of [INSTALL.md](INSTALL.md) called **Use the Favorites panel to set up your automatic downloads**.
 
 If you have followed the instructions correctly and are still having trouble, turn on Configure > Interface > Show Item Debug Info and refresh the browser so that you can see the show_title that must be matched by your Favorite Filter. You will likely find a typo in your Favorite's Filter that needs correcting.
 
@@ -108,6 +100,8 @@ There are situations for which a mutually-exclusive design decision cannot be av
 #### Only Public Torrent RSS or Atom Feeds Are Supported
 
 I have found that due to the highly fluid nature of the torrent scene, it's better to stick with public torrent RSS or Atom feeds than deal with the many different authentication systems of private torrent feeds. Just about everything you could want is going to be available via multiple public torrent feeds anyway.
+
+But, if you absolutely must use a private RSS feed with authentication, there is an easy way to hook torrentwatch-xa up to it. There are many third-party RSS feed tools that can connect to RSS feeds that have authentication and then re-publish the feeds without authentication. I have not tried these apps myself, but most of them should be able to do this: [http://www.makeuseof.com/tag/12-best-yahoo-pipes-alternatives-look/](http://www.makeuseof.com/tag/12-best-yahoo-pipes-alternatives-look/)
 
 #### Some Numbering Schemes Only Make Sense to Humans
 

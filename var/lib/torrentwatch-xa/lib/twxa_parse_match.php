@@ -17,6 +17,12 @@ function matchTitle6_($ti, $seps, $wereQualitiesDetected = false) {
             if (is_string($result['matFnd'])) {
                 break;
             }
+        case true:
+            // isolated E1 E2 E3 E4 E5 E6
+            $result = matchTitle6_3($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
         default:
             $result['favTi'] = $ti;
             $result['matFnd'] = "6_";
@@ -28,14 +34,20 @@ function matchTitle5_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly five numbers found
     switch (true) {
         case true:
-            // scan for ##x##-##x##v# or ##x##v#-##x##
+            // ##x## - ##x##v#
             $result = matchTitle5_1($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true:
-            // scan for ##x##-##x##v# or ##x##v#-##x##
+            // ##x##v# - ##x##
             $result = matchTitle5_2($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true:
+            // isolated E1 E2 E3 E4 E5
+            $result = matchTitle5_3($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
@@ -52,6 +64,12 @@ function matchTitle4_($ti, $seps, $wereQualitiesDetected = false) {
         case true:
             // scan for ##x##-##x##
             $result = matchTitle4_1($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true:
+            // isolated E1 E2 E3 E4
+            $result = matchTitle4_2($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
@@ -156,26 +174,38 @@ function matchTitle3_($ti, $seps, $wereQualitiesDetected = false) {
                 break;
             }
         case true :
-            // isolated SS ##v# (Season ## Episode ## Version #)
+            // isolated S## ##v# (Season ## Episode ## Version #) (must precede isolated SS ##v#)
             $result = matchTitle3_16($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### (EE - EE)
+            // isolated SS ##v# (Season ## Episode ## Version #)
             $result = matchTitle3_17($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### Ep EE - EE
+            // #### (EE - EE)
             $result = matchTitle3_18($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### EE - EE
+            // #### Ep EE - EE
             $result = matchTitle3_19($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // #### EE - EE
+            $result = matchTitle3_20($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // isolated E1 E2 E3
+            $result = matchTitle3_21($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
@@ -433,103 +463,129 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             // The cheesy switch-case-if-break still beats a deep if-else if-else control structure.
             switch (true) {
                 case true :
+                    // Season, Temporada; should also catch Season ## Complete
                     $result = matchTitle1_1_1($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // ##rd/##th Season
                     $result = matchTitle1_1_2($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Volume, Volumen ##
                     $result = matchTitle1_1_3($ti, $seps, $wereQualitiesDetected);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // V. ##--Volume, not version, and not titles like ARC-V
                     $result = matchTitle1_1_4($ti, $seps, $wereQualitiesDetected);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Chapter, Capitulo ##
                     $result = matchTitle1_1_5($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Movie ##
                     $result = matchTitle1_1_6($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Movie v##
                     $result = matchTitle1_1_7($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Film ##
                     $result = matchTitle1_1_8($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Film v##
                     $result = matchTitle1_1_9($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Part ##
                     $result = matchTitle1_1_10($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Episode ##
                     $result = matchTitle1_1_11($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Special v##
                     $result = matchTitle1_1_12($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // 02 - Special
                     $result = matchTitle1_1_13($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // Special - 02
+                    // Spec02
+                    // SP# (Special #)
                     $result = matchTitle1_1_14($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // OVA v##
                     $result = matchTitle1_1_15($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
-                //TODO handle "OVA (1983)"
-                //TODO handle "Nichijou no 0 Wa | Nichijou OVA"
                 case true :
+                    // OVA (####) or OVA (YYYY) or OVA ####
+                    $result = matchTitle1_1_16($ti, $seps);
+                    if (is_string($result['matFnd'])) {
+                        break;
+                    }
+                case true :
+                    // Roman numeral SS-EE
                     $result = matchTitle1_1_18($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // pound sign and number
                     $result = matchTitle1_1_19($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // apostrophe ## (abbreviated year)
                     $result = matchTitle1_1_20($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // PV ##
                     $result = matchTitle1_1_21($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
                 case true :
+                    // standalone Version ##
                     $result = matchTitle1_1_22($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
@@ -538,31 +594,37 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                     // assume it's an anime-style episode number
                     switch (true) {
                         case true :
+                            // Japanese ## Episode
                             $result = matchTitle1_1_30_1($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
                             }
                         case true :
+                            // Japanese ## Print Media Book/Volume
                             $result = matchTitle1_1_30_2($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
                             }
                         case true :
+                            // Japanese ##
                             $result = matchTitle1_1_30_3($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
                             }
                         case true :
+                            // Chinese sequel ##
                             $result = matchTitle1_1_30_4($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
                             }
                         case true :
+                            // Chinese ## preview image/video
                             $result = matchTitle1_1_30_5($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
                             }
                         case true :
+                            // isolated or buttressed EEE
                             $result = matchTitle1_1_30_6($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
@@ -610,7 +672,6 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                     $result['matFnd'] = "1_2-2-3";
                 }
             }
-            //$result['favTi'] = str_replace($matNum[1], "", $ti);
             $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 8 :
@@ -663,7 +724,6 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 $result['numSeq'] = 0;
                 $result['matFnd'] = "1_3-5";
             }
-            //$result['favTi'] = str_replace($matNum[1], "", $ti);
             $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 6 :
@@ -727,7 +787,6 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 }
                 $result['matFnd'] = "1_4-7";
             }
-            //$result['favTi'] = str_replace($matNum[1], "", $ti);
             $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 12 :
@@ -735,7 +794,6 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $result['numSeq'] = 2;
             $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
             $result['episEd'] = $result['episSt'] = substr($matNum[1], 0, 8); // truncate the lengthy Date notation
-            //$result['favTi'] = str_replace($matNum[1], "", $ti);
             $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             $result['matFnd'] = "1_5";
             break;
@@ -744,7 +802,6 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $result['numSeq'] = 2;
             $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
             $result['episEd'] = $result['episSt'] = substr($matNum[1], 0, 8); // truncate the lengthy Date notation
-            //$result['favTi'] = str_replace($matNum[1], "", $ti);
             $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             $result['matFnd'] = "1_6";
             break;
