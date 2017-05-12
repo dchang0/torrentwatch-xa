@@ -1,8 +1,6 @@
 Installation
 ===============
 
-NOTE: As of 0.4.1, there is a simple install/upgrade script meant for Debian 8 (but not Debian 7) and Ubuntu 14.04/16.04 called install_twxa.sh that has potentially dangerous `rm -fr` commands inside. **Use this script at your own risk!** It is far safer to perform the following installation manually, without the script. The script does not install prerequisites.
-
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon`
@@ -44,6 +42,12 @@ NOTE: As of 0.4.1, there is a simple install/upgrade script meant for Debian 8 (
     - Then, empty all caches and refresh the browser to trigger the match and start the download.
 - Wait for some downloads to happen automatically or start some manually.
 - Enjoy your downloaded torrents!
+
+
+Installation Script
+===============
+
+As of 0.4.1, there is a simple install/upgrade script called `install_twxa.sh` meant for Debian 8.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
 
 Configure > Trigger
 ===============
