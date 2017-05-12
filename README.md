@@ -119,7 +119,7 @@ The ideal notation for videos is actually SxVxEv# (Season x Volume x Episode ver
 
 ### Authentication for private RSS Feeds
 
-See the **Design Decisions Explained** section of [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more details: [TROUBLESHOOTING.md#only-public-torrent-rss-or-atom-feeds-are-supported](Only Public Torrent RSS or Atom Feeds Are Supported).
+See the section "Only Public Torrent RSS or Atom Feeds Are Supported" in the **Design Decisions Explained** section of [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more details.
 
 Troubleshooting
 ===============
