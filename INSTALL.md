@@ -49,6 +49,8 @@ Installation Script
 
 As of 0.4.1, there is a simple install/upgrade script called `install_twxa.sh` meant for Debian 8.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
 
+As of 0.5.0, the `install_twxa.sh` script has an option `--keep-config` that will copy your current config file to your home directory, then copy it back after performing an upgrade.
+
 Configure > Trigger
 ===============
 
