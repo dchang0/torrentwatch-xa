@@ -26,7 +26,7 @@ feeds.php was cleaned up and renamed to twxa_feed.php, and tor_client.php was cl
 
 Broken since TorrentWatch-X 0.8.9, the Watch Dir functionality has been completely commented out to be fully removed in a future version. transmission-daemon already has had watch directory capability built in for quite a while, so this feature is redundant. To enable the watch directory in transmission-daemon, use `watch-dir` and `watch-dir-enabled` in `settings.json`.
 
-**For those of you upgrading from a prior version of torrentwatch-xa, you MUST either replace /etc/cron.d/torrentwatch-xa-cron OR edit it and remove the -D flag (for Process Watch Dir). Otherwise, the cron job will generate an error and fail.** The install_twxa.sh script can do this for you; note the new --keep-config option that backs up your config file to your home directory and then puts it back after installing the new torrentwatch-xa files and folders.
+**For those of you upgrading from a prior version of torrentwatch-xa, you MUST either replace /etc/cron.d/torrentwatch-xa-cron OR edit it and remove the -D flag (for Process Watch Dir). Otherwise, the cron job will generate an error and fail.** The `install_twxa.sh` script can do this for you; note the new `--keep-config` option that backs up your config file to your home directory and then puts it back after installing the new torrentwatch-xa files and folders.
 
 Also, when Add to Favorites is used to create a new Favorite, the Qualities filter is now populated intelligently according to the selected Match Style. **If upgrading, if you are keeping your old config file, you may have to correct the Qualities filters for your Favorites before they will work with 0.5.0.**
 
