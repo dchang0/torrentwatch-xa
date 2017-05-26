@@ -365,7 +365,7 @@ Functional changes
 - removed Episodes Only functionality (all items will be shown, including those without episode numbering, as those are in the small minority)
 - removed Verify Episodes functionality (check_cache_episode() will always be run to avoid double-downloading same torrent under different numbering)
 - minor changes to numbering system involving Volumes
-- changed Add to Favorites' Qualities filter back to the qualities of the selected item from "All"
+- changed Add to Favorites' Qualities filter back to the detected qualities of the selected item from "All"
 - validated favTi processing to make sure only the pertinent data is removed from the title
 - renamed rss_dl.php to twxacli.php (especially since we're not limited to RSS feeds only)
 - renamed rss_cache to dl_cache (will require all personalized config files to be updated/re-created)
@@ -398,21 +398,53 @@ Code changes
   - put back missing "if (!function_exists('mb_detect_encoding'))" on line 204
   - can't really test these fixes because of rarity of Atom feeds with torrents
 
-Next Version
+0.5.0
 
 Functional changes
-
-IN PROGRESS
 
 - rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
 - search title for PROPER or Repack and make it version 99 if found
 - 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
 - re-test removal of multiple selected active torrents from display when deleted via context menu
+- further improved creation of Qualities filter when using Add to Favorites to account for the different matching styles
+  - Simple => match any of the detected qualities as strings
+  - Glob => match All qualities (list of detected qualities would almost never match as a glob, so match All is best)
+  - RegExp => match any of the detected qualities as a regular expression
+- removed Qualities filter 'All' when matching style is RegExp
+- added Auto-Del Seeded Torrents to twxacli.php with check to see if torrent is in download cache before deleting
+- add check of download cache to Auto-Del Seeded Torrents in web UI's Javascript
+- renamed Favorite Started to Started and favStarted to justStarted because non-Favorite items can be in this state
+- when manually starting brand new torrent, state now changes from Favorite Started to Downloading sooner than when it is fully downloaded
+- added --keep-config option to installtwxa.sh
+- added logic to installtwxa.sh to check for new torrentwatch-xa package before installing
 
 Code changes
 
+- added rtrim() to remove leftover unmatched left-parenthesis and removed a few now-unnecessary pattern matches
+- renamed remaining $batch to $isBatch
+- renamed tor_client.php to twxa_torrent.php
+- renamed feeds.php to twxa_feed.php
+- renamed lastRSS.php to twxa_lastRSS.php (because it has been customized enough that there can be no drop-in replacement of the file with a newer lastRSS.php)
+- renamed atomparser.php to twxa_atomparser.php (same reason)
+- conformed permissions on all files and directories
+- added EZTV as a new default RSS feed
+- fixed typo in twxa_cache.php, lines 101 and 105: 'version' should be 'itemVersion'
+- changed Ratio to use Transmission uploadRatio instead of dividing uploadedEver by downloadedEver
+  - fixed Infinity seed ratio problem caused by downloadedEver being 0
+- changed Percentage to use Transmission percentDone instead of calculating from totalSize and leftUntilDone
+- moved Watch Dir processing in twxacli.php to process_watch_dir() function and cleaned up the logic
+- commented out all Watch Dir code because find_torrent_link() hasn't worked on .torrent files since TorrentWatch-X 0.8.9 and Transmission already has watch directory capability built-in
+- validated and simplified Javascript .delTorrent function and changed some 1 values to true
+- started towards removing isBatch logic by commenting out $isBatch checks in torrent functions
+
+Next Version
+
 IN PROGRESS
 
-- validate and rename the remaining tor_client.php and feeds.php files
+- diagnose problem with Transmission list items not matching actual transmission-daemon list
+  - remember to comment out console.log at torrentwatch-xa.js:611 before release
+- continue removing isBatch or batch functionality from torrent functions
 - still cleaning up $matched states, specifically difference between downloaded and cachehit
 - fix Quality filtering in check_for_torrent() before checking the download cache
+- finish twxaDebug() and $verbosity to allow reducing verbosity from DBG to INF or ERR
+- make twxaDebug() show alerts in web UI

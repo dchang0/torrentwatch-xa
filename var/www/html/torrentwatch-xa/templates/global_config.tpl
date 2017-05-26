@@ -58,7 +58,7 @@
                                 <input type="checkbox" name="showdebug" value="1" <?php echo $showdebug; ?>/>
                             </div>
                         </div>
-                        <div id="config_hide_donate" title="I have already donated.">
+                        <div id="config_hide_donate">
                             <div class="left">
                                 <label class="item checkbox">Hide Donate Button:</label>
                             </div>
@@ -171,14 +171,14 @@
                                 <input type="checkbox" name="autodel" value="1" <?php echo $autodel; ?>/>
                             </div>
                         </div>
-                        <div id="config_watchdir" title="Directory to watch for new .torrent files">
+                        <!--<div id="config_watchdir" title="Directory to watch for new .torrent files">
                             <div class="left">
                                 <label class="item textinput">Watch Dir:</label>
                             </div>
                             <div class="right">
                                 <input type="text" class="text" name="watchdir" value="<?php echo $config_values['Settings']['Watch Dir']; ?>"/>
                             </div>
-                        </div>
+                        </div>-->
                         <div id="config_savetorrent" title="Also save .torrent files to download directory.">
                             <div class="left">
                                 <label class="item checkbox">Save Torrent Files:</label>

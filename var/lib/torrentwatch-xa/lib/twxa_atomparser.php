@@ -17,7 +17,7 @@ class myAtomParser {
     // constructor for new object
     //function myAtomParser($file, $cache_dir = '', $cache_time = 3000)
     function __construct($file, $cache_dir = '', $cache_time = 3000) {
-        // Cache routine from lastRSS.php
+        // Cache routine from twxa_lastRSS.php
         if ($cache_dir != '') {
             $cache_file = $cache_dir . '/atomcache_' . md5($file);
             $timedif = @(time() - filemtime($cache_file));

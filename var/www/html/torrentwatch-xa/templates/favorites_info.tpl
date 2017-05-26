@@ -15,7 +15,7 @@
     </div>
     <div class="favorite_filter">
         <div class="left">
-            <label class="item" title="Regexp filter, use .* to match all">Filter:</label>
+            <label class="item" title="In RegEx Matching Style, use a PCRE Unicode regex such as .* to match all">Filter:</label>
         </div>
         <div class="right">
             <input type="text" class="text" name="filter" value="<?php echo $item['Filter']; ?>">
@@ -23,7 +23,7 @@
     </div>
     <div class="favorite_not">
         <div class="left">
-            <label class="item" title="Regexp Not Filter">Not:</label>
+            <label class="item" title="In RegEx Matching Style, use a PCRE Unicode regex to match items you don't want">Not:</label>
         </div>
         <div class="right">
             <input type="text" class="text" name="not" value="<?php echo $item['Not']; ?>"
@@ -40,7 +40,7 @@
     </div>
     <div class="favorite_episodes">
         <div class="left">
-            <label class="item" title="Episode filter. ex.: 1x1-3x24 for Season 1 to 3 episode 24. To just set a starting point use: 2x10. You may use s01e12 instead of 1x12." >Episodes:</label>
+            <label class="item" title="Episode filter. ex.: 1x1-3x24 for Season 1 Episode 1 to Season 3 Episode 24. To just set a starting point use: 2x10. You may use s01e12 instead of 1x12." >Episodes:</label>
         </div>
         <div class="right">
             <input type="text" class="text" name="episodes" title="Episodes filter. Please read the instructions on how to use this feature." value="<?php echo $item['Episodes'] ?>">

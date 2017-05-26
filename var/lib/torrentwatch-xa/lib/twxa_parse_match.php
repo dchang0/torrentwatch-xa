@@ -416,26 +416,20 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
                 break;
             }
         case true :
-            // (##-##) (must precede isolated ##-##)
+            // isolated ##-##
             $result = matchTitle2_48($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated ##-##
+            // S (EEE)
             $result = matchTitle2_49($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
-            // S (EEE)
-            $result = matchTitle2_50($ti, $seps);
-            if (is_string($result['matFnd'])) {
-                break;
-            }
-        case true :
             // isolated SS EE, SS EEE, or isolated EE EE
-            $result = matchTitle2_51($ti, $seps);
+            $result = matchTitle2_50($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }

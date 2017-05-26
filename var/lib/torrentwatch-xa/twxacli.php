@@ -14,8 +14,8 @@ function usage() {
     twxaDebug(__FILE__ . " <options>\nCommand line interface to torrentwatch-xa\nOptions:\n", 0);
     twxaDebug("           -c <dir> : enable cache\n", 0);
     twxaDebug("           -C : disable cache\n", 0);
-    twxaDebug("           -d : skip watch dir\n", 0);
-    twxaDebug("           -D : start torrents in watch dir\n", 0);
+    /*twxaDebug("           -d : skip watch dir\n", 0);
+    twxaDebug("           -D : start torrents in watch dir\n", 0);*/
     twxaDebug("           -h : show this help\n", 0);
     twxaDebug("           -q : quiet (no output)\n", 0);
     twxaDebug("           -v : verbose output\n", 0);
@@ -34,13 +34,14 @@ function parse_args() {
             case '-C':
                 unset($config_values['Settings']['Cache Dir']);
                 break;
-            case '-d':
+            /*case '-d':
                 $config_values['Settings']['Process Watch Dir'] = 0;
                 break;
             case '-D':
                 $config_values['Settings']['Process Watch Dir'] = 1;
-                break;
+                break;*/
             case '-h':
+            case '--help':
                 usage();
                 exit(1);
             case '-q':
@@ -59,42 +60,32 @@ function parse_args() {
 }
 
 /// main
-
 $main_timer = timer_get_time(0);
 if (file_exists(getConfigFile())) {
     read_config_file();
 } else {
     setup_default_config();
 }
-
 parse_args();
 twxaDebug("=====Start twxacli.php\n", 2);
-
 if (isset($config_values['Feeds'])) {
     load_all_feeds($config_values['Feeds'], 1);
     process_all_feeds($config_values['Feeds']);
 }
-
-//TODO later, break the watch dir into a function
-if (isset($config_values['Settings']['Process Watch Dir']) &&
-        $config_values['Settings']['Process Watch Dir'] === 1 &&
-        $config_values['Settings']['Watch Dir']) { //TODO test if Watch Dir is a valid directory and exists
-    twxaDebug("Checking Watch Dir: " . $config_values['Settings']['Watch Dir'] . "\n", 2);
-    foreach ($config_values['Favorites'] as $fav) {
-        $guess = detectMatch(html_entity_decode($_GET['title']));
-        $name = trim(strtr($guess['title'], "._", "  ")); //TODO title matching is too simple here
-        if ($name == $fav['Name']) {
-            $downloadDir = $fav['Save In'];
-        }
+/*if (isset($config_values['Settings']['Process Watch Dir']) &&
+        $config_values['Settings']['Process Watch Dir'] == 1) {
+    if ($config_values['Settings']['Watch Dir']) {
+        process_watch_dir();
+    } else {
+        twxaDebug("Watch Dir is not set\n", 2);
     }
-    if (!$downloadDir || $downloadDir == "Default") {
-        $downloadDir = $config_values['Settings']['Download Dir'];
-    }
-
-    add_torrents_in_dir($config_values['Settings']['Watch Dir'], $downloadDir);
-    //TODO add error message if no matching torrents found in dir
 } else {
-    twxaDebug("Skipping Watch Dir\n", 2);
+    twxaDebug("Process Watch Dir is disabled\n", 2);
+}*/
+if (isset($config_values['Settings']['Auto-Del Seeded Torrents']) &&
+        $config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
+    auto_del_seeded_torrents();
+} else {
+    twxaDebug("Auto-Del Seeded Torrents is disabled\n", 2);
 }
-
 twxaDebug("=====End twxacli.php: processed in " . timer_get_time($main_timer) . "s\n\n", 2);

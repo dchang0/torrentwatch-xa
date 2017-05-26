@@ -1,7 +1,7 @@
 <?php
 
 // functions for parsing torrent titles
-// feeds.php calls this file
+// twxa_feed.php calls this file
 
 $seps = '\s\.\_'; // separator chars: - and () were formerly also separators but caused problems; we need - for some Season and Episode notations
 // load matchTitle function files
@@ -39,6 +39,7 @@ function removeEmptyParens($ti) {
     $ti = str_replace("(.)", "", $ti);
     $ti = str_replace("( )", "", $ti);
     $ti = str_replace("()", "", $ti);
+    $ti = rtrim($ti, "(");
     return $ti;
 }
 
@@ -297,7 +298,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
 
 function detectAudioCodecs($ti) {
     $detAudioCodecs = [];
-    $audioCodecList = [ // watch the order!
+    $audioCodecList = [// watch the order!
         'EAC3',
         'AC3',
         'AACx2',
@@ -367,9 +368,20 @@ function detectMatch($ti) {
     // detect qualities
     $detQualitiesOutput = detectQualities(simplifyTitle($ti));
     $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']);
+    $detQualitiesRegEx = ".*";
+
     // don't use count() on arrays because it returns 1 if not countable; it is enough to know if any quality was detected
     if (strlen($detQualitiesJoined) > 0) {
         $wereQualitiesDetected = true;
+        $detQualitiesTemp = [];
+        foreach ($detQualitiesOutput['detectedQualities'] as $detQuality) {
+            $detQualitiesTemp[] = preg_quote($detQuality);
+        }
+        if (count($detQualitiesTemp) > 1) {
+            $detQualitiesRegEx = "(" . implode('|', $detQualitiesTemp) . ")";
+        } else {
+            $detQualitiesRegEx = $detQualitiesTemp[0];
+        }
     } else {
         $wereQualitiesDetected = false;
     }
@@ -446,6 +458,7 @@ function detectMatch($ti) {
         'title' => collapseExtraSeparators($detAudioCodecsOutput['parsedTitle']),
         'favTitle' => $favTitle,
         'qualities' => $detQualitiesJoined,
+        'qualitiesRegEx' => $detQualitiesRegEx,
         'episode' => $episGuess,
         'seasBatEnd' => $detItemOutput['seasBatEnd'],
         'seasBatStart' => $detItemOutput['seasBatStart'],
@@ -491,7 +504,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     $matNums = [];
     preg_match_all("/(\d+)/u", $ti, $matNums, \PREG_SET_ORDER); // can't initialize $matNums here due to isset tests later
     // is there at least one number? can't have an episode otherwise (except in case of PV preview episode)
-    $numbersDetected = count($matNums);
+    $numbersDetected = count($matNums); //TODO count returns 1 for uncountable objects
     if (isset($matNums[0])) {
         switch ($numbersDetected) {
             case 8:
@@ -636,7 +649,6 @@ function episode_filter($item, $filter) {
     if ($item['episode']) {
         $filter = preg_replace('/\s/', '', $filter);
 
-        //list($itemS, $itemE) = explode('x', $item['episode']);
         $itemEpisodePieces = explode('x', $item['episode']);
         if (isset($itemEpisodePieces[0])) {
             $itemS = $itemEpisodePieces[0];
@@ -650,15 +662,12 @@ function episode_filter($item, $filter) {
         }
 
         if (preg_match('/^S\d*/i', $filter)) {
-            //$filter = preg_replace('/S/i', '', $filter);
             $filter = strtr($filter, array('S' => '', 's' => ''));
             if (preg_match('/^\d*E\d*/i', $filter)) {
-                //$filter = preg_replace('/E/i', 'x', $filter);
                 $filter = strtr($filter, array('E' => 'x', 'e' => 'x'));
             }
         }
-        // Split the filter(ex. 3x4-4x15 into 3,3 4,15).  @ to suppress error when no second item
-        //@list($start, $stop) = explode('-', $filter, 2);
+        // Split the filter (ex. 3x4-4x15 into 3,3 4,15)
         $filterPieces = explode('-', $filter, 2);
         if (isset($filterPieces[0])) {
             $start = $filterPieces[0];
@@ -670,7 +679,6 @@ function episode_filter($item, $filter) {
         } else {
             $stop = "9999x9999";
         }
-        //@list($startSeason, $startEpisode) = explode('x', $start, 2);
         $startPieces = explode('x', $start, 2);
         if (isset($startPieces[0])) {
             $startSeason = $startPieces[0];
@@ -682,10 +690,6 @@ function episode_filter($item, $filter) {
         } else {
             $startEpisode = "";
         }
-        /* if (!isset($stop)) {
-          $stop = "9999x9999";
-          } */
-        //@list($stopSeason, $stopEpisode) = explode('x', $stop, 2);
         $stopPieces = explode('x', $stop, 2);
         if (isset($stopPieces[0])) {
             $stopSeason = $stopPieces[0];

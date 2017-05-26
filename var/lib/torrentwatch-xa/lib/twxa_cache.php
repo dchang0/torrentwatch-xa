@@ -63,10 +63,35 @@ function clear_cache_by_cache_type() {
 
 function get_torHash($cache_file) {
     $handle = fopen($cache_file, "r");
-    if (filesize($cache_file)) {
-        $torHash = fread($handle, filesize($cache_file));
-        return $torHash;
+    if ($handle) {
+        if (filesize($cache_file)) {
+            $torHash = fread($handle, filesize($cache_file));
+            return $torHash;
+        } else {
+            twxaDebug("No torrent hash in cache file: $cache_file\n", 0);
+        }
+    } else {
+        twxaDebug("Unable to open cache file: $cache_file\n", 0);
     }
+}
+
+function check_cache_for_torHash($torHash) {
+    global $config_values;
+    $handle = opendir($config_values['Settings']['Cache Dir']);
+    if ($handle !== false) {
+        while (false !== ($file = readdir($handle))) {
+            // loop through each cache file in the Cache Directory and check its torHash
+            if (substr($file, 0, 3) === "dl_") {
+                $tmpTorHash = get_torHash($config_values['Settings']['Cache Dir'] . "/" . $file);
+                if ($torHash === $tmpTorHash) {
+                    return $file;
+                }
+            }
+        }
+    } else {
+        twxaDebug("Unable to open Cache Directory: " . $config_values['Settings']['Cache Dir'] . "\n", -1);
+    }
+    return "";
 }
 
 function check_cache_episode($ti) {
@@ -98,11 +123,11 @@ function check_cache_episode($ti) {
                     if ($config_values['Settings']['Download Versions']) {
                         return true; // difference in item version, do download
                     } else {
-                        twxaDebug("Older version in cache: ignoring newer: $ti (" . $guess['episode'] . "v" . $guess['version'] . ")\n", 2);
+                        twxaDebug("Older version in cache: ignoring newer: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);
                         return false; // title is found in cache, version is newer, Download Versions is off, so don't download
                     }
                 } else {
-                    twxaDebug("Equiv. in cache: ignoring: $ti (" . $guess['episode'] . "v" . $guess['version'] . ")\n", 2);
+                    twxaDebug("Equiv. in cache: ignoring: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);
                     return false; // title and same version is found in cache, don't download
                 }
             }

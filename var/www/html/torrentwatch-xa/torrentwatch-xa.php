@@ -11,12 +11,12 @@ ini_set('include_path', '.:./php');
 error_reporting(E_ALL);
 require_once('/var/lib/torrentwatch-xa/lib/twxa_tools.php'); //TODO switch this to use get_baseDir()
 
-$twxa_version[0] = "0.4.1";
+$twxa_version[0] = "0.5.0";
 
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
-    $process = [ &$_GET, &$_POST, &$_COOKIE, &$_REQUEST ];
+    $process = [&$_GET, &$_POST, &$_COOKIE, &$_REQUEST];
     while (list($key, $val) = each($process)) {
         foreach ($val as $k => $v) {
             unset($process[$key][$k]);
@@ -63,9 +63,9 @@ function parse_options() {
             exit;
         case 'delTorrent':
             if (isset($_REQUEST['trash'])) {
-                $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['batch']);
+                $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['batch'], $_REQUEST['checkCache']);
             } else {
-                $response = delTorrent($_REQUEST['delTorrent'], false, $_REQUEST['batch']);
+                $response = delTorrent($_REQUEST['delTorrent'], false, $_REQUEST['batch'], $_REQUEST['checkCache']);
             }
             echo "$response";
             exit;
@@ -115,14 +115,20 @@ function parse_options() {
             }
             if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
                 $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
-                if ($config_values['Settings']['Match Style'] == "glob") {
-                    $_GET['filter'] = trim(strtr($tmp['favTitle'], " ._", "???"));
-                    $_GET['filter'] .= '*';
-                } else {
-                    $_GET['filter'] = trim($tmp['favTitle']);
+                switch ($config_values['Settings']['Match Style']) {
+                    case "simple":
+                        $_GET['filter'] = trim($tmp['favTitle']);
+                        $_GET['quality'] = $tmp['qualities']; // Add to Favorites uses the qualities from the item for the new Favorite
+                        break;
+                    case "glob":
+                        $_GET['filter'] = trim(strtr($tmp['favTitle'], " ._", "???"));
+                        $_GET['filter'] .= '*';
+                        $_GET['quality'] = 'All'; // Add to Favorites makes the new Favorite accept all qualities
+                        break;
+                    case "regexp":
+                        $_GET['filter'] = trim($tmp['favTitle']);
+                        $_GET['quality'] = $tmp['qualitiesRegEx']; // Add to Favorites uses the detected qualities as a regex or .* if no qualities detected
                 }
-                $_GET['quality'] = $tmp['qualities']; // Add to Favorites uses the qualities from the item for the new Favorite
-                //$_GET['quality'] = 'All'; // Add to Favorites makes the new Favorite accept all qualities
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['savein'] = 'Default';
@@ -399,7 +405,7 @@ function update_hidelist() {
 
     foreach ($config_values['Hidden'] as $key => $hidden) {
         unset($config_values['Hidden'][$key]);
-        $config_values['Hidden'][strtolower(strtr($key, [ ":" => "", "," => "", "'" => "", "." => " ", "_" => " " ] ))] = "hidden";
+        $config_values['Hidden'][strtolower(strtr($key, [":" => "", "," => "", "'" => "", "." => " ", "_" => " "]))] = "hidden";
     }
     return;
 }

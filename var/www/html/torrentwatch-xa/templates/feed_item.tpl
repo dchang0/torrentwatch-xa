@@ -42,7 +42,7 @@ if($config_values['Settings']['Client'] != 'folder') {
 }
 
 // hide or show choices in contextMenu
-if($matched === "downloading" || $matched === "downloaded" || $matched === "cachehit" || $matched === "favStarted" || $matched === "waitTorCheck") {
+if($matched === "downloading" || $matched === "downloaded" || $matched === "cachehit" || $matched === "justStarted" || $matched === "waitTorCheck") {
     $dlTorrent = "dlTorrent hidden";
     $torStart = "torStart hidden";
     $torPause = "torPause";

@@ -13,8 +13,8 @@
                 <span class='torrent_name'><b>Old Favorite</b><br>Favorite matches but is not new enough in the series to trigger download.</span></li>
             <!--<li class='legend match_favReady'>
                 <span class='torrent_name'><b>Favorite Ready</b><br>Ready to download.  Reload this page in your browser to start these.</span></li>-->
-            <li class='legend match_favStarted'>
-                <span class='torrent_name'><b>Favorite Started</b><br>Favorite has just started downloading or is verifying just before starting.</span></li>
+            <li class='legend match_justStarted'>
+                <span class='torrent_name'><b>Started</b><br>Torrent has just started downloading or is verifying just before starting.</span></li>
             <li class='legend match_waitTorCheck'>
                 <span class='torrent_name'><b>Waiting</b><br>Waiting for data from torrent client.</span></li>
             <!--<li class='legend match_cachehit'>

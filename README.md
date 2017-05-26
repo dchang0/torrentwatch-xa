@@ -16,32 +16,36 @@ Status
 
 ### Current Version
 
-I've posted 0.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 0.5.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-0.4.0 saw major changes to the season and episode detection engine, specifically big changes to the way that episodes are passed between functions and compared with Favorites. The benefit is the ability to detect and download batches.
+Good news! The **Auto-Del Seeded Torrents** functionality of the web UI has been implemented in twxacli.php so that the cron job can delete fully-seeded, auto-downloaded torrents from Transmission. Users of non-MacOS versions of Transmission will really appreciate this big improvement, because paused, fully-seeded torrents will no longer pile up in Transmission's torrent list if the torrentwatch-xa web UI was not left running all the time to allow the Javascript Auto-Del Seeded Torrents to perform cleanup. (The makers of Transmission purposefully left auto-delete out of the non-MacOS version per enhancement issue #2353 [here](https://trac.transmissionbt.com/ticket/2353)).
 
-0.4.1 is primarily about fixing bugs introduced in 0.4.0 (as well as an annoying bug introduced in 0.3.1 where highlighted items in the Transmission filter will lose the highlight after a few seconds) and moving/renaming/refactoring directories, files, functions, and variables for clarity, especially to delineate which parts belong to torrentwatch-xa and which are 3rd-party libraries. There are no major changes in 0.4.1 in terms of functionality. 
+Both the web UI's and twxacli.php's auto-delete feature will not delete any torrents until they have been fully downloaded and fully seeded and will not delete any torrents that were not auto-downloaded by torrentwatch-xa (i.e., that are still recorded in the download cache). In other words, you can add other torrents to Transmission outside of torrentwatch-xa, and those torrents will not be touched. This is an improvement over the web UI's past auto-delete behavior.
 
-However, the directory and file renames certainly mean that **it is best to wipe out an older version of torrentwatch-xa and do a fresh install of 0.4.1 rather than do an overwrite upgrade.** For instance, the cron job file requires a change from "rss_dl.php" to "twxacli.php" or it won't work, and even the torrentwatch-xa.config file saw some changes that require either editing the file to replace all occurrences of "rss_cache" with "dl_cache" or starting over with a fresh default config and adding back feeds and Favorites via the web UI.
+feeds.php was cleaned up and renamed to twxa_feed.php, and tor_client.php was cleaned up and renamed to twxa_torrent.php. The same goes for lastRSS.php and atomparser.php. With that, every single file has finally been examined and integrated into torrentwatch-xa, and there will probably be no further renames of paths or files.
 
-My apologies for the trouble--it was finally time to do away with these vestiges of the original TorrentWatch that can only handle RSS and not Atom feeds. I do not expect any major directory renames in the future. 
+Broken since TorrentWatch-X 0.8.9, the Watch Dir functionality has been completely commented out to be fully removed in a future version. transmission-daemon already has had watch directory capability built in for quite a while, so this feature is redundant. To enable the watch directory in transmission-daemon, use `watch-dir` and `watch-dir-enabled` in `settings.json`.
 
-To help with this upgrade, I added a very simple install script called install_twxa.sh. **Use this at your own risk--it has `rm -fr` commands inside, which can be quite dangerous if misused.** I'll improve the install script over time.
+**For those of you upgrading from a prior version of torrentwatch-xa, you MUST either replace /etc/cron.d/torrentwatch-xa-cron OR edit it and remove the -D flag (for Process Watch Dir). Otherwise, the cron job will generate an error and fail.** The install_twxa.sh script can do this for you; note the new --keep-config option that backs up your config file to your home directory and then puts it back after installing the new torrentwatch-xa files and folders.
 
-I did finally run a PHP 7.0 compatibility checker on torrentwatch-xa and found that all the code is and has been compatible excepting the deprecated constructor function name in the 3rd-party library atomparser.php. That has been corrected in 0.4.1.
+Also, when Add to Favorites is used to create a new Favorite, the Qualities filter is now populated intelligently according to the selected Match Style. **If upgrading, if you are keeping your old config file, you may have to correct the Qualities filters for your Favorites before they will work with 0.5.0.**
 
-Still in alpha: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like 0x{3010} to satisfy PHP's preg_ functions.
+I have also started commenting out the isBatch and batch logic in the torrent functions like startTorrent(). The logic is redundant and will be fully removed in a future version.
 
-Please note that if you keep the default RSS feeds provided by a fresh default config, some of them are not 100% reliable (TokyoTosho.info goes down quite often due to high traffic). This is sadly the new normal after NyaaTorrents shut down and all its fans were forced to find new homes, at least until the rumored replacement is built and comes online.
+Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+
+A new, better NyaaTorrents is up at nyaa.si, but I have not added them to the default feeds until they have had more time to establish themselves and scale for capacity. *NyaaTorrents is dead, long live NyaaTorrents!*
+
+Finally, the TODO.md list has been cleaned up of obsolete entries.
 
 ### Next Version
 
 I hope to:
 
+- diagnose problem with Transmission list items not matching actual transmission-daemon list
 - rewrite the episode_filter() function to handle the new season and episode notation style
 - rewrite PROPER/REPACK handling in the new itemVersion method
-- validate the functions in tor_client.php and feeds.php and rename these files with twxa_ prefixes
-
+- finish twxaDebug() and $verbosity
 
 Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) files. Tickets in GitHub Issues will remain separate for accountability reasons.
 
@@ -112,6 +116,18 @@ Internally, the new Favorite matching engine uses direct comparisons of the sepa
 Later, when the Favorite Episodes filter functionality is implemented, it will also use this notation (except for Glummy, who is for display only).
 
 The ideal notation for videos is actually SxVxEv# (Season x Volume x Episode version #); if downloading anime BluRay Disc sets becomes super-popular, I may implement this notation style throughout torrentwatch-xa in a future version.
+
+### Current Episodes Filter Notation
+
+The Episodes filter currently in each Favorite is still the old TorrentWatch-X filter. The notation style is the old style, like so:
+
+- SxE = single episode
+- SxEp = single episode, PROPER or Repack
+- S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
+
+### RegEx Matching Style vs. Simple vs. Glob
+
+The Favorites fields behave differently in RegEx Matching Style than in Simple or Glob in that you can use PCRE Unicode regular expressions in RegEx mode. I need to better document the finer differences between the styles here, or perhaps it is time to remove the Simple and Glob matching styles and just stick with RegEx all the time. 
 
 ### Authentication for private RSS Feeds
 

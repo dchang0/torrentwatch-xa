@@ -337,7 +337,7 @@ $(document).ready(function () { // first binding to document ready
             var recent;
             window.updatingClientData = 1;
             if (window.gotAllData && window.getfail != 1) {
-                recent = 1; // request 'recently-active' torrents to look for 'removed' torrents
+                recent = 1; // request 'recently-active' torrents to look for processClientData's 'removed' torrents
             } else {
                 recent = 0;
             }
@@ -463,17 +463,19 @@ $(document).ready(function () { // first binding to document ready
         $.each(json['arguments']['torrents'],
                 // process Transmission's list of active torrents
                         function (i, item) {
-                            var Ratio = Math.roundWithPrecision(item.uploadedEver / item.downloadedEver, 2);
-                            var Percentage = Math.roundWithPrecision(((item.totalSize - item.leftUntilDone) / item.totalSize) * 100, 2);
+                            //var Ratio = Math.roundWithPrecision(item.uploadedEver / item.downloadedEver, 2);
+                            var Ratio = item.uploadRatio;
+                            //var Percentage = Math.roundWithPrecision(((item.totalSize - item.leftUntilDone) / item.totalSize) * 100, 2);
+                            var Percentage = Math.roundWithPrecision(100 * item.percentDone, 2);
                             var validProgress = Math.roundWithPrecision((100 * item.recheckProgress), 2);
 
-                            if (!(Ratio > 0)) {
-                                Ratio = 0;
-                            }
+                            /*if (!(Ratio > 0)) {
+                             Ratio = 0;
+                             }
 
-                            if (!(Percentage > 0)) {
-                                Percentage = 0;
-                            }
+                             if (!(Percentage > 0)) {
+                             Percentage = 0;
+                             }*/
 
                             // Remap Transmission pre-2.4 status codes to 2.4
                             if (item.status == 16) { // pre-2.4 TR_STATUS_STOPPED
@@ -540,12 +542,14 @@ $(document).ready(function () { // first binding to document ready
                                         Math.formatBytes(item.totalSize - item.leftUntilDone) + ' of ' +
                                         Math.formatBytes(item.totalSize) +
                                         ' (' + Percentage + '%)  -  Ratio: ' + Ratio;
+                                $('li.item_' + item.hashString).removeClass('match_justStarted').addClass('match_downloading'); //TODO may need to remove match_waitTorCheck
                                 liClass = "downloading";
                             } else if (item.status == 6) { // was 8 for pre-2.4 TR_STATUS_SEED
                                 clientData = 'Seeding to ' + item.peersGettingFromUs + ' of ' +
                                         item.peersConnected + ' peers  -  Ratio: ' + Ratio;
                                 $('li.item_' + item.hashString).removeClass('match_downloading').addClass('match_downloaded');
                                 $('li.torrent span.torEta').html('');
+                                liClass = "downloaded"; //TODO make sure it was safe to add this
                             } else if (item.status == 0) { // was 16 for pre-2.4 TR_STATUS_STOPPED
                                 if (Ratio >= item.seedRatioLimit && Percentage == 100) {
                                     clientData = "Downloaded and seed ratio met. This torrent can be removed.";
@@ -553,7 +557,7 @@ $(document).ready(function () { // first binding to document ready
                                     // auto-delete seeded torrents
                                     $.get('torrentwatch-xa.php', {get_autodel: 1}, function (autodel) {
                                         if (autodel) {
-                                            $.delTorrent(item.hashString, false, true);
+                                            $.delTorrent(item.hashString, false, false, true, true); // torHash, trash, batch, sure, checkCache
                                         }
                                     });
                                     // remove infoDiv and hide progressBarContainer from completed items in all filters other than Transmission
@@ -604,6 +608,7 @@ $(document).ready(function () { // first binding to document ready
                                     }
                                 }
                             } else {
+                                //console.log("hash: " + item.hashString + ", status: " + item.status);
                                 if (window.getfail) {
                                     window.getfail = 0;
                                 }
@@ -1083,7 +1088,7 @@ $(document).ready(function () { // first binding to document ready
 
                 window.client = $('#clientId').html();
                 changeClient(window.client);
-                
+
             }, 50);
             if ($('#torrentlist_container div.header.combined').length == 1) {
                 $('.torrentlist>li').tsort('#unixTime', {order: 'desc'});
@@ -1340,16 +1345,18 @@ $(document).ready(function () { // first binding to document ready
                 });
     };
 
-    $.delTorrent = function (torHash, trash, batch, sure) {
+    $.delTorrent = function (torHash, trash, batch, sure, checkCache) {
         if (trash && sure != 'true' && !$.cookie('TorTrash')) {
             var dialog = '<div id="confirmTrash" class="dialog confirm" style="display: block; ">' +
                     '<div class="dialog_window" id="trash_tor_data"><div>Are you sure?<br />This will remove the torrent along with its data.</div>' +
                     '<div class="buttonContainer"><a class="button confirm trash_tor_data" ' +
-                    'onclick="$(\'#confirmTrash\').remove(); $.delTorrent(\'' + torHash + '\',\'true\', \'' + batch + '\', \'true\');">Yes</a>' +
+                    // torHash, trash, batch, sure, checkCache
+                    'onclick="$(\'#confirmTrash\').remove(); $.delTorrent(\'' + torHash + '\',\'true\', \'' + batch + '\', \'true\', \'false\');">Yes</a>' +
                     '<a class="button trash_tor_data wide" ' +
                     'onclick="$(\'#confirmTrash\').remove();' +
                     '$.cookie(\'TorTrash\', 1, { expires: 30 });' +
-                    '$.delTorrent(\'' + torHash + '\',\'true\', \'true\');">' +
+                    // torHash, trash, batch, sure, checkCache
+                    '$.delTorrent(\'' + torHash + '\',\'true\', \'' + batch + '\', \'true\', \'false\');">' +
                     'Yes, don\'t ask again</a>' +
                     '<a class="button trash_tor_data close" onclick="$(\'#confirmTrash\').remove()">No</a>' +
                     '</div>' +
@@ -1358,14 +1365,11 @@ $(document).ready(function () { // first binding to document ready
             $('#confirmTrash').css('height', $(document).height() + 'px');
             $('#trash_tor_data').css('top', window.pageYOffset + (($(window).height() / 2) - $('#trash_tor_data').height()) + 'px');
         } else {
-            sure = 1;
-        }
-
-        if (sure) {
             $.getJSON('torrentwatch-xa.php', {
                 'delTorrent': torHash,
                 'trash': trash,
-                'batch': batch
+                'batch': batch,
+                'checkCache': checkCache
             },
                     function (json) {
                         if (json.result == "success") {
@@ -1554,10 +1558,10 @@ $(document).ready(function () { // first binding to document ready
         });
 
         if (action == 'trash') {
-            var trash = 1;
+            var trash = true; // used to be 1
         }
         if ((action == 'delete') || (action == 'trash')) {
-            $.delTorrent(list, trash, true);
+            $.delTorrent(list, trash, true, false, false); // torHash, trash, batch, sure, checkCache
         }
         if (action == 'start') {
             $.stopStartTorrent('start', list, true);

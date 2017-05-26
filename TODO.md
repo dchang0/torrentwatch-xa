@@ -1,6 +1,20 @@
 TODO List
 ===============
 
+## Validating files
+
+These files have been completely validated (no functions inside them need improvement):
+
+twxa_atomparser.php
+twxa_cache.php
+twxa_html.php
+twxa_lastRSS.php
+twxa_parse_match*.php
+twxa_test_parser.php
+
+All other files have functions that need improvement or rewrites.
+
+
 ## Throughout all versions
 
 - improve performance
@@ -9,6 +23,17 @@ TODO List
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
 
 ## Tasks
+
+- validate Deep Directories feature
+
+- if keeping Watch Dir functionality, it requires fixing find_torrent_link() so that it actually processes current-day torrent files in the watch dir properly (can't find .torrent link in file)
+
+- isBatch is incorrectly set to true if only one item is highlighted and then the button bar is used because no counting of how few highlighted items occurs (context menu uses isBatch properly); maybe fix this, but maybe just rely on explode behavior and treat everything as if it were batched
+
+- diagnose problem with Transmission list items not matching actual transmission-daemon list
+  - sometimes the title of an item in Transmission list is not changed from the hash to the human-friendly title
+  - some items that were deleted successfully are still in the list
+  - not all torrents manually added outside of torrentwatch-xa show up in the Transmission filter, and if they do, they do not show consistently throughout states
 
 - improve handling of "Feed inaccessible" (usually 403 or 404 errors on the URL)
 
@@ -49,14 +74,12 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 - $config_values['Global'] appears to be a crappy way of globally passing some data--maybe improve it
 - Disable Hide List does disable Hide Show from contextual menus but doesn't hide the Configure > Hide List tab or at least mark it disabled
 - handle resolution and quality 1080p60 (1080p gets recognized and removed, leaving behind 60)
-- decide what to about folder client, then remove all: $client = $config_values['Settings']['Client'];
-- after clearing all caches, re-downloaded torrents appear to have seed ratios of Infinity due to item.downloadedEver being 0 at torrentwatch-xa.js on line 480
+- decide what to about folder client, then maybe remove all: $client = $config_values['Settings']['Client'];
 - verify the settings and complete their hints in the config panels
 - fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/tor_client.php on line 280
 
-- PHP Deprecated:  Methods with the same name as their class will not be constructors in a future version of PHP; myAtomParser has a deprecated constructor in /var/lib/torrentwatch-xa/lib/atomparser.php on line 5
-  - original source code here: http://www.the-art-of-web.com/php/atom/?hilite=atom+parser
-  - upgrade atomparser.php and transfer customized lastRSS code across while doing so
+- convert Configure > Feeds one-form-per-feed into one form for all the feeds
+- add a bulk import form for Favorites (big textarea, one line per title, all of them receive the same defaults and become individual Favorites)
 
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
 - break client_add_torrent() into smaller functions
@@ -69,20 +92,16 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 - add config option "Videos Only" beneath "Episodes Only" to only show items with at least one video quality
 - add toggle to config for local/remote Transmission and disable features like Deep Directories and Watch Directory for remote Transmission
 - fix the filterBar so that it wraps properly when screen is narrow (responsive design, may not be necessary with removal of filters)
-- fix the showFilter() redefinition from line 89 (torrentwatch-xa.js:106) and out-of-scope (:127)  problems found by JSLint 
 - add auto-refresh of list (might already auto-refresh when favorite is matched and starts download)
 - if torrent is deleted using contextMenu, the clientButtons delete and trash buttons sometimes don't know about it until the page is refreshed
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - repair phone.css button bar location so it floats just above bottom edge of screen even when scrolling
-- how does <li id="id_###"> get its class overridden for downloading/downloaded items and why does clientID not match id when it happens?
 - fix debug console in web UI
-- on page reload, Javascript doesn't redraw infoDiv on items that are still downloading or seeding--figure out how to make that function call
 - make the Favorites panel's Update button not close the panel after updating (same behavior as the Delete button)
 - make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)
 
 - finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
   - check to make sure that new decimal PV numbering system works throughout entire app
-  - fix Episodes Only config toggle
 
 - convert Hide List from hiding individual titles to hiding by pattern matching (just like the Favorites Filter)
 
@@ -100,17 +119,11 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 - remove support for Internet Explorer
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design
 - add ability to gunzip torrents coming from some feeds (such as ezRSS.it)
-- make the Interface>Font Size actually affect the entire web UI instead of just the Configuration dialog
-- refresh button in toolbar can trigger Test Hit downloads just like browser refresh
-- separate out the torrents that were direct-downloaded and don't match any favorites from the ones that do match favorites
-- improve history system so that flushing the feed cache and deleting torrents does not easily fool torrentwatch-xa into thinking matching torrents must be downloaded again
-  - if it does download again, honor the seed ratio from the favorite that it matched
 - allow user to easily mark a torrent as the most recent episode downloaded in that season or in every season
 - delete old episodes that are replaced by REPACK or PROPER
 - browser vertical scroll-bar leaves white region if it pops-out over the feed list; must refresh browser to resize and move feed list's right edge to the left
 - convert all "template" files into real templates like Smarty, etc. Current .tpl files are really just .php files.
 - harden the filter input against exploits
-- sqlite for caching and history
 - write test suite and automate tests if possible
 - POSSIBLY combine Downloading and Downloaded filters into one, using color-coding to differentiate between states
 - add ability to select a torrent and report just that item as having a detection bug (requires move away from GitHub Issues)
@@ -118,5 +131,4 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
 - sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version
-- move season and episode pattern matching (regexp) from hardcode to Configuration tab so users can configure them
 - make Favorites list cut off by letter, not whole words, and/or make list horizontal scrolling (hard to do)

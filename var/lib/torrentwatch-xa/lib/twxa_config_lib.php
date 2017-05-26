@@ -72,14 +72,14 @@ function setup_default_config() {
     _default('Download Dir', '/var/lib/transmission-daemon/downloads');
     _default('Transmission Host', 'localhost');
     _default('Transmission Port', '9091');
-    _default('Transmission Login', 'transmission'); //default for Debian's transmission-daemon
+    _default('Transmission Login', 'transmission'); // default for Debian's transmission-daemon
     _default('Transmission Password', 'transmission');
     _default('Transmission URI', '/transmission/rpc'); // hidden setting
     // Torrent tab
     _default('Deep Directories', "0");
     _default('Default Seed Ratio', "-1");
     _default('Auto-Del Seeded Torrents', "1");
-    _default('Watch Dir', '');
+    //_default('Watch Dir', '');
     _default('Save Torrents', "0");
     // Favorites tab
     _default('Match Style', "regexp");
@@ -101,10 +101,9 @@ function setup_default_config() {
     _default('SMTP User', '');
     _default('SMTP Password', '');
     // Other hidden settings
-    _default('Process Watch Dir', "1"); // only really used for twxacli.php
+    //_default('Process Watch Dir', "1"); // only really used for twxacli.php
     _default('debugLevel', "0"); //TODO remove this if twxaDebug() doesn't need it any more
-    _default('Extension', "torrent");
-    _default('Sanitize Hidelist', "0");
+    _default('Extension', "torrent"); //TODO should this be used in more places?
     _default('Cache Dir', $baseDir . "/dl_cache/");
     _default('History', $baseDir . "/dl_cache/dl_history");
 }
@@ -221,6 +220,13 @@ function read_config_file() {
                 'seedRatio' => "-1",
                 'enabled' => 1,
                 'Name' => 'AcgnX Torrent Resources Base.Global'
+            ],
+            5 => [
+                'Link' => 'https://eztv.wf/ezrss.xml',
+                'Type' => 'RSS',
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'TV Torrents RSS feed - EZTV'
             ]
         ];
         write_config_file();
@@ -350,7 +356,7 @@ function update_global_config() {
         'Transmission Port' => 'trport',
         'Transmission URI' => 'truri',
         'Download Dir' => 'downdir',
-        'Watch Dir' => 'watchdir',
+        //'Watch Dir' => 'watchdir',
         'Deep Directories' => 'deepdir',
         'Default Seed Ratio' => 'defaultratio',
         'Client' => 'client',

@@ -3,18 +3,18 @@
 global $config_values;
 
 // PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
-require_once("/var/lib/torrentwatch-xa/lib/atomparser.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_atomparser.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_cache.php");
 require_once("/var/lib/torrentwatch-xa/lib/class.bdecode.php");
 require_once("/var/lib/torrentwatch-xa/lib/class.phpmailer.php");
 require_once("/var/lib/torrentwatch-xa/lib/class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
-require_once("/var/lib/torrentwatch-xa/lib/feeds.php"); // must be before config.php
+require_once("/var/lib/torrentwatch-xa/lib/twxa_feed.php"); // must be before config.php
 if (file_exists('/var/lib/torrentwatch-xa/config.php')) { //TODO set to use get_baseDir();
     require_once("/var/lib/torrentwatch-xa/config.php");
 }
 require_once("/var/lib/torrentwatch-xa/lib/twxa_html.php");
-require_once("/var/lib/torrentwatch-xa/lib/lastRSS.php");
-require_once("/var/lib/torrentwatch-xa/lib/tor_client.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_lastRSS.php");
+require_once("/var/lib/torrentwatch-xa/lib/twxa_torrent.php");
 require_once("/var/lib/torrentwatch-xa/lib/twxa_parse.php");
 
 $config_values['Global'] = []; // initialize collection of global arrays
@@ -131,21 +131,21 @@ function twxaDebug($string, $lvl = -1) {
     }
     // write plain text to log file
     file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND);
-    /*if ($config_values['Settings']['debugLevel'] >= $lvl) {
-        if (isset($config_values['Global']['HTMLOutput'])) {
-            // write HTML output
-            if ($lvl === -1) {
-                $string = trim(strtr($string, array("'" => "\\'")));
-                $debug_output = "<script type='text/javascript'>alert('$string');</script>";
-            } else {
-                $debug_output = date("c") . " $errLabel $string";
-            }
-            //TODO this block never sends output to HTML!
-        } else {
-            // write plain text output
-            echo(date("c") . " $errLabel $string");
-        }
-    }*/
+    /* if ($config_values['Settings']['debugLevel'] >= $lvl) {
+      if (isset($config_values['Global']['HTMLOutput'])) {
+      // write HTML output
+      if ($lvl === -1) {
+      $string = trim(strtr($string, array("'" => "\\'")));
+      $debug_output = "<script type='text/javascript'>alert('$string');</script>";
+      } else {
+      $debug_output = date("c") . " $errLabel $string";
+      }
+      //TODO this block never sends output to HTML!
+      } else {
+      // write plain text output
+      echo(date("c") . " $errLabel $string");
+      }
+      } */
 }
 
 function MailNotify($msg, $subject) {
@@ -262,8 +262,8 @@ function run_script($param, $torrent, $error = "") {
             foreach ($response as $line) {
                 $msg .= $line . "\n";
             }
-            $msg.= "\n";
-            $msg.= "Please examine the example scripts in /var/lib/torrentwatch-xa/examples for more info about how to make a compatible script.";
+            $msg .= "\n";
+            $msg .= "Please examine the example scripts in /var/lib/torrentwatch-xa/examples for more info about how to make a compatible script.";
             if ($config_values['Settings']['SMTP Notifications']) {
                 $subject = "torrentwatch-xa: $script returned error.";
                 MailNotify($msg, $subject);
@@ -274,7 +274,6 @@ function run_script($param, $torrent, $error = "") {
 }
 
 function check_for_cookies($url) {
-    //if($cookies = stristr($url, ':COOKIE:')) {
     $cookies = stristr($url, ':COOKIE:');
     if ($cookies !== false) {
         $url = rtrim(substr($url, 0, -strlen($cookies)), '&');
@@ -283,16 +282,41 @@ function check_for_cookies($url) {
     }
 }
 
-/*function authenticate() {
-    global $config_values;
+/* function authenticate() {
+  global $config_values;
 
-    if ($_SERVER['PHP_AUTH_USER'] == 'twxa' && $_SERVER['PHP_AUTH_PW'] == 'twxa'
-    ) {
-        $_SESSION['http_logged'] = 1;
+  if ($_SERVER['PHP_AUTH_USER'] == 'twxa' && $_SERVER['PHP_AUTH_PW'] == 'twxa'
+  ) {
+  $_SESSION['http_logged'] = 1;
+  } else {
+  $_SESSION['http_logged'] = 0;
+  header('WWW-Authenticate: Basic realm="torrentwatch-xa"');
+  header('HTTP/1.0 401 Unauthorized');
+  exit;
+  }
+  } */
+
+/*function process_watch_dir() {
+    global $config_values;
+    if (file_exists($config_values['Settings']['Watch Dir'])) {
+        twxaDebug("Checking Watch Dir: " . $config_values['Settings']['Watch Dir'] . "\n", 2);
+        foreach ($config_values['Favorites'] as $fav) {
+            $guess = detectMatch(html_entity_decode($_GET['title']));
+            $name = trim(strtr($guess['title'], "._", "  ")); //TODO title matching is too simple here
+            if ($name == $fav['Name']) {
+                $downloadDir = $fav['Save In'];
+            }
+        }
+        if (!$downloadDir || $downloadDir == "Default") {
+            $downloadDir = $config_values['Settings']['Download Dir'];
+        }
+        $result = add_torrents_in_dir($config_values['Settings']['Watch Dir'], $downloadDir);
+        if($result['added'] > 0) {
+            twxaDebug("Processed Watch Dir, added " . $result['added'] . ", deleted " . $result['deleted'] . "\n", 1);
+        } else {
+            twxaDebug("No torrents to add in Watch Dir\n", 2);
+        }
     } else {
-        $_SESSION['http_logged'] = 0;
-        header('WWW-Authenticate: Basic realm="torrentwatch-xa"');
-        header('HTTP/1.0 401 Unauthorized');
-        exit;
+        twxaDebug("Watch Dir does not exist: " . $config_values['Settings']['Watch Dir'] . "\n", -1);
     }
 }*/

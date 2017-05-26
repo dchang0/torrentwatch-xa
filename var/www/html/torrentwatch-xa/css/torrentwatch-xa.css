@@ -635,8 +635,8 @@ ul.torrentlist li.match_favReady td.identifier {
 }
 
 /* Favorite Started */
-div#show_legend li.legend.match_favStarted,
-ul.torrentlist li.match_favStarted td.identifier {
+div#show_legend li.legend.match_justStarted,
+ul.torrentlist li.match_justStarted td.identifier {
     background-color: #d8a8d8;
 }
 
