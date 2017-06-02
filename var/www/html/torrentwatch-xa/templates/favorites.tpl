@@ -23,7 +23,7 @@
             'Save In' => 'Default',
             'Episodes' => '',
             'Feed' => '',
-            'Quality' => 'All',
+            'Quality' => '',
             'seedRatio' => $config_values['Settings']['Default Seed Ratio']
             ],
             "new"); ?>
