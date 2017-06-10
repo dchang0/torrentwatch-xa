@@ -127,7 +127,7 @@ The Episodes filter currently in each Favorite is still the old TorrentWatch-X f
 
 ### RegEx Matching Style vs. Simple vs. Glob
 
-The Favorites fields behave differently in RegEx Matching Style than in Simple or Glob in that you can use PCRE Unicode regular expressions in RegEx mode. I need to better document the finer differences between the styles here, or perhaps it is time to remove the Simple and Glob matching styles and just stick with RegEx all the time. 
+The Favorites fields behave differently in RegEx Matching Style than in Simple or Glob in that PCRE Unicode regular expressions are used in the Filter, Not, and Qualities fields in RegEx mode. I need to better document the finer differences between the styles here, or perhaps it is time to remove the Simple and Glob matching styles and just stick with RegEx all the time. 
 
 ### Authentication for private RSS Feeds
 

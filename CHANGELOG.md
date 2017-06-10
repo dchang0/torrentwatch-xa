@@ -299,6 +299,7 @@ Code changes
 - changed match_test to match_favReady for clarity
 - changed match_match to match_favStarted for clarity
 - changed match_to_check to match_waitTorCheck for clarity
+- changed match_old_download to match_inCacheNotActive for clarity
 - renamed clear_cache_real() to clear_cache_by_feed_type()
 - renamed clear_cache() to clear_cache_by_cache_type()
 - renamed cache_setup() to setup_cache()
@@ -402,10 +403,6 @@ Code changes
 
 Functional changes
 
-- rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
-- search title for PROPER or Repack and make it version 99 if found
-- 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
-- re-test removal of multiple selected active torrents from display when deleted via context menu
 - further improved creation of Qualities filter when using Add to Favorites to account for the different matching styles
   - Simple => match any of the detected qualities as strings
   - Glob => match All qualities (list of detected qualities would almost never match as a glob, so match All is best)
@@ -437,14 +434,3 @@ Code changes
 - validated and simplified Javascript .delTorrent function and changed some 1 values to true
 - started towards removing isBatch logic by commenting out $isBatch checks in torrent functions
 
-Next Version
-
-IN PROGRESS
-
-- diagnose problem with Transmission list items not matching actual transmission-daemon list
-  - remember to comment out console.log at torrentwatch-xa.js:611 before release
-- continue removing isBatch or batch functionality from torrent functions
-- still cleaning up $matched states, specifically difference between downloaded and cachehit
-- fix Quality filtering in check_for_torrent() before checking the download cache
-- finish twxaDebug() and $verbosity to allow reducing verbosity from DBG to INF or ERR
-- make twxaDebug() show alerts in web UI
