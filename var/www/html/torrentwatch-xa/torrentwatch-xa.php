@@ -568,7 +568,7 @@ function get_client() {
 $main_timer = timer_get_time(0);
 setup_default_config();
 read_config_file();
-if ($config_values['Settings']['Sanitize Hidelist'] != 1) { //TODO why is this called "Sanitize"? Do we even need this?
+if (!isset($config_values['Settings']['Sanitize Hidelist']) || $config_values['Settings']['Sanitize Hidelist'] != 1) { //TODO why is this called "Sanitize"? Do we even need this?
     update_hidelist();
     $config_values['Settings']['Sanitize Hidelist'] = 1;
     twxaDebug("Updated Hide List\n", 2);

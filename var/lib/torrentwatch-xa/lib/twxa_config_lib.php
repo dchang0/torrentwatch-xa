@@ -105,6 +105,7 @@ function setup_default_config() {
     _default('Extension', "torrent");
     _default('Cache Dir', $baseDir . "/dl_cache/");
     _default('History', $baseDir . "/dl_cache/dl_history");
+    _default('Sanitize Hidelist', "0");
 }
 
 function read_config_file() {
