@@ -434,3 +434,93 @@ Code changes
 - validated and simplified Javascript .delTorrent function and changed some 1 values to true
 - started towards removing isBatch logic by commenting out $isBatch checks in torrent functions
 
+0.6.0
+
+Functionality changes
+
+- color of downloading item in Transmission filter now matches bright green of same item in the other filters
+- clicking X in search input clears the field no longer requires pressing enter key to enact
+- torrents added outside of torrentwatch-xa now show in Transmission filter even when completed (must be manually removed, even if auto-delete is on)
+- changed Save Torrent Files to Also Save Torrent Files and made it so it does not work if Client is "Save torrent in folder"
+- added Save Torrent Files Dir to Also Save Torrent Files feature so that .torrent files can be saved to any locally-accessible path
+- removed email.tpl and slightly reworded email subjects and messages for successful and failed auto-downloading
+- corrected error messages and README.md about config.php (now no longer necessary since twxa_config_lib.php is self-contained)
+- changed torResume icon from Play icon to Resume icon
+- rewrote getClientData() and processClientData() in torrentwatch-xa.js to fully sync the web UI with transmission-daemon
+  - cleaned up item states further
+    - merged Transmission legend colors into other filters' legend colors in CSS
+    - minor tweaks to legend text
+    - smoother transitions through the states
+    - changed match_inCache (formerly match_cacheHit) color into Previously Downloaded color because it is a transient state
+  - title of item in Transmission filter starts as item.hashString but is now correctly updated to item.name when Transmission learns it
+  - progress bar is now correctly shown or hidden even across browser refreshes
+  - eta text is now shown in more states across all active torrents, especially when seeding
+- moved Usage and Design Decisions Explained sections into USAGE.md file
+- fixed bug from TorrentWatch-X 0.8.9 where context menu slideUp() does not completely put away the contextMenu, leaving it partially showing
+- tweaks to web UI colors, gradients, and radiused corners
+- improved layout of Favorites dialog
+  - moved Favorites list item text left to use space formerly occupied by the Favorite icon (heart)
+  - finally fixed word break problem in Favorites list with CSS3's `word-break` property
+  - corrected position of Close button
+  - adjusted spacing and sizing of elements
+- finally fixed vertical positioning of button bar for iOS devices
+- added the newly rebuilt NyaaTorrents as new default feed
+- moved Also Save Torrent Files and Also Save Torrent Files Dir to Configure > Client tab
+
+Code changes
+
+- completely removed commented-out Watch Dir code
+- commented out remainder of isBatch and batch code related to torrent functions
+- switched from hard-coded paths to PHP include paths
+- renamed div.torStart to div.torResume
+- renamed torStartStopToggle to toggleTorResumePause (to match toggleTorMove)
+- renamed div.dlTorrent to div.torStart
+- validated, cleaned up, and clarified item states
+  - removed commented-out match_duplicate state (was merged into match_inCacheNotActive in a prior version)
+  - renamed match_favBatch to match_ignoredFavBatch for clarity
+  - changed noShow to notSerialized for clarity
+  - renamed match_cacheHit to match_inCache for clarity
+  - renamed $matched to $itemState for clarity
+  - renamed 'matched' to 'itemState' for clarity
+  - renamed match_ prefix to st_ prefix for clarity (affects all list item states)
+  - added tc_ (stands for "torrent client") prefix to #transmission_list states: waiting, verifying, paused, downloading
+  - added tc_seeding state, though it is not really used, to complete logic
+  - merged st_justStarted into st_favReady
+- class "clientId_###" is now properly removed from items in filters other than Transmission when the matching item is removed from Transmission
+- removed unused getScrollBarWidth() function
+- cleaning up CSS with csslint.net
+  - fixed ID collision with li#webui and span#webui by renaming span#webui to span#webUILabel
+  - fixed ID collision with div.config_form and form#config_form by renaming div.config_form to div.config_form_container
+  - fixed ID collision with div#showURL and input#showURL by removing input#showURL
+  - fixed class collision with span.contextButton and a.contextButton by renaming span.contextButton to span.contextButtonContainer
+  - div#trash_tor_data might collide with a.trash_tor_data, the latter of which might not be used for anything
+  - fixed ID collision with ul#mainoptions and ul.mainoptions by removing class ul.mainoptions
+  - commented out `filter: alpha(opacity=##);` functions that are for IE8 compatibility
+- combined process_rss_feed() and process_atom_feed() into one function process_feed()
+- added or improved matchTitle functions
+- rewrote folder_add_torrent() with error handling and to return same output as transmission_add_torrent()
+- changed state logic in process_feed()
+
+Next Version
+
+Functional changes
+
+IN PROGRESS
+
+- fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
+- fix Client: Save Torrent In Folder functionality
+- search title for PROPER or Repack and make it version 99 if found
+- rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
+- 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
+
+Code changes
+
+IN PROGRESS
+
+- figure out window.gotAllData and window.getFail logic, maybe merge window.gotAllData into window.updatingClientData or remove one
+  - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
+- continue validating and commenting torrentwatch-xa.js
+- continue cleaning up CSS with csslint.net
+- fix Quality filtering in check_for_torrent() before checking the download cache
+- finish twxaDebug() and $verbosity to allow reducing verbosity from DBG to INF or ERR
+- make twxaDebug() show alerts in web UI

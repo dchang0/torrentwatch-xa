@@ -279,157 +279,185 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
             if (is_string($result['matFnd'])) {
                 break;
             }
-        //TODO handle Volume ## Chapter ##
-        //TODO handle Chapter ## Volume ##
-        //TODO handle c## (v##)
         case true :
             // ### - ###END
-            $result = matchTitle2_14($ti, $seps);
+            $result = matchTitle2_11($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         //TODO handle V##.## (Software Version ##.##)
         case true :
             // - ##x##
-            $result = matchTitle2_16($ti, $seps);
+            $result = matchTitle2_13($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ##x##
-            $result = matchTitle2_17($ti, $seps);
+            $result = matchTitle2_14($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ## of ##
-            $result = matchTitle2_18($ti, $seps);
+            $result = matchTitle2_15($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
-        //TODO handle Volume ## & ##
-        //TODO handle Chapter ## & ##
-        //TODO handle Season ## & ##
-        //TODO handle Episode ## & ##
+        case true :
+            // Volume ## & ##
+            $result = matchTitle2_16($ti, $seps, $wereQualitiesDetected);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // Chapter ## & ##
+            $result = matchTitle2_17($ti, $seps, $wereQualitiesDetected);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // Season ## & ##
+            $result = matchTitle2_18($ti, $seps, $wereQualitiesDetected);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // Episode ## & ##
+            $result = matchTitle2_19($ti, $seps, $wereQualitiesDetected);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
         //TODO handle Part ## & ##
         case true :
             // isolated ## & ##
-            $result = matchTitle2_22($ti, $seps);
+            $result = matchTitle2_21($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // Volume ## - ##
-            $result = matchTitle2_23($ti, $seps, $wereQualitiesDetected);
+            $result = matchTitle2_22($ti, $seps, $wereQualitiesDetected);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // Volume ## Chapter ##
+            $result = matchTitle2_23($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // Chapter ## Volume ##
             $result = matchTitle2_24($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // Chapter ##-##
+            $result = matchTitle2_25($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // c## (v##)
             $result = matchTitle2_26($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
-        //TODO search for unlabeled Season ## before the word Episode
         case true :
             // isolated SS - Episode ##
-            $result = matchTitle2_32($ti, $seps);
+            $result = matchTitle2_27($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // Japanese ##-## Print Media Books/Volumes
-            $result = matchTitle2_34($ti, $seps);
+            $result = matchTitle2_28($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // Japanese YYYY MM or YYYY ## Print Media
-            $result = matchTitle2_37($ti, $seps);
+            $result = matchTitle2_29($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // #nd EE
-            $result = matchTitle2_38($ti, $seps);
+            $result = matchTitle2_30($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ###.#
-            $result = matchTitle2_39($ti, $seps);
+            $result = matchTitle2_31($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated YYYY-MM or or YYYY-EE or title #### - EE
-            $result = matchTitle2_40($ti, $seps);
+            $result = matchTitle2_32($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated MM-YYYY
-            $result = matchTitle2_41($ti, $seps);
+            $result = matchTitle2_33($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // (YYYY) - EE or title (####) - EE
-            $result = matchTitle2_42($ti, $seps);
+            $result = matchTitle2_34($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         /* case true :
           // EEE - (YYYY)
-          $result = matchTitle2_43($ti, $seps);
+          $result = matchTitle2_35($ti, $seps);
           if (is_string($result['matFnd'])) {
           break;
           } */
         case true :
             // isolated No.##-No.##, Print Media Book/Volume
-            $result = matchTitle2_44($ti, $seps);
+            $result = matchTitle2_36($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated S1 #10
-            $result = matchTitle2_45($ti, $seps);
+            $result = matchTitle2_37($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ## to ##
-            $result = matchTitle2_46($ti, $seps);
+            $result = matchTitle2_38($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // ID-## - ## (different spacing around minuses)
-            $result = matchTitle2_47($ti, $seps);
+            $result = matchTitle2_39($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ##-##
-            $result = matchTitle2_48($ti, $seps);
+            $result = matchTitle2_40($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // S (EEE)
-            $result = matchTitle2_49($ti, $seps);
+            $result = matchTitle2_41($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated SS EE, SS EEE, or isolated EE EE
-            $result = matchTitle2_50($ti, $seps);
+            $result = matchTitle2_42($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }

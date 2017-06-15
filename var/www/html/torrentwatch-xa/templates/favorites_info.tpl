@@ -76,7 +76,8 @@
             <label class="lastEpisode item">x</label>
             <input class='lastEpisode text' type="text" name="episode" value="<?php echo $item['Episode']; ?>">
             <?php } else { ?>
-            <input class='lastEpisode text' type="text" style="width: 55px" name="episode" value="<?php if(isset($item['Episode'])) echo $item['Episode']; ?>">
+            <!--<input class='lastEpisode text' type="text" style="width: 55px" name="episode" value="<?php if(isset($item['Episode'])) echo $item['Episode']; ?>">-->
+            <input class='lastEpisode text' type="text" name="episode" value="<?php if(isset($item['Episode'])) echo $item['Episode']; ?>">
             <?php } ?>
         </div>
     </div>

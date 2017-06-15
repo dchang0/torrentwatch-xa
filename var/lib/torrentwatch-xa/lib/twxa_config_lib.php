@@ -75,12 +75,12 @@ function setup_default_config() {
     _default('Transmission Login', 'transmission'); // default for Debian's transmission-daemon
     _default('Transmission Password', 'transmission');
     _default('Transmission URI', '/transmission/rpc'); // hidden setting
+    _default('Save Torrents', "0");
+    _default('Save Torrents Dir', "");
     // Torrent tab
     _default('Deep Directories', "0");
     _default('Default Seed Ratio', "-1");
     _default('Auto-Del Seeded Torrents', "1");
-    //_default('Watch Dir', '');
-    _default('Save Torrents', "0");
     // Favorites tab
     _default('Match Style', "regexp");
     _default('Default Feed All', "1");
@@ -101,9 +101,8 @@ function setup_default_config() {
     _default('SMTP User', '');
     _default('SMTP Password', '');
     // Other hidden settings
-    //_default('Process Watch Dir', "1"); // only really used for twxacli.php
     _default('debugLevel', "0"); //TODO remove this if twxaDebug() doesn't need it any more
-    _default('Extension', "torrent"); //TODO should this be used in more places?
+    _default('Extension', "torrent");
     _default('Cache Dir', $baseDir . "/dl_cache/");
     _default('History', $baseDir . "/dl_cache/dl_history");
 }
@@ -194,39 +193,46 @@ function read_config_file() {
                 'Name' => 'HorribleSubs Latest RSS'
             ],
             1 => [
+                'Link' => 'https://nyaa.si/?page=rss',
+                'Type' => 'RSS',
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'Nyaa Torrent File RSS'
+            ],
+            2 => [
+                'Link' => 'https://eztv.wf/ezrss.xml',
+                'Type' => 'RSS',
+                'seedRatio' => "-1",
+                'enabled' => 1,
+                'Name' => 'TV Torrents RSS feed - EZTV'
+            ],
+            3 => [
                 'Link' => 'http://tokyotosho.info/rss.php?filter=1',
                 'Type' => 'RSS',
                 'seedRatio' => "-1",
                 'enabled' => 1,
                 'Name' => 'TokyoTosho.info Anime'
             ],
-            2 => [
+            4 => [
                 'Link' => 'https://anidex.info/rss/cat/0',
                 'Type' => 'RSS',
                 'seedRatio' => "-1",
                 'enabled' => 1,
                 'Name' => 'AniDex'
             ],
-            3 => [
+            5 => [
                 'Link' => 'https://www.torrentfunk.com/anime/rss.xml',
                 'Type' => 'RSS',
                 'seedRatio' => "-1",
                 'enabled' => 1,
                 'Name' => 'TorrentFunk RSS - Anime'
             ],
-            4 => [
+            6 => [
                 'Link' => 'https://www.acgnx.se/rss.xml',
                 'Type' => 'RSS',
                 'seedRatio' => "-1",
                 'enabled' => 1,
                 'Name' => 'AcgnX Torrent Resources Base.Global'
-            ],
-            5 => [
-                'Link' => 'https://eztv.wf/ezrss.xml',
-                'Type' => 'RSS',
-                'seedRatio' => "-1",
-                'enabled' => 1,
-                'Name' => 'TV Torrents RSS feed - EZTV'
             ]
         ];
         write_config_file();
@@ -295,7 +301,7 @@ function write_config_file() {
                 array_walk($group, 'key_callback', $key . '[]');
             } else {
                 if ($subkey) {
-                    if (!is_numeric($key)) {  // What does this do?
+                    if (!is_numeric($key)) {  //TODO What does this do?
                         $group = "$key => $group";
                     }
                     $key = $subkey;
@@ -340,6 +346,19 @@ function write_config_file() {
 function update_global_config() {
     global $config_values;
     $input = array(
+        'Time Zone' => 'tz',
+        'Client' => 'client',
+        'Extension' => 'extension',
+        'Download Dir' => 'downdir',
+        'Transmission Host' => 'trhost',
+        'Transmission Port' => 'trport',
+        'Transmission Login' => 'truser',
+        'Transmission Password' => 'trpass',
+        'Transmission URI' => 'truri',
+        'Save Torrents Dir' => 'savetorrentsdir',
+        'Deep Directories' => 'deepdir',
+        'Default Seed Ratio' => 'defaultratio',
+        'Match Style' => 'matchstyle',
         'Script' => 'script',
         'From Email' => 'fromEmail',
         'To Email' => 'toEmail',
@@ -348,33 +367,20 @@ function update_global_config() {
         'SMTP Authentication' => 'smtpAuthentication',
         'SMTP Encryption' => 'smtpEncryption',
         'SMTP User' => 'smtpUser',
-        'SMTP Password' => 'smtpPassword',
-        'Time Zone' => 'tz',
-        'Transmission Login' => 'truser',
-        'Transmission Password' => 'trpass',
-        'Transmission Host' => 'trhost',
-        'Transmission Port' => 'trport',
-        'Transmission URI' => 'truri',
-        'Download Dir' => 'downdir',
-        //'Watch Dir' => 'watchdir',
-        'Deep Directories' => 'deepdir',
-        'Default Seed Ratio' => 'defaultratio',
-        'Client' => 'client',
-        'Match Style' => 'matchstyle',
-        'Extension' => 'extension'
+        'SMTP Password' => 'smtpPassword'
     );
     $checkboxes = array(
         'Combine Feeds' => 'combinefeeds',
-        'Require Episode Info' => 'require_epi_info',
         'Disable Hide List' => 'dishidelist',
         'Show Debug' => 'showdebug',
         'Hide Donate Button' => 'hidedonate',
         'Save Torrents' => 'savetorrents',
+        'Auto-Del Seeded Torrents' => 'autodel',
+        'Default Feed All' => 'favdefaultall',
+        'Require Episode Info' => 'require_epi_info',
         'Only Newer' => 'onlynewer',
         'Download Versions' => 'fetchversions',
         'Ignore Batches' => 'ignorebatches',
-        'Auto-Del Seeded Torrents' => 'autodel',
-        'Default Feed All' => 'favdefaultall',
         'Enable Script' => 'enableScript',
         'SMTP Notifications' => 'enableSMTP'
     );
@@ -476,7 +482,6 @@ function add_favorite() {
         $config_values['Favorites'][]['Name'] = $_GET['name'];
         $arrayKeys = array_keys($config_values['Favorites']);
         $idx = end($arrayKeys);
-        //$idx = end(array_keys($config_values['Favorites']));
         $_GET['idx'] = $idx; // So display_favorite_info() can see it
     } else {
         //TODO add check for bad episode format

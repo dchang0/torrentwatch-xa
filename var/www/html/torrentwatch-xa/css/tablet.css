@@ -1,126 +1,137 @@
-div#topmenu {
-    height: 55px;
-    zoom: 120%;
-}
-div#torrentlist_container {
-    position: static;
-    margin-top: 56px;
+#topmenu {
+height:55px;
+zoom:120%
 }
 
-ul#filterbar_container li:hover {
-    height: 18px;
-    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#aaa));
-    border-top: 1px solid #f5f5f5;
-    border-right: 1px solid #999;
-    border-left: 1px solid #999 !important;
-    border-bottom: 1px solid #999;
-    color: #111;
+#torrentlist_container {
+position:static;
+margin-top:56px
 }
 
-
-ul#filterbar_container {
-    padding-left: 6px;
+#filterbar_container li:hover {
+height:18px;
+background:#e8e8e8;
+border-top:1px solid #f5f5f5;
+border-right:1px solid #999;
+border-left:1px solid #999!important;
+border-bottom:1px solid #999;
+color:#111
 }
 
-ul#filterbar_container li.tab:hover {
-    width: 100px;
+#filterbar_container {
+padding-left:6px
 }
 
-ul#filterbar_container li.selected:hover,
-ul#filterbar_container li.tab {
-    width: 101px;
+#filterbar_container li.tab:hover {
+width:100px
 }
 
-ul#filterbar_container li {
-    padding-top: 1px;
+#filterbar_container .selected:hover,#filterbar_container li.tab {
+width:101px
 }
 
-li#rates { display: none; }
-
-li#filter_bytext { display: none; }
-
-span.contextButton { display: none; }
-
-ul#clientButtons { 
-    height: 34px; 
+#filterbar_container li {
+padding-top:1px
 }
 
-div#clientButtonsHolder {
-    position: fixed;
-    right: 5px;
+#rates {
+display:none
 }
 
-ul#clientButtons li { zoom: 130%; }
-
-ul#clientButtons li.move_data input { width: 515px; }
-
-div.dialogTitle {
-    display: none;
+#filter_bytext {
+display:none
 }
 
+.contextButtonContainer {
+display:none
+}
+
+#clientButtons {
+height:34px
+}
+
+#clientButtonsHolder {
+position:fixed;
+right:5px
+}
+
+#clientButtons li {
+zoom:130%
+}
+
+#clientButtons li.move_data input {
+width:515px
+}
+
+.dialogTitle {
+display:none
+}
+
+.dialog_window:not(#trash_tor_data):not(#transmissionWindow) {
+border-radius:5px;
+top:50px
+}
+
+#torrentlist_container {
+position:static;
+top:30px
+}
+
+#torrentlist_container {
+zoom:120%
+}
+
+.torInfo {
+overflow:hidden;
+height:12px
+}
+
+.torrent_title {
+overflow:hidden;
+height:18px;
+width:700px
+}
+
+#trash_tor_data {
+margin-left:-300px;
+width:600px
+}
+
+#trash_tor_data div {
+zoom:200%
+}
+
+@media only screen and (orientation:portrait) {
 div.dialog_window:not(#trash_tor_data):not(#transmissionWindow) {
-    border-radius: 5px;
-    top: 50px;
+top:130px
 }
 
-div#torrentlist_container {
-    position: static;
-    top: 30px;
+#favorites {
+left:294px
 }
 
-div#torrentlist_container { zoom: 120%; }
-
-span.torInfo {
-    overflow: hidden;
-    height: 12px;
+.torrent_title {
+width:480px
 }
 
-span.torrent_title {
-    overflow: hidden;
-    height: 18px;
-    width: 700px;
+#clientButtons li.move_data input {
+width:310px
 }
 
-div#trash_tor_data {
-    margin-left: -300px;
-    width: 600px;
+#transmissionDialog .dialogTitle {
+padding-top:2px;
+width:650px;
+margin-left:-325px
 }
 
-div#trash_tor_data div {
-    zoom: 200%;
+#transmissionWindow {
+width:650px;
+height:750px;
+margin-left:-325px
 }
 
-@media only screen and (orientation:portrait){
-   /* portrait styles here */
-
-    div.dialog_window:not(#trash_tor_data):not(#transmissionWindow) {
-        top: 130px;
-    }
-
-    div.dialog_window#favorites {
-	left: 294px;
-    }
-
-    span.torrent_title {
-        width: 480px;
-    }
-
-    ul#clientButtons li.move_data input { width: 310px; }
-
-    div#transmissionDialog .dialogTitle {
-	padding-top: 2px;
-	width: 650px;
-        margin-left: -325px;
-    }
-    div#transmissionWindow {
-        width: 650px;
-        height: 750px;
-        margin-left: -325px;
-    }
-
-    #transmissionFrame {
-        width: 650px;
-        height: 750px;
-    }
-
+#transmissionFrame {
+width:650px;
+height:750px
+}
 }

@@ -6,13 +6,20 @@ header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Cache-Control: no-cache, must-revalidate");
 header("Pragma: no-cache");
 
-ini_set('include_path', '.:./php');
 //error_reporting(E_ERROR | E_WARNING | E_PARSE);
 error_reporting(E_ALL);
-require_once('/var/lib/torrentwatch-xa/lib/twxa_tools.php'); //TODO switch this to use get_baseDir()
 
-$twxa_version[0] = "0.5.0";
+$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
+$includePath = get_include_path();
+foreach ($twxaIncludePaths as $twxaIncludePath) {
+    if (strpos($includePath, $twxaIncludePath) === false) {
+        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
+    }
+}
+set_include_path($includePath);
+require_once("twxa_tools.php");
 
+$twxa_version[0] = "0.6.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -29,12 +36,6 @@ if (get_magic_quotes_gpc()) {
         }
     }
     unset($process);
-}
-
-if (!(file_exists('/var/lib/torrentwatch-xa/config.php'))) { //TODO set to use get_baseDir()
-    $config = '/var/lib/torrentwatch-xa/config.php';
-    echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please copy $config.dist to $config and edit it to match your environment. Then click your browser's reload button.</div>";
-    return;
 }
 
 // This function parses commands sent from a PC browser
@@ -63,18 +64,26 @@ function parse_options() {
             exit;
         case 'delTorrent':
             if (isset($_REQUEST['trash'])) {
-                $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['batch'], $_REQUEST['checkCache']);
+                if (isset($_REQUEST['checkCache'])) {
+                    $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['checkCache']);
+                } else {
+                    $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], false);
+                }
             } else {
-                $response = delTorrent($_REQUEST['delTorrent'], false, $_REQUEST['batch'], $_REQUEST['checkCache']);
+                if (isset($_REQUEST['checkCache'])) {
+                    $response = delTorrent($_REQUEST['delTorrent'], false, $_REQUEST['checkCache']);
+                } else {
+                    $response = delTorrent($_REQUEST['delTorrent'], false, false);
+                }
             }
             echo "$response";
             exit;
         case 'stopTorrent':
-            $response = stopTorrent($_REQUEST['stopTorrent'], $_REQUEST['batch']);
+            $response = stopTorrent($_REQUEST['stopTorrent']);
             echo "$response";
             exit;
         case 'startTorrent':
-            $response = startTorrent($_REQUEST['startTorrent'], $_REQUEST['batch']);
+            $response = startTorrent($_REQUEST['startTorrent']);
             echo "$response";
             exit;
         case 'moveTo':
@@ -109,7 +118,6 @@ function parse_options() {
             } else {
                 $seedRatio = $config_values['Settings']['Default Seed Ratio'];
             }
-
             if (!($seedRatio)) {
                 $seedRatio = -1;
             }
@@ -270,18 +278,21 @@ function display_global_config() {
     }
 
     // Client tab
-    $transmission = $folderclient = '';
+    $transmission = $folderclient = $savetorrents = '';
     switch ($config_values['Settings']['Client']) {
-        case 'Transmission':
+        case "Transmission":
             $transmission = 'selected="selected"';
             break;
-        case 'folder':
+        case "folder":
             $folderclient = 'selected="selected"';
+    }
+    if ($config_values['Settings']['Save Torrents'] == 1) {
+        $savetorrents = 'checked=1';
     }
 
     // Torrent tab
     $deepfull = $deeptitle = $deepTitleSeason = $deepoff = '';
-    $autodel = $savetorrent = '';
+    $autodel = '';
     switch ($config_values['Settings']['Deep Directories']) {
         case 'Full': $deepfull = 'selected="selected"';
             break;
@@ -293,9 +304,6 @@ function display_global_config() {
     }
     if ($config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
         $autodel = 'checked=1';
-    }
-    if ($config_values['Settings']['Save Torrents'] == 1) {
-        $savetorrent = 'checked=1';
     }
 
     // Favorites tab
@@ -386,7 +394,6 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
 
 function display_favorites() {
     global $config_values, $html_out;
-
     ob_start();
     require('templates/favorites.tpl');
     return ob_get_contents();
@@ -394,7 +401,6 @@ function display_favorites() {
 
 function display_hidelist() {
     global $config_values, $html_out;
-
     ob_start();
     require('templates/hidelist.tpl');
     return ob_get_contents();
@@ -402,7 +408,6 @@ function display_hidelist() {
 
 function update_hidelist() {
     global $config_values;
-
     foreach ($config_values['Hidden'] as $key => $hidden) {
         unset($config_values['Hidden'][$key]);
         $config_values['Hidden'][strtolower(strtr($key, [":" => "", "," => "", "'" => "", "." => " ", "_" => " "]))] = "hidden";
@@ -412,7 +417,6 @@ function update_hidelist() {
 
 function display_feeds() {
     global $config_values, $html_out;
-
     ob_start();
     require('templates/feeds.tpl');
     return ob_get_contents();
@@ -420,13 +424,11 @@ function display_feeds() {
 
 function display_history() {
     global $html_out, $config_values;
-
     if (file_exists($config_values['Settings']['History'])) {
         $history = array_reverse(unserialize(file_get_contents($config_values['Settings']['History'])));
     } else {
         $history = [];
     }
-
     ob_start();
     require('templates/history.tpl');
     return ob_get_contents();
@@ -434,7 +436,6 @@ function display_history() {
 
 function display_legend() {
     global $html_out;
-
     ob_start();
     require('templates/legend.tpl');
     return ob_get_contents();
@@ -442,9 +443,7 @@ function display_legend() {
 
 function display_transmission() {
     global $html_out;
-
     $host = get_tr_location();
-
     ob_start();
     require('templates/transmission.tpl');
     return ob_get_contents();
@@ -452,7 +451,6 @@ function display_transmission() {
 
 function display_clearCache() {
     global $html_out;
-
     ob_start();
     require('templates/clear_cache.tpl');
     return ob_get_contents();
@@ -493,7 +491,7 @@ function check_files() {
     }
     $cwd = getcwd();
     if (!(get_webDir() == $cwd)) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please edit the config.php file and change the webDir from " . get_webDir() . " to:<br /> \"$cwd\".<br />Then click your browser's reload button.</div>";
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please edit " . get_baseDir() . "/config.php and change the webDir from " . get_webDir() . " to:<br /> \"$cwd\".<br />Then click your browser's reload button.</div>";
         return;
     }
 
@@ -570,7 +568,7 @@ function get_client() {
 $main_timer = timer_get_time(0);
 setup_default_config();
 read_config_file();
-if ($config_values['Settings']['Sanitize Hidelist'] != 1) {
+if ($config_values['Settings']['Sanitize Hidelist'] != 1) { //TODO why is this called "Sanitize"? Do we even need this?
     update_hidelist();
     $config_values['Settings']['Sanitize Hidelist'] = 1;
     twxaDebug("Updated Hide List\n", 2);

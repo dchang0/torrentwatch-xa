@@ -1,6 +1,15 @@
 <?php
 
-require_once("/var/lib/torrentwatch-xa/lib/twxa_config_lib.php"); //TODO set to use baseDir/lib
+$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
+$includePath = get_include_path();
+foreach ($twxaIncludePaths as $twxaIncludePath) {
+    if (strpos($includePath, $twxaIncludePath) === false) {
+        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
+    }
+}
+set_include_path($includePath);
+require_once("twxa_config_lib.php");
+
 /* 
  * You may change any setting in this static config file to fit your needs by
  * uncommenting the entire function and then changing the return value.

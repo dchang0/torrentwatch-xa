@@ -444,7 +444,7 @@ function detectMatch($ti) {
             }
         }
     } else {
-        $episGuess = "noShow";
+        $episGuess = "notSerialized";
     }
     //TODO handle PV and other numberSequence values
     //TODO add itemVersion handling to batches such as 1x03v2-1x05v2

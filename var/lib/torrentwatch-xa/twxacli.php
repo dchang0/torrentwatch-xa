@@ -4,9 +4,16 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 // twxacli.php
 // command line interface to torrentwatch-xa
-//ini_set('include_path', 'lib');
 
-require_once('/var/lib/torrentwatch-xa/lib/twxa_tools.php');
+$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
+$includePath = get_include_path();
+foreach ($twxaIncludePaths as $twxaIncludePath) {
+    if (strpos($includePath, $twxaIncludePath) === false) {
+        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
+    }
+}
+set_include_path($includePath);
+require_once("twxa_tools.php");
 
 $verbosity = 0;
 
@@ -14,8 +21,6 @@ function usage() {
     twxaDebug(__FILE__ . " <options>\nCommand line interface to torrentwatch-xa\nOptions:\n", 0);
     twxaDebug("           -c <dir> : enable cache\n", 0);
     twxaDebug("           -C : disable cache\n", 0);
-    /*twxaDebug("           -d : skip watch dir\n", 0);
-    twxaDebug("           -D : start torrents in watch dir\n", 0);*/
     twxaDebug("           -h : show this help\n", 0);
     twxaDebug("           -q : quiet (no output)\n", 0);
     twxaDebug("           -v : verbose output\n", 0);
@@ -34,12 +39,6 @@ function parse_args() {
             case '-C':
                 unset($config_values['Settings']['Cache Dir']);
                 break;
-            /*case '-d':
-                $config_values['Settings']['Process Watch Dir'] = 0;
-                break;
-            case '-D':
-                $config_values['Settings']['Process Watch Dir'] = 1;
-                break;*/
             case '-h':
             case '--help':
                 usage();
@@ -72,16 +71,6 @@ if (isset($config_values['Feeds'])) {
     load_all_feeds($config_values['Feeds'], 1);
     process_all_feeds($config_values['Feeds']);
 }
-/*if (isset($config_values['Settings']['Process Watch Dir']) &&
-        $config_values['Settings']['Process Watch Dir'] == 1) {
-    if ($config_values['Settings']['Watch Dir']) {
-        process_watch_dir();
-    } else {
-        twxaDebug("Watch Dir is not set\n", 2);
-    }
-} else {
-    twxaDebug("Process Watch Dir is disabled\n", 2);
-}*/
 if (isset($config_values['Settings']['Auto-Del Seeded Torrents']) &&
         $config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
     auto_del_seeded_torrents();

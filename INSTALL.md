@@ -1,6 +1,8 @@
 Installation
 ===============
 
+NOTE: For those of you upgrading from a version of torrentwatch-xa prior to 0.5.0, you MUST either replace `/etc/cron.d/torrentwatch-xa-cron` OR edit it and remove the `-D` flag (for Process Watch Dir). Otherwise, the cron job will generate an error and fail. The `install_twxa.sh` script can do this for you; note the `--keep-config` option that backs up your config file to your home directory and then puts it back after installing the new torrentwatch-xa files and folders.
+
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon`
@@ -50,26 +52,3 @@ Installation Script
 As of 0.4.1, there is a simple install/upgrade script called `install_twxa.sh` meant for Debian 8.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
 
 As of 0.5.0, the `install_twxa.sh` script has an option `--keep-config` that will copy your current config file to your home directory, then copy it back after performing an upgrade.
-
-Configure > Trigger
-===============
-
-torrentwatch-xa can trigger email notifications by SMTP or shell scripts or both. Shell scripts can be used for post-processing including sending email notifications in place of or in addition to the built-in SMTP notifications.
-
-SMTP Notifications trigger on these events:
-- Favorite item starts downloading (usually started by cron job, but web UI can do it as well)
-- error while downloading
-- error in Script
-
-Scripts trigger on these events:
-- Favorite item starts downloading
-- non-Favorite item starts downloading
-- error while downloading
-
-To run a shell script, check Enable Script, provide the full path to a single shell script with no parameters in the Script field. Your shell script must have rwx permissions for www-data, and no parameters may be supplied in the Script field. See /var/lib/torrentwatch-xa/examples for example shell scripts that you can customize to suit your needs.
-
-To use the built-in SMTP notifications, check SMTP Notifications and fill in the From Email and To Email fields and all the SMTP fields. SMTP Port defaults to 25 if left blank. From Email defaults to To Email if left blank or it is invalid. 
-
-For various in-depth reasons I am not providing any means of testing the SMTP settings at this time. You can trigger a real email notification by initiating a Favorite download (by cron job) and checking the log file at /tmp/twxalog for errors.
-
-torrentwatch-xa uses PHPMailer 5.2.23 to send emails, so you may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear.

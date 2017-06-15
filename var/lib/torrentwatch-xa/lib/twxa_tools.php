@@ -2,20 +2,30 @@
 
 global $config_values;
 
-// PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
-require_once("/var/lib/torrentwatch-xa/lib/twxa_atomparser.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_cache.php");
-require_once("/var/lib/torrentwatch-xa/lib/class.bdecode.php");
-require_once("/var/lib/torrentwatch-xa/lib/class.phpmailer.php");
-require_once("/var/lib/torrentwatch-xa/lib/class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
-require_once("/var/lib/torrentwatch-xa/lib/twxa_feed.php"); // must be before config.php
-if (file_exists('/var/lib/torrentwatch-xa/config.php')) { //TODO set to use get_baseDir();
-    require_once("/var/lib/torrentwatch-xa/config.php");
+$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib", "/var/www/html/torrentwatch-xa/templates/"];
+$includePath = get_include_path();
+foreach ($twxaIncludePaths as $twxaIncludePath) {
+    if (strpos($includePath, $twxaIncludePath) === false) {
+        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
+    }
 }
-require_once("/var/lib/torrentwatch-xa/lib/twxa_html.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_lastRSS.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_torrent.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse.php");
+set_include_path($includePath);
+
+// PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
+require_once("twxa_config_lib.php");
+if (file_exists("config.php")) {
+    require_once("config.php");
+}
+require_once("twxa_lastRSS.php");
+require_once("twxa_atomparser.php");
+require_once("class.bdecode.php");
+require_once("class.phpmailer.php");
+require_once("class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
+require_once("twxa_cache.php");
+require_once("twxa_torrent.php");
+require_once("twxa_parse.php");
+require_once("twxa_feed.php");
+require_once("twxa_html.php");
 
 $config_values['Global'] = []; // initialize collection of global arrays
 
@@ -116,7 +126,6 @@ function filename_encode($filename) {
 }
 
 function twxaDebug($string, $lvl = -1) {
-    //global $config_values;
     switch ($lvl) {
         case -1: // ALERT:
         case 0:
@@ -218,12 +227,13 @@ function MailNotify($msg, $subject) {
 
             $email->Subject = $subject;
 
-            $mail = file_get_contents("templates/email.tpl"); //TODO use webDir because twxacli.php can't access this
-            $mail = str_replace('[MSG]', $msg, $mail);
-            if (empty($mail)) {
-                $mail = $msg;
-            }
-            $email->Body = $mail;
+            /* $mail = file_get_contents(get_webDir() . "/templates/email.tpl");
+              $mail = str_replace('[MSG]', $msg, $mail);
+              if (empty($mail)) {
+              $mail = $msg;
+              }
+              $email->Body = $mail; */
+            $email->Body = $msg;
 
             if (!$email->Send()) {
                 twxaDebug("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
@@ -242,8 +252,8 @@ function MailNotify($msg, $subject) {
 
 function run_script($param, $torrent, $error = "") {
     global $config_values;
-    $torrent = escapeshellarg($torrent);
-    $error = escapeshellarg($error);
+    $escapedTorrent = escapeshellarg($torrent);
+    $escapedError = escapeshellarg($error);
     $script = $config_values['Settings']['Script'];
     if ($script) {
         if (!is_file($script)) {
@@ -255,8 +265,10 @@ function run_script($param, $torrent, $error = "") {
             twxaDebug("Notify Script is not a single file; ignoring for security reasons.\n", -1);
             return;
         }
-        twxaDebug("Running script: $script $param $torrent $error \n", 1);
-        exec("$script $param $torrent $error 2>&1", $response, $return);
+        twxaDebug("Running script: $script $param $escapedTorrent $escapedError \n", 1);
+        $response = [];
+        $return = 0;
+        exec("$script $param $escapedTorrent $escapedError 2>&1", $response, $return);
         if ($return) {
             $msg = "Something went wrong while running $script:\n";
             foreach ($response as $line) {
@@ -295,28 +307,3 @@ function check_for_cookies($url) {
   exit;
   }
   } */
-
-/*function process_watch_dir() {
-    global $config_values;
-    if (file_exists($config_values['Settings']['Watch Dir'])) {
-        twxaDebug("Checking Watch Dir: " . $config_values['Settings']['Watch Dir'] . "\n", 2);
-        foreach ($config_values['Favorites'] as $fav) {
-            $guess = detectMatch(html_entity_decode($_GET['title']));
-            $name = trim(strtr($guess['title'], "._", "  ")); //TODO title matching is too simple here
-            if ($name == $fav['Name']) {
-                $downloadDir = $fav['Save In'];
-            }
-        }
-        if (!$downloadDir || $downloadDir == "Default") {
-            $downloadDir = $config_values['Settings']['Download Dir'];
-        }
-        $result = add_torrents_in_dir($config_values['Settings']['Watch Dir'], $downloadDir);
-        if($result['added'] > 0) {
-            twxaDebug("Processed Watch Dir, added " . $result['added'] . ", deleted " . $result['deleted'] . "\n", 1);
-        } else {
-            twxaDebug("No torrents to add in Watch Dir\n", 2);
-        }
-    } else {
-        twxaDebug("Watch Dir does not exist: " . $config_values['Settings']['Watch Dir'] . "\n", -1);
-    }
-}*/

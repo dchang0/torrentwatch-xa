@@ -251,7 +251,6 @@ function matchTitle1_1_12($ti, $seps) {
             'episSt' => 1, // assume Special Episode 1
             'episEd' => 1,
             'itemVr' => $mat[2], // only number is the version number
-            //'favTi' => preg_replace("/v(\d+)/i", "", $ti),
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_12"
         ];
@@ -271,7 +270,6 @@ function matchTitle1_1_13($ti, $seps) {
             'episSt' => $mat[1],
             'episEd' => $mat[1],
             'itemVr' => 1,
-            //'favTi' => preg_replace("/\b(\d+)[$seps]?-?/", "", $ti),
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_13"
         ];
@@ -293,7 +291,6 @@ function matchTitle1_1_14($ti, $seps) {
             'episSt' => $mat[2],
             'episEd' => $mat[2],
             'itemVr' => 1,
-            //'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,2})/i", "", $ti),
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_14"
         ];
@@ -581,7 +578,6 @@ function matchTitle1_1_30_5($ti, $seps) {
 function matchTitle1_1_30_6($ti, $seps) {
     // isolated or buttressed EEE
     $mat = [];
-    //$re = "/([\+\-\(#\x{3010}\x{3011}\x{7B2C}]?[$seps]?)(\d+)([$seps]?)([\+\-\)\x{3010}\x{3011}]?|$)/u";
     $re = "/([$seps\+\-\(\)#\x{3010}\x{3011}\x{7B2C}])(\d+)([$seps\+\-\(\)\x{3010}\x{3011}]|$).*/u";
     if (preg_match($re, $ti, $mat)) {
         if ($mat[2] + 0 > 0) {
@@ -593,7 +589,6 @@ function matchTitle1_1_30_6($ti, $seps) {
                 'episSt' => $mat[2],
                 'episEd' => $mat[2],
                 'itemVr' => 1,
-                //'favTi' => preg_replace($re, "$1$3", $ti),
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "1_1_30_6-1"
             ];
@@ -607,7 +602,6 @@ function matchTitle1_1_30_6($ti, $seps) {
                 'episSt' => 0,
                 'episEd' => 0,
                 'itemVr' => 1,
-                //'favTi' => preg_replace($re, "$1$3", $ti),
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "1_1_30_6-2"
             ];

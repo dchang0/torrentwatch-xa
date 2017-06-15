@@ -25,7 +25,7 @@ if(isset($item['pubDate'])) {
     $unixTime = strtotime($item['pubDate']);
 }
 
-if(!($torHash)) { //TODO improve passing of $torHash into this file
+if(!($torHash)) {
     $torHash = '###torHash###';
 }
 
@@ -33,27 +33,33 @@ if($config_values['Settings']['Combine Feeds'] == 1) {
     $feedItem = "<span class=\"feed_name\">$feedName</span>";
 }
 
-if(!$config_values['Settings']['Disable Hide List'] && $matched === "notAMatch")  {
+if(!$config_values['Settings']['Disable Hide List'] && $itemState === "st_notAMatch")  {
     $hideItem = "<div class='contextItem hideItem' onclick='$.hideItem(\"$utitle\")' title='Hide show'>Hide show</div>"; // adds Hide Show button to drop-down menu
 }
 
-if($config_values['Settings']['Client'] != 'folder') {
+if($config_values['Settings']['Client'] != "folder") {
     $progressBar = "<div class='progressBarContainer init'><div class='progressDiv' style='width: 0.07%; height: 3px; '></div></div>";
 }
 
 // hide or show choices in contextMenu
-if($matched === "downloading" || $matched === "downloaded" || $matched === "cachehit" || $matched === "justStarted" || $matched === "waitTorCheck") {
-    $dlTorrent = "dlTorrent hidden";
-    $torStart = "torStart hidden";
-    $torPause = "torPause";
-    $torDelete = "torDelete";
-    $torTrash = "torTrash";
-} else {
-    $dlTorrent = "dlTorrent";
-    $torStart = "torStart hidden";
-    $torPause = "torPause hidden";
-    $torDelete = "torDelete hidden";
-    $torTrash = "torTrash hidden";
+switch ($itemState) {
+    case "st_favReady":
+    case "st_waitTorCheck":
+    case "st_inCache":
+        // hide every choice in these interim states
+        $torStart = "torStart hidden";
+        $torResume = "torResume hidden";
+        $torPause = "torPause hidden";
+        $torDelete = "torDelete hidden";
+        $torTrash = "torTrash hidden";
+        break;
+    default:
+        $torStart = "torStart";
+        $torResume = "torResume hidden";
+        $torPause = "torPause hidden";
+        $torDelete = "torDelete hidden";
+        $torTrash = "torTrash hidden";
+        break;
 }
 
 $showTitle = $guess['favTitle'];
@@ -66,14 +72,14 @@ if($config_values['Settings']['Show Debug']) {
     $showEpisodeNumber = '';
 }
 
-if($guess['episode'] != '' && $guess['episode'] != 'noShow') {
+if($guess['episode'] != '' && $guess['episode'] != 'notSerialized') {
     $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>" . $guess['episode'] . "</b></span>";
 } else {
     $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>(\"_&nbsp;)</b></span>";
 }
 
 print <<< EOH
-<li id=id_$id name=$id class="torrent match_$matched $alt item_$torHash">
+<li id=id_$id name=$id class="torrent $itemState $alt item_$torHash">
 <input type="hidden" class="title" value="$utitle"/>
 <input type="hidden" class="show_title" value="$showTitle"/>
 <input type="hidden" class="show_quality" value="$showQuality"/>
@@ -85,17 +91,17 @@ print <<< EOH
 <td class="identifier"></td>
 <td class="torrent_name">
 <div class='torrent_name'>
-<span class="contextButton"><a id="contextButton_$id" class="contextButton" onclick='$.toggleContextMenu("#divContext_$id", "$id");'></a></span>
+<span class="contextButtonContainer"><a id="contextButton_$id" class="contextButton" onclick='$.toggleContextMenu("#divContext_$id", "$id");'></a></span>
 <span class='torrent_title' title="$description">$ti</span>
 <span class='torrent_pubDate'>$feedItem $showEpisodeNumber $pubDate</span>
 </div>
 <div id="divContext_$id" class="contextMenu">
 <div class='contextItem addFavorite' onclick='javascript:$.addFavorite("$feed","$utitle")' title="Add this show to favorites">Add to favorites</div>
-<div class='contextItem $dlTorrent' onclick='javascript:$.dlTorrent("$utitle","$ulink","$feed","$id")' title="Download this torrent">Download</div>
-<div class="contextItem activeTorrent $torStart" onclick='javascript:$.stopStartTorrent("start", "$torHash")' title="Resume download">Resume transfer</div>
+<div class='contextItem $torStart' onclick='javascript:$.dlTorrent("$utitle","$ulink","$feed","$id")' title="Download this torrent">Download</div>
+<div class="contextItem activeTorrent $torResume" onclick='javascript:$.stopStartTorrent("start", "$torHash")' title="Resume download">Resume transfer</div>
 <div class="contextItem activeTorrent $torPause" onclick='javascript:$.stopStartTorrent("stop", "$torHash")' title="Pause download">Pause transfer</div>
-<div class="contextItem activeTorrent $torDelete" onclick='javascript:$.delTorrent("$torHash", false)' title="Delete torrent but keep data">Remove from client</div>
-<div class="contextItem activeTorrent $torTrash" onclick='javascript:$.delTorrent("$torHash", true)' title="Delete torrent and its data">Remove & trash data</div>
+<div class="contextItem activeTorrent $torDelete" onclick='javascript:$.delTorrent("$torHash", false, false)' title="Delete torrent but keep data">Remove from client</div>
+<div class="contextItem activeTorrent $torTrash" onclick='javascript:$.delTorrent("$torHash", true, false)' title="Delete torrent and its data">Remove & trash data</div>
 $hideItem
 $epiDiv
 </div>

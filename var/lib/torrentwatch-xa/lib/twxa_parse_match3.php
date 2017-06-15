@@ -269,10 +269,9 @@ function matchTitle3_11($ti, $seps) {
 
 function matchTitle3_12($ti, $seps) {
     // ### to ###.# episodes
-    //TODO fix it so that 2005.08 to 50 doesn't match
     $mat = [];
     $re = "/\b(\d{1,4})[$seps]?(through|thru|to)[$seps]?(\d{1,4}\.\d)\b.*/i";
-    if (preg_match($re, $ti, $mat)) {
+    if (preg_match($re, $ti, $mat) && $mat[1] <= $mat[3] + 0) {
         return [
             'medTyp' => 1,
             'numSeq' => 1,
@@ -289,10 +288,9 @@ function matchTitle3_12($ti, $seps) {
 
 function matchTitle3_13($ti, $seps) {
     // ###.# to ### episodes
-    //TODO fix it so that 2005.08 to 50 doesn't match
     $mat = [];
     $re = "/\b(\d{1,4}\.\d)[$seps]?(through|thru|to)[$seps]?(\d{1,4})\b.*/i";
-    if (preg_match($re, $ti, $mat)) {
+    if (preg_match($re, $ti, $mat) && $mat[1] + 0 <= $mat[3]) {
         return [
             'medTyp' => 1,
             'numSeq' => 1,

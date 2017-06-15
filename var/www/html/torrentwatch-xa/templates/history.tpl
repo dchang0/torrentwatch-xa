@@ -9,7 +9,7 @@
             <li><?php echo $item['Date'].' - '.$item['Title']; ?></li>
             <?php endforeach; ?>
         </ul>
-        <div class="buttonContainer">
+            <div class="buttonContainer">
             <a class="button toggleDialog close" href="#">Close</a>
             <a class="button" id="clearhistory" href="torrentwatch-xa.php?clearHistory=1">Clear</a>
         </div>

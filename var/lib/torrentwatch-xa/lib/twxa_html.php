@@ -19,7 +19,7 @@ function show_transmission_div() {
     return;
 }
 
-function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) {
+function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id) {
     global $config_values, $html_out;
     $guess = detectMatch($item['title']);
 
@@ -29,8 +29,15 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $matched, $id) 
         }
     }
 
-    if (($matched === "cachehit" || $matched === "downloaded" || $matched === "justStarted") && $config_values['Settings']['Client'] != 'folder') {
-        $matched = 'waitTorCheck';
+    if ($config_values['Settings']['Client'] !== "folder") {
+        switch ($itemState) {
+            case "st_inCache":
+            case "st_downloaded": // remove this if PHP side is capable of verifying completed downloads
+            case "st_downloading":
+            case "st_favReady":
+                $itemState = 'st_waitTorCheck';
+                break;
+        }
     }
 
     $ti = $item['title'];

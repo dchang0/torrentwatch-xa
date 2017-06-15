@@ -4,10 +4,10 @@
 
 function getClientData($recent, $encodeJson = true) {
     $fields = array('id', 'name', 'errorString', 'hashString', 'uploadRatio', 'percentDone',
-        //'leftUntilDone', 'downloadDir', 'totalSize', 'uploadedEver', 'downloadedEver', 'addedDate', 'status', 'eta',
         'leftUntilDone', 'downloadDir', 'totalSize', 'addedDate', 'status', 'eta',
-        'peersSendingToUs', 'peersGettingFromUs', 'peersConnected', 'seedRatioLimit', 'recheckProgress', 'rateDownload', 'rateUpload');
-    if ($recent) {
+        'peersSendingToUs', 'peersGettingFromUs', 'peersConnected', 'seedRatioLimit',
+        'recheckProgress', 'rateDownload', 'rateUpload');
+    if ($recent) { //TODO if converting to boolean, beware of string parameter passing of "true" or "false"
         $request = array('arguments' => array('fields' => $fields, 'ids' => 'recently-active'), 'method' => 'torrent-get');
     } else {
         $request = array('arguments' => array('fields' => $fields), 'method' => 'torrent-get');
@@ -20,45 +20,43 @@ function getClientData($recent, $encodeJson = true) {
     }
 }
 
-function startTorrent($torHash, $isBatch = false) {
-    //if ($isBatch) {
-    $torHash = explode(',', $torHash); // this is okay because $torHash is a SHA1 hexadecimal number and never has commas
-    //}
-    $request = array('arguments' => array('ids' => $torHash), 'method' => 'torrent-start');
+function startTorrent($torHash) {
+    $idsArray = explode(',', $torHash); // this is okay because $torHash is a SHA1 hexadecimal number and never has commas
+    $request = array('arguments' => array('ids' => $idsArray), 'method' => 'torrent-start');
     $response = transmission_rpc($request);
     return json_encode($response);
 }
 
-function stopTorrent($torHash, $isBatch = false) {
-    //if ($isBatch) {
-    $torHash = explode(',', $torHash);
-    //}
-    $request = array('arguments' => array('ids' => $torHash), 'method' => 'torrent-stop');
+function stopTorrent($torHash) {
+    $idsArray = explode(',', $torHash);
+    $request = array('arguments' => array('ids' => $idsArray), 'method' => 'torrent-stop');
     $response = transmission_rpc($request);
     return json_encode($response);
 }
 
-function delTorrent($torHash, $toTrash = false, $isBatch = false, $checkCache = false) {
-    //if ($isBatch) {
-    $torHash = explode(',', $torHash);
-    if ($checkCache) {
+function delTorrent($torHash, $toTrash = false, $checkCache = false) {
+    $idsArray = explode(',', $torHash);
+    if ($checkCache === true || $checkCache === "true") { // some parameter passing causes $checkCache to be a string instead of a boolean
         $deleteHashes = [];
-        foreach ($torHash as $hash) {
+        foreach ($idsArray as $hash) {
             if (check_cache_for_torHash($hash) !== "") {
                 // torrent hash is found in download cache, append it to $deleteHashes
                 $deleteHashes[] = $hash;
             }
         }
-        $torHash = $deleteHashes;
+        $idsArray = $deleteHashes;
     }
-    //}
-    $request = array('arguments' => array('delete-local-data' => $toTrash, 'ids' => $torHash), 'method' => 'torrent-remove');
-    $response = transmission_rpc($request);
-    return json_encode($response);
+    if (count($idsArray) >= 1) { //TODO maybe test || $checkCache === false too
+        $request = array('arguments' => array('delete-local-data' => $toTrash, 'ids' => $idsArray), 'method' => 'torrent-remove');
+        $response = transmission_rpc($request);
+        return json_encode($response);
+    } else {
+        return "{\"result\":\"nothing to delete\"}"; // fake error message because Transmission RPC returns success even when there's nothing to delete
+    }
 }
 
 function auto_del_seeded_torrents() {
-    $response = getClientData(0, false); // request torrents to look for deletable torrents
+    $response = getClientData(0, false); // request torrents to look for deletable torrents; 0 was chosen by watching both 0 and 1 output
     if ($response['result'] === "success") {
         $torrents = $response['arguments']['torrents'];
         $deleted = false;
@@ -74,7 +72,7 @@ function auto_del_seeded_torrents() {
                 if ($result !== "") {
                     $deleted = true;
                     twxaDebug("Auto-del torrent in cache: " . substr($result, 3) . "\n", 1);
-                    delTorrent($torrent['hashString'], false, false, false);
+                    delTorrent($torrent['hashString'], false, false); // torHash, toTrash, checkCache
                 }
             }
         }
@@ -86,11 +84,9 @@ function auto_del_seeded_torrents() {
     }
 }
 
-function moveTorrent($location, $torHash, $isBatch = false) {
-    //if ($isBatch) {
-    $torHash = explode(',', $torHash);
-    //}
-    $request1 = array('arguments' => array('fields' => array('leftUntilDone', 'totalSize'), 'ids' => $torHash), 'method' => 'torrent-get');
+function moveTorrent($location, $torHash) {
+    $idsArray = explode(',', $torHash);
+    $request1 = array('arguments' => array('fields' => array('leftUntilDone', 'totalSize'), 'ids' => $idsArray), 'method' => 'torrent-get');
     $response1 = transmission_rpc($request1);
     $totalSize = $response1['arguments']['torrents']['0']['totalSize'];
     $leftUntilDone = $response1['arguments']['torrents']['0']['leftUntilDone'];
@@ -161,7 +157,7 @@ function transmission_rpc($request) {
     $sessionIdFile = get_tr_sessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) { //TODO break this out into a small function
         $myuid = posix_getuid();
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>";
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?
         twxaDebug("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
         return;
     }
@@ -253,13 +249,49 @@ function get_deep_dir($dest, $tor_name) {
 
 function folder_add_torrent($tor, $dest, $ti) {
     global $config_values;
-    // remove invalid chars
-    $ti = strtr($ti, '/:', '__'); //TODO add all the filesystem illegal characters
-    // add the directory and extension
-    $dest = "$dest/$ti." . $config_values['Settings']['Extension'];
-    // save it
-    file_put_contents($dest, $tor);
-    return 0;
+    if (file_exists($dest) && is_dir($dest)) {
+        // prepare filesystem-safe path
+        $filename = trim(filename_encode($ti));
+        $extension = ltrim(trim(filename_encode($config_values['Settings']['Extension'])), ".");
+        if ($extension !== "") {
+            $fullFilename = "$filename.$extension";
+        } else {
+            $fullFilename = "$filename";
+        }
+        if ($fullFilename !== "") {
+            $fullPath = "$dest/$fullFilename";
+            if (!file_exists($fullPath)) {
+                // save it
+                $return = file_put_contents($fullPath, $tor);
+                if ($return === false) {
+                    return [
+                        'errorCode' => 1,
+                        'errorMessage' => "Failed to write: $fullPath"
+                    ];
+                } else {
+                    return [
+                        'errorCode' => 0,
+                        'errorMessage' => "Successfully saved torrent: $ti"
+                    ];
+                }
+            } else {
+                return [
+                    'errorCode' => 1,
+                    'errorMessage' => "Already exists, skipping $fullPath"
+                ];
+            }
+        } else {
+            return [
+                'errorCode' => 1,
+                'errorMessage' => "No filename to save: $ti"
+            ];
+        }
+    } else {
+        return [
+            'errorCode' => 1,
+            'errorMessage' => "Directory inaccessible: $dest"
+        ];
+    }
 }
 
 function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
@@ -334,16 +366,17 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
     //TODO this function needs major cleanup!
-    global $config_values, $hit, $twxa_version;
+    //global $config_values, $hit, $twxa_version;
+    global $config_values, $twxa_version;
     if (strtolower($fav['Filter']) === "any") {
         $any = 1;
     }
-    $hit = 1; // modifies the global for functions that call this one
+    //$hit = 1;
     if (strpos($filename, 'magnet:') === 0) {
         $tor = $filename;
         $magnet = 1;
-    }
-    else {
+    } else {
+        $magnet = 0;
         $filename = htmlspecialchars_decode($filename);
 
         // Detect and append cookies from the feed url
@@ -383,9 +416,8 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
                 return $errMsg;
             }
         } // do not add else with return here as it will break adding some torrent files
-        
+
         if (!$tor) {
-            //print '<pre>' . print_r($_GET, true) . '</pre>';
             $errMsg = "Couldn't open torrent: $filename";
             twxaDebug("$errMsg\n", -1);
             return $errMsg;
@@ -441,27 +473,27 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
     }
 
     switch ($config_values['Settings']['Client']) {
-        case 'Transmission':
-            $return = transmission_add_torrent($tor, $dest, $ti, isset_array_key($fav, '$seedRatio', $seedRatio));
+        case "Transmission":
+            $return1 = transmission_add_torrent($tor, $dest, $ti, isset_array_key($fav, '$seedRatio', $seedRatio));
             break;
-        case 'folder':
+        case "folder":
             if ($magnet) {
                 twxaDebug("Cannot save magnet links to a folder\n", 0);
             } else {
-                $return = folder_add_torrent($tor, $dest, $tor_name);
+                $return1 = folder_add_torrent($tor, $dest, $tor_name);
             }
             break;
         default:
             twxaDebug("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
             exit(1); //TODO deal with this in revamping return of this function
     }
-    if ($return['errorCode'] === 0) {
+    if ($return1['errorCode'] === 0) {
         add_history($tor_name);
         twxaDebug("Started: $tor_name in $dest\n", 1);
         if (isset($fav)) {
             if ($config_values['Settings']['SMTP Notifications']) {
-                $subject = "torrentwatch-xa: $tor_name started downloading.";
-                $msg = "torrentwatch-xa started downloading Favorite $tor_name";
+                $subject = "\"$tor_name\" started downloading";
+                $msg = "torrentwatch-xa started downloading \"$tor_name\"";
                 MailNotify($msg, $subject);
             }
             if ($config_values['Settings']['Enable Script']) {
@@ -474,23 +506,28 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         } else if ($config_values['Settings']['Enable Script']) {
             run_script('nonfavstart', $ti);
         }
-        if ($config_values['Settings']['Save Torrents']) {
-            file_put_contents("$dest/$tor_name.torrent", $tor);
+        if ($config_values['Settings']['Client'] !== "folder" &&
+                $config_values['Settings']['Save Torrents']) {
+            if ($magnet) {
+                twxaDebug("Cannot save magnet links to a folder\n", 0);
+            } else {
+                $return2 = folder_add_torrent($tor, $config_values['Settings']['Save Torrents Dir'], $tor_name); //TODO handle $return2
+            }
         }
         return "Success"; //TODO deal with this in revamping return of this function
     } else {
-        twxaDebug("Failed starting: $tor_name : " . print_r($return, true) . "\n", -1);
+        twxaDebug("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
         //TODO improve error reporting for this block
-        $msg = "torrentwatch-xa tried to start \"$tor_name\". But this failed with the following error:\n\n";
-        $msg .= $return['errorMessage'] . "\n";
+        $msg = "torrentwatch-xa tried to start \"$tor_name\" but failed with the following error:\n\n";
+        $msg .= $return1['errorMessage'] . "\n";
         if ($config_values['Settings']['SMTP Notifications']) {
-            $subject = "torrentwatch-xa: Error while trying to start $tor_name.";
+            $subject = "Error downloading: \"$tor_name\"";
             MailNotify($msg, $subject);
         }
         if ($config_values['Settings']['Enable Script']) {
             run_script('error', $ti, $msg);
         }
-        return "Error: " . $return['errorMessage']; //TODO deal with this in revamping return of this function
+        return "Error: " . $return1['errorMessage']; //TODO deal with this in revamping return of this function
     }
 }
 
@@ -537,37 +574,3 @@ function find_torrent_link($url_old, $content) {
     }
     return $url;
 }
-
-/*function add_torrents_in_dir($dir, $dest) {
-    $addCount = $delCount = 0;
-    $handle = opendir($dir);
-    if ($handle) {
-        while (false !== ($file = readdir($handle))) {
-            if (substr($file, -8) === ".torrent") {
-                $ti = substr($file, 0, strrpos($file, '.') - 1);
-                $result = client_add_torrent("$dir/$file", $dest, $ti); //TODO client_add_torrent() returns string errors
-                if ($result === "Success") {
-                    $addCount++;
-                    if (unlink("$dir/$file") === false) {
-                        twxaDebug("Failed to delete: $dir/$file\n", 0);
-                    } else {
-                        $delCount++;
-                    }
-                } else {
-                    twxaDebug("Failed to add: $dir/$file, error: $result\n", 0);
-                }
-            }
-        }
-        closedir($handle);
-        return [
-            'added' => $addCount,
-            'deleted' => $delCount
-        ];
-    } else {
-        twxaDebug("Cannot read directory: $dir\n", -1);
-        return [
-            'added' => -1,
-            'deleted' => -1
-        ];
-    }
-}*/

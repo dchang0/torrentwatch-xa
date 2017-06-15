@@ -30,7 +30,7 @@
                 </li>
             </ul>
         </div>
-        <div class="config_form">
+        <div class="config_form_container">
             <form action="torrentwatch-xa.php?setGlobals=1" id="config_form" name="config_form">
                 <div id="config_interface" class="configTab">
                     <div class="int_settings">
@@ -86,16 +86,8 @@
                             <div class="right">
                                 <select name="client" id="client" onchange="changeClient(this.options[this.selectedIndex].value);">
                                     <option value="Transmission" <?php echo $transmission; ?>>Transmission</option>
-                                    <option value="folder" <?php echo $folderclient; ?>>Save torrent in folder</option>
+                                    <option value="folder" <?php echo $folderclient; ?>>Save Torrent In Folder</option>
                                 </select>
-                            </div>
-                        </div>
-                        <div id="config_folderclient">
-                            <div class="left">
-                                <label class="item">File Extension:</label>
-                            </div>
-                            <div class="right">
-                                <input type="text" class="text" name="extension" value="<?php echo $config_values['Settings']['Extension']; ?>"/>
                             </div>
                         </div>
                         <div id="config_downloaddir" title="Default directory to start items in">
@@ -138,6 +130,30 @@
                                 <input type="password" class="password" name="trpass" value="<?php echo $config_values['Settings']['Transmission Password']; ?>"/>
                             </div>
                         </div>
+                        <div id="config_savetorrent" title="Also save .torrent files to download directory.">
+                            <div class="left">
+                                <label class="item checkbox">Also Save Torrent Files:</label>
+                            </div>
+                            <div class="right">
+                                <input type="checkbox" name="savetorrents" value="1" <?php echo $savetorrents; ?>/>
+                            </div>
+                        </div>
+                        <div id="config_savetorrentsdir" title="Directory to save .torrent files in">
+                            <div class="left">
+                                <label class="item textinput">Also Save Torrent Files Dir:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" class="text" name="savetorrentsdir" value="<?php echo $config_values['Settings']['Save Torrents Dir']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="config_torrentExtension">
+                            <div class="left">
+                                <label class="item">File Extension:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" class="text" name="extension" value="<?php echo $config_values['Settings']['Extension']; ?>"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="config_tor" class="configTab hidden">
@@ -169,22 +185,6 @@
                             </div>
                             <div class="right">
                                 <input type="checkbox" name="autodel" value="1" <?php echo $autodel; ?>/>
-                            </div>
-                        </div>
-                        <!--<div id="config_watchdir" title="Directory to watch for new .torrent files">
-                            <div class="left">
-                                <label class="item textinput">Watch Dir:</label>
-                            </div>
-                            <div class="right">
-                                <input type="text" class="text" name="watchdir" value="<?php echo $config_values['Settings']['Watch Dir']; ?>"/>
-                            </div>
-                        </div>-->
-                        <div id="config_savetorrent" title="Also save .torrent files to download directory.">
-                            <div class="left">
-                                <label class="item checkbox">Save Torrent Files:</label>
-                            </div>
-                            <div class="right">
-                                <input type="checkbox" name="savetorrents" value="1" <?php echo $savetorrent; ?>/>
                             </div>
                         </div>
                     </div>
@@ -391,7 +391,7 @@
                         <input class="feed_on_off" type="checkbox" name="feed_on" value="feed_on"></input>
                         <?php endif; ?>
                         <input class="seed_ratio" type="text" name="seed_ratio" title="Set default seed ratio for this feed."
-                        value="<?php echo $feed['seedRatio']; ?>"></input>
+                               value="<?php echo $feed['seedRatio']; ?>"></input>
                         <a class="submitForm button" id="Delete" href="#feedItem_<?php echo $key; ?>">Del</a>
                         <a class="submitForm button" id="Update" href="#">Upd</a>
                     </form>
@@ -400,9 +400,9 @@
                 <?php endif; ?>
             </div>
             <div id="showURL" title="Toggle between name and link input fields">
-                <?php print("<input id=\"showURL\" type=\"checkbox\" onClick=\"$.toggleFeedNameUrl(" . $key . ")\">"); ?>
+                <?php print("<input type=\"checkbox\" onClick=\"$.toggleFeedNameUrl(" . $key . ")\">"); ?>
                 </input>
-                <label id="showURLlabel" class="item">Show Feed URL</label>
+                <label class="item">Show Feed URL</label>
             </div>
             <div id='linkButtons' class="buttonContainer">
                 <a class='toggleDialog button close' href='#'>Close</a>

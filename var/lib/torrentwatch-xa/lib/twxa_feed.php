@@ -1,4 +1,5 @@
 <?php
+
 require_once('/var/lib/torrentwatch-xa/lib/twxa_parse.php');
 
 /* function guess_atom_torrent($summary) {
@@ -79,7 +80,7 @@ function choose_torrent_link($links) {
 
 function check_for_torrent(&$item, $key, $opts) {
     // third-most function, called by process_rss_feed()/process_atom_feed()
-    global $matched, $config_values;
+    global $itemState, $config_values;
     if (!isset($item['Feed']) || !(strtolower($item['Feed']) === 'all' || $item['Feed'] === '' || $item['Feed'] == $opts['URL'])) {
         return;
     }
@@ -115,7 +116,6 @@ function check_for_torrent(&$item, $key, $opts) {
     }
     if ($hit) {
         $guessedItem = detectMatch($ti);
-        //if ($hit && episode_filter($guess, $item['Episodes']) == true) {
         if (
                 $config_values['Settings']['Require Episode Info'] != 1 ||
                 (
@@ -123,8 +123,7 @@ function check_for_torrent(&$item, $key, $opts) {
                 episode_filter($guessedItem, $item['Episodes']) == true
                 )
         ) {
-            $matched = "justStarted"; // used to be 'match'; this is set as default value here to be overwritten by exceptions below
-            //twxaDebug("start with \$matched = \"justStarted\" for " . $rs['title'] . "\n", 2);
+            $itemState = "st_favReady"; // this is set as default value here to be overwritten by exceptions below
             if (check_cache($rs['title'])) { // check_cache() is false if title is or title and episode and version are found in cache
                 if (
                         (!isset($any) || !$any) &&
@@ -140,7 +139,7 @@ function check_for_torrent(&$item, $key, $opts) {
                                     if ($item['Season'] > $guessedItem['seasBatEnd']) {
                                         // too old by season
                                         twxaDebug("Ignoring: " . $item['Name'] . " (Fav:Cur S" . $item['Season'] . '>S' . $guessedItem['seasBatEnd'] . ")\n", 1);
-                                        $matched = "favTooOld";
+                                        $itemState = "st_favTooOld";
                                         return false;
                                     } else if ($item['Season'] == $guessedItem['seasBatEnd']) { // must not use === here
                                         // seasons match, compare episodes
@@ -148,11 +147,11 @@ function check_for_torrent(&$item, $key, $opts) {
                                             // too old by episode within same season
                                             if ($guessedItem['itemVersion'] === 1) {
                                                 twxaDebug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                                $matched = "favTooOld";
+                                                $itemState = "st_favTooOld";
                                                 return false;
                                             } else if ($config_values['Settings']['Download Versions'] !== 1) {
                                                 twxaDebug("Ignoring version: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . " v" . $guessedItem['itemVersion'] . ")\n", 1);
-                                                $matched = "favTooOld";
+                                                $itemState = "st_favTooOld";
                                                 return false;
                                             } else {
                                                 // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
@@ -161,11 +160,11 @@ function check_for_torrent(&$item, $key, $opts) {
                                             // same season and episode, compare itemVersion
                                             if ($guessedItem['itemVersion'] === 1) {
                                                 twxaDebug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . "=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                                $matched = "favTooOld";
+                                                $itemState = "st_favTooOld";
                                                 return false;
                                             } else if ($config_values['Settings']['Download Versions'] !== 1) {
                                                 twxaDebug("Ignoring version: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . "=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . " v" . $guessedItem['itemVersion'] . ")\n", 1);
-                                                $matched = "favTooOld";
+                                                $itemState = "st_favTooOld";
                                                 return false;
                                             } else {
                                                 // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
@@ -182,7 +181,7 @@ function check_for_torrent(&$item, $key, $opts) {
                                         if ($item['Episode'] >= $guessedItem['episBatEnd']) {
                                             // nothing in the batch is newer than the favorite
                                             twxaDebug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                            $matched = "favTooOld";
+                                            $itemState = "st_favTooOld";
                                             return false;
                                         } else {
                                             // at least one episode in the batch is newer by episode, do download
@@ -191,7 +190,7 @@ function check_for_torrent(&$item, $key, $opts) {
                                     } else {
                                         // ignore batches
                                         twxaDebug("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                        $matched = "ignFavBatch";
+                                        $itemState = "st_ignoredFavBatch";
                                         return false;
                                     }
                                 }
@@ -200,19 +199,18 @@ function check_for_torrent(&$item, $key, $opts) {
                             }
                         } else if ($guessedItem['seasBatEnd'] > $guessedItem['seasBatStart']) {
                             if ($config_values['Settings']['Ignore Batches'] == 0) {
-
                                 // batch that spans seasons
                                 if ($item['Season'] > $guessedItem['seasBatEnd']) {
                                     // last season in batch is older than favorite season
                                     twxaDebug("Ignoring: " . $item['Name'] . " (Fav:Cur S" . $item['Season'] . '>S' . $guessedItem['seasBatEnd'] . ")\n", 1);
-                                    $matched = "favTooOld";
+                                    $itemState = "st_favTooOld";
                                     return false;
                                 } else if ($item['Season'] == $guessedItem['seasBatEnd']) { // must not use === here
                                     // last season in batch is equal to the favorite season, compare last episode
                                     if ($item['Episode'] >= $guessedItem['episBatEnd']) {
                                         // nothing in the batch is newer than the favorite
                                         twxaDebug("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                        $matched = "favTooOld";
+                                        $itemState = "st_favTooOld";
                                         return false;
                                     } else {
                                         // at least one episode in the batch is newer, do download
@@ -222,7 +220,7 @@ function check_for_torrent(&$item, $key, $opts) {
                             } else {
                                 // ignore batches
                                 twxaDebug("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                $matched = "ignFavBatch";
+                                $itemState = "st_ignoredFavBatch";
                                 return false;
                             }
                         } else {
@@ -231,12 +229,14 @@ function check_for_torrent(&$item, $key, $opts) {
                             } else {
                                 // ignore batches
                                 twxaDebug("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                $matched = "ignFavBatch";
+                                $itemState = "st_ignoredFavBatch";
                                 return false;
                             }
                         }
                     } else {
                         twxaDebug("Season start or end is not numeric: S" . $guessedItem['seasBatStart'] . "-S" . $guessedItem['seasBatStart'] . "\n", 2);
+                        $itemState = "st_notSerialized";
+                        return false;
                     }
                 }
                 twxaDebug("Match found for " . $rs['title'] . "\n", 2);
@@ -248,15 +248,21 @@ function check_for_torrent(&$item, $key, $opts) {
                         return false;
                     } else {
                         add_cache($rs['title']);
+                        if ($config_values['Settings']['Client'] === "folder") {
+                            $itemState = "st_downloaded";
+                        } else {
+                            $itemState = "st_downloading";
+                        }
+                        //TODO possibly remove st_downloading and st_downloaded states unless they make sense for client === folder
                     }
                 } else {
                     twxaDebug("Unable to find URL for " . $rs['title'] . "\n", -1);
-                    $matched = "noURL"; // doesn't do anything except overwrite $matched = "justStarted" for future logic
+                    $itemState = "st_noURL"; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic
                     //TODO probably add gzip capability here
                 }
             } else {
-                //twxaDebug("cachehit for " . $rs['title'] . "\n", 2);
-                $matched = "cachehit";
+                //twxaDebug("inCache for " . $rs['title'] . "\n", 2);
+                $itemState = "st_inCache"; // only found in the cache; this state is transient
             }
         }
     }
@@ -307,12 +313,21 @@ function parse_one_atom($feed) {
     return;
 }
 
-function process_rss_feed($rs, $idx, $feedName, $feedLink) {
+function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
     // this is second-most function for feed processing, run by process_all_feeds()
-    global $config_values, $matched, $html_out; // $matched is not used above this level
-    twxaDebug("Started processing RSS feed: $feedName\n", 2);
-    if (count($rs['items']) === 0) {
-        twxaDebug("Feed is down: $feedName\n", 0);
+    global $config_values, $itemState, $html_out; // $itemState is not used above this level
+    twxaDebug("Started processing $feedType feed: $feedName\n", 2);
+    switch ($feedType) {
+        case "RSS":
+            $itemCount = count($feed['items']);
+            break;
+        case "Atom":
+            $feed = array_change_key_case_ext($feed, ARRAY_KEY_LOWERCASE);
+            $itemCount = count($atom['feed']);
+            break;
+    }
+    if ($itemCount === 0) {
+        twxaDebug("Empty feed: $feedName\n", 0);
         show_feed_down_header($idx);
         return;
     }
@@ -320,7 +335,14 @@ function process_rss_feed($rs, $idx, $feedName, $feedLink) {
         show_feed_list($idx);
     }
     $alt = 'alt';
-    $items = array_reverse($rs['items']);
+    switch ($feedType) {
+        case "RSS":
+            $items = array_reverse($feed['items']); //TODO move this up to process_all_feeds by feeding entire list in as parameter
+            break;
+        case "Atom";
+            $items = array_reverse($atom['feed']['entry']);
+            break;
+    }
     $htmlList = [];
     foreach ($items as $item) {
         if (!isset($item['title'])) {
@@ -329,25 +351,36 @@ function process_rss_feed($rs, $idx, $feedName, $feedLink) {
             $item['title'] = simplifyTitle($item['title']); // first major function call, simplifyTitle() is somehow needed for accurate favorites matching
         }
         $torHash = "";
-        $matched = "notAMatch";
+        $itemState = "st_notAMatch";
         if (isset($config_values['Favorites'])) {
-            array_walk($config_values['Favorites'], 'check_for_torrent', ['Obj' => $item, 'URL' => $rs['URL']]); // second major function call, $matched is inside check_for_torrent()
+            array_walk($config_values['Favorites'], 'check_for_torrent', ['Obj' => $item, 'URL' => $feed['URL']]); // second major function call, $itemState of st_notAMatch might be overwritten and/or download might create cache file inside check_for_torrent() above
         }
-        //$client = $config_values['Settings']['Client'];
         if (isset($config_values['Settings']['Cache Dir'])) {
             $cache_file = $config_values['Settings']['Cache Dir'] . '/dl_' . filename_encode($item['title']);
         }
-        if (file_exists($cache_file)) { //TODO why does this not use check_cache() with cachehit, rewrite check_cache to return values
+        if (file_exists($cache_file)) { //TODO why does this not use check_cache() with inCache, rewrite check_cache to return values
             $torHash = get_torHash($cache_file);
-            //if ($matched !== "justStarted" && $matched != 'cachehit' && file_exists($cache_file)) { //TODO $matched comes from check_for_torrent() above
-            if ($matched !== "justStarted" && $matched != 'cachehit') {
-                $matched = 'downloaded';
-                twxaDebug("Exact in cache; ignoring: " . $item['title'] . "\n", 1);
-            } else if ($matched === 'cachehit') {
-                //TODO if not going to use check_cache(), add item version handling here
-                twxaDebug("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1);
+            switch ($itemState) {
+                /* These states become st_waitTorCheck in show_feed_item() if not saving torrent files to folder:
+                 * st_favReady
+                 * st_inCache
+                 * st_downloading
+                 * st_downloaded (may be removed from this list if PHP side fully-verifies the download succeeded) */
+                case "st_favReady":
+                case "st_favTooOld":
+                case "st_ignoredFavBatch":
+                    break;
+                case "st_inCache":
+                    twxaDebug("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1);
+                    break;
+                default:
+                    $itemState = "st_downloading";
+                    // no break!
+                case "st_downloaded":
+                    twxaDebug("Exact in cache; ignoring: " . $item['title'] . "\n", 1);
+                    break;
             }
-        } //TODO check this block's logic and $matched states, when finished, copy to process_atom_feed() below
+        }
         if (isset($config_values['Global']['HTMLOutput'])) {
             if (!isset($rsnr)) {
                 $rsnr = 1;
@@ -364,7 +397,7 @@ function process_rss_feed($rs, $idx, $feedName, $feedLink) {
                 'feedName' => $feedName,
                 'alt' => $alt,
                 'torHash' => $torHash,
-                'matched' => $matched,
+                'itemState' => $itemState,
                 'id' => $id
             ];
         }
@@ -376,80 +409,13 @@ function process_rss_feed($rs, $idx, $feedName, $feedLink) {
     }
     $htmlList = array_reverse($htmlList, true);
     foreach ($htmlList as $item) {
-        show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);
+        show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['itemState'], $item['id']);
     }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
         close_feed_list();
     }
     unset($item);
-    twxaDebug("Processed RSS feed: $feedName\n", 1);
-}
-
-function process_atom_feed($atom, $idx, $feedName, $feedLink) {
-    // this is second-most function for feed processing, run by process_all_feeds()
-    global $config_values, $matched, $html_out; // $matched is not used above this level
-    $atom = array_change_key_case_ext($atom, ARRAY_KEY_LOWERCASE);
-    twxaDebug("Starting processing Atom feed: $feedName\n", 2);
-    if (count($atom['feed']) === 0) {
-        twxaDebug("Empty feed: $feedName\n", 2);
-        return;
-    }
-    if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        show_feed_list($idx);
-    }
-    $alt = 'alt';
-    $htmlList = [];
-    $items = array_reverse($atom['feed']['entry']);
-    foreach ($items as $item) {
-        $item['title'] = simplifyTitle($item['title']);
-        $torHash = '';
-        $matched = "notAMatch";
-        array_walk($config_values['Favorites'], 'check_for_torrent', ['Obj' => $item, 'URL' => $feedLink]);
-        //$client = $config_values['Settings']['Client'];
-        $cache_file = $config_values['Settings']['Cache Dir'] . '/dl_' . filename_encode($item['title']);
-        if (file_exists($cache_file)) {
-            $torHash = get_torHash($cache_file);
-            if ($matched !== "justStarted" && $matched != 'cachehit' && file_exists($cache_file)) {
-                $matched = 'downloaded';
-                twxaDebug("Exact in cache; ignoring: " . $item['title'] . "\n", 1);
-            }
-        }
-        if (isset($config_values['Global']['HTMLOutput'])) {
-            if (!($rsnr)) {
-                $rsnr = 1;
-            } else {
-                $rsnr ++;
-            }
-            if (strlen($rsnr) <= 1) {
-                $rsnr = 0 . $rsnr;
-            }
-            $id = $idx . $rsnr;
-            $htmlItems = [
-                'item' => $item,
-                'URL' => $feedLink,
-                'feedName' => $feedName,
-                'alt' => $alt,
-                'torHash' => $torHash,
-                'matched' => $matched,
-                'id' => $id
-            ];
-            $htmlList[] = $htmlItems;
-        }
-        if ($alt === 'alt') {
-            $alt = '';
-        } else {
-            $alt = 'alt';
-        }
-    }
-    $htmlList = array_reverse($htmlList, true);
-    foreach ($htmlList as $item) {
-        show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['matched'], $item['id']);
-    }
-    if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        close_feed_list();
-    }
-    unset($item);
-    twxaDebug("Processed Atom feed: $feedName\n", 1);
+    twxaDebug("Processed $feedType feed: $feedName\n", 1);
 }
 
 function process_all_feeds($feeds) {
@@ -466,17 +432,9 @@ function process_all_feeds($feeds) {
     foreach ($feeds as $key => $feed) {
         switch ($feed['Type']) {
             case 'RSS':
-                if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == 1) {
-                    process_rss_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
-                } else if ($feed['enabled'] != 1) {
-                    twxaDebug("Feed disabled: " . $feed['Name'] . "\n", 1);
-                } else {
-                    twxaDebug("Feed inaccessible: " . $feed['Name'] . "\n", 1);
-                }
-                break;
             case 'Atom':
                 if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == 1) {
-                    process_atom_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+                    process_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link'], $feed['Type']);
                 } else if ($feed['enabled'] != 1) {
                     twxaDebug("Feed disabled: " . $feed['Name'] . "\n", 1);
                 } else {
@@ -485,6 +443,7 @@ function process_all_feeds($feeds) {
                 break;
             default:
                 twxaDebug("Unknown " . $feed['Type'] . " feed: " . $feed['Link'] . "\n", -1);
+                break;
         }
     }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
