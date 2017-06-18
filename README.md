@@ -68,6 +68,8 @@ torrentwatch-xa should work without modifications on an out-of-the-box, up-to-da
 
 As of 0.4.0, it has also been confirmed to run correctly on Ubuntu 16.04.2 with PHP 7.0.15, but this is not a development target at this time.
 
+For those of you considering installing torrentwatch-xa on an ARM-based single-board computer like the Raspberry Pi, the primary development and testing system is actually an ODROID C1+ (32-bit armv7l).
+
 Nearly all the debugging features are turned on and will remain so for the foreseeable future.
 
 Be aware that I rarely test the GitHub copy of the code; I test using my local copy, and I rarely do wipe-and-reinstall torrentwatch-xa testing. So it is possible that permissions and file ownership differences may break the GitHub copy without my knowing it.
