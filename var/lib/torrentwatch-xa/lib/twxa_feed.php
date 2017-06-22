@@ -16,7 +16,7 @@ require_once('/var/lib/torrentwatch-xa/lib/twxa_parse.php');
   } */
 
 function get_torrent_link($rs) {
-    //TODO probably add gzip capability here
+    //TODO probably add gzip capability here using gzdecode()
     $links = [];
     if ((isset($rs['enclosure'])) && ($rs['enclosure']['type'] == 'application/x-bittorrent')) {
         $links[] = $rs['enclosure']['url'];
@@ -36,14 +36,14 @@ function get_torrent_link($rs) {
 }
 
 function choose_torrent_link($links) {
-    //TODO probably add gzip capability here
+    //TODO probably add gzip capability here using gzdecode()
     $linkCount = count($links);
     if ($linkCount > 1) {
         $bestLink = "";
         $torrentLinkCount = 0;
         // check how many links have ".torrent" in them
         foreach ($links as $link) {
-            if (stripos($link, "/\.torrent/") !== false) {
+            if (stripos($link, ".torrent") !== false) {
                 $bestLink = $link;
                 $torrentLinkCount++;
             }
@@ -87,7 +87,7 @@ function check_for_torrent(&$item, $key, $opts) {
     $rs = $opts['Obj']; // $rs holds each feed list item, $item holds each Favorite item
     $ti = strtolower($rs['title']);
     // apply initial filtering from Favorites settings, prior to detectMatch(); may be why simplifyTitle() is necessary before this
-    switch (isset_array_key($config_values['Settings'], 'Match Style')) { //TODO maybe simplify this
+    switch (isset_array_key($config_values['Settings'], 'Match Style')) {
         case 'simple':
             $hit = (($item['Filter'] !== '' && strpos(strtr($ti, " .", "__"), strtr(strtolower($item['Filter']), " .", "__")) === 0) &&
                     ($item['Not'] === '' OR multi_str_search($ti, strtolower($item['Not'])) === false) &&
@@ -258,10 +258,9 @@ function check_for_torrent(&$item, $key, $opts) {
                 } else {
                     twxaDebug("Unable to find URL for " . $rs['title'] . "\n", -1);
                     $itemState = "st_noURL"; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic
-                    //TODO probably add gzip capability here
+                    //TODO probably add gzip capability here using gzdecode()
                 }
             } else {
-                //twxaDebug("inCache for " . $rs['title'] . "\n", 2);
                 $itemState = "st_inCache"; // only found in the cache; this state is transient
             }
         }
