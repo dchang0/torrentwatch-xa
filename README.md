@@ -62,22 +62,16 @@ Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CH
 Tested Platforms
 ===============
 
-torrentwatch-xa is developed and tested on Ubuntu 14.04.5 LTS with the prerequisite packages listed in the next section. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server. The UI works on pretty much any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
+torrentwatch-xa is primarily developed and tested on Debian 8.x (actually Raspbian Lite) on a Raspberry Pi Zero W. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server. The UI works on pretty much any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
 
-torrentwatch-xa should work without modifications on an out-of-the-box, up-to-date install of Debian 8.x x86_64, Ubuntu 14.04.x, or Ubuntu 16.04.2, although I am only actively testing on Ubuntu 14.04.x with PHP 5.6.
-
-As of 0.4.0, it has also been confirmed to run correctly on Ubuntu 16.04.2 with PHP 7.0.15, but this is not a development target at this time.
-
-For those of you considering installing torrentwatch-xa on an ARM-based single-board computer like the Raspberry Pi, the primary development and testing system is actually an ODROID C1+ (32-bit armv7l).
-
-Nearly all the debugging features are turned on and will remain so for the foreseeable future.
+torrentwatch-xa should work without modifications on any out-of-the-box, up-to-date install of Debian 8.x, Ubuntu 14.04.x, or Ubuntu 16.04.2 on any architecture.
 
 Be aware that I rarely test the GitHub copy of the code; I test using my local copy, and I rarely do wipe-and-reinstall torrentwatch-xa testing. So it is possible that permissions and file ownership differences may break the GitHub copy without my knowing it.
 
 Prerequisites
 ===============
 
-### Ubuntu 14.04 and Debian 8.x
+### Ubuntu 14.04 and Debian 8.x (jessie)
 
 From the official repos:
 
