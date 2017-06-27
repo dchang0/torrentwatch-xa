@@ -52,12 +52,11 @@ fi
 if [ -f /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config ]
 then
     sudo cp /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config ~/torrentwatch-xa.config.bak
-fi
-
-if [ ! -e ~/torrentwatch-xa.config.bak ]
-then
-    echo "Backup of config file to ~/torrentwatch-xa.config.bak failed; exiting."
-    exit
+    if [ ! -e ~/torrentwatch-xa.config.bak ]
+    then
+        echo "Backup of config file to ~/torrentwatch-xa.config.bak failed; exiting."
+        exit
+    fi
 fi
 
 # DOES NOT BACK UP THE DOWNLOAD CACHE!
