@@ -71,6 +71,7 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 
 ## Improvements
 
+- decide how and when global Default Seed Ratio should override the per-feed Seed Ratio when creating new Favorites or starting manual downloads
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by one or all of the below:
     - check feed item's notes for torrent hash, then compare this to the cache files
@@ -79,6 +80,7 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
     - do not match Favorites in this feed
 
 - use error function instead of alert() in torrentwatch-xa.js
+- add itemVersion handling to batches such as 1x03v2-1x05v2 (requires changing many match functions to handle version numbers)
 - make list items double-tall for smartphone displays and wrap the title text properly
 - $config_values['Global'] appears to be a crappy way of globally passing some data--maybe improve it
 - times shown in feed list might not obey 'Time Zone' setting until next twxacli.php run, but log datestamps take effect immediately; maybe force a feed cache refresh immediately after 'Time Zone' is changed 
@@ -87,7 +89,9 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 - if keeping st_downloaded and st_downloading in the PHP side, change st_favReady to st_downloaded for folder client after checking to make sure the .torrent file was successfully downloaded
 - convert Configure > Feeds one-form-per-feed into one form for all the feeds
   - add Feed Title input above each Feed URL
+  - add extra input for website of feed operator, to which the feed title in headers will link
 - add a bulk import form for Favorites (big textarea, one line per title, all of them receive the same defaults and become individual Favorites)
+- allow user to create Favorites from items in the History list
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
 - add error handling to the Transmission functions
 - migrate jquery.tinysort.js to tinysort (no longer dependent on jquery and faster) http://tinysort.sjeiti.com
@@ -102,12 +106,10 @@ Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter
 - convert Hide List from hiding individual titles to hiding by pattern matching (just like the Favorites Filter)
 
 - replace global variables EXCEPT $html_out with proper parameter passing
-  - $twxa_version
   - $config_values (not likely--will probably increase CPU util too much)
   - $hit
   - $itemState  <--- IMPORTANT, as the use of global $itemState makes most of twxa_feed.php's functions hard to maintain
   - $config_out <--- IMPORTANT, as the use of global $config_out makes most of twxa_config_lib.php's functions hard to maintain
-  - $verbosity
 
 - add Test SMTP button to Configure > Notify or automatically test on Save and use Javascript alert to show failure
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design

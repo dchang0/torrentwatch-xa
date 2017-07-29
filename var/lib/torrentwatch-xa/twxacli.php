@@ -15,8 +15,6 @@ foreach ($twxaIncludePaths as $twxaIncludePath) {
 set_include_path($includePath);
 require_once("twxa_tools.php");
 
-$verbosity = 0;
-
 function usage() {
     twxaDebug(__FILE__ . " <options>\nCommand line interface to torrentwatch-xa\nOptions:\n", 0);
     twxaDebug("           -c <dir> : enable cache\n", 0);
@@ -29,7 +27,7 @@ function usage() {
 }
 
 function parse_args() {
-    global $config_values, $argc, $verbosity;
+    global $config_values, $argc;
     for ($i = 1; $i < $argc; $i++) {
         switch ($_SERVER['argv'][$i]) {
             case '-c':
@@ -44,13 +42,13 @@ function parse_args() {
                 usage();
                 exit(1);
             case '-q':
-                $verbosity = -1;
+                $config_values['Settings']['debugLevel'] = -99;
                 break;
             case '-v':
-                $verbosity = 1;
+                $config_values['Settings']['debugLevel'] = 1;
                 break;
             case '-vv':
-                $verbosity = 2;
+                $config_values['Settings']['debugLevel'] = 2;
                 break;
             default:
                 twxaDebug("Invalid command line argument:  " . $_SERVER['argv'][$i] . "\n", 0);
@@ -59,7 +57,7 @@ function parse_args() {
 }
 
 /// main
-$main_timer = timer_get_time(0);
+$main_timer = getElapsedMicrotime(0);
 if (file_exists(getConfigFile())) {
     read_config_file();
 } else {
@@ -77,4 +75,4 @@ if (isset($config_values['Settings']['Auto-Del Seeded Torrents']) &&
 } else {
     twxaDebug("Auto-Del Seeded Torrents is disabled\n", 2);
 }
-twxaDebug("=====End twxacli.php: processed in " . timer_get_time($main_timer) . "s\n\n", 2);
+twxaDebug("=====End twxacli.php: processed in " . getElapsedMicrotime($main_timer) . "s\n", 2);

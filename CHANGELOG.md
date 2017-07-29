@@ -501,6 +501,53 @@ Code changes
 - rewrote folder_add_torrent() with error handling and to return same output as transmission_add_torrent()
 - changed state logic in process_feed()
 
+0.7.0
+
+Functional changes
+
+- Time Zone setting defaults to UTC if unacceptable value is supplied
+- added additional logic in check_cache_episode() to handle batch comparisons
+- commented out Configure > Client > File Extension as torrent files should always have .torrent as the extension
+- fixed Client: Save Torrent In Folder web UI behavior
+  - hide Seed Ratio settings in Favorites
+- added capability of saving magnet links to .magnet files (magnet links can be converted into .torrent files by third party utilities)
+- renamed Favorite > Save In to Favorite > Download Dir to match global Download Dir (that it overrides)
+- added Favorite > Also Save Dir to override Also Save Torrent Files Dir
+- changed Configure and Favorite dialogs to hide/show fields based on Configure > Client > Also Save Torrent Files
+- renamed Last Downloaded Item label to Last Downloaded
+- twxaDebug() error messages are capped by hidden 'debugLevel' config setting
+- finished logic to handle "FULL" as episode to denote full season
+- added many pattern detectors to season and episode detection engine, including Volume x Part
+- improved seed ratio inheritance behavior
+- added installation instructions for Fedora Server 25
+- added detection of PROPER/REPACK/RERIP as itemVersion 99
+- fixed Configure > Favorites > Download Versions>1 failing even when checked
+- removed TorrentFunk RSS - Anime from default feeds
+
+Code changes
+
+- cleaned up changeClient function
+- renamed MailNotify() to notifyByEmail()
+- renamed run_script() to runScript()
+- renamed microtime_float() to getCurrentMicrotime()
+- renamed timer_get_time() to getElapsedMicrotime()
+- renamed unused authenticate() to authenticateFeeds()
+- renamed filename_encode() to sanitizeFilename()
+- improved logic and email and debug messages in runScript()
+- renamed check_for_cookies() to parseURLForCookies()
+- converted most of Favorites dialog from absolute positioning to relative positioning
+- renamed setup_cache() to setupCache() and improved its logic
+- renamed TWFILTER in cookie to TWXAFILTER
+- renamed isset_array_key() to getArrayValueByKey()
+- renamed $getOptions to $curlOptions
+- renamed get_curl_defaults() to getcURLDefaults()
+- renamed version_check() to checkVersion()
+- replaced $verbosity with $config_values['Settings']['debugLevel']
+- removed global usage of $twxa_version
+- improved major.minor.patch comparison logic in checkVersion()
+- commented out 'recent' logic in getClientData() functions
+- modified install script to try Debian/Ubuntu then Fedora apache2 username
+
 Next Version
 
 Functional changes
@@ -508,10 +555,9 @@ Functional changes
 IN PROGRESS
 
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
-- fix Client: Save Torrent In Folder functionality
-- search title for PROPER or Repack and make it version 99 if found
 - rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
 - 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
+- make twxaDebug() show alerts in web UI
 
 Code changes
 
@@ -522,5 +568,3 @@ IN PROGRESS
 - continue validating and commenting torrentwatch-xa.js
 - continue cleaning up CSS with csslint.net
 - fix Quality filtering in check_for_torrent() before checking the download cache
-- finish twxaDebug() and $verbosity to allow reducing verbosity from DBG to INF or ERR
-- make twxaDebug() show alerts in web UI

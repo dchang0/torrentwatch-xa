@@ -5,6 +5,7 @@
 # It uses rm -fr, which can be quite dangerous. USE THIS SCRIPT AT YOUR OWN RISK!
 
 # DOES NOT INSTALL PREREQUISITES
+# REMEMBER TO RESTART APACHE2 AFTER INSTALLING PRE-REQUISITES
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -77,7 +78,13 @@ fi
 
 # copy in the new installation
 sudo cp -R var/lib/torrentwatch-xa /var/lib
+# try to chown the cache directories using Debian/Ubuntu default Apache user and group www-data
 sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache
+if [ $? -ne 0 ]
+then
+    # try to chown the cache directories using Fedora default Apache user and group apache
+  sudo chown -R apache:apache /var/lib/torrentwatch-xa/*_cache
+fi
 sudo cp -R var/www/html/torrentwatch-xa /var/www/html
 sudo cp etc/cron.d/torrentwatch-xa-cron /etc/cron.d
 sudo chown root:root /etc/cron.d/torrentwatch-xa-cron
@@ -87,6 +94,12 @@ if [[ $KEEPCONFIG == 1 ]]
 then
     sudo cp ~/torrentwatch-xa.config.bak /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
     sudo chown www-data:www-data /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
+fi
+
+# RedHat/Fedora/CentOS warning
+if [ -e /etc/redhat-release ]
+then
+    echo "SELINUX and firewalld changes must be made manually as RedHat-derived distros are not officially supported yet."
 fi
 
 # DEFAULT CONFIG IS AUTOMATICALLY GENERATED ON FIRST RUN OF NEW INSTALL IF CONFIG FILE NOT FOUND

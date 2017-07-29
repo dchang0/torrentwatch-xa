@@ -151,17 +151,17 @@ class lastRSS {
     // -------------------------------------------------------------------
     function Parse($rss_url) {
         // Open and load RSS file
-        $response = check_for_cookies($rss_url);
+        $response = parseURLForCookies($rss_url);
         if ($response) {
             $rss_url = $response['url'];
         }
         $get = curl_init();
-        $getOptions[CURLOPT_URL] = $rss_url;
+        $curlOptions[CURLOPT_URL] = $rss_url;
         if (isset($response['cookies'])) {
-            $getOptions[CURLOPT_COOKIE] = $response['cookies'];
+            $curlOptions[CURLOPT_COOKIE] = $response['cookies'];
         }
-        get_curl_defaults($getOptions);
-        curl_setopt_array($get, $getOptions);
+        getcURLDefaults($curlOptions);
+        curl_setopt_array($get, $curlOptions);
         $rss_content = curl_exec($get);
         curl_close($get);
 

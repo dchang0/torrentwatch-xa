@@ -90,7 +90,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div id="config_downloaddir" title="Default directory to start items in">
+                        <div id="config_downloaddir" title="Default directory to start items in; can be overwritten by Favorite's Download Dir">
                             <div class="left">
                                 <label class="item textinput">Download Dir:</label>
                             </div>
@@ -138,7 +138,7 @@
                                 <input type="checkbox" name="savetorrents" value="1" <?php echo $savetorrents; ?>/>
                             </div>
                         </div>
-                        <div id="config_savetorrentsdir" title="Directory to save .torrent files in">
+                        <div id="config_savetorrentsdir" title="Directory to save .torrent files in; can be overridden by Favorite's Also Save Dir">
                             <div class="left">
                                 <label class="item textinput">Also Save Torrent Files Dir:</label>
                             </div>
@@ -146,14 +146,14 @@
                                 <input type="text" class="text" name="savetorrentsdir" value="<?php echo $config_values['Settings']['Save Torrents Dir']; ?>"/>
                             </div>
                         </div>
-                        <div id="config_torrentExtension">
+                        <!--<div id="config_torrentExtension">
                             <div class="left">
                                 <label class="item">File Extension:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="extension" value="<?php echo $config_values['Settings']['Extension']; ?>"/>
+                                <input type="text" class="text" name="torrentextension" value="<?php echo $config_values['Settings']['Torrent Extension']; ?>"/>
                             </div>
-                        </div>
+                        </div>-->
                     </div>
                 </div>
                 <div id="config_tor" class="configTab hidden">

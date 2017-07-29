@@ -101,8 +101,9 @@ function setup_default_config() {
     _default('SMTP User', '');
     _default('SMTP Password', '');
     // Other hidden settings
-    _default('debugLevel', "0"); //TODO remove this if twxaDebug() doesn't need it any more
-    _default('Extension', "torrent");
+    _default('debugLevel', "0");
+    _default('Torrent Extension', "torrent");
+    _default('Magnet Extension', "magnet");
     _default('Cache Dir', $baseDir . "/dl_cache/");
     _default('History', $baseDir . "/dl_cache/dl_history");
     _default('Sanitize Hidelist', "0");
@@ -189,61 +190,56 @@ function read_config_file() {
             0 => [
                 'Link' => 'http://horriblesubs.info/rss.php?res=all',
                 'Type' => 'RSS',
-                'seedRatio' => "-1",
+                'seedRatio' => "",
                 'enabled' => 1,
                 'Name' => 'HorribleSubs Latest RSS'
             ],
             1 => [
                 'Link' => 'https://nyaa.si/?page=rss',
                 'Type' => 'RSS',
-                'seedRatio' => "-1",
+                'seedRatio' => "",
                 'enabled' => 1,
                 'Name' => 'Nyaa Torrent File RSS'
             ],
             2 => [
                 'Link' => 'https://eztv.wf/ezrss.xml',
                 'Type' => 'RSS',
-                'seedRatio' => "-1",
+                'seedRatio' => "",
                 'enabled' => 1,
                 'Name' => 'TV Torrents RSS feed - EZTV'
             ],
             3 => [
                 'Link' => 'http://tokyotosho.info/rss.php?filter=1',
                 'Type' => 'RSS',
-                'seedRatio' => "-1",
+                'seedRatio' => "",
                 'enabled' => 1,
                 'Name' => 'TokyoTosho.info Anime'
             ],
             4 => [
                 'Link' => 'https://anidex.info/rss/cat/0',
                 'Type' => 'RSS',
-                'seedRatio' => "-1",
+                'seedRatio' => "",
                 'enabled' => 1,
                 'Name' => 'AniDex'
             ],
             5 => [
-                'Link' => 'https://www.torrentfunk.com/anime/rss.xml',
-                'Type' => 'RSS',
-                'seedRatio' => "-1",
-                'enabled' => 1,
-                'Name' => 'TorrentFunk RSS - Anime'
-            ],
-            6 => [
                 'Link' => 'https://www.acgnx.se/rss.xml',
                 'Type' => 'RSS',
-                'seedRatio' => "-1",
+                'seedRatio' => "",
                 'enabled' => 1,
                 'Name' => 'AcgnX Torrent Resources Base.Global'
             ]
         ];
-        write_config_file();
+        write_config_file(); //TODO add error handling
     }
-
     if (isset($config_values['Settings']['Time Zone'])) {
-        date_default_timezone_set($config_values['Settings']['Time Zone']);
+        $return = date_default_timezone_set($config_values['Settings']['Time Zone']);
+        if ($return === false) {
+            twxaDebug("Unable to set timezone to: " . $config_values['Settings']['Time Zone'] . "; using UTC instead\n", -1);
+            date_default_timezone_set("UTC");
+        }
     }
-
-    return true;
+    return true; //TODO add error handling
 }
 
 function get_client_passwd() {
@@ -302,7 +298,7 @@ function write_config_file() {
                 array_walk($group, 'key_callback', $key . '[]');
             } else {
                 if ($subkey) {
-                    if (!is_numeric($key)) {  //TODO What does this do?
+                    if (!is_numeric($key)) {
                         $group = "$key => $group";
                     }
                     $key = $subkey;
@@ -349,7 +345,8 @@ function update_global_config() {
     $input = array(
         'Time Zone' => 'tz',
         'Client' => 'client',
-        'Extension' => 'extension',
+        //'Torrent Extension' => 'torrentextension',
+        //'Magnet Extension' => 'magnetextension',
         'Download Dir' => 'downdir',
         'Transmission Host' => 'trhost',
         'Transmission Port' => 'trport',
@@ -385,7 +382,6 @@ function update_global_config() {
         'Enable Script' => 'enableScript',
         'SMTP Notifications' => 'enableSMTP'
     );
-    //TODO figure out how the config settings overwrite themselves
     foreach ($input as $key => $data) {
         if (isset($_GET[$data])) {
             $config_values['Settings'][$key] = $_GET[$data];
@@ -472,11 +468,10 @@ function add_favorite() {
     if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
         foreach ($config_values['Favorites'] as $fav) {
             if ($_GET['name'] == $fav['Name']) {
-                return("Error: \"" . $_GET['name'] . "\" already exists in favorites.");
+                return("Error: \"" . $_GET['name'] . "\" already exists in Favorites.");
             }
         }
     }
-
     if (isset($_GET['idx']) && $_GET['idx'] != 'new') {
         $idx = $_GET['idx'];
     } else if (isset($_GET['name'])) {
@@ -485,21 +480,22 @@ function add_favorite() {
         $idx = end($arrayKeys);
         $_GET['idx'] = $idx; // So display_favorite_info() can see it
     } else {
-        //TODO add check for bad episode format
-        return("Error: Bad form data, not added to favorites");
-    } // Bad form data
+        return("Error: Missing index or Name, cannot add Favorite");
+    }
 
-    $list = array("name" => "Name",
+    $list = array(
+        "name" => "Name",
         "filter" => "Filter",
         "not" => "Not",
-        "savein" => "Save In",
+        "downloaddir" => "Download Dir",
+        "alsosavedir" => "Also Save Dir",
         "episodes" => "Episodes",
         "feed" => "Feed",
         "quality" => "Quality",
         "seedratio" => "seedRatio",
         "season" => "Season",
-        "episode" => "Episode");
-
+        "episode" => "Episode"
+    );
     foreach ($list as $key => $data) {
         if (isset($_GET[$key])) {
             $config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
@@ -508,17 +504,16 @@ function add_favorite() {
         }
     }
 
-    // parse episode notation
+    // split single field for new Favorite's Season x Episode into separate Season x Episode
     if ($config_values['Favorites'][$idx]['Season'] == '' && $config_values['Favorites'][$idx]['Episode'] != '') {
         $tempMatches = [];
-        if (preg_match('/(\d+)\s*[xX]\s*(\d+)/', $config_values['Favorites'][$idx]['Episode'], $tempMatches)) {
+        if (preg_match('/(\d+)\s*[xX]\s*(\d+|FULL)/', $config_values['Favorites'][$idx]['Episode'], $tempMatches)) { // we ignore S##E## notation and version number
             $config_values['Favorites'][$idx]['Episode'] = $tempMatches[2];
             $config_values['Favorites'][$idx]['Season'] = $tempMatches[1];
         } else if (preg_match('/^(\d{8})$/', $config_values['Favorites'][$idx]['Episode'])) {
             $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0
         }
     }
-    //twxaDebug("\$config_values[\'Favorites\']: " . print_r($config_values['Favorites'], true) . "\n", 2);
     $favInfo['title'] = $_GET['name'];
     $favInfo['quality'] = $_GET['quality'];
     $favInfo['feed'] = urlencode($_GET['feed']);
@@ -530,14 +525,13 @@ function del_favorite() {
     global $config_values;
     if (isset($_GET['idx']) AND isset($config_values['Favorites'][$_GET['idx']])) {
         unset($config_values['Favorites'][$_GET['idx']]);
+        //TODO switch to new, empty Favorite by using CSS to change id=favorite_new to display: block;
     }
 }
 
 function updateFavoriteEpisode(&$fav, $ti) {
     $guess = detectMatch($ti);
     if ($guess['numberSequence'] > 0) {
-        //twxaDebug("Update favorite: " . print_r($guess, true) . "\n", 2);
-        //TODO handle possibility of empty or non-numeric $fav['Season']
         if (is_numeric($guess['seasBatEnd'])) {
             if ($guess['seasBatEnd'] > $fav['Season']) {
                 // item has higher season than favorite
@@ -546,11 +540,13 @@ function updateFavoriteEpisode(&$fav, $ti) {
                     $fav['Season'] = $guess['seasBatEnd'];
                     $fav['Episode'] = $guess['episBatEnd'];
                 } else if ($guess['episBatEnd'] === '') {
-                    //TODO full season, how do we handle this? I guess for now we leave it blank and update
+                    // full season
                     $fav['Season'] = $guess['seasBatEnd'];
-                    $fav['Episode'] = $guess['episBatEnd'];
+                    //$fav['Episode'] = $guess['episBatEnd'];
+                    $fav['Episode'] = "FULL";
                 } else {
-                    //TODO not supposed to happen
+                    // not supposed to happen
+                    return false;
                 }
             } else if ($guess['seasBatEnd'] == $fav['Season']) {
                 // same season, compare episodes
@@ -560,22 +556,29 @@ function updateFavoriteEpisode(&$fav, $ti) {
                             // episode is newer, update favorite
                             $fav['Episode'] = $guess['episBatEnd'];
                         }
+                    } else if ($fav['Episode'] === "FULL") {
+                        // can't have later episode than full season, do nothing
                     } else {
-                        // favorite episode is not numeric, overwrite it
+                        // favorite episode is not numeric and not FULL, overwrite it
                         $fav['Episode'] = $guess['episBatEnd'];
                     }
                 } else if ($guess['episBatEnd'] === '') {
-                    //TODO full season, how do we handle this? I guess for now we leave it blank and update
-                    $fav['Episode'] = $guess['episBatEnd'];
+                    // full season
+                    //$fav['Episode'] = $guess['episBatEnd'];
+                    $fav['Episode'] = "FULL";
                 } else {
-                    //TODO not supposed to happen
+                    // not supposed to happen
+                    return false;
                 }
             }
         } else {
-            //TODO season batch end is not numeric, not sure what to do
+            // season batch end is not numeric, not sure what to do
+            return false;
         }
-        //twxaDebug("\$fav['Season'] = " . $fav['Season'] . " \$fav['Episode'] = " . $fav['Episode'] . "\n", 2);
         write_config_file();
+        return true; //TODO add error handling; until write_config_file() has a return value, we assume success and return true
+    } else {
+        return false;
     }
 }
 
@@ -591,7 +594,8 @@ function add_feed($feedLink) {
         $arrayKeys = array_keys($config_values['Feeds']);
         $idx = end($arrayKeys);
         $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
-        $config_values['Feeds'][$idx]['seedRatio'] = $config_values['Settings']['Default Seed Ratio'];
+        //$config_values['Feeds'][$idx]['seedRatio'] = $config_values['Settings']['Default Seed Ratio'];
+        $config_values['Feeds'][$idx]['seedRatio'] = "";
         $config_values['Feeds'][$idx]['enabled'] = 1;
         load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)), 1, true); // pass true for newly added feeds
         switch ($guessedFeedType) {

@@ -3,6 +3,10 @@ Usage
 
 For the most part, torrentwatch-xa is very intuitive and self-explanatory. These usage notes explain some of the advanced features, details, and behaviors that are not immediately obvious.
 
+### Seed Ratio Settings
+
+If set to a positive number, each Favorite's seed ratio setting overrides its parent Feed's seed ratio setting, which overrides the global Default Seed Ratio setting. To allow inheritance to occur, leave the setting blank. Any negative number gets overridden by -1. If the global Default Seed Ratio is blank, it is overridden by -1.
+
 ### Configure > Feeds
 
 torrentwatch-xa provides you with several default feeds when starting fresh with no config file. If you've added your own feeds, you should probably disable or remove any of these default feeds that you don't use to improve twxacli.php's performance and reduce the load placed on the feed host(s), saving their operators bandwidth. Please be sure to visit your favorite feeds' websites often so that they can earn advertising revenue from your support and help keep the anime fansubbing community alive--thanks!
@@ -71,6 +75,12 @@ See the section "Only Public Torrent RSS or Atom Feeds Are Supported" in the **D
 As of 0.5.0, Auto-Del Seeded Torrents has been fully implemented such that when enabled, either the web UI or twxacli.php (run by the cron job) will automatically delete completely-downloaded, fully-seeded torrents from Transmission without trashing the torrent's contents. Auto-Del Seeded Torrents is also smart enough not to delete any torrents that are not found in the download cache, preventing it from deleting torrents that were added to Transmission via other means.
 
 As of 0.6.0, the web UI is fully synchronized with Transmission so that items auto-deleted by twxacli.php will be removed from the web UI correctly without requiring a browser refresh.
+
+### Saving Magnet Links as Files
+
+As of 0.6.1, the features that save torrent files to the filesystem can now save magnet links as files. This seems counterintuitive, since the point of magnet links is to avoid having to deal with downloading, storing, and hosting torrent files. However, there is no other way to record magnet links for later retrieval except by writing them to a file, so that's what torrentwatch-xa does. Luckily, there are third-party tools that easily convert magnet links stored in text files to torrent files, if you prefer the torrent file over the magnet link.
+
+The ability to save magnet links was added to deal with the increasingly-common feeds that have only magnet links and no links to torrent files.
 
 Design Decisions Explained
 ===============

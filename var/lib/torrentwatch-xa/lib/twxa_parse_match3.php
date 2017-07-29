@@ -320,10 +320,66 @@ function matchTitle3_14($ti, $seps) {
                 'episEd' => $mat[3],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "3_14"
+                'matFnd' => "3_14-1"
             ];
+        } else {
+            // (####) is probably part of the title
+            if (strlen($mat[2]) < strlen($mat[3])) {
+                if ($mat[2] + 0 >= $mat[3] + 0 || substr($mat[3], 0, 1) === "0") {
+                    // very probably (####) SS - EEE
+                    return [
+                        'medTyp' => 1,
+                        'numSeq' => 1,
+                        'seasSt' => $mat[2],
+                        'seasEd' => $mat[2],
+                        'episSt' => $mat[3],
+                        'episEd' => $mat[3],
+                        'itemVr' => 1,
+                        'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,4})[\-$seps]{1,3}(\d{1,4})\b.*/", "", $ti),
+                        'matFnd' => "3_14-2"
+                    ];
+                } else {
+                    // probably (####) EE - EEE
+                    return [
+                        'medTyp' => 1,
+                        'numSeq' => 1,
+                        'seasSt' => 1,
+                        'seasEd' => 1,
+                        'episSt' => $mat[2],
+                        'episEd' => $mat[3],
+                        'itemVr' => 1,
+                        'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,4})[\-$seps]{1,3}(\d{1,4})\b.*/", "", $ti),
+                        'matFnd' => "3_14-3"
+                    ];
+                }
+            } else if (strlen($mat[2]) > strlen($mat[3])) {
+                // very probably (####) EE - # or (####) EEE - ##; not likely to ever see (####) SSS - EE
+                return [
+                    'medTyp' => 1,
+                    'numSeq' => 1,
+                    'seasSt' => 1,
+                    'seasEd' => 1,
+                    'episSt' => $mat[2],
+                    'episEd' => $mat[2],
+                    'itemVr' => 1,
+                    'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,4})[\-$seps]{1,3}(\d{1,4})\b.*/", "", $ti),
+                    'matFnd' => "3_14-4"
+                ];
+            } else if ($mat[2] < $mat[3]) {
+                // probably (####) EE - EE
+                return [
+                    'medTyp' => 1,
+                    'numSeq' => 1,
+                    'seasSt' => 1,
+                    'seasEd' => 1,
+                    'episSt' => $mat[2],
+                    'episEd' => $mat[3],
+                    'itemVr' => 1,
+                    'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,4})[\-$seps]{1,3}(\d{1,4})\b.*/", "", $ti),
+                    'matFnd' => "3_14-5"
+                ];
+            }
         }
-        //TODO handle else
     }
 }
 
@@ -342,10 +398,22 @@ function matchTitle3_15($ti, $seps) {
                 'episEd' => $mat[2],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "3_15"
+                'matFnd' => "3_15-1"
+            ];
+        } else {
+            // (####) is probably part of the title, assume (####) - SS (EEE)
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => $mat[2],
+                'seasEd' => $mat[2],
+                'episSt' => $mat[3],
+                'episEd' => $mat[3],
+                'itemVr' => 1,
+                'favTi' => preg_replace("/[\-$seps]{0,3}(\d{1,3})[\-$seps]{0,3}\((\d{1,4})\).*/", "", $ti),
+                'matFnd' => "3_15-2"
             ];
         }
-        //TODO handle else
     }
 }
 
@@ -404,7 +472,7 @@ function matchTitle3_18($ti, $seps) {
                     'episSt' => $mat[2],
                     'episEd' => $mat[3],
                     'itemVr' => 1,
-                    'favTi' => preg_replace($re, "", $ti),
+                    'favTi' => preg_replace("/\([$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\).*/", "", $ti),
                     'matFnd' => "3_18-1"
                 ];
             } else {
@@ -422,7 +490,18 @@ function matchTitle3_18($ti, $seps) {
                 ];
             }
         } else {
-            //TODO handle unidentifiable ## (## - ##)
+            // probably ## (SS - EE), and first ## is probably part of the title
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => $mat[2],
+                'seasEd' => $mat[2],
+                'episSt' => $mat[3],
+                'episEd' => $mat[3],
+                'itemVr' => 1,
+                'favTi' => preg_replace("/\([$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\).*/", "", $ti),
+                'matFnd' => "3_18-3"
+            ];
         }
     }
 }
@@ -474,7 +553,7 @@ function matchTitle3_19($ti, $seps) {
                 ];
             }
         } else {
-            //TODO handle unidentifiable ## Ep ## - ##
+            // unidentifiable ## Ep ## - ##
         }
     }
 }
@@ -526,7 +605,18 @@ function matchTitle3_20($ti, $seps) {
                 ];
             }
         } else {
-            //TODO handle unidentifiable ## ## - ##
+            // probably ## SS - EE, and first ## is probably part of the title
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => $mat[2],
+                'seasEd' => $mat[2],
+                'episSt' => $mat[3],
+                'episEd' => $mat[3],
+                'itemVr' => 1,
+                'favTi' => preg_replace("/[\-$seps]{1,3}(\d{1,4})[$seps]?\-[$seps]?(\d{1,4})\b.*/", " ", $ti),
+                'matFnd' => "3_20-4"
+            ];
         }
     }
 }

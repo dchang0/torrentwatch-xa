@@ -3,114 +3,73 @@
 torrentwatch-xa
 ===============
 
-torrentwatch-xa is an actively-developed fork of Joris Vandalon's abandoned TorrentWatch-X automatic episodic torrent downloader with the _extra_ capability of handling anime fansub torrents that do not have season numbers, only episode numbers. As of 0.4.0, it can also detect and auto-download some print media like manga numbered by date or volume x chapter. It will continue to handle live-action TV episodes with nearly all season and episode numbering styles.
+__torrentwatch-xa is an anime/manga/light novel broadcatcher__ that regularly monitors multiple subscribed public RSS/Atom feeds for the latest "Favorite" serialized torrents and downloads them automatically. It is an actively-developed, high-quality resurrection of the popular but long-abandoned TorrentWatch-X.
+
+As a fork of TorrentWatch-X, torrentwatch-xa handles Western live-action show titles containing commonly-used season x episode or date-based numbering styles. It is specially designed to __also__ handle the widely-varying numbering styles used by anime, manga, and light novel fansubbing crews and also features all the bugfixes and code cleanup that TorrentWatch-X so badly needed.
 
 ![torrentwatch-xa twxa ScreenShot 1](http://silverlakecorp.com/torrentwatch-xa/twxaScreenShot1.png)
 
-I resurrected TorrentWatch-X because I could not make Sick Beard-Anime PVR handle anime episode numbering styles well enough for certain titles, and the TorrentWatch-X UI is far easier to use and understand for both automated and manual torrent downloads. When I forked TorrentWatch-X at version 0.8.9, it was a buggy mess, but over years of testing and development, torrentwatch-xa has proven to be the excellent set-it-and-forget-it PVR that TorrentWatch-X was always meant to be.
+To auto-download Favorite torrents, torrentwatch-xa controls a local __or remote__ Transmission BitTorrent client via Transmission RPC __and/or__ saves .torrent files or magnet links as files locally. The latter allows the use of __any__ BitTorrent client (not just Transmission) that can watch directories for .torrent files or magnet links to automatically start those torrents.
 
-Without getting caught up in the feature race that other torrent downloaders seem to be stuck in, the goal is for torrentwatch-xa to do only what it's supposed to do and do it well. In the end, what we all really want is to come home to a folder full of automatically-downloaded live-action shows, anime, manga, and light novels, ready to be viewed immediately.
+torrentwatch-xa runs on an Apache 2.4.x webserver with PHP 5.6.0alpha3* or higher and the prerequisite PHP packages listed in the installation instructions. It works out-of-the-box on any up-to-date instance of Debian 8.x, Ubuntu 14.04.x, or Ubuntu 16.04.x on any architecture, and it can be made to work on current versions of RedHat, Fedora, or CentOS LINUX by installing the RPM package equivalents of the prerequisite PHP .deb packages and adjusting the firewall and SELINUX restrictions. (RedHat distros are not officially supported at this time.)
+
+torrentwatch-xa is extremely lightweight and can run decently on even a $5 Raspberry Pi Zero (around 18 seconds for the web UI to process all six default feeds with 32 favorites, as compared to around 5 seconds on an ODROID C1+). The web UI works on any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
+
+Common setups:
+
+- torrentwatch-xa and Transmission run on the same LINUX desktop or server or NAS together; downloaded content is stored on this device
+- torrentwatch-xa runs on a low-power computer (usually a home-theater single-board computer running Kodi) or virtual machine and remotely controls Transmission running on a separate NAS that stores the downloaded content
+
+* PHP 5.6.0alpha3 is really only required by PHPMailer's SMTP 5.2.23 library to support TLS 1.1 and 1.2. torrentwatch-xa itself only requires PHP 5.4.0. If you are not using email triggers with TLS 1.1 or 1.2, you should be able to avoid this version requirement by downgrading PHPMailer's SMTP library.
 
 Status
 ===============
 
 ### Current Version
 
-I've posted 0.6.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 0.7.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-0.6.0 features a major rewrite of the getClientData and processClientData Javascript functions in the web UI so that the Transmission filter is two-way synchronized with Transmission's torrent list. This change was made to address a rare problem introduced in 0.5.0 by the improvement to _Auto-Del Seeded Torrents_ like so:
+__If upgrading to torrentwatch-xa 0.7.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, you must run `upgradeConfigTo0_7_0.php` to upgrade your Favorites. This script will only be available in the 0.7.0 release; it is always possible to "upgrade" a Favorite by deleting it and re-creating it.__
 
-- The web UI is open in a browser, and an active torrent is completely downloaded and has just finished fully seeding.
-- With _Auto-Del Seeded Torrents_ enabled, twxacli.php (run by the cron job) deletes the fully-seeded torrent before the web UI can do so.
-- The web UI is unable to auto-delete the torrent because it no longer exists in Transmission, so its item is left on display in the web UI until the browser is refreshed.
+I've completed all of the currently-outstanding season and episode detection patterns. What remains in the detection engine are bugfixes; just about every numbering style I've seen so far has been added to the engine.
 
-With the new two-way sync, if you have the web UI open all the time, you will see torrents auto-downloaded by twxacli.php show up in real-time in the Transmission filter and then disappear when auto-deleted by either the web UI or twxacli.php, whichever gets there first.
+PROPER/REPACK/RERIP keywords are treated as item version 99 so that it preempts all lower versions.
 
-Also, torrents added to Transmission by means other than torrentwatch-xa also show up in the Transmission filter and can be managed there. These will never be auto-deleted (a behavior added in 0.5.0's Auto-Del Seeded Torrents improvement) and must be manually deleted.
+0.7.0 now saves magnet links to files for either the _Client: Save Torrent in Folder_ or _Also Save Torrent Files_ features.
 
-As part of the processClientData rewrite, all list item states were examined and then cleaned up:
-
-- All states' prefixes were changed for clarity.
-- Some redundant states were completely or partially merged into other states, resulting in their removal from the legend.
-- State change logic was improved in several places.
-- The state tc_seeding was added for consistency, though it isn't visible by legend color.
-
-I finally fixed a bug carried over from TorrentWatch-X 0.8.9 where the context menu's slideUp("fast") behavior did not have time to completely put away the menu after clicking the Download context menu item, leaving a randomly shorter height for that context menu that would endure for the rest of the browser session and would be reset only by a browser refresh. This bug would effectively cut off all but the first context menu item.
-
-Another long-overdue and sorely-needed fix for a bug from TorrentWatch-X: the button bar is now correctly positioned on smartphone screens just above the bottom edge of the screen.
-
-To the *Also Save Torrent Files* feature, I added the *Configure > Torrent > Save Torrent Files Dir* setting to solve the problem of connecting to a remote Transmission client and being unable to save .torrent files to the *Download Dir* on the remote system. With *Save Torrent Files Dir*, the .torrent files are written to any accessible local system path, which may be an NFS mount to a remote path. This is not the same functionality as *Client: Save Torrent In Folder* that does not use Transmission at all; *Also Save Torrent Files* uses Transmission to download the torrent _and also_ saves the .torrent file in the *Save Torrent Files Dir*.
-
-And finally, the overall look and feel has been flattened and modernized.
+Individual Favorites can now override the global default _Download Dir_ and the _Also Save Torrent Files Dir_ settings. This is the reason for the upgrade script mentioned above.
 
 Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+
+New in alpha: Fedora Server 25 is being tested but will not be officially supported for quite a while.
 
 ### Next Version
 
 I hope to:
 
-- fix web UI behavior for *Client: Save Torrent In Folder*
 - continue cleaning up or improving old code (still about half of torrentwatch-xa.js and several functions in twxa_feed.php and twxa_torrent.php need improvement).
 - shorten the time to the first firing of getClientData after a browser refresh
 - start comprehensive testing of the _Client: Save torrent in folder_ feature, which may require readjustment of the list item states
 - rewrite the episode_filter() function to handle the new season and episode notation style
-- rewrite PROPER/REPACK handling in the new itemVersion method
 - finish twxaDebug() and $verbosity
 
-Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) files. Tickets in GitHub Issues will remain separate for accountability reasons.
 
-Tested Platforms
+Documentation
 ===============
 
-torrentwatch-xa is primarily developed and tested on Debian 8.x (actually Raspbian Lite) on a Raspberry Pi Zero W. For this testbed transmission-daemon is not installed locally--a separate NAS on the same LAN serves as the transmission server. The UI works on pretty much any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
+See:
 
-torrentwatch-xa should work without modifications on any out-of-the-box, up-to-date install of Debian 8.x, Ubuntu 14.04.x, or Ubuntu 16.04.2 on any architecture.
+- [INSTALL.md](INSTALL.md) for detailed installation steps or important notes if you are upgrading from a prior version.
 
-Be aware that I rarely test the GitHub copy of the code; I test using my local copy, and I rarely do wipe-and-reinstall torrentwatch-xa testing. So it is possible that permissions and file ownership differences may break the GitHub copy without my knowing it.
+- [USAGE.md](USAGE.md) for usage notes and an explanation of some design decisions.
 
-Prerequisites
-===============
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed troubleshooting steps and explanations of design decisions and common issues.
 
-### Ubuntu 14.04 and Debian 8.x (jessie)
-
-From the official repos:
-
-- transmission-daemon
-- apache2 (currently Apache httpd 2.4.10)
-- php5 (currently PHP 5.6)
-- php5-json
-- php5-curl
-
-### Ubuntu 16.04
-
-From the official repos:
-
-- transmission-daemon
-- apache2
-- php-mbstring (defaults to php7.0-mbstring)
-- libapache2-mod-php (defaults to libapache2-mod-php7.0)
-- php (defaults to php7.0)
-- php-curl (defaults to php7.0-curl)
-
-Installation
-===============
-
-See [INSTALL.md](INSTALL.md) for detailed installation steps or important notes if you are upgrading from a prior version.
-
-Usage
-===============
-
-See [USAGE.md](USAGE.md) for usage notes and an explanation of some design decisions.
-
-Troubleshooting
-===============
-
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed troubleshooting steps and explanations of design decisions and common issues.
-
+- Known bugs are tracked primarily in the [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) files. Tickets in GitHub Issues will remain separate for accountability reasons.
 
 Credits
 ===============
 
 - Original TorrentWatch-X by Joris Vandalon https://code.google.com/p/torrentwatch-x/
 - Original Torrentwatch by Erik Bernhardson https://code.google.com/p/torrentwatch/
-- Credits for the PHP and Javascript libraries are inside of their respective files.
+- Credits for the few third-party PHP and Javascript libraries are inside of their respective files.

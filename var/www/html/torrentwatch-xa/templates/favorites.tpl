@@ -20,11 +20,12 @@
             'Name' => '',
             'Filter' => '',
             'Not' => '',
-            'Save In' => 'Default',
+            'Download Dir' => 'Default',
+            'Also Save Dir' => 'Default',
             'Episodes' => '',
             'Feed' => '',
             'Quality' => '',
-            'seedRatio' => $config_values['Settings']['Default Seed Ratio']
+            'seedRatio' => ''
             ],
             "new"); ?>
             <?php if(isset($config_values['Favorites']))

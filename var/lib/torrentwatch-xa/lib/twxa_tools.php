@@ -29,7 +29,7 @@ require_once("twxa_html.php");
 
 $config_values['Global'] = []; // initialize collection of global arrays
 
-function isset_array_key($array, $key, $default = '') { //TODO rename this
+function getArrayValueByKey($array, $key, $default = '') {
     // checks array: if a key is set, return value or default
     return isset($array[$key]) ? $array[$key] : $default;
 }
@@ -98,34 +98,33 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
     return $newArray;
 }
 
-function get_curl_defaults(&$curlopt) {
-    if (extension_loaded("curl")) {
-        $curlopt[CURLOPT_CONNECTTIMEOUT] = 15;
-    }
-    $curlopt[CURLOPT_SSL_VERIFYPEER] = false;
-    $curlopt[CURLOPT_SSL_VERIFYHOST] = false;
-    $curlopt[CURLOPT_FOLLOWLOCATION] = true;
-    $curlopt[CURLOPT_UNRESTRICTED_AUTH] = true;
-    $curlopt[CURLOPT_TIMEOUT] = 20;
-    $curlopt[CURLOPT_RETURNTRANSFER] = true;
-    return($curlopt);
+function getcURLDefaults(&$curlOptions) {
+    $curlOptions[CURLOPT_CONNECTTIMEOUT] = 15;
+    $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+    $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+    $curlOptions[CURLOPT_FOLLOWLOCATION] = true;
+    $curlOptions[CURLOPT_UNRESTRICTED_AUTH] = true;
+    $curlOptions[CURLOPT_TIMEOUT] = 20;
+    $curlOptions[CURLOPT_RETURNTRANSFER] = true;
+    return($curlOptions);
 }
 
-function microtime_float() {
+function getCurrentMicrotime() {
     list($usec, $sec) = explode(" ", microtime());
     return ((float) $usec + (float) $sec);
 }
 
-function timer_get_time($time) {
-    return (microtime_float() - $time);
+function getElapsedMicrotime($startTime) {
+    return (getCurrentMicrotime() - $startTime);
 }
 
-function filename_encode($filename) {
-    // makes a name fit for use as a filename
+function sanitizeFilename($filename) {
+    // makes a filename filesystem-safe
     return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
 }
 
 function twxaDebug($string, $lvl = -1) {
+    global $config_values;
     switch ($lvl) {
         case -1: // ALERT:
         case 0:
@@ -138,32 +137,24 @@ function twxaDebug($string, $lvl = -1) {
         default:
             $errLabel = "DBG:";
     }
-    // write plain text to log file
-    file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND);
-    /* if ($config_values['Settings']['debugLevel'] >= $lvl) {
-      if (isset($config_values['Global']['HTMLOutput'])) {
-      // write HTML output
-      if ($lvl === -1) {
-      $string = trim(strtr($string, array("'" => "\\'")));
-      $debug_output = "<script type='text/javascript'>alert('$string');</script>";
-      } else {
-      $debug_output = date("c") . " $errLabel $string";
-      }
-      //TODO this block never sends output to HTML!
-      } else {
-      // write plain text output
-      echo(date("c") . " $errLabel $string");
-      }
-      } */
+    if ($config_values['Settings']['debugLevel'] >= $lvl) {
+        /* if ($lvl === -1 && isset($config_values['Global']['HTMLOutput'])) {
+          $string = trim(strtr($string, array("'" => "\\'")));
+          $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once
+          } */
+        // write plain text to log file
+        if(file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND) === false) {
+            //TODO failed to write, send error to HTML
+        }
+    }
 }
 
-function MailNotify($msg, $subject) {
+function notifyByEmail($msg, $subject) {
     global $config_values;
 
     $fromEmail = $config_values['Settings']['From Email'];
     $toEmail = $config_values['Settings']['To Email'];
     $smtpPort = $config_values['Settings']['SMTP Port'];
-
     if (
             (
             $smtpPort != '' &&
@@ -178,7 +169,6 @@ function MailNotify($msg, $subject) {
             $email = new PHPMailer();
             $email->isSMTP();
             $email->SMTPDebug = 0;
-
             // set the From: email address
             if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
                 twxaDebug("From Email is invalid, using To Email as From Email\n", 0);
@@ -200,12 +190,9 @@ function MailNotify($msg, $subject) {
                 twxaDebug("Unable to detect HELO from From Email, using default: $helo\n", 2);
             }
             $email->Helo = $helo;
-
             $email->AddAddress("$toEmail");
-
             $email->Host = $config_values['Settings']['SMTP Server'];
             $email->Port = $smtpPort;
-
             if ($config_values['Settings']['SMTP Authentication'] !== 'None') {
                 $email->SMTPAuth = true;
                 $email->AuthType = $config_values['Settings']['SMTP Authentication'];
@@ -224,17 +211,8 @@ function MailNotify($msg, $subject) {
                         $email->SMTPSecure = "tls";
                 }
             }
-
             $email->Subject = $subject;
-
-            /* $mail = file_get_contents(get_webDir() . "/templates/email.tpl");
-              $mail = str_replace('[MSG]', $msg, $mail);
-              if (empty($mail)) {
-              $mail = $msg;
-              }
-              $email->Body = $mail; */
             $email->Body = $msg;
-
             if (!$email->Send()) {
                 twxaDebug("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
             } else {
@@ -250,42 +228,53 @@ function MailNotify($msg, $subject) {
     }
 }
 
-function run_script($param, $torrent, $error = "") {
+function runScript($param, $title, $errorMessage = "") {
     global $config_values;
-    $escapedTorrent = escapeshellarg($torrent);
-    $escapedError = escapeshellarg($error);
-    $script = $config_values['Settings']['Script'];
+    $subject = $msg = "";
+    $script = trim($config_values['Settings']['Script']);
     if ($script) {
-        if (!is_file($script)) {
-            if ($config_values['Settings']['SMTP Notifications']) {
-                $msg = "The configured script is not a single file. Parameters are not allowed because of security reasons.";
-                $subject = "torrentwatch-xa: security error";
-                MailNotify($msg, $subject);
+        if (preg_match("/\s+/", $script)) {
+            $subject = "Parameters not allowed in Trigger Script: $script";
+            $msg = "torrentwatch-xa does not allow parameters in Configure > Trigger > Script: $script";
+            twxaDebug("Parameters not allowed in Trigger Script: $script\n", 0);
+        } else {
+            if (is_file($script)) {
+                $escapedTitle = escapeshellarg($title);
+                $escapedErrorMessage = escapeshellarg($errorMessage);
+                twxaDebug("Running script: $script $param $escapedTitle $escapedErrorMessage\n", 1);
+                $response = [];
+                $return = 0;
+                exec("$script $param $escapedTitle $escapedErrorMessage 2>&1", $response, $return);
+                if ($return) {
+                    $responseMsg = implode("\n", $response);
+                    $debugMsg = $subject = "Error in Trigger Script: $script";
+                    $msg = "torrentwatch-xa encountered an error running:\n$script $param $escapedTitle $escapedErrorMessage\n";
+                    if ($responseMsg) {
+                        $msg .= "\n" . $responseMsg . "\n\n";
+                        $debugMsg .= " $param $escapedTitle $escapedErrorMessage: " . $responseMsg;
+                    }
+                    $msg .= "Please examine the example scripts in /var/lib/torrentwatch-xa/examples for more info about how to make a compatible script.";
+                    twxaDebug("$debugMsg\n", 0);
+                } else {
+                    twxaDebug("Success running: $script\n", 2);
+                }
+            } else {
+                $subject = "Trigger Script not found: $script";
+                $msg = "torrentwatch-xa was unable to find Trigger Script: $script";
+                twxaDebug("Trigger Script not found: $script\n", 0);
             }
-            twxaDebug("Notify Script is not a single file; ignoring for security reasons.\n", -1);
-            return;
         }
-        twxaDebug("Running script: $script $param $escapedTorrent $escapedError \n", 1);
-        $response = [];
-        $return = 0;
-        exec("$script $param $escapedTorrent $escapedError 2>&1", $response, $return);
-        if ($return) {
-            $msg = "Something went wrong while running $script:\n";
-            foreach ($response as $line) {
-                $msg .= $line . "\n";
-            }
-            $msg .= "\n";
-            $msg .= "Please examine the example scripts in /var/lib/torrentwatch-xa/examples for more info about how to make a compatible script.";
-            if ($config_values['Settings']['SMTP Notifications']) {
-                $subject = "torrentwatch-xa: $script returned error.";
-                MailNotify($msg, $subject);
-            }
-            twxaDebug("$msg\n", 0);
-        }
+    } else {
+        $subject = "Trigger Script not specified";
+        $msg = "torrentwatch-xa: Configure > Trigger > Script not specified";
+        twxaDebug("Trigger Script not specified\n", 0);
+    }
+    if ($subject && $config_values['Settings']['SMTP Notifications']) {
+        notifyByEmail($msg, $subject);
     }
 }
 
-function check_for_cookies($url) {
+function parseURLForCookies($url) {
     $cookies = stristr($url, ':COOKIE:');
     if ($cookies !== false) {
         $url = rtrim(substr($url, 0, -strlen($cookies)), '&');
@@ -294,7 +283,7 @@ function check_for_cookies($url) {
     }
 }
 
-/* function authenticate() {
+/* function authenticateFeeds() {
   global $config_values;
 
   if ($_SERVER['PHP_AUTH_USER'] == 'twxa' && $_SERVER['PHP_AUTH_PW'] == 'twxa'

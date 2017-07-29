@@ -19,7 +19,7 @@ foreach ($twxaIncludePaths as $twxaIncludePath) {
 set_include_path($includePath);
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "0.6.0";
+$twxa_version[0] = "0.7.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -38,11 +38,9 @@ if (get_magic_quotes_gpc()) {
     unset($process);
 }
 
-// This function parses commands sent from a PC browser
-function parse_options() {
-
+// parses commands sent from web UI (usually torrentwatch-xa.js)
+function parse_options($twxa_version) {
     global $html_out, $config_values;
-    $filler = "<br>";
 
     array_keys($_GET);
     $commands = array_keys($_GET);
@@ -55,12 +53,13 @@ function parse_options() {
     }
     switch ($commands[0]) {
         case 'getClientData':
-            if ($_REQUEST['recent']) {
-                $response = getClientData(1);
-            } else {
-                $response = getClientData(0);
-            }
-            echo $response;
+            /* if ($_REQUEST['recent']) {
+              $response = getClientData(1);
+              } else {
+              $response = getClientData(0);
+              }
+              echo $response; */
+            echo getClientData();
             exit;
         case 'delTorrent':
             if (isset($_REQUEST['trash'])) {
@@ -79,16 +78,19 @@ function parse_options() {
             echo "$response";
             exit;
         case 'stopTorrent':
-            $response = stopTorrent($_REQUEST['stopTorrent']);
-            echo "$response";
+            /* $response = stopTorrent($_REQUEST['stopTorrent']);
+              echo "$response"; */
+            echo stopTorrent($_REQUEST['stopTorrent']);
             exit;
         case 'startTorrent':
-            $response = startTorrent($_REQUEST['startTorrent']);
-            echo "$response";
+            /* $response = startTorrent($_REQUEST['startTorrent']);
+              echo "$response"; */
+            echo startTorrent($_REQUEST['startTorrent']);
             exit;
         case 'moveTo':
-            $response = moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash'], $_REQUEST['batch']);
-            echo "$response";
+            /* $response = moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash'], $_REQUEST['batch']);
+              echo "$response"; */
+            echo moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash']);
             exit;
         case 'updateFavorite':
             $response = update_favorite();
@@ -113,14 +115,14 @@ function parse_options() {
                     $idx = $key;
                 }
             }
-            if ($config_values['Feeds'][$idx]['seedRatio']) {
+            /*if ($config_values['Feeds'][$idx]['seedRatio']) {
                 $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];
             } else {
                 $seedRatio = $config_values['Settings']['Default Seed Ratio'];
             }
             if (!($seedRatio)) {
                 $seedRatio = -1;
-            }
+            }*/            
             if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
                 $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
                 switch ($config_values['Settings']['Match Style']) {
@@ -139,19 +141,24 @@ function parse_options() {
                 }
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
-                $_GET['savein'] = 'Default';
-                $_GET['seedratio'] = $seedRatio;
+                $_GET['downloaddir'] = 'Default';
+                $_GET['alsosavedir'] = 'Default';
+                //$_GET['seedratio'] = $seedRatio;
+                $_GET['seedratio'] = "";
             } else {
                 $_GET['name'] = $_GET['title'];
                 $_GET['filter'] = $_GET['title'];
                 $_GET['quality'] = 'All';
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
-                $_GET['savein'] = 'Default';
-                $_GET['seedratio'] = $seedRatio;
+                $_GET['downloaddir'] = 'Default';
+                $_GET['alsosavedir'] = 'Default';
+                //$_GET['seedratio'] = $seedRatio;
+                $_GET['seedratio'] = "";
             }
             if ($config_values['Settings']['Default Feed All'] &&
-                    preg_match('/^(\d+)x(\d+)p?$|^(\d{8})$/i', $tmp['episode'])) { //TODO replace this with proper season and episode checks
+                    //preg_match('/^(\d+)x(\d+)p?$|^(\d{8})$/i', $tmp['episode'])) {
+                    $tmp['numberSequence'] > 0) { // set default feed to all only if serialized
                 $_GET['feed'] = 'All';
             }
             $response = update_favorite();
@@ -177,7 +184,7 @@ function parse_options() {
                 $guess = detectMatch(html_entity_decode($_GET['title']));
                 $name = trim(strtr($guess['title'], "._", "  "));
                 if ($name == $fav['Name']) {
-                    $downloadDir = $fav['Save In'];
+                    $downloadDir = $fav['Download Dir'];
                 }
             }
             if ((!isset($downloadDir) || $downloadDir == "Default" ) &&
@@ -212,8 +219,8 @@ function parse_options() {
             global $config_values;
             echo $config_values['Settings']['Auto-Del Seeded Torrents'];
             exit;
-        case 'version_check':
-            echo version_check();
+        case 'checkVersion':
+            echo checkVersion($twxa_version);
             exit;
         case 'get_dialog_data':
             switch ($_GET['get_dialog_data']) {
@@ -250,7 +257,7 @@ function parse_options() {
 
     if (isset($output)) {
         if (is_array($output)) {
-            $output = implode($filler, $output);
+            $output = implode("<br>", $output);
         }
         $html_out .= str_replace("\n", "<br>", "<div class='execoutput'>$output</div>");
         echo $html_out;
@@ -466,17 +473,22 @@ function check_requirements() {
     if (!(function_exists('json_encode'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
             No JSON support found in your PHP installation.<br>
-	    In Ubuntu 14.04 or Debian 8.x, install php5-json.</div>";
+	    In Ubuntu 14.04 or Debian 8.x, install php5-json and restart Apache2.</div>";
         return 1;
     }
     if (!(function_exists('curl_init'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No cURL support found in your PHP installation. In Ubuntu 14.04 or Debian 8.x install php5-curl.</div>";
+            No cURL support found in your PHP installation. In Ubuntu 14.04 or Debian 8.x install php5-curl and restart Apache2.</div>";
         return 1;
     }
     if (!(function_exists('mb_convert_kana'))) {
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No mbstring (multibyte string) support found in your PHP installation. In Ubuntu 16.04 install php-mbstring.</div>";
+            No mbstring (multibyte string) support found in your PHP installation. In Ubuntu 16.04 or Fedora install php-mbstring and restart Apache2.</div>";
+        return 1;
+    }
+    if (!(function_exists('posix_getuid'))) {
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
+            No posix_getuid() support found in your PHP installation. In Fedora install php-process and restart Apache2.</div>";
         return 1;
     }
 }
@@ -524,20 +536,37 @@ function check_files() {
     }
 }
 
-function version_check() {
-    global $twxa_version;
+function checkVersion($twxa_version) {
+    //global $twxa_version;
     if (!isset($_COOKIE['VERSION-CHECK'])) {
         $get = curl_init();
-        $getOptions[CURLOPT_URL] = 'http://silverlakecorp.com/torrentwatch-xa/VERSION.txt';
-        $getOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-        get_curl_defaults($getOptions);
-        curl_setopt_array($get, $getOptions);
-        $latest = curl_exec($get);
+        $curlOptions[CURLOPT_URL] = 'http://silverlakecorp.com/torrentwatch-xa/VERSION.txt';
+        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
+        getcURLDefaults($curlOptions);
+        curl_setopt_array($get, $curlOptions);
+        $latestFromWebsite = curl_exec($get);
         curl_close($get);
-        $version = (int) str_replace('.', '', $twxa_version[0]);
-        $tmplatest = (int) str_replace('.', '', $latest);
-        if ($tmplatest && $tmplatest > $version) {
-            return "<div id=\"newVersion\" class=\"dialog_window\" style=\"display: block\">torrentwatch-xa $latest is available.
+        $isLatestHigher = false;
+        $thisVersion = explode(".", $twxa_version[0]);
+        $latestVersion = explode(".", $latestFromWebsite);
+        $maxPartCount = max(count($thisVersion), count($latestVersion));
+        for ($i = 0; $i < $maxPartCount; $i++) {
+            if (isset($thisVersion[$i])) {
+                if (isset($latestVersion[$i])) {
+                    if ($latestVersion[$i] + 0 > $thisVersion[$i] + 0) {
+                        $isLatestHigher = true;
+                    }
+                }
+            } else {
+                if (isset($latestVersion[$i])) {
+                    if ($latestVersion[$i] + 0 > 0) {
+                        $isLatestHigher = true;
+                    }
+                }
+            }
+        }
+        if ($isLatestHigher) {
+            return "<div id=\"newVersion\" class=\"dialog_window\" style=\"display: block\">torrentwatch-xa $latestFromWebsite is available.
                    Click <a href=\"https://github.com/dchang0/torrentwatch-xa/\">here</a> for more information.</div>";
         }
     }
@@ -565,21 +594,22 @@ function get_client() {
 
 /// main
 
-$main_timer = timer_get_time(0);
+$main_timer = getElapsedMicrotime(0);
 setup_default_config();
 read_config_file();
-if (!isset($config_values['Settings']['Sanitize Hidelist']) || $config_values['Settings']['Sanitize Hidelist'] != 1) { //TODO why is this called "Sanitize"? Do we even need this?
+if (!isset($config_values['Settings']['Sanitize Hidelist']) || $config_values['Settings']['Sanitize Hidelist'] != 1) {
+    // cleans titles of items in hidelist of most symbols
     update_hidelist();
     $config_values['Settings']['Sanitize Hidelist'] = 1;
     twxaDebug("Updated Hide List\n", 2);
     write_config_file();
 }
-//authenticate();
+//authenticateFeeds();
 
 $config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";
 
-parse_options();
+parse_options($twxa_version);
 if (check_requirements()) {
     return;
 }
@@ -609,5 +639,5 @@ if ($config_values['Settings']['Hide Donate Button'] != 1) {
     </div>';
 }
 
-twxaDebug("=====torrentwatch-xa.php finished running in " . timer_get_time($main_timer) . "s\n\n", 2);
+twxaDebug("=====torrentwatch-xa.php finished running in " . getElapsedMicrotime($main_timer) . "s\n", 2);
 exit(0);

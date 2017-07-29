@@ -542,7 +542,7 @@ ul.torrentlist li.st_waitTorCheck td.identifier,
 #show_legend li.legend.st_downloading,
 ul.torrentlist li.st_downloading td.identifier,
 #transmission_list li.torrent.tc_downloading .tr_identifier {
-    background-color: #a1e0c8;
+    background-color: #a1e8c8;
 }
 
 /* Downloaded / Seeding */
@@ -1108,7 +1108,7 @@ div.legend input {
     border-top-right-radius:    2px;
     display: block;
     height: 14px;
-    top: 155px;
+    top: 148px; /* was 155px */
     overflow: hidden;
     width: 250px;
     z-index: 99;
@@ -1354,7 +1354,7 @@ div.legend input {
 #favorites {
     width: 590px;
     margin-left: -287px;
-    height: 247px;
+    height: 267px; /* was 247px */
     padding-top: 5px;
 }
 
@@ -1365,7 +1365,7 @@ div.legend input {
 }
 
 div.favorite {
-    height: 245px;
+    height: 265px; /* was 245px */
     width: 198px;
     float: left;
     clear: left;
@@ -1375,13 +1375,13 @@ div.favorite {
 }
 
 ul.favorite {
-    height: 245px;
+    height: 265px; /* was 245px */
     font-size: 120%;
     overflow: auto;
 }
 
 div.favinfo {
-    height: 245px;
+    height: 265px; /* was 245px */
     float: right;
     clear: right;
     border: 1px solid #979797;
@@ -1395,7 +1395,7 @@ div.favinfo .right {
 }
 
 div.favinfo .left {
-    width: 70px;
+    width: 90px;
     vertical-align: top;
 }
 
@@ -1426,7 +1426,7 @@ ul.favorite li:hover a {
 }
 
 form.favinfo {
-    height: 248px;
+    /*height: 268px;*/ /* was 248px */
     display: none;
     padding: 5px 0;
     margin: 5px 0;
@@ -1443,75 +1443,91 @@ form.favinfo input#idx {
 }
 
 form.favinfo select {
-    position: absolute;
-    right: 15px;
-    width: 292px;
+    /*position: absolute;
+    right: 15px;*/
+    width: 272px;
 }
 
 form.favinfo input.text,
 form.favinfo input[type=text] {
-    position: absolute;
-    right: 15px;
-    width: 290px;
+    /*position: absolute;
+    right: 15px;*/
+    width: 270px;
 }
 
 form.favinfo div.favorite_seed_and_episode {
-    position: absolute;
+    /*position: absolute;*/
     float: right;
-    right: 25px;
-    width: 360px;
+    /*right: 25px;*/
+    width: 380px; /* was 360px */
 }
 
 form.favinfo label.lastSeason {
-    position: absolute;
+    /*position: absolute;
     right: 115px;
-    top: 2px;
+    top: 2px;*/
     margin-left: 0;
+    padding-left: 9px;
 }
 
 form.favinfo label.lastEpisode{
-    position: absolute;
+    /*position: absolute;
     right: 56px;
-    top: 2px;
+    top: 2px;*/
     margin-left: 0;
 }
 
 form.favinfo input.seedratio[type=text] {
-    position: absolute;
-    right: 260px;
+    /*position: absolute;
+    right: 240px;*/
     width: 20px;
     text-align: center;
 }
 
 form.favinfo input.lastSeason[type=text] {
-    position: absolute;
-    right: 65px;
+    /*position: absolute;
+    right: 65px;*/
     width: 40px;
     text-align: center;
 }
 
 form.favinfo input.lastEpisode[type=text] {
-    position: absolute;
-    right: -10px;
+    /*position: absolute;
+    right: -10px;*/
     width: 60px;
     text-align: center;
+    margin-left: 0;
 }
 
 #favorite_new.favinfo input.lastEpisode[type=text] {
-    position: absolute;
-    right: -10px;
-    width: 115px;
+    /*position: absolute;
+    right: -10px;*/
+    width: 125px; /* was 115px */
     text-align: center;
 }
 
+/*div.favinfo div.buttonContainer {
+    position: relative;
+    left: -76px;
+    top: -2px;
+}*/
+
 div.favinfo div.buttonContainer {
     position: absolute;
-    top: 210px;
-    right: 84px;
+    top: 230px; /* was 210px */
+    right: 82px; /* was 84px */
 }
 
+/*#favClose {
+    position: relative;
+    left: -7px;
+    top: -38px;
+}*/
+
 #favClose {
-    right: 15px;
+    /*position: absolute;
+    top: 230px;*/
+    right: 13px;
 }
 
 /******************************

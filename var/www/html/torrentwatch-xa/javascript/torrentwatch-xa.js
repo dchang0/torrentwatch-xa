@@ -36,7 +36,7 @@ $(document).ready(function () { // first binding to document ready
         }
         // draw the item list based on selected filter/view
         clearInterval(window.filterInterval); // stop the timer window.filterInterval
-        $.cookie('TWFILTER', filter, {expires: 666}); // store the selected filter in cookie to survive browser refresh
+        $.cookie('TWXAFILTER', filter, {expires: 666}); // store the selected filter in cookie to survive browser refresh
         switch (filter) {
             case 'matching':
                 if ($('.transmission').is(":visible")) {
@@ -123,8 +123,7 @@ $(document).ready(function () { // first binding to document ready
                 break;
         }
         if (showFilter) {
-            //TODO why does this call to showFilter only apply to Downloading and Downloaded filters and not the others?
-            // restart the timer window.filterInterval (so that Downloading and Downloaded can dynamically update)
+            // restart the timer window.filterInterval (so that Downloading and Downloaded can dynamically update faster)
             window.filterInterval = setInterval(function () {
                 showFilter();
             }, 500);
@@ -148,7 +147,7 @@ $(document).ready(function () { // first binding to document ready
                     break;
                 case 'filter_all':
                     displayFilter('all');
-                    $.checkHiddenFeeds(1); //TODO why is this only in All and not the others too?
+                    $.checkHiddenFeeds(1);
                     break;
                 case 'filter_matching':
                     displayFilter('matching');
@@ -208,28 +207,22 @@ $(document).ready(function () { // first binding to document ready
         updateClientButtons();
     };
 
-    // switch visible items for different torrent clients
+    // toggle visible web UI elements for different torrent clients
     changeClient = function (client) {
-        //TODO validate and comment this function!!
-        $(".favorite_seedratio, #config_torrentExtension").css("display", "none");
-        $("#torrent_settings").css("display", "block");
         switch (client) {
             case "folder":
-                $(".config_form .tor_settings, div.category tor_settings, #torrent_settings, div.favorite_savein, #config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir").css("display", "none");
-                $("#config_torrentExtension, #config_downloaddir").css("display", "block");
+                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir").css("display", "none");
                 $("#filter_transmission").removeClass('filter_right');
                 $("#filter_downloaded").addClass('filter_right');
-                $("form.favinfo, ul.favorite");
-                $('li#webui').hide();
                 window.client = "folder";
+                adjustWebUIButton();
                 break;
             case 'Transmission':
-                $(".config_form .tor_settings, div.category tor_settings, #config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #config_downloaddir, div.favorite_seedratio, div.favorite_savein, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir, #config_torrentExtension").css("display", "block");
+                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir").css("display", "block");
                 $("#filter_downloaded").removeClass('filter_right');
                 $("#filter_transmission").addClass('filter_right');
-                $("ul.favorite").css("height", 245);
-                adjustWebUIButton();
                 window.client = 'Transmission';
+                adjustWebUIButton();
                 break;
         }
     };
@@ -416,8 +409,8 @@ $(document).ready(function () { // first binding to document ready
 
             // get torrent list from transmission-daemon via PHP
             $.get('torrentwatch-xa.php', {
-                'getClientData': 1,
-                'recent': 0
+                'getClientData': 1
+                //'recent': 0
             }, function (json) {
                 window.updatingClientData = false; // set to false now to indicate getClientData is done getting data
 
@@ -473,7 +466,6 @@ $(document).ready(function () { // first binding to document ready
         // loop through each torrent in transmission-daemon
         $.each(json['arguments']['torrents'],
                 function (i, item) {
-                    //console.log("processing: " + JSON.stringify(item));
                     transmissionItemIds.push("clientId_" + item.id);
 
                     ///// compile torrent item for Transmission filter list
@@ -488,18 +480,18 @@ $(document).ready(function () { // first binding to document ready
                     // progress bar
                     var percentage = Math.roundWithPrecision(100 * item.percentDone, 2);
 
-                    // infoDiv's torInfo
-                    /* item.recheckProgress: When tr_stat.activity is TR_STATUS_CHECK or TR_STATUS_CHECK_WAIT,
-                     this is the percentage of how much of the files has been
-                     verified. When it gets to 1, the verify process is done.
-                     Range is [0..1] */
+                    /* infoDiv's torInfo
+                     * item.recheckProgress: When tr_stat.activity is TR_STATUS_CHECK or TR_STATUS_CHECK_WAIT,
+                     * this is the percentage of how much of the files has been
+                     * verified. When it gets to 1, the verify process is done.
+                     * Range is [0..1] */
                     var validProgress = Math.roundWithPrecision((100 * item.recheckProgress), 2);
                     // use item.uploadRatio for seed ratio
 
-                    // infoDiv's torEta
-                    /* item.eta: If downloading, estimated number of seconds left until the torrent is done.
-                     If seeding, estimated number of seconds left until seed ratio is reached. */
-                    var convertedEta = convertEta(item.eta); // convertedEta will be shown for every status
+                    /* infoDiv's torEta
+                     * item.eta: If downloading, estimated number of seconds left until the torrent is done.
+                     * If seeding, estimated number of seconds left until seed ratio is reached. */
+                    var convertedEta = convertEta(item.eta); // convertedEta will be shown for every status except tc_paused
 
                     var liClass = ""; // liClass sets legend color via CSS
                     var clientData = "";
@@ -608,7 +600,6 @@ $(document).ready(function () { // first binding to document ready
                                 $(this).append('<div class="infoDiv"><span class="torInfo"></span><span class="torEta"></span></div>');
                             }
                         });
-                        //TODO might be able to replace $.each above with torListElmt.not(".st_transmission").find("td.torrent_name")
 
                         // set torInfo and torEta for item in all filters
                         torListElmt.find(".torInfo").text(clientData);
@@ -674,7 +665,7 @@ $(document).ready(function () { // first binding to document ready
                                 torListElmt.find("div.torResume").addClass("hidden");
                             }
                         }
-                        //TODO update button bar for items in filters other than Transmission
+                        //TODO possibly update button bar for items in filters other than Transmission
 
                     } // end torListElmt !== undefined
                     else {
@@ -742,7 +733,6 @@ $(document).ready(function () { // first binding to document ready
                 $(this).removeClass("st_waitTorCheck");
             }
         });
-        //TODO maybe loop through in #torrentlist_container that do NOT have item_###torHash### if items make it this far
 
         setTimeout(updateMatchCounts(), 100); // update match counts in UI
         $("#transmission_list>li").tsort("span.dateAdded", {order: "desc"}); // sort the items in the Transmission filter
@@ -887,7 +877,7 @@ $(document).ready(function () { // first binding to document ready
                 // set the vertical positioning
                 //if (navigator.userAgent.match('iPhone OS 5')) { // this doesn't work
                 //if (/(iPad|iPhone|iPod|android)/g.test(navigator.userAgent)) { // this works
-                if(navigator.userAgent.toLowerCase().search('(iphone|ipod|ipad|android)') > -1) {
+                if (navigator.userAgent.toLowerCase().search('(iphone|ipod|ipad|android)') > -1) {
                     document.getElementById('clientButtonsHolder').style.top =
                             (window.innerHeight - $('#clientButtonsHolder').height() - 6) + 'px';
                 } else {
@@ -1069,7 +1059,7 @@ $(document).ready(function () { // first binding to document ready
                     .find("form").initForm().end().initConfigDialog().appendTo("body");
             setTimeout(function () {
                 var container = $("#torrentlist_container");
-                var filter = $.cookie('TWFILTER');
+                var filter = $.cookie('TWXAFILTER');
                 $('li.torrent:not(.st_waitTorCheck) div.progressBarContainer').hide(); // hides progressBarContainer on all items but st_waitTorCheck
                 $("li.torrent.st_waitTorCheck div.progressBarContainer").hide(); // hide progressBarContainer even on waitTorCheck
                 if (!(filter)) {
@@ -1141,7 +1131,7 @@ $(document).ready(function () { // first binding to document ready
             setTimeout(function () {
                 var versionCheck = $.cookie('VERSION-CHECK');
                 if (!versionCheck) {
-                    $.get('torrentwatch-xa.php', {version_check: 1}, function (data) {
+                    $.get('torrentwatch-xa.php', {checkVersion: 1}, function (data) {
                         $('#dynamicdata').append(data);
                         setTimeout(function () {
                             $('#newVersion').slideUp().remove();
@@ -1352,10 +1342,10 @@ $(document).ready(function () { // first binding to document ready
         },
                 function (torHash) {
                     //TODO clean up and validate this entire function
-                    if (link.match(/^magnet:/) && window.client === "folder") {
+                    /*if (link.match(/^magnet:/) && window.client === "folder") {
                         alert('Can not save magnet links to a folder'); //TODO use error function
                         return;
-                    }
+                    }*/
                     if (torHash.match(/Error:\s\w+/) && window.client !== "folder") {
                         alert('Something went wrong while adding this torrent. ' + torHash); //TODO use error function
                         return;

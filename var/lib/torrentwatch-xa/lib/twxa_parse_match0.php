@@ -39,3 +39,22 @@ function matchTitle0_2($ti, $seps) {
         ];
     }
 }
+
+function matchTitle0_3($ti, $seps) {
+    // isolated PV
+    $mat = [];
+    $re = "/\b(Preview|Prev\.|Prev|PV)\b.*/";
+    if (preg_match($re, $ti, $mat)) {
+        return [
+            'medTyp' => 1,
+            'numSeq' => 8,
+            'seasSt' => 1, // assume Season 1
+            'seasEd' => 1,
+            'episSt' => 1, // assume PV 1
+            'episEd' => 1,
+            'itemVr' => 1,
+            'favTi' => preg_replace($re, "", $ti),
+            'matFnd' => "0_3"
+        ];
+    }
+}

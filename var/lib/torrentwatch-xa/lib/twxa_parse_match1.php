@@ -45,7 +45,7 @@ function matchTitle1_1_3($ti, $seps, $detVid) {
     $mat = [];
     $re = "/(Volumen|Volume|\bVol\.|\bVol)[$seps]?(\d+).*/i";
     if (preg_match($re, $ti, $mat)) {
-        if ($detVid === true) {
+        if ($detVid) {
             return [
                 'medTyp' => 1, // Video Media
                 'numSeq' => 4, // video Season x Volume/Part numbering
@@ -78,7 +78,7 @@ function matchTitle1_1_4($ti, $seps, $detVid) {
     $mat = [];
     $re = "/[$seps]V[$seps]{1,2}(\d+).*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($detVid === true) {
+        if ($detVid) {
             return [
                 'medTyp' => 1, // Video Media
                 'numSeq' => 4, // video Season x Volume/Part numbering
@@ -202,12 +202,11 @@ function matchTitle1_1_10($ti, $seps) {
     // Part ##
     $mat = [];
     $re = "/(Part|\bPt)[$seps]?(\d+).*/i";
-    if (preg_match("/(Part|\bPt)[$seps]?(\d+)/i", $ti, $mat)) {
-        //TODO handle Part ##
+    if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
-            'numSeq' => 4,
-            'seasSt' => 1,
+            'numSeq' => 128,
+            'seasSt' => 1, // assume Volume 1
             'seasEd' => 1,
             'episSt' => $mat[2],
             'episEd' => $mat[2],

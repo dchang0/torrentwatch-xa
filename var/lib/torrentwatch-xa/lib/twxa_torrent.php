@@ -1,17 +1,17 @@
 <?php
 
 // functions for handling torrent files and Transmission
-
-function getClientData($recent, $encodeJson = true) {
+//function getClientData($recent, $encodeJson = true) {
+function getClientData($encodeJson = true) {
     $fields = array('id', 'name', 'errorString', 'hashString', 'uploadRatio', 'percentDone',
         'leftUntilDone', 'downloadDir', 'totalSize', 'addedDate', 'status', 'eta',
         'peersSendingToUs', 'peersGettingFromUs', 'peersConnected', 'seedRatioLimit',
         'recheckProgress', 'rateDownload', 'rateUpload');
-    if ($recent) { //TODO if converting to boolean, beware of string parameter passing of "true" or "false"
-        $request = array('arguments' => array('fields' => $fields, 'ids' => 'recently-active'), 'method' => 'torrent-get');
-    } else {
-        $request = array('arguments' => array('fields' => $fields), 'method' => 'torrent-get');
-    }
+    /* if ($recent) { //TODO if converting to boolean, beware of string parameter passing of "true" or "false"
+      $request = array('arguments' => array('fields' => $fields, 'ids' => 'recently-active'), 'method' => 'torrent-get');
+      } else { */
+    $request = array('arguments' => array('fields' => $fields), 'method' => 'torrent-get');
+    //}
     $response = transmission_rpc($request);
     if ($encodeJson) {
         return json_encode($response);
@@ -56,7 +56,8 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
 }
 
 function auto_del_seeded_torrents() {
-    $response = getClientData(0, false); // request torrents to look for deletable torrents; 0 was chosen by watching both 0 and 1 output
+    //$response = getClientData(0, false);
+    $response = getClientData(false); // request torrents to look for deletable torrents; 0 was chosen by watching both 0 and 1 output
     if ($response['result'] === "success") {
         $torrents = $response['arguments']['torrents'];
         $deleted = false;
@@ -80,7 +81,7 @@ function auto_del_seeded_torrents() {
             twxaDebug("No torrents eligible for auto-delete\n", 2);
         }
     } else {
-        twxaDebug("Transmission RPC error: " . print_r($response, true) . "\n", 0);
+        twxaDebug("RPC error in auto-delete: " . print_r($response, true) . "\n", 0);
     }
 }
 
@@ -122,7 +123,7 @@ function transmission_sessionId() {
         $tr_pass = get_client_passwd();
         $tr_host = $config_values['Settings']['Transmission Host'];
         $tr_port = $config_values['Settings']['Transmission Port'];
-        $tr_uri = $config_values['Settings']['Transmission URI']; //TODO what to do if this is blank and not /transmission/rpc ?
+        $tr_uri = $config_values['Settings']['Transmission URI'];
 
         $sid = curl_init();
         $curl_options = array(
@@ -131,7 +132,7 @@ function transmission_sessionId() {
             CURLOPT_NOBODY => true,
             CURLOPT_USERPWD => "$tr_user:$tr_pass"
         );
-        get_curl_defaults($curl_options);
+        getcURLDefaults($curl_options);
 
         curl_setopt_array($sid, $curl_options);
 
@@ -189,7 +190,7 @@ function transmission_rpc($request) {
             ),
             CURLOPT_POSTFIELDS => "$request"
         );
-        get_curl_defaults($curl_options);
+        getcURLDefaults($curl_options);
         curl_setopt_array($post, $curl_options);
         $raw = curl_exec($post);
         curl_close($post);
@@ -213,19 +214,64 @@ function get_deep_dir($dest, $tor_name) {
             $guess = detectMatch($tor_name);
             if (isset($guess['favTitle'])) {
                 switch ($guess['numberSequence']) {
-                    case 1:
-                    case 4:
-                        // season numbering
-                        //TODO fix this so that it can handle Volume x Chapter and Volume x Part (case 128)
+                    case 1: // Video: Season x Episode or FULL, Print Media: Volume x Chapter or FULL, Audio: Season x Episode or FULL
+                    case 4: // Video: Season x Volume (x Episode), Print Media: N/A, Audio: N/A
                         $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/Season " . $guess['seasBatEnd'];
                         break;
                     case 2:
-                        // date numbering
+                        // Video: Date, Print Media: Date, Audio: Date (all these get Season = 0)
                         $year = [];
                         preg_match('/^(\d{4})\d{4}$/', $guess['episBatEnd'], $year);
                         $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/" . $year[1];
                         break;
-                    //TODO handle other numbering styles
+                    case 8:
+                        // Video: Preview, Print Media: N/A, Audio: Opening songs
+                        switch ($guess['mediaType']) {
+                            case 1:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/Preview";
+                                break;
+                            case 2:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/OP";
+                                break;
+                        }
+                        break;
+                    case 16:
+                        // Video: Special, Print Media: N/A, Audio: Ending songs
+                        switch ($guess['mediaType']) {
+                            case 1:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/Special";
+                                break;
+                            case 2:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/ED";
+                                break;
+                        }
+                        break;
+                    case 32:
+                        // Video: OVA episode sequence, Print Media: N/A, Audio: Character songs
+                        switch ($guess['mediaType']) {
+                            case 1:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/OVA";
+                                break;
+                            case 2:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/CharSongs";
+                                break;
+                        }
+                        break;
+                    case 64:
+                        // Video: Movie sequence (Season = 0), Print Media: N/A, Audio: OST
+                        switch ($guess['mediaType']) {
+                            case 1:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/Movie";
+                                break;
+                            case 2:
+                                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/OST";
+                                break;
+                        }
+                        break;
+                    case 128:
+                        // Video: (Season x) Volume x Disc/Part sequence, Print Media: N/A, Audio: N/A
+                        $dest = $dest . "/" . ucwords(strtolower($guess['favTitle'])) . "/Set";
+                        break;
                     default:
                         $dest = $dest . "/" . ucwords(strtolower($guess['favTitle']));
                 }
@@ -247,17 +293,25 @@ function get_deep_dir($dest, $tor_name) {
     return $dest;
 }
 
-function folder_add_torrent($tor, $dest, $ti) {
+function makeTorrentOrMagnetFilename($ti, $isMagnet) {
     global $config_values;
-    if (file_exists($dest) && is_dir($dest)) {
-        // prepare filesystem-safe path
-        $filename = trim(filename_encode($ti));
-        $extension = ltrim(trim(filename_encode($config_values['Settings']['Extension'])), ".");
-        if ($extension !== "") {
-            $fullFilename = "$filename.$extension";
-        } else {
-            $fullFilename = "$filename";
-        }
+    // prepare filesystem-safe path
+    $filename = trim(sanitizeFilename($ti));
+    if ($isMagnet) {
+        $extension = ltrim(trim(sanitizeFilename($config_values['Settings']['Magnet Extension'])), ".");
+    } else {
+        $extension = ltrim(trim(sanitizeFilename($config_values['Settings']['Torrent Extension'])), ".");
+    }
+    if ($extension !== "") {
+        return "$filename.$extension";
+    } else {
+        return "$filename";
+    }
+}
+
+function folder_add_torrent($tor, $dest, $ti, $isMagnet = false) {
+    if (is_dir($dest) && is_writeable($dest)) {
+        $fullFilename = makeTorrentOrMagnetFilename($ti, $isMagnet);
         if ($fullFilename !== "") {
             $fullPath = "$dest/$fullFilename";
             if (!file_exists($fullPath)) {
@@ -276,8 +330,8 @@ function folder_add_torrent($tor, $dest, $ti) {
                 }
             } else {
                 return [
-                    'errorCode' => 1,
-                    'errorMessage' => "Already exists, skipping $fullPath"
+                    'errorCode' => 0, // ordinarily should be an error, but why warn when we have the file already?
+                    'errorMessage' => "File already exists, skipping: $fullPath"
                 ];
             }
         } else {
@@ -310,13 +364,15 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     if (isset($response1['result'])) {
         if ($response1['result'] === 'success') {
             if (isset($response1['arguments']['torrent-added'])) {
-                $cache = $config_values['Settings']['Cache Dir'] . "/dl_" . filename_encode($ti);
+                $cache = $config_values['Settings']['Cache Dir'] . "/dl_" . sanitizeFilename($ti);
                 $torHash = $response1['arguments']['torrent-added']['hashString'];
+                if (!isset($torHash) || $torHash === "") {
+                    twxaDebug("Empty torrent hash for: $ti\n", 0);
+                }
                 // write torrent hash to item's cache file
-                // TODO handle if $torHash is empty; cache files should not be empty
-                $handle = fopen("$cache", "w");
-                fwrite($handle, $torHash);
-                fclose($handle);
+                if (file_put_contents($cache, $torHash) === false) {
+                    twxaDebug("Failed writing $torHash into: $cache\n", -1);
+                }
                 // set seed ratio
                 if ($seedRatio >= 0) {
                     $request2 = array(
@@ -344,15 +400,15 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
             } else {
                 // undocumented situation where result is success but neither torrent-added nor torrent-duplicate exists
                 return [
-                    'errorCode' => 2,
-                    'errorMessage' => "Transmission RPC Error: " . print_r($response1, true)
+                    'errorCode' => 1,
+                    'errorMessage' => "RPC Error adding torrent succeeded: " . print_r($response1, true)
                 ];
             }
         } else {
             // result is not success, should be an error string according to spec
             return [
                 'errorCode' => 2,
-                'errorMessage' => "Transmission RPC Error: " . print_r($response1, true)
+                'errorMessage' => "RPC Error adding torrent failed: " . print_r($response1, true)
             ];
         }
     } else {
@@ -365,7 +421,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 }
 
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
-    //TODO this function needs major cleanup!
+    //TODO this function needs major cleanup! Be aware that return value should be an array but Javascript .dlTorrent expects a string
     //global $config_values, $hit, $twxa_version;
     global $config_values, $twxa_version;
     if (strtolower($fav['Filter']) === "any") {
@@ -374,9 +430,9 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
     //$hit = 1;
     if (strpos($filename, 'magnet:') === 0) {
         $tor = $filename;
-        $magnet = 1;
+        $magnet = true; // was 1
     } else {
-        $magnet = 0;
+        $magnet = false; // was 0
         $filename = htmlspecialchars_decode($filename);
 
         // Detect and append cookies from the feed url
@@ -386,18 +442,18 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         }
 
         $get = curl_init();
-        $response = check_for_cookies($url);
+        $response = parseURLForCookies($url);
         if ($response) {
             $url = $response['url'];
             $cookies = $response['cookies'];
         }
-        $getOptions[CURLOPT_URL] = $url;
+        $curlOptions[CURLOPT_URL] = $url;
         if (isset($cookies)) {
-            $getOptions[CURLOPT_COOKIE] = $cookies;
+            $curlOptions[CURLOPT_COOKIE] = $cookies;
         }
-        $getOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-        get_curl_defaults($getOptions);
-        curl_setopt_array($get, $getOptions);
+        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
+        getcURLDefaults($curlOptions);
+        curl_setopt_array($get, $curlOptions);
         $tor = curl_exec($get);
         curl_close($get);
 
@@ -426,20 +482,24 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
 
     $tor_info = new BDecode("", $tor);
     if (!($tor_name = $tor_info->{'result'}['info']['name'])) {
-        $tor_name = $ti;
+        $tor_name = $ti; //TODO do we really need $tor_name in place of $ti?
     }
 
     if (!isset($dest)) {
         $dest = $config_values['Settings']['Download Dir'];
     }
-    if (isset($fav) && $fav['Save In'] != 'Default') {
-        $dest = $fav['Save In'];
+    if (isset($fav) && $fav['Download Dir'] != 'Default') {
+        if (is_dir($fav['Download Dir']) && is_writeable($fav['Download Dir'])) {
+            $dest = $fav['Download Dir'];
+        } else {
+            $dest = $config_values['Settings']['Download Dir'];
+        }
     }
 
     $dest = get_deep_dir(preg_replace('/\/$/', '', $dest), $tor_name);
 
     $transmissionHost = $config_values['Settings']['Transmission Host'];
-    if ($transmissionHost == '127.0.0.1' || $transmissionHost == 'localhost') { //TODO add other tests to see if transmission is running locally, such as checking the hostname and IPs on this machine
+    if ($transmissionHost === '127.0.0.1' || $transmissionHost === 'localhost') {
         if (file_exists($dest)) {
             // path exists, is it a file or directory?
             if (!is_dir($dest)) {
@@ -447,14 +507,14 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
                 $old_umask = umask(0);
                 twxaDebug("Attempting to destroy file and recreate as directory: $dest\n", 2);
                 unlink($dest);
-                mkdir($dest, 0777, true);
+                mkdir($dest, 0775, true);
                 umask($old_umask);
             }
         } else {
             // path doesn't exist, create it as a directory
             $old_umask = umask(0);
             twxaDebug("Attempting to create directory: $dest\n", 2);
-            mkdir($dest, 0777, true);
+            mkdir($dest, 0775, true);
             umask($old_umask);
         }
     }
@@ -464,7 +524,9 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             $idx = $key;
         }
     }
-    if ($config_values['Feeds'][$idx]['seedRatio'] >= 0) {
+    if (is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
+        $seedRatio = $fav['seedRatio'];
+    } else if (is_numeric($config_values['Feeds'][$idx]['seedRatio']) && $config_values['Feeds'][$idx]['seedRatio'] >= 0) {
         $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];
     } else if (is_numeric($config_values['Settings']['Default Seed Ratio'])) {
         $seedRatio = $config_values['Settings']['Default Seed Ratio'];
@@ -474,14 +536,15 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
 
     switch ($config_values['Settings']['Client']) {
         case "Transmission":
-            $return1 = transmission_add_torrent($tor, $dest, $ti, isset_array_key($fav, '$seedRatio', $seedRatio));
+            $return1 = transmission_add_torrent($tor, $dest, $ti, getArrayValueByKey($fav, '$seedRatio', $seedRatio));
             break;
         case "folder":
-            if ($magnet) {
-                twxaDebug("Cannot save magnet links to a folder\n", 0);
-            } else {
-                $return1 = folder_add_torrent($tor, $dest, $tor_name);
-            }
+            /* if ($magnet) {
+              twxaDebug("Cannot save magnet links to a folder\n", 0);
+              } else {
+              $return1 = folder_add_torrent($tor, $dest, $tor_name);
+              } */
+            $return1 = folder_add_torrent($tor, $dest, $tor_name, $magnet);
             break;
         default:
             twxaDebug("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
@@ -494,38 +557,50 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             if ($config_values['Settings']['SMTP Notifications']) {
                 $subject = "\"$tor_name\" started downloading";
                 $msg = "torrentwatch-xa started downloading \"$tor_name\"";
-                MailNotify($msg, $subject);
+                notifyByEmail($msg, $subject);
             }
             if ($config_values['Settings']['Enable Script']) {
-                run_script('favstart', $ti);
+                runScript('favstart', $ti);
             }
             if (!isset($any) || !$any) {
-                updateFavoriteEpisode($fav, $ti); //TODO test for success
-                twxaDebug("Updated Favorite: $ti\n", 2);
+                if (updateFavoriteEpisode($fav, $ti)) {
+                    twxaDebug("Updated Favorite: $ti\n", 2);
+                } else {
+                    twxaDebug("Failed to update Favorite: $ti\n", 2);
+                }
             }
         } else if ($config_values['Settings']['Enable Script']) {
-            run_script('nonfavstart', $ti);
+            runScript('nonfavstart', $ti);
         }
         if ($config_values['Settings']['Client'] !== "folder" &&
                 $config_values['Settings']['Save Torrents']) {
-            if ($magnet) {
-                twxaDebug("Cannot save magnet links to a folder\n", 0);
+            /* if ($magnet) {
+              twxaDebug("Cannot save magnet links to a folder\n", 0);
+              } else {
+              $return2 = folder_add_torrent($tor, $config_values['Settings']['Save Torrents Dir'], $tor_name);
+              } */
+            twxaDebug("Also saving to file: " . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
+            if (isset($fav) && $fav['Also Save Dir'] != 'Default') {
+                $alsodest = $fav['Also Save Dir'];
             } else {
-                $return2 = folder_add_torrent($tor, $config_values['Settings']['Save Torrents Dir'], $tor_name); //TODO handle $return2
+                $alsodest = $config_values['Settings']['Save Torrents Dir'];
+            }
+            $return2 = folder_add_torrent($tor, $alsodest, $tor_name, $magnet);
+            if ($return2['errorCode'] !== 0) {
+                return "Error: " . $return2['errorMessage']; //TODO deal with this in revamping return of this function
             }
         }
         return "Success"; //TODO deal with this in revamping return of this function
     } else {
         twxaDebug("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
-        //TODO improve error reporting for this block
         $msg = "torrentwatch-xa tried to start \"$tor_name\" but failed with the following error:\n\n";
         $msg .= $return1['errorMessage'] . "\n";
         if ($config_values['Settings']['SMTP Notifications']) {
-            $subject = "Error downloading: \"$tor_name\"";
-            MailNotify($msg, $subject);
+            $subject = "Failed starting: \"$tor_name\"";
+            notifyByEmail($msg, $subject);
         }
         if ($config_values['Settings']['Enable Script']) {
-            run_script('error', $ti, $msg);
+            runScript('error', $ti, $msg);
         }
         return "Error: " . $return1['errorMessage']; //TODO deal with this in revamping return of this function
     }

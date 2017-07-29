@@ -5,14 +5,22 @@
 
 $seps = '\s\.\_'; // separator chars: - and () were formerly also separators but caused problems; we need - for some Season and Episode notations
 // load matchTitle function files
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match0.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match1.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match2.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match3.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match4.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match5.php");
-require_once("/var/lib/torrentwatch-xa/lib/twxa_parse_match6.php");
+$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
+$includePath = get_include_path();
+foreach ($twxaIncludePaths as $twxaIncludePath) {
+    if (strpos($includePath, $twxaIncludePath) === false) {
+        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
+    }
+}
+set_include_path($includePath);
+require_once("twxa_parse_match.php");
+require_once("twxa_parse_match0.php");
+require_once("twxa_parse_match1.php");
+require_once("twxa_parse_match2.php");
+require_once("twxa_parse_match3.php");
+require_once("twxa_parse_match4.php");
+require_once("twxa_parse_match5.php");
+require_once("twxa_parse_match6.php");
 
 function collapseExtraSeparators($ti) {
     $ti = str_replace("  ", " ", $ti);
@@ -362,6 +370,20 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
     ];
 }
 
+function detectpROPERrEPACK($ti) {
+    $mat = [];
+    $detected = "";
+    $re = "/\b(PROPER|REPACK|RERIP|RERip|RERiP)\b/";
+    if(preg_match($re, $ti, $mat)) {
+        $detected = $mat[0];
+        $ti = collapseExtraSeparators(str_replace($detected, "", $ti));
+    }
+    return [
+        'detectedpROPERrEPACK' => $detected,
+        'parsedTitle' => $ti
+    ];
+}
+
 function detectMatch($ti) {
     $episGuess = "";
 
@@ -396,13 +418,22 @@ function detectMatch($ti) {
     // strip the crew name
     $detNumericCrewOutput = detectNumericCrew($detAudioCodecsOutput['parsedTitle']);
 
+    // detect PROPER/REPACK/RERIP
+    $detPROutput = detectpROPERrEPACK($detNumericCrewOutput['parsedTitle']);
+    
     // detect episode
-    $detItemOutput = detectItem($detNumericCrewOutput['parsedTitle'], $wereQualitiesDetected);
+    //$detItemOutput = detectItem($detNumericCrewOutput['parsedTitle'], $wereQualitiesDetected);
+    $detItemOutput = detectItem($detPROutput['parsedTitle'], $wereQualitiesDetected);
     $detItemOutput['favTitle'] = removeEmptyParens($detItemOutput['favTitle']);
     $seasBatEnd = $detItemOutput['seasBatEnd'];
     $seasBatStart = $detItemOutput['seasBatStart'];
     $episBatEnd = $detItemOutput['episBatEnd'];
     $episBatStart = $detItemOutput['episBatStart'];
+    
+    // set itemVersion to 99 for PROPER/REPACK/RERIP
+    if($detPROutput['detectedpROPERrEPACK'] != "") { 
+        $detItemOutput['itemVersion'] = 99;
+    }
 
     // parse episode output into human-friendly notation
     // our numbering style is 1x2v2-2x3v3
@@ -446,8 +477,6 @@ function detectMatch($ti) {
     } else {
         $episGuess = "notSerialized";
     }
-    //TODO handle PV and other numberSequence values
-    //TODO add itemVersion handling to batches such as 1x03v2-1x05v2
     // add the removed crew name back if one was removed
     $favTitle = collapseExtraSeparators($detItemOutput['favTitle']);
     if ($detNumericCrewOutput['rmCrewName'] !== "") {
@@ -482,7 +511,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // 4 = Print media
     // $numSeq allows for parallel numbering sequences
     // like Movie 1, Movie 2, Movie 3 alongside Episode 1, Episode 2, Episode 3
-    // 0 = Unknown
+    // 0 = None/unknown
     // 1 = Video: Season x Episode or FULL, Print Media: Volume x Chapter or FULL, Audio: Season x Episode or FULL
     // 2 = Video: Date, Print Media: Date, Audio: Date (all these get Season = 0)
     // 4 = Video: Season x Volume (x Episode), Print Media: N/A, Audio: N/A
@@ -496,7 +525,6 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // treat date-based episodes as Season 0 EXCEPT...
     // ...when YYYY-##, use year as the Season and ## as the Episode
     // because of PHP left-to-right matching order, (Season|Seas|Se|S) works but (S|Se|Seas|Season) will match S and move on
-    //TODO handle PROPER and REPACK episodes as version 99 if not specified
     //TODO decode HTML and URL encoded characters to reduce number of extraneous numerals
     $ti = html_entity_decode($ti, ENT_QUOTES);
 
@@ -504,7 +532,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     $matNums = [];
     preg_match_all("/(\d+)/u", $ti, $matNums, \PREG_SET_ORDER); // can't initialize $matNums here due to isset tests later
     // is there at least one number? can't have an episode otherwise (except in case of PV preview episode)
-    $numbersDetected = count($matNums); //TODO count returns 1 for uncountable objects
+    $numbersDetected = count($matNums);
     if (isset($matNums[0])) {
         switch ($numbersDetected) {
             case 8:
@@ -640,7 +668,7 @@ function episode_filter($item, $filter) {
      * SxE = single episode
      * SxEv# = single episode with version number
      * YYYYMMDD = single date
-     * S1xE1-S1-E2 = batch of episodes within one season
+     * S1xE1-S1xE2 = batch of episodes within one season
      * YYYYMMD1-YYYYMMD2 = batch of dates
      * S1xFULL = one full season
      * S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
@@ -649,7 +677,7 @@ function episode_filter($item, $filter) {
     if ($item['episode']) {
         $filter = preg_replace('/\s/', '', $filter);
 
-        $itemEpisodePieces = explode('x', $item['episode']);
+        /*$itemEpisodePieces = explode('x', $item['episode']);
         if (isset($itemEpisodePieces[0])) {
             $itemS = $itemEpisodePieces[0];
         } else {
@@ -659,7 +687,10 @@ function episode_filter($item, $filter) {
             $itemE = $itemEpisodePieces[1];
         } else {
             $itemE = "";
-        }
+        }*/
+        $itemS = $item['seasBatEnd'];
+        $itemE = $item['episBatEnd'];
+        //TODO handle ranges and versions
 
         if (preg_match('/^S\d*/i', $filter)) {
             $filter = strtr($filter, array('S' => '', 's' => ''));
