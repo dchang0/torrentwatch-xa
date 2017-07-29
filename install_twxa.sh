@@ -99,6 +99,7 @@ then
         # try to chown the config file using Fedora default Apache user and group apache
       sudo chown apache:apache /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
     fi
+    sudo chmod 644 /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
 fi
 
 # RedHat/Fedora/CentOS warning
