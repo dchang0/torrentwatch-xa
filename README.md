@@ -29,7 +29,11 @@ Status
 
 I've posted 0.7.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-__If upgrading to torrentwatch-xa 0.7.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, you must run `upgradeConfigTo0_7_0.php` to upgrade your Favorites. This script will only be available in the 0.7.0 release; it is always possible to "upgrade" a Favorite by deleting it and re-creating it.__
+__If upgrading to torrentwatch-xa 0.7.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, you must run
+
+`php /var/lib/torrentwatch-xa/upgradeConfigTo0_7_0.php`
+
+to upgrade your Favorites. This script will only be available in the 0.7.0 release; it is always possible to "upgrade" a Favorite by deleting it and re-creating it.__
 
 I've completed all of the currently-outstanding season and episode detection patterns. What remains in the detection engine are bugfixes; just about every numbering style I've seen so far has been added to the engine.
 
