@@ -94,6 +94,11 @@ if [[ $KEEPCONFIG == 1 ]]
 then
     sudo cp ~/torrentwatch-xa.config.bak /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
     sudo chown www-data:www-data /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
+    if [ $? -ne 0 ]
+    then
+        # try to chown the config file using Fedora default Apache user and group apache
+      sudo chown apache:apache /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
+    fi
 fi
 
 # RedHat/Fedora/CentOS warning
