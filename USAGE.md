@@ -100,6 +100,10 @@ But the engine currently reads it as title = "Holly Stage for" and Season 50, Ep
 
 Sadly, because the engine was forced to make the choice, fans of "Holly Stage for 50" must "hack" the favorite to get it to download properly. There is no way to solve this problem without referring to some centralized database of anime titles or relying on some sort of AI, neither of which are going to happen in torrentwatch-xa any time soon.
 
+### 720 and 1080 Without i or p
+
+Titles such as Gamers! - 05 720.mkv should be recognized as Season 1, Episode 5 with resolution of 720p, but because there are many highly-popular series that have episode numbers going past 720 (or even 1080 in rare cases), torrentwatch-xa treats 720 as a number rather than a resolution even though the resolution abbreviation is far, far more common.
+
 ### Item Says It's an Old Favorite but is Actually New and Should Be Downloaded
 
 This can happen if there are parallel numbering styles for the same torrent. For instance, with HorribleSubs Boku no Hero Academia 17 (Season 1, Episode 17), some crew on the Feedburner Anime (Aggregated) feed was re-releasing it later as Season 2, Episode 4. What happened then was that once torrentwatch-xa saw the Season 2 track, it jumped onto it and began ignoring the Season 1 numbering. The Season 1-numbered episodes would come out a few hours earlier than the re-release each week and not be auto-downloaded, making it seem like a detection failure.
