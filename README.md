@@ -27,11 +27,15 @@ Status
 
 ### Notice 10/29/2017
 
-While developing 0.8.0, I'm running into a segmentation fault with PHP 7.0 on Ubuntu 16.04.3 on the ODROID C1+ again that does not appear to occur in PHP 7.0 on Raspbian Stretch 9.0 on the Raspberry Pi Zero W. I am not yet sure of the cause and will switch from my planned tasks to track it down. It might be as rare as a bad item in one of the RSS feeds that, once it passes through the feed, no longer triggers the segfault, or it could be my code. It might also be a bug in PHP 7.0 (the last bout of segfaults went away on its own once I updated PHP 7.0 on Ubuntu 16.04.2) or even a hardware problem. torrentwatch-xa 0.8.0 will be delayed until the bug is fixed or I cannot reproduce it. 
+While developing 0.8.0, I'm running into a segmentation fault with PHP 7.0 on Ubuntu 16.04.3 on the ODROID C1+ again that does not appear to occur in PHP 7.0 on Raspbian Stretch 9.0 on the Raspberry Pi Zero W. I am not yet sure of the cause and will switch from my planned tasks to track it down. It might be as rare as a bad item in one of the RSS feeds that, once it passes through the feed, no longer triggers the segfault, or it could be my code. It might also be a bug in PHP 7.0 (the last bout of segfaults went away on its own once I updated PHP 7.0 on Ubuntu 16.04.2) or even a hardware problem. 
 
-This segfault is probably occurring in torrentwatch-xa 0.7.0; I don't see why it should not, as 0.8.0 is not that different yet. Please report bugs if you encounter them, with as much detail as possible to help me diagnose the problem. Thanks!
+torrentwatch-xa 0.8.0 will be delayed until the bug is fixed or I cannot reproduce it. 
 
-The easy way around this segfault for now is to run on Debian 9.0 or Ubuntu 14.04.x.
+This segfault is probably occurring in torrentwatch-xa 0.7.0; I don't see why it should not, as 0.8.0 is not that different yet. 
+
+The easy way around this segfault for now is to run on Debian 9.0 or Ubuntu 14.04.x. It might also not occur on amd64 versions of Ubuntu 16.04.x or even not occur on ARM versions of Ubuntu 16.04.x not for the ODROID C1+ (ODROID uses an older kernel for its C1+ than is currently available).
+
+Please report bugs if you encounter them, with as much detail as possible to help me diagnose the problem. Thanks!
 
 ### Current Version
 
