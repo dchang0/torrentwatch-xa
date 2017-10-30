@@ -31,6 +31,8 @@ While developing 0.8.0, I'm running into a segmentation fault with PHP 7.0 on Ub
 
 This segfault is probably occurring in torrentwatch-xa 0.7.0; I don't see why it should not, as 0.8.0 is not that different yet. Please report bugs if you encounter them, with as much detail as possible to help me diagnose the problem. Thanks!
 
+The easy way around this segfault for now is to run on Debian 9.0 or Ubuntu 14.04.x.
+
 ### Current Version
 
 I've posted 0.7.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
