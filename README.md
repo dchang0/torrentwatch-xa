@@ -25,17 +25,13 @@ Common setups:
 Status
 ===============
 
-### Notice 10/29/2017
+### Notice 10/30/2017
 
-While developing 0.8.0, I'm running into a segmentation fault with PHP 7.0 on Ubuntu 16.04.3 on the ODROID C1+ again that does not appear to occur in PHP 5.6 on Raspbian Jessie Lite (Debian 8.0) on the Raspberry Pi Zero W. I am not yet sure of the cause and will switch from my planned tasks to track it down. It might be as rare as a bad item in one of the RSS feeds that, once it passes through the feed, no longer triggers the segfault, or it could be my code. It might also be a bug in PHP 7.0 (the last bout of segfaults went away on its own once I updated PHP 7.0 on Ubuntu 16.04.2) or even a hardware problem. 
+The segmentation fault error encountered on Ubuntu 16.04.x with PHP 7.0 on the ODROID C1+ came back on 10/29/2017 and then went away on its own today without me doing anything.
 
-torrentwatch-xa 0.8.0 will be delayed until the bug is fixed or I cannot reproduce it. 
+I suspect that occasionally a difficult item title comes through one of the RSS feeds that causes PHP 7.0 to choke (probably the preg_match() regular expressions). It so far has never occurred in PHP 5.6. I will have to track segfault occurrences over a long time to figure it out.
 
-This segfault is probably occurring in torrentwatch-xa 0.7.0; I don't see why it should not, as 0.8.0 is not that different yet. 
-
-The easy way around this segfault for now is to run on Debian 8.0 Jessie or Ubuntu 14.04.x. It might also not occur on amd64 versions of Ubuntu 16.04.x or even not occur on ARM versions of Ubuntu 16.04.x not for the ODROID C1+ (ODROID uses an older kernel for its C1+ than is currently available). It might also not occur on ARM versions of Debian 9.0 Stretch.
-
-Please report bugs if you encounter them, with as much detail as possible to help me diagnose the problem. Thanks!
+I have discovered a different bug that only occurs on PHP 7.0: when writing the config file, sometimes contents from other parts of $config_values ends up in the Favorites section of the config file. It is reproducible right now on these test platforms: ODROID C1+ running Ubuntu 16.04.3, Raspberry Pi Zero W running Raspbian Stretch Lite, amd64/x86_64 PC running Ubuntu 16.04.3. It probably affects all distros with PHP 7.0.
 
 ### Current Version
 
