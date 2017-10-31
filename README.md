@@ -25,13 +25,15 @@ Common setups:
 Status
 ===============
 
-### Notice 10/30/2017
+### Notice 10/30/2017: Avoid PHP 7.0 for Now
 
-The segmentation fault error encountered on Ubuntu 16.04.x with PHP 7.0 on the ODROID C1+ came back on 10/29/2017 and then went away on its own today without me doing anything.
+I've figured out how to reliably reproduce the segfault with PHP 7.0 on the ODROID C1+ running Ubuntu 16.04.3 and the Raspberry Pi Zero W running Raspbian Stretch Lite and an amd64 VM running Ubuntu 16.04.3. The problem with $config_values getting mangled is triggered by the exact same steps; it is probably related to the segfault, either as a cause, a side-effect, or a direct result.
 
-I suspect that occasionally a difficult item title comes through one of the RSS feeds that causes PHP 7.0 to choke (probably the preg_match() regular expressions). It so far has never occurred in PHP 5.6. I will have to track segfault occurrences over a long time to figure it out.
+I have also found another, third, bug with PHP 7.0: the Favorites do not get their episodes updated properly. This does not happen in PHP 5.6 with the exact same source code. The problem appears to be somewhere in the write_config_file() function that was cloned from TorrentWatch-X 0.8.9 and has remained unchanged for so long. I will be rewriting/repairing this function for 0.8.0.
 
-I have discovered a different bug that only occurs on PHP 7.0: when writing the config file, sometimes contents from other parts of $config_values ends up in the Favorites section of the config file. It is reproducible right now on these test platforms: ODROID C1+ running Ubuntu 16.04.3, Raspberry Pi Zero W running Raspbian Stretch Lite, amd64/x86_64 PC running Ubuntu 16.04.3. It probably affects all distros with PHP 7.0.
+These bugs do not prevent torrentwatch-xa from auto-downloading torrents. It just keeps it from updating the Favorites with each auto-download.
+
+The easiest way for you to avoid all this is to run PHP 5.6 (in Ubuntu 14.04.x or Debian 8.x). Fixing this cluster of bugs permanently for PHP 7.0 is still of the highest priority, as 5.6 is already no longer actively supported.
 
 ### Current Version
 
