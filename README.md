@@ -33,13 +33,11 @@ The upcoming version of torrentwatch-xa, 0.8.0, will feature the config file sto
 
 #### Avoid PHP 7.0 for Now
 
-I've figured out how to reliably reproduce the segfault with PHP 7.0 on the ODROID C1+ running Ubuntu 16.04.3. The problem with $config_values getting mangled is triggered by the exact same steps; it is probably related to the segfault, either as a cause, a side-effect, or a direct result.
+I've figured out how to reliably reproduce the segfault with PHP 7.0 on the ODROID C1+ running Ubuntu 16.04.3 in torrentwatch-xa 0.7.0. The problem with $config_values getting mangled appears to be array_walk() callbacks and/or recursion in write_config_file() causing portions of $config_values['Global']['Feeds'] to end up in $config_values['Favorites']. I appear to have fixed this by removing the array_walk() callbacks and recursion, to be released in 0.8.0.
 
-I have also found another, third, bug with PHP 7.0: the Favorites do not get their episodes updated properly. This happens on the ODROID C1+ running Ubuntu 16.04.3 and the Raspberry Pi Zero W running Raspbian Stretch Lite and an amd64 VM running Ubuntu 16.04.3. This does not happen in PHP 5.6 with the exact same source code. The problem appears to be somewhere in the write_config_file() function that was cloned from TorrentWatch-X 0.8.9 and has remained unchanged for so long. I have completely rewritten this function for 0.8.0 by removing the use of array_walk callbacks and recursion and by changing it to use PHP's built-in JSON functions. Let's hope this rewrite fixes the bugs.
+I have also found another, third, bug with PHP 7.0: the Favorites do not get their episodes updated properly. This happens on the ODROID C1+ running Ubuntu 16.04.3 and the Raspberry Pi Zero W running Raspbian Stretch Lite and an amd64 VM running Ubuntu 16.04.3. This does not happen in PHP 5.6 with the exact same source code. The problem appears to be somewhere in the code that was cloned from TorrentWatch-X 0.8.9 and has remained unchanged for so long. I have not yet figured this bug out. It does not prevent torrentwatch-xa from auto-downloading torrents. It just keeps it from updating the Favorites with each auto-download.
 
-These bugs do not prevent torrentwatch-xa from auto-downloading torrents. It just keeps it from updating the Favorites with each auto-download.
-
-The easiest way for you to avoid all this is to run PHP 5.6 (in Ubuntu 14.04.x or Debian 8.x). Fixing this cluster of bugs permanently for PHP 7.0 is still of the highest priority, as 5.6 is already no longer actively supported.
+The easiest way for you to avoid these bugs is to run PHP 5.6 (in Ubuntu 14.04.x or Debian 8.x). Fixing this cluster of bugs permanently for PHP 7.0 is still of the highest priority, as 5.6 is already no longer actively supported.
 
 ### Current Version
 
