@@ -27,9 +27,9 @@ Status
 
 ### Notice 10/30/2017: Avoid PHP 7.0 for Now
 
-I've figured out how to reliably reproduce the segfault with PHP 7.0 on the ODROID C1+ running Ubuntu 16.04.3 and the Raspberry Pi Zero W running Raspbian Stretch Lite and an amd64 VM running Ubuntu 16.04.3. The problem with $config_values getting mangled is triggered by the exact same steps; it is probably related to the segfault, either as a cause, a side-effect, or a direct result.
+I've figured out how to reliably reproduce the segfault with PHP 7.0 on the ODROID C1+ running Ubuntu 16.04.3. The problem with $config_values getting mangled is triggered by the exact same steps; it is probably related to the segfault, either as a cause, a side-effect, or a direct result.
 
-I have also found another, third, bug with PHP 7.0: the Favorites do not get their episodes updated properly. This does not happen in PHP 5.6 with the exact same source code. The problem appears to be somewhere in the write_config_file() function that was cloned from TorrentWatch-X 0.8.9 and has remained unchanged for so long. I will be rewriting/repairing this function for 0.8.0.
+I have also found another, third, bug with PHP 7.0: the Favorites do not get their episodes updated properly. This happens on the ODROID C1+ running Ubuntu 16.04.3 and the Raspberry Pi Zero W running Raspbian Stretch Lite and an amd64 VM running Ubuntu 16.04.3. This does not happen in PHP 5.6 with the exact same source code. The problem appears to be somewhere in the write_config_file() function that was cloned from TorrentWatch-X 0.8.9 and has remained unchanged for so long. I will be rewriting/repairing this function for 0.8.0.
 
 These bugs do not prevent torrentwatch-xa from auto-downloading torrents. It just keeps it from updating the Favorites with each auto-download.
 
