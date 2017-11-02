@@ -31,16 +31,14 @@ Typically, you should double-check the following:
 - SMTP Port number is correct (if left blank, it defaults to port 25). Typically SSL uses port 465 and TLS uses port 587.
 - SMTP Authentication is usually PLAIN but might be LOGIN. torrentwatch-xa does not support other authentication methods such as NTLM, etc.
 - SMTP Encryption is usually TLS. SSL is obsolete and None (no encryption) is banned on most SMTP servers.
+- SMTP User and Password are correct
 
 There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO field. torrentwatch-xa attempts to automatically generate a valid HELO field based on your From Email, but if the value it provides to the SMTP server is rejected, you may need to modify the source code to set the value.
 
 #### Allowed memory size of ... exhausted
 
-PHP memory_limit may be too low to handle some of the larger feeds. Edit your php.ini file for Apache2 (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
+PHP memory_limit may be too low to handle some of the larger feeds or if you have many feeds. Edit your php.ini file for Apache2 (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
 
-#### apache2 process dies with AH00052: child pid ... exit signal Segmentation fault (11)
-
-This bug appears to have gone away on its own with recent PHP 7.0 updates to Ubuntu 16.04.x LTS. At the time of the successful testing, I was running torrentwatch-xa 0.4.0. If you get this error in your Apache2 error log, try updating PHP 7.0 to 7.0.15 or later first. If you still get the error, try upgrading to torrentwatch-xa 0.4.0 or later.
 
 #### "I created a Favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't start the auto-download."
 

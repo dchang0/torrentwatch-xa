@@ -205,7 +205,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
     $qualitiesFromResolution = detectResolution($ti, $seps);
     // more quality matches and prepend them to detectedQualities
     $ti = $qualitiesFromResolution['parsedTitle'];
-    $detQualities = $qualitiesFromResolution['detectedQualities'];
+    $detQualities = $detResolutions = $qualitiesFromResolution['detectedQualities'];
     $qualityList = [
         'BD-rip',
         'BDRip',
@@ -301,6 +301,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
     return [
         'parsedTitle' => collapseExtraSeparators($ti),
         'detectedQualities' => $detQualities,
+        'detectedResolutions' => $detResolutions
     ];
 }
 
@@ -374,7 +375,7 @@ function detectpROPERrEPACK($ti) {
     $mat = [];
     $detected = "";
     $re = "/\b(PROPER|REPACK|RERIP|RERip|RERiP)\b/";
-    if(preg_match($re, $ti, $mat)) {
+    if (preg_match($re, $ti, $mat)) {
         $detected = $mat[0];
         $ti = collapseExtraSeparators(str_replace($detected, "", $ti));
     }
@@ -385,23 +386,30 @@ function detectpROPERrEPACK($ti) {
 }
 
 function detectMatch($ti) {
+    global $config_values; //TODO avoid using global
+
     $episGuess = "";
 
     // detect qualities
     $detQualitiesOutput = detectQualities(simplifyTitle($ti));
-    $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']);
+    $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']); //TODO is it really necessary to avoid using count?
+    if ($config_values['Settings']['Resolutions Only'] == "yes") {
+        $detQualities = $detQualitiesOutput['detectedResolutions'];
+    } else {
+        $detQualities = $detQualitiesOutput['detectedQualities'];
+    }
     $detQualitiesRegEx = ".*";
 
     // don't use count() on arrays because it returns 1 if not countable; it is enough to know if any quality was detected
     if (strlen($detQualitiesJoined) > 0) {
         $wereQualitiesDetected = true;
         $detQualitiesTemp = [];
-        foreach ($detQualitiesOutput['detectedQualities'] as $detQuality) {
+        foreach ($detQualities as $detQuality) {
             $detQualitiesTemp[] = preg_quote($detQuality);
         }
         if (count($detQualitiesTemp) > 1) {
             $detQualitiesRegEx = "(" . implode('|', $detQualitiesTemp) . ")";
-        } else {
+        } else if (isset($detQualitiesTemp[0])) {
             $detQualitiesRegEx = $detQualitiesTemp[0];
         }
     } else {
@@ -420,18 +428,17 @@ function detectMatch($ti) {
 
     // detect PROPER/REPACK/RERIP
     $detPROutput = detectpROPERrEPACK($detNumericCrewOutput['parsedTitle']);
-    
+
     // detect episode
-    //$detItemOutput = detectItem($detNumericCrewOutput['parsedTitle'], $wereQualitiesDetected);
     $detItemOutput = detectItem($detPROutput['parsedTitle'], $wereQualitiesDetected);
     $detItemOutput['favTitle'] = removeEmptyParens($detItemOutput['favTitle']);
     $seasBatEnd = $detItemOutput['seasBatEnd'];
     $seasBatStart = $detItemOutput['seasBatStart'];
     $episBatEnd = $detItemOutput['episBatEnd'];
     $episBatStart = $detItemOutput['episBatStart'];
-    
+
     // set itemVersion to 99 for PROPER/REPACK/RERIP
-    if($detPROutput['detectedpROPERrEPACK'] != "") { 
+    if ($detPROutput['detectedpROPERrEPACK'] != "") {
         $detItemOutput['itemVersion'] = 99;
     }
 
@@ -662,11 +669,74 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     ];
 }
 
+function parseSxEvVNotation($input) {
+    $season = $episode = $version = '';
+    $success = true;
+    switch (true) {
+        case true:
+            if ($input === '') {
+                break;
+            }
+        case true:
+            $mat = [];
+            if (preg_match("/^(\d+)x(\d+|\d+\.\d+)v(\d+)$/", $input, $mat)) {
+                $season = $mat[1];
+                $episode = $mat[2];
+                $version = $mat[3];
+                break;
+            }
+        case true:
+            $mat = [];
+            if (preg_match("/^(\d+)x(\d+|\d+\.\d+)$/", $input, $mat)) {
+                $season = $mat[1];
+                $episode = $mat[2];
+                break;
+            }
+        case true:
+            $mat = [];
+            if (preg_match("/^(\d+)x(|full)$/", $input, $mat)) {
+                $season = $mat[1];
+                $episode = 99999;
+                break;
+            }
+        case true:
+            $mat = [];
+            if (preg_match("/^x(\d+|\d+\.\d+)v(\d+)$/", $input, $mat)) {
+                $season = 1;
+                $episode = $mat[1];
+                $version = $mat[2];
+                break;
+            }
+        case true:
+            $mat = [];
+            if (preg_match("/^\d{8}$/", $input, $mat) && validateYYYYMMDD($input)) {
+                $season = 0;
+                $episode = $input;
+                break;
+            }
+        case true:
+            $mat = [];
+            if (preg_match("/^x?(\d+|\d+\.\d+)$/", $input, $mat)) {
+                $season = 1;
+                $episode = $mat[1];
+                break;
+            }
+        default:
+            $success = false;
+    }
+    return [
+        'season' => $season,
+        'episode' => $episode,
+        'version' => $version,
+        'success' => $success
+    ];
+}
+
 function episode_filter($item, $filter) {
     /*
-     * NEW NOTATION:
+     * NEW NOTATION (letters below symbolize numerals--do not actually type S, E, Y, M, D characters in the filter):
      * SxE = single episode
-     * SxEv# = single episode with version number
+     * SxEv# = single episode with version number (use v99 instead of PROPER/REPACK)
      * YYYYMMDD = single date
      * S1xE1-S1xE2 = batch of episodes within one season
      * YYYYMMD1-YYYYMMD2 = batch of dates
@@ -675,126 +745,123 @@ function episode_filter($item, $filter) {
      * S1xE1v2-S2xE2v3 = batch of episodes starting in one season and ending in a later season, with version numbers
      */
     if ($item['episode']) {
-        $filter = preg_replace('/\s/', '', $filter);
 
-        /*$itemEpisodePieces = explode('x', $item['episode']);
-        if (isset($itemEpisodePieces[0])) {
-            $itemS = $itemEpisodePieces[0];
+        $filter = strtolower(preg_replace('/\s+/', '', $filter));
+        if ($filter === '') {
+            // no filter, accept all
+            return true;
         } else {
-            $itemS = "";
-        }
-        if (isset($itemEpisodePieces[1])) {
-            $itemE = $itemEpisodePieces[1];
-        } else {
-            $itemE = "";
-        }*/
-        $itemS = $item['seasBatEnd'];
-        $itemE = $item['episBatEnd'];
-        //TODO handle ranges and versions
+            $passesFilter = false;
+            // split the episode filter by commas and process each set
+            $filterSets = explode(',', $filter);
+            $filterSetsCount = count($filterSets);
+            for ($i = 0; $i < $filterSetsCount; $i++) {
+                // convert from old notation style to new
+                if (preg_match('/\b[s]\d+/', $filterSets[$i])) {
+                    $filterSets[$i] = str_replace('s', '', $filterSets[$i]);
+                    if (preg_match('/\d+[e]\d+/', $filterSets[$i])) {
+                        $filterSets[$i] = str_replace('e', 'x', $filterSets[$i]);
+                    }
+                }
 
-        if (preg_match('/^S\d*/i', $filter)) {
-            $filter = strtr($filter, array('S' => '', 's' => ''));
-            if (preg_match('/^\d*E\d*/i', $filter)) {
-                $filter = strtr($filter, array('E' => 'x', 'e' => 'x'));
+                // split the filter set (ex. 3x4-4x15 into 3,4 4,15)
+                if (strpos($filterSets[$i], '-') !== false) {
+                    $filterPieces = explode('-', $filterSets[$i]);
+                    if (isset($filterPieces[2])) {
+                        twxaDebug("Bad episode filter: $filter\n", 0);
+                    }
+                    if (isset($filterPieces[0])) {
+                        $start = parseSxEvVNotation($filterPieces[0]);
+                        if ($start['success']) {
+                            $startSeason = $start['season'];
+                            $startEpisode = $start['episode'];
+                            $startEpisodeVersion = $start['version'];
+                        } else {
+                            twxaDebug("Bad episode filter: $filter\n", 0);
+                        }
+                    } else {
+                        $startSeason = 1;
+                        $startEpisode = 1;
+                        $startEpisodeVersion = '';
+                    }
+                    if (isset($filterPieces[1])) {
+                        $stop = parseSxEvVNotation($filterPieces[1]);
+                        if ($stop['success']) {
+                            if ($stop['episode'] === '') {
+                                $stopEpisode = 99999;
+                            } else {
+                                $stopEpisode = $stop['episode'];
+                            }
+                            if ($stop['season'] === '') {
+                                $stopSeason = $startSeason;
+                            } else {
+                                $stopSeason = $stop['season'];
+                            }
+                            $stopEpisodeVersion = $stop['version'];
+                        } else {
+                            twxaDebug("Bad episode filter: $filter\n", 0);
+                        }
+                    } else {
+                        $stopSeason = 99999;
+                        $stopEpisode = 99999;
+                        $stopEpisodeVersion = '';
+                    }
+                    if ($startEpisode === 99999) {
+                        $startEpisode = 1;
+                    }
+                } else {
+                    // no minus, is either one episode or entire season
+                    $start = parseSxEvVNotation($filterSets[$i]);
+                    if ($start['success']) {
+                        $startSeason = $stopSeason = $start['season'];
+                        if ($start['episode'] === 99999) {
+                            $startEpisode = 1;
+                        } else {
+                            $startEpisode = $start['episode'];
+                        }
+                        $stopEpisode = $start['episode'];
+                        $startEpisodeVersion = $stopEpisodeVersion = $start['version'];
+                    } else {
+                        twxaDebug("Bad episode filter: $filter\n", 0);
+                    }
+                }
+
+                if (is_numeric($startSeason)) {
+                    $startSeason += 0;
+                }
+                if (is_numeric($startEpisode)) {
+                    $startEpisode += 0;
+                }
+                if (is_numeric($stopSeason)) {
+                    $stopSeason += 0;
+                }
+                if (is_numeric($stopEpisode)) {
+                    $stopEpisode += 0;
+                }
+
+                // check if item/range is in this filter set
+                // add zeros to convert to numbers
+                if (
+                        ($item['seasBatStart'] >= $startSeason && $item['seasBatStart'] <= $stopSeason) &&
+                        ($item['seasBatEnd'] >= $startSeason && $item['seasBatEnd'] <= $stopSeason) &&
+                        ($item['episBatStart'] >= $startEpisode && $item['episBatStart'] <= $stopEpisode) &&
+                        ($item['episBatEnd'] >= $startEpisode && $item['episBatEnd'] <= $stopEpisode)
+                ) {
+                    if ($item['itemVersion'] && ($startEpisodeVersion !== '' || $stopEpisodeVersion !== '')) {
+                        if (
+                                $item['seasBatEnd'] === $stopSeason &&
+                                $item['episBatEnd'] === $stopEpisode &&
+                                $item['itemVersion'] <= $stopEpisodeVersion
+                        ) {
+                            $passesFilter = true;
+                        }
+                    } else {
+                        $passesFilter = true;
+                    }
+                }
             }
+            return $passesFilter;
         }
-        // Split the filter (ex. 3x4-4x15 into 3,3 4,15)
-        $filterPieces = explode('-', $filter, 2);
-        if (isset($filterPieces[0])) {
-            $start = $filterPieces[0];
-        } else {
-            $start = "";
-        }
-        if (isset($filterPieces[1])) {
-            $stop = $filterPieces[1];
-        } else {
-            $stop = "9999x9999";
-        }
-        $startPieces = explode('x', $start, 2);
-        if (isset($startPieces[0])) {
-            $startSeason = $startPieces[0];
-        } else {
-            $startSeason = "";
-        }
-        if (isset($startPieces[1])) {
-            $startEpisode = $startPieces[1];
-        } else {
-            $startEpisode = "";
-        }
-        $stopPieces = explode('x', $stop, 2);
-        if (isset($stopPieces[0])) {
-            $stopSeason = $stopPieces[0];
-        } else {
-            $stopSeason = "";
-        }
-        if (isset($stopPieces[1])) {
-            $stopEpisode = $stopPieces[1];
-        } else {
-            $stopEpisode = "";
-        }
-
-        /* if (!($item['episode'])) {
-          return false;
-          } */
-
-        // Perform episode filter
-        if (empty($filter)) {
-            return true; // no filter left, accept all
-        }
-
-        // the following reg accepts the 1x1-2x27, 1-2x27, 1-3 or just 1
-        $validateReg = '([0-9]+)(?:x([0-9]+))?';
-        if (preg_match("/\dx\d-\dx\d/", $filter)) {
-            if (preg_match("/^{$validateReg}-{$validateReg}/", $filter) === 0 || preg_match("/^{$validateReg}/", $filter) === 0) {
-                twxaDebug("Bad episode filter: $filter\n", 0);
-                return true; // bad filter, just accept all
-            }
-        }
-
-        if (!($stopSeason)) {
-            $stopSeason = $startSeason;
-        }
-        if (!($startEpisode)) {
-            $startEpisode = 1;
-        }
-        if (!($stopEpisode)) {
-            $stopEpisode = $startEpisode - 1;
-        }
-
-        $startEpisodeLen = strlen($startEpisode);
-        if ($startEpisodeLen == 1) {
-            $startEpisode = "0$startEpisode";
-        }
-        $stopEpisodeLen = strlen($stopEpisode);
-        if ($stopEpisodeLen == 1) {
-            $stopEpisode = "0$stopEpisode";
-        }
-
-        if (!preg_match('/^\d\d$/', $startSeason)) {
-            $startSeason = 0 . $startSeason;
-        }
-        if (!preg_match('/^\d\d$/', $startEpisode)) {
-            $startEpisode = 0 . $startEpisode;
-        }
-        if (!preg_match('/^\d\d$/', $stopSeason)) {
-            $stopSeason = 0 . $stopSeason;
-        }
-        if (!preg_match('/^\d\d$/', $stopEpisode)) {
-            $stopEpisode = 0 . $stopEpisode;
-        }
-        if (!preg_match('/^\d\d$/', $itemS)) {
-            $itemS = 0 . $itemS;
-        }
-        if (!preg_match('/^\d\d$/', $itemE)) {
-            $itemE = 0 . $itemE;
-        }
-
-        // Season filter mismatch
-        if (!("$itemS$itemE" >= "$startSeason$startEpisode" && "$itemS$itemE" <= "$stopSeason$stopEpisode")) {
-            twxaDebug("Season filter mismatch: $itemS$itemE $startSeason$startEpisode - $itemS$itemE $stopSeason$stopEpisode\n", 1);
-            return false;
-        }
-        return true;
     } else {
         // $item['episode'] evaluates to false; should only happen for debugMatch of 0_, 1_, and so on
         return false;

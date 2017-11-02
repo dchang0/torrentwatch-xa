@@ -59,7 +59,7 @@ function parse_args() {
 /// main
 $main_timer = getElapsedMicrotime(0);
 if (file_exists(getConfigFile())) {
-    read_config_file();
+    readjSONConfigFile();
 } else {
     setup_default_config();
 }

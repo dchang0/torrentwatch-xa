@@ -23,55 +23,40 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Testing tasks
 
-- make sure auto-del works even when caching is disabled
 - test _Save torrent in folder_ client and make sure progress bar works properly in this mode
 - validate Deep Directories feature
-- what is the purpose of `clientId_` and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do?
+- what is the purpose of `clientId_` and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
 - verify the settings and complete their hints in the config panels
 - test the Atom-related functions and conform them to their equivalent RSS functions if necessary
-- find out what configure.js, json2.js, and reset.css are for
+- find out what configure.js and json2.js are for
 
 ## Code cleanup tasks
 
-- go through CSS and remove unused styles
+- it doesn't seem possible to disable the cache--why?
 - div#linkButtons ID is assigned in three elements--is this correct?
 - fix collision between ul#torrentlist and ul.torrentlist in phone.css
-- use twxa_parse.php:88 block to make date checker function for reuse elsewhere
 - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
 - move $items assignment from inside process_feed() up to process_all_feeds()
 - break client_add_torrent() into smaller functions
 - refactor transmission_rpc request code that is used over and over in twxa_tools.php functions
 - apply JQuery Best Practices from: http://lab.abhinayrathore.com/jquery-standards/
 - remove support for Internet Explorer 6 through 8
+- Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help http://xhr.spec.whatwg.org/  jquery-1.12.4.min.js:4:26272
 
 ## Bugfixes
 
 - fix debug console in web UI
+- when using Add to Favorites on multiple different titles, added items correctly turn orange for Favorite Ready, but Refresh button does not cause complete browser reload, which means the items stay orange instead of turning yellow for Waiting and then gaining progress bars
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - improve handling of "Feed inaccessible" (usually 403 or 404 errors on the URL)
-- PROPER/REPACK notation must be rolled into item version numbering (probably set as version 99 or 999)
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
-
-- sometimes blank favorites may be added to the favorites list; these appear to be when $itemtags data gets inserted into $config_values['Favorites'] directly like so:
-
-73[] = title => HorribleSubs Alice to Zouroku - 01 720p.mkv
-73[] = link => http://www.nyaa.se/?page=download&tid=913586
-73[] = description => Torrent: http://www.nyaa.se/?page=download&tid=913586Size: 603.16MBAuthorized: YesMagnet Link Comment: #horriblesubs@irc.rizon.net Proudly translated and presented by the HorribleSubs Fansubbing Team. Visit our website for DDL links, schedules, and latest news.
-73[] = category => Anime
-73[] = guid => http://tokyotosho.info/details.php?id=1084434
-73[] = pubDate => Apr 02, 08:49
-
-Seems to be reproducible by: Add a favorite with item tags (HorribleSubs torrents) with Add a favorite Javascript contextual menu; check Favorite in web UI and config file and note index number (77 for a real example; clear all caches; refresh page; check Favorite in web UI and config file and see corruption of the Favorite (also 77, the last index). Looks like a HorribleSubs added-by-JS Favorite that is the last index gets overwritten but not just any last index... Also appears to be accompanied by or caused by a SEGFAULT that may occur in transmission_add_torrent()
-
-Check to see if any HorribleSubs added-by-JS Favorite gets overwritten no matter what index it has. Yes, it appears that the corruption finds the HorribleSubs added-by-JS Favorite, even if its index number is changed to a lower number AND it is not the last Favorite in the list in the config file. Strangely, another added-by-JS Favorite that is not a HorribleSubs torrent has not been affected in all this testing. It may be related to the torrent that downloads immediately after emptying the cache (the unaffected added-by-JS Favorite might have no episodes in the list)
-
 - handle resolution and quality 1080p60 (1080p gets recognized and removed, leaving behind 60)
-- fix mkdir(): Permission denied in /var/lib/torrentwatch-xa/lib/twxa_torrent.php around line 280
 - Safari browser seems to semi-randomly fire torrentwatch-xa.php call in JQuery twice, second time about 1.2ms after the first, in the middle of rss_perform_matching()'s main foreach loop processing the first feed
 
 ## Improvements
 
-- decide how and when global Default Seed Ratio should override the per-feed Seed Ratio when creating new Favorites or starting manual downloads
+- count in header of hidden feed should not drop to zero just because the feed's items are hidden (but legitimately hidden items should never be counted)
+- store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by one or all of the below:
     - check feed item's notes for torrent hash, then compare this to the cache files

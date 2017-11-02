@@ -39,7 +39,7 @@
                                 <label class="item checkbox">Combine Feeds:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="combinefeeds" value="1" <?php echo $combinefeeds; ?>/>
+                                <input type="checkbox" name="combinefeeds" value="1" <?php echo $combinefeeds; ?> />
                             </div>
                         </div>
                         <div id="config_disable_hidelist">
@@ -47,7 +47,7 @@
                                 <label class="item checkbox">Disable Hide List:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="dishidelist" value="1" <?php echo $dishidelist; ?>/>
+                                <input type="checkbox" name="dishidelist" value="1" <?php echo $dishidelist; ?> />
                             </div>
                         </div>
                         <div id="config_show_debug" title="Show season and episode detection engine's 'debugMatch' and 'show_title' values for each item in feed list.">
@@ -55,7 +55,7 @@
                                 <label class="item checkbox">Show Item Debug Info:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="showdebug" value="1" <?php echo $showdebug; ?>/>
+                                <input type="checkbox" name="showdebug" value="1" <?php echo $showdebug; ?> />
                             </div>
                         </div>
                         <div id="config_hide_donate">
@@ -63,7 +63,7 @@
                                 <label class="item checkbox">Hide Donate Button:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="hidedonate" value="1" <?php echo $hidedonate; ?>/>
+                                <input type="checkbox" name="hidedonate" value="1" <?php echo $hidedonate; ?> />
                             </div>
                         </div>
                         <div id="tz" title="Set your Time Zone (Default UTC). See http://php.net/manual/en/timezones.php for a list of supported timezones. Change won't appear to take effect in feed lists until next feed cache refresh.">
@@ -135,7 +135,7 @@
                                 <label class="item checkbox">Also Save Torrent Files:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="savetorrents" value="1" <?php echo $savetorrents; ?>/>
+                                <input type="checkbox" name="savetorrents" value="1" <?php echo $savetorrents; ?> />
                             </div>
                         </div>
                         <div id="config_savetorrentsdir" title="Directory to save .torrent files in; can be overridden by Favorite's Also Save Dir">
@@ -166,7 +166,7 @@
                                 <select name="deepdir">
                                     <option value="Full" <?php echo $deepfull; ?>>Full Name</option>
                                     <option value="Title" <?php echo $deeptitle; ?>>Show Title</option>
-                                    <option value="Title_Season" <?php echo $deepTitleSeason; ?>>Show Title + Season</option>
+                                    <option value="Title_Season" <?php echo $deepTitleSeason; ?>>Show Title and Season</option>
                                     <option value="0" <?php echo $deepoff; ?>>Off</option>
                                 </select>
                             </div>
@@ -184,7 +184,7 @@
                                 <label class="item checkbox">Auto-Del Seeded Torrents:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="autodel" value="1" <?php echo $autodel; ?>/>
+                                <input type="checkbox" name="autodel" value="1" <?php echo $autodel; ?> />
                             </div>
                         </div>
                     </div>
@@ -208,7 +208,7 @@
                                 <label class="item checkbox">Set Default Feed to "All":</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="favdefaultall" value="1" <?php echo $favdefaultall; ?>/>
+                                <input type="checkbox" name="favdefaultall" value="1" <?php echo $favdefaultall; ?> />
                             </div>
                         </div>
                         <div id="config_require_epi_info" title="When enabled only shows with episode information (S01E12, 1x12, etc... ) will be matched.">
@@ -216,7 +216,7 @@
                                 <label class="item checkbox">Require Episode Info:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="require_epi_info" value="1" <?php echo $require_epi_info; ?>/>
+                                <input type="checkbox" name="require_epi_info" value="1" <?php echo $require_epi_info; ?> />
                             </div>
                         </div>
                         <div>
@@ -224,7 +224,7 @@
                                 <label class="item checkbox">Newer Episodes Only:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="onlynewer" value="1" <?php echo $onlynewer; ?>/>
+                                <input type="checkbox" name="onlynewer" value="1" <?php echo $onlynewer; ?> />
                             </div>
                         </div>
                         <div>
@@ -232,15 +232,26 @@
                                 <label class="item checkbox">Download Versions &gt;1:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="fetchversions" value="1" <?php echo $fetchversions; ?>/>
+                                <input type="checkbox" name="fetchversions" value="1" <?php echo $fetchversions; ?> />
                             </div>
                         </div>
                         <div>
                             <div class="left">
-                                <label class="item checkbox">Ignore Batches</label>
+                                <label class="item checkbox">Ignore Batches:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="ignorebatches" value="1" <?php echo $ignorebatches; ?>/>
+                                <input type="checkbox" name="ignorebatches" value="1" <?php echo $ignorebatches; ?> />
+                            </div>
+                        </div>
+                        <div>
+                            <div class="left">
+                                <label class="item checkbox">New <b>Add to Favorites</b> Get:</label>
+                            </div>
+                            <div class="right">
+                                <select name="resolutionsonly">
+                                    <option value="all" <?php echo $resoallqualities; ?>>All Detected Resolutions and Qualities</option>
+                                    <option value="yes" <?php echo $resoresolutionsonly; ?>>Detected Resolutions Only</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -252,7 +263,7 @@
                                 <label class="item checkbox">Enable Script:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="enableScript" value="1" <?php echo $enableScript; ?>/>
+                                <input type="checkbox" name="enableScript" value="1" <?php echo $enableScript; ?> />
                             </div>
                         </div>
                         <div id="script" title="Full path to script to run on certain events--must have executable permissions by process owner">
@@ -269,7 +280,7 @@
                                 <label class="item checkbox">SMTP Notifications:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="enableSMTP" value="1" <?php echo $enableSMTP; ?>/>
+                                <input type="checkbox" name="enableSMTP" value="1" <?php echo $enableSMTP; ?> />
                             </div>
                         </div>
                         <div id="from_email" title="If blank or invalid, defaults to To: Email:">

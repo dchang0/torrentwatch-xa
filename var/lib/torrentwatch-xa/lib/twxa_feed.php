@@ -328,7 +328,8 @@ function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
             break;
         case "Atom":
             $feed = array_change_key_case_ext($feed, ARRAY_KEY_LOWERCASE);
-            $itemCount = count($atom['feed']);
+            //$itemCount = count($atom['feed']);
+            $itemCount = count($feed['feed']); //TODO test this
             break;
     }
     if ($itemCount === 0) {
@@ -345,7 +346,8 @@ function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
             $items = array_reverse($feed['items']); //TODO move this up to process_all_feeds by feeding entire list in as parameter
             break;
         case "Atom";
-            $items = array_reverse($atom['feed']['entry']);
+            //$items = array_reverse($atom['feed']['entry']);
+            $items = array_reverse($feed['feed']['entry']); //TODO test this
             break;
     }
     $htmlList = [];
@@ -358,7 +360,10 @@ function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
         $torHash = "";
         $itemState = "st_notAMatch";
         if (isset($config_values['Favorites'])) {
-            array_walk($config_values['Favorites'], 'check_for_torrent', ['Obj' => $item, 'URL' => $feed['URL']]); // second major function call, $itemState of st_notAMatch might be overwritten and/or download might create cache file inside check_for_torrent() above
+            foreach ($config_values['Favorites'] as $favKey => $favValue) {
+                // IMPORTANT: do not use $favValue, use $config_values['Favorites'][$favKey] so that the proper variable is passed by reference
+                check_for_torrent($config_values['Favorites'][$favKey], $favKey, ['Obj' => $item, 'URL' => $feed['URL']]); // second major function call, $itemState of st_notAMatch might be overwritten and/or download might create cache file inside check_for_torrent() above
+            }
         }
         if (isset($config_values['Settings']['Cache Dir'])) {
             $cache_file = $config_values['Settings']['Cache Dir'] . '/dl_' . sanitizeFilename($item['title']);

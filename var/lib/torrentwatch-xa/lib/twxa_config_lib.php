@@ -88,6 +88,7 @@ function setup_default_config() {
     _default('Only Newer', "1");
     _default('Ignore Batches', "1");
     _default('Download Versions', "1");
+    _default('Resolutions Only', "0");
     // Trigger tab
     _default('Enable Script', "0");
     _default('Script', '');
@@ -109,6 +110,112 @@ function setup_default_config() {
     _default('Sanitize Hidelist', "0");
 }
 
+function readjSONConfigFile() {
+    // reads config file written in PHP's JSON format
+    global $config_values; //TODO remove use of global
+
+    $configFile = getConfigFile();
+    $configCache = getConfigCache();
+
+    if (!file_exists($configFile)) {
+        twxaDebug("No config file found--creating default config at: $configFile\n", 1);
+        writejSONConfigFile(); //TODO add error handling
+    }
+
+    $toggleReadConfigFile = false;
+
+    // handle config cache file
+    if (file_exists($configCache)) {
+        $cacheAge = time() - filemtime($configCache);
+    }
+    if (file_exists($configCache) && $cacheAge <= 300 && $cacheAge <= time() - filemtime($configFile)) {
+        $config_values = unserialize(file_get_contents($configCache));
+        if (!$config_values['Settings']) {
+            unlink($configCache);
+            $toggleReadConfigFile = true;
+        }
+    } else {
+        $toggleReadConfigFile = true;
+    }
+
+    // read config file if necessary
+    if ($toggleReadConfigFile) {
+        $config_values = json_decode(file_get_contents($configFile), true);
+
+        // create the base arrays if not already populated
+        //TODO move this entire section to setup_default_config()
+        if (!isset($config_values['Favorites'])) {
+            $config_values['Favorites'] = [];
+        }
+        if (!isset($config_values['Hidden'])) {
+            $config_values['Hidden'] = [];
+        }
+        if (!isset($config_values['Feeds'])) {
+            $config_values['Feeds'] = [
+                0 => [
+                    'Link' => 'http://horriblesubs.info/rss.php?res=all',
+                    'Type' => 'RSS',
+                    'seedRatio' => "",
+                    'enabled' => 1,
+                    'Name' => 'HorribleSubs Latest RSS'
+                ],
+                1 => [
+                    'Link' => 'https://nyaa.si/?page=rss',
+                    'Type' => 'RSS',
+                    'seedRatio' => "",
+                    'enabled' => 1,
+                    'Name' => 'Nyaa Torrent File RSS'
+                ],
+                2 => [
+                    'Link' => 'https://eztv.wf/ezrss.xml',
+                    'Type' => 'RSS',
+                    'seedRatio' => "",
+                    'enabled' => 1,
+                    'Name' => 'TV Torrents RSS feed - EZTV'
+                ],
+                3 => [
+                    'Link' => 'http://tokyotosho.info/rss.php?filter=1',
+                    'Type' => 'RSS',
+                    'seedRatio' => "",
+                    'enabled' => 1,
+                    'Name' => 'TokyoTosho.info Anime'
+                ],
+                4 => [
+                    'Link' => 'https://anidex.info/rss/cat/0',
+                    'Type' => 'RSS',
+                    'seedRatio' => "",
+                    'enabled' => 1,
+                    'Name' => 'AniDex'
+                ],
+                5 => [
+                    'Link' => 'https://www.acgnx.se/rss.xml',
+                    'Type' => 'RSS',
+                    'seedRatio' => "",
+                    'enabled' => 1,
+                    'Name' => 'AcgnX Torrent Resources Base.Global'
+                ]
+            ];
+            writejSONConfigFile(); //TODO add error handling
+        }
+        if (isset($config_values['Settings']['Time Zone'])) {
+            //TODO compare current timezone before writing
+            $return = date_default_timezone_set($config_values['Settings']['Time Zone']);
+            if ($return === false) {
+                twxaDebug("Unable to set timezone to: " . $config_values['Settings']['Time Zone'] . "; using UTC instead\n", -1);
+                date_default_timezone_set("UTC");
+            } else {
+                writejSONConfigFile();
+            }
+        }
+
+        // write new cache file
+        //TODO possibly remove $config_values['Global']['Feeds'] before writing config cache, but read_config_file() did not do so
+        file_put_contents($configCache, serialize($config_values));
+        chmod($configCache, 0660);
+    }
+}
+
+//TODO remove read_config_file() from 0.9.0
 function read_config_file() {
     // This function is from
     // http://www.codewalkers.com/c/a/Miscellaneous/Configuration-File-Processing-with-PHP/2/
@@ -123,7 +230,7 @@ function read_config_file() {
 
     if (!file_exists($config_file)) {
         twxaDebug("No config file found--creating default config at $config_file\n", 1);
-        write_config_file();
+        //writeConfigFile();
     }
 
     if (file_exists($config_cache)) {
@@ -230,7 +337,7 @@ function read_config_file() {
                 'Name' => 'AcgnX Torrent Resources Base.Global'
             ]
         ];
-        write_config_file(); //TODO add error handling
+        //writeConfigFile();
     }
     if (isset($config_values['Settings']['Time Zone'])) {
         $return = date_default_timezone_set($config_values['Settings']['Time Zone']);
@@ -239,7 +346,7 @@ function read_config_file() {
             date_default_timezone_set("UTC");
         }
     }
-    return true; //TODO add error handling
+    return true;
 }
 
 function get_client_passwd() {
@@ -247,18 +354,8 @@ function get_client_passwd() {
     return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['Transmission Password']));
 }
 
-function get_smtp_passwd() {
-    global $config_values;
-    return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['SMTP Password']));
-}
-
-function write_config_file() {
-    global $config_values, $config_out;
-    $config_file = getConfigFile();
-    $config_cache = getConfigCache();
-
-    twxaDebug("Preparing to write config file to $config_file\n", 2);
-
+function set_client_passwd() {
+    global $config_values; //TODO remove use of global
     if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['Transmission Password']))) {
         if ($config_values['Settings']['Transmission Password']) {
             $config_values['Settings']['Transmission Password'] = preg_replace('/^(.*)$/', '\$%&$1\$%&', base64_encode($config_values['Settings']['Transmission Password']));
@@ -266,7 +363,15 @@ function write_config_file() {
             $config_values['Settings']['Transmission Password'] = "";
         }
     }
+}
 
+function get_smtp_passwd() {
+    global $config_values;
+    return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['SMTP Password']));
+}
+
+function set_smtp_passwd() {
+    global $config_values;
     if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['SMTP Password']))) {
         if ($config_values['Settings']['SMTP Password']) {
             $config_values['Settings']['SMTP Password'] = preg_replace('/^(.*)$/', '\$%&$1\$%&', base64_encode($config_values['Settings']['SMTP Password']));
@@ -274,90 +379,170 @@ function write_config_file() {
             $config_values['Settings']['SMTP Password'] = "";
         }
     }
+}
 
-    $config_out = ";;\n;; torrentwatch-xa config file\n;;\n\n";
-    if (!function_exists('group_callback')) {
-
-        function group_callback($group, $key) { // $group is used in key_callback() below
-            global $config_values, $config_out;
-            if ($key == 'Global') {
-                return;
-            }
-            $config_out .= "[$key]\n";
-            array_walk($config_values[$key], 'key_callback');
-            $config_out .= "\n\n";
-        }
-
-    }
-
-    if (!function_exists('key_callback')) {
-
-        function key_callback($group, $key, $subkey = null) {
-            global $config_out;
-            if (is_array($group)) {
-                array_walk($group, 'key_callback', $key . '[]');
-            } else {
-                if ($subkey) {
-                    if (!is_numeric($key)) {
-                        $group = "$key => $group";
-                    }
-                    $key = $subkey;
-                }
-                $config_out .= "$key = $group\n";
-            }
-        }
-
-    }
-    array_walk($config_values, 'group_callback');
-    $dir = dirname($config_file);
+function createConfigDir() {
+    $dir = getConfigCacheDir();
     if (!is_dir($dir)) {
-        twxaDebug("Creating configuration directory $dir\n", 1);
+        twxaDebug("Creating configuration directory: $dir\n", 1);
         if (file_exists($dir)) {
             unlink($dir);
         }
-        if (!mkdir($dir)) {
-            twxaDebug("Unable to create config directory $dir\n", -1);
+        if (mkdir($dir)) { //TODO cannot create dir without proper permissions of parent directory! Check it first with fileperms(parent directory)
+            if (chmod($dir, 0755)) {
+                return true;
+            } else {
+                twxaDebug("Unable to chmod config directory: $dir\n", -1);
+                return false;
+            }
+        } else {
+            twxaDebug("Unable to create config directory: $dir\n", -1);
             return false;
         }
     }
-    $config_out = html_entity_decode($config_out);
-
-    if (!($fp = fopen($config_file . "_tmp", "w"))) {
-        twxaDebug("Could not open $config_file\n", -1);
-        exit(1);
-    }
-
-    if (flock($fp, LOCK_EX)) {
-        if (fwrite($fp, $config_out)) {
-            flock($fp, LOCK_UN);
-            rename($config_file . "_tmp", $config_file);
-        }
-        chmod($config_file, 0600);
-        if (file_exists($config_cache)) {
-            unlink($config_cache);
-        }
-    }
-    unset($config_out);
 }
 
-function update_global_config() {
+function writejSONConfigFile() {
+    global $config_values; //TODO remove use of global
+    // replacement for old write_config_file() that avoids array_walk callbacks and recursion and uses PHP's JSON format
+
+    $configFile = getConfigFile();
+    $configCache = getConfigCache();
+
+    twxaDebug("Preparing to write config file: $configFile\n", 2);
+
+    set_client_passwd(); //TODO this should happen outside this function
+    set_smtp_passwd(); //TODO this should happen outside this function
+    // copy everything but $config_values['Global'] so that it doesn't pollute the config file
+    $configOut = $config_values;
+    unset($configOut['Global']);
+
+    createConfigDir();
+
+    if (file_put_contents($configFile . "_tmp", print_r(json_encode($configOut, JSON_PRETTY_PRINT), true), LOCK_EX) !== false) {
+        if (rename($configFile . "_tmp", $configFile)) {
+            if (chmod($configFile, 0600)) {
+                if (file_exists($configCache)) {
+                    twxaDebug("Removing config cache: $configCache\n", 2);
+                    unlink($configCache);
+                }
+                twxaDebug("Successfully wrote config file: $configFile\n", 2);
+                return true;
+            } else {
+                twxaDebug("Unable to chmod config file: $configFile\n", -1);
+                return false;
+            }
+        } else {
+            twxaDebug("Unable to rename temp config file: $configFile" . "_tmp\n", -1);
+            return false;
+        }
+    } else {
+        twxaDebug("Unable to write temp config file: $configFile" . "_tmp\n", -1);
+        return false;
+    }
+}
+
+/* function writeConfigFile() {
+  global $config_values;
+
+  // replacement for old write_config_file() that avoids array_walk callbacks and recursion
+
+  $configFile = getConfigFile();
+  $configCache = getConfigCache();
+
+  twxaDebug("Preparing to write config file to $configFile\n", 2);
+
+  set_client_passwd();
+  set_smtp_passwd();
+
+  $configOut = ";;\n;; torrentwatch-xa config file\n;;\n\n";
+
+  //loop through config file groups
+  foreach ($config_values as $groupKey => $groupValue) {
+  if ($groupKey !== 'Global') {
+  $configOut .= "[$groupKey]\n";
+
+  // loop through each group
+  foreach ($groupValue as $itemKey => $itemValue) {
+  if (is_array($itemValue)) {
+  foreach ($itemValue as $subItemKey => $subItemValue) {
+  if (is_numeric($itemKey)) { //TODO test this safeguard against the Favorites corruption
+  $configOut .= $itemKey . "[] = " . $subItemKey . " => " . html_entity_decode($subItemValue) . "\n";
+  }
+  }
+  } else {
+  $configOut .= $itemKey . " = " . html_entity_decode($itemValue) . "\n";
+  }
+  }
+
+  $configOut .= "\n\n";
+  }
+  }
+
+  createConfigDir();
+
+  if (file_put_contents($configFile . "_tmp", $configOut, LOCK_EX) !== false) {
+  if (rename($configFile . "_tmp", $configFile)) {
+  if (chmod($configFile, 0600)) {
+  if (file_exists($configCache)) {
+  twxaDebug("Removing config cache: $configCache\n", 2);
+  unlink($configCache);
+  }
+  return true;
+  } else {
+  twxaDebug("Unable to chmod config file: $configFile\n", -1);
+  return false;
+  }
+  } else {
+  twxaDebug("Unable to rename temp config file: $configFile" . "_tmp\n", -1);
+  return false;
+  }
+  } else {
+  twxaDebug("Unable to write temp config file: $configFile" . "_tmp\n", -1);
+  return false;
+  }
+  }
+ */
+
+function updateGlobalConfig() {
     global $config_values;
+
+    /* Receives HTTP input from the Configure panels into $config_values
+     * Do not put settings that are only accessible by editing the config file
+     * in this array, as they will get overwritten by null.
+     */
     $input = array(
+        // Interface tab
+        'Combine Feeds' => 'combinefeeds',
+        'Disable Hide List' => 'dishidelist',
+        'Show Debug' => 'showdebug',
+        'Hide Donate Button' => 'hidedonate',
         'Time Zone' => 'tz',
+        // Client tab
         'Client' => 'client',
-        //'Torrent Extension' => 'torrentextension',
-        //'Magnet Extension' => 'magnetextension',
         'Download Dir' => 'downdir',
         'Transmission Host' => 'trhost',
         'Transmission Port' => 'trport',
         'Transmission Login' => 'truser',
         'Transmission Password' => 'trpass',
-        'Transmission URI' => 'truri',
+        'Save Torrents' => 'savetorrents',
         'Save Torrents Dir' => 'savetorrentsdir',
+        // Torrent tab
         'Deep Directories' => 'deepdir',
         'Default Seed Ratio' => 'defaultratio',
+        'Auto-Del Seeded Torrents' => 'autodel',
+        // Favorites tab
         'Match Style' => 'matchstyle',
+        'Default Feed All' => 'favdefaultall',
+        'Require Episode Info' => 'require_epi_info',
+        'Only Newer' => 'onlynewer',
+        'Ignore Batches' => 'ignorebatches',
+        'Download Versions' => 'fetchversions',
+        'Resolutions Only' => 'resolutionsonly',
+        // Trigger tab
+        'Enable Script' => 'enableScript',
         'Script' => 'script',
+        'SMTP Notifications' => 'enableSMTP',
         'From Email' => 'fromEmail',
         'To Email' => 'toEmail',
         'SMTP Server' => 'smtpServer',
@@ -367,32 +552,8 @@ function update_global_config() {
         'SMTP User' => 'smtpUser',
         'SMTP Password' => 'smtpPassword'
     );
-    $checkboxes = array(
-        'Combine Feeds' => 'combinefeeds',
-        'Disable Hide List' => 'dishidelist',
-        'Show Debug' => 'showdebug',
-        'Hide Donate Button' => 'hidedonate',
-        'Save Torrents' => 'savetorrents',
-        'Auto-Del Seeded Torrents' => 'autodel',
-        'Default Feed All' => 'favdefaultall',
-        'Require Episode Info' => 'require_epi_info',
-        'Only Newer' => 'onlynewer',
-        'Download Versions' => 'fetchversions',
-        'Ignore Batches' => 'ignorebatches',
-        'Enable Script' => 'enableScript',
-        'SMTP Notifications' => 'enableSMTP'
-    );
     foreach ($input as $key => $data) {
-        if (isset($_GET[$data])) {
-            $config_values['Settings'][$key] = $_GET[$data];
-        } // cannot overwrite $config_values['Settings'][$key] with null because $config_values['Settings']['truri'] isn't accessible via Configure pane
-    }
-    foreach ($checkboxes as $key => $data) {
-        if (isset($_GET[$data])) {
-            $config_values['Settings'][$key] = $_GET[$data];
-        } else {
-            $config_values['Settings'][$key] = null; // this works until there is a checkbox that doesn't get set by the Configure pane
-        }
+        $config_values['Settings'][$key] = filter_input(INPUT_GET, $data); //TODO filter_input might incorrectly filter important values
     }
     return;
 }
@@ -410,7 +571,7 @@ function update_favorite() {
             del_favorite();
             break;
     }
-    write_config_file();
+    writejSONConfigFile();
     if (isset($response)) {
         return $response;
     } else {
@@ -427,7 +588,7 @@ function update_feed() {
         $link = $_GET['link'];
         add_feed($link);
     }
-    write_config_file();
+    return(writejSONConfigFile());
 }
 
 function add_hidden($name) {
@@ -446,7 +607,7 @@ function add_hidden($name) {
         } else {
             return("Bad form data, not added to favorites"); // Bad form data
         }
-        write_config_file();
+        writejSONConfigFile(); //TODO handle errors with else-return below
     } else {
         return("Unable to add $name to the hide list.");
     }
@@ -459,7 +620,7 @@ function del_hidden($list) {
             unset($config_values['Hidden'][$item]);
         }
     }
-    write_config_file();
+    return(writejSONConfigFile());
 }
 
 function add_favorite() {
@@ -499,6 +660,7 @@ function add_favorite() {
     foreach ($list as $key => $data) {
         if (isset($_GET[$key])) {
             $config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
+            //TODO if still occurring, prevent problematic data from corrupting Favorites stanzas
         } else {
             $config_values['Favorites'][$idx][$data] = "";
         }
@@ -525,7 +687,7 @@ function del_favorite() {
     global $config_values;
     if (isset($_GET['idx']) AND isset($config_values['Favorites'][$_GET['idx']])) {
         unset($config_values['Favorites'][$_GET['idx']]);
-        //TODO switch to new, empty Favorite by using CSS to change id=favorite_new to display: block;
+//TODO switch to new, empty Favorite by using CSS to change id=favorite_new to display: block;
     }
 }
 
@@ -542,7 +704,6 @@ function updateFavoriteEpisode(&$fav, $ti) {
                 } else if ($guess['episBatEnd'] === '') {
                     // full season
                     $fav['Season'] = $guess['seasBatEnd'];
-                    //$fav['Episode'] = $guess['episBatEnd'];
                     $fav['Episode'] = "FULL";
                 } else {
                     // not supposed to happen
@@ -564,7 +725,6 @@ function updateFavoriteEpisode(&$fav, $ti) {
                     }
                 } else if ($guess['episBatEnd'] === '') {
                     // full season
-                    //$fav['Episode'] = $guess['episBatEnd'];
                     $fav['Episode'] = "FULL";
                 } else {
                     // not supposed to happen
@@ -575,8 +735,7 @@ function updateFavoriteEpisode(&$fav, $ti) {
             // season batch end is not numeric, not sure what to do
             return false;
         }
-        write_config_file();
-        return true; //TODO add error handling; until write_config_file() has a return value, we assume success and return true
+        return(writejSONConfigFile());
     } else {
         return false;
     }
@@ -594,7 +753,6 @@ function add_feed($feedLink) {
         $arrayKeys = array_keys($config_values['Feeds']);
         $idx = end($arrayKeys);
         $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
-        //$config_values['Feeds'][$idx]['seedRatio'] = $config_values['Settings']['Default Seed Ratio'];
         $config_values['Feeds'][$idx]['seedRatio'] = "";
         $config_values['Feeds'][$idx]['enabled'] = 1;
         load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)), 1, true); // pass true for newly added feeds

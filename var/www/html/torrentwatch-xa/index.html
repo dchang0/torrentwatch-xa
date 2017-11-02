@@ -1,6 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html>
     <head>
         <title>torrentwatch-xa</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -8,16 +7,48 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-        <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
+        <!-- For new browsers - multisize ico  -->
+        <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="images/favicon.ico">
+
+        <!-- For iPad with high-resolution Retina display running iOS ≥ 7: -->
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="images/torrentwatch-xa-logo152.png">
+
+        <!-- For iPad with high-resolution Retina display running iOS ≤ 6: -->
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/torrentwatch-xa-logo144.png">
+
+        <!-- For iPhone with high-resolution Retina display running iOS ≥ 7: -->
+        <link rel="apple-touch-icon-precomposed" sizes="120x120" href="images/torrentwatch-xa-logo120.png">
+
+        <!-- For iPhone with high-resolution Retina display running iOS ≤ 6: -->
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/torrentwatch-xa-logo114.png">
+
+        <!-- For iPhone 6+ -->
+        <link rel="apple-touch-icon-precomposed" sizes="180x180" href="images/torrentwatch-xa-logo180.png">
+
+        <!-- For first- and second-generation iPad: -->
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/torrentwatch-xa-logo72.png">
+
+        <!-- For non-Retina iPhone, iPod Touch, and Android 2.1+ devices: -->
+        <link rel="apple-touch-icon-precomposed" href="images/torrentwatch-xa-logo57.png">
+
+        <!-- For Old Chrome -->
+        <link rel="icon" href="images/torrentwatch-xa-logo32.png" sizes="32x32">
+
+        <!-- For IE10 Metro -->
+        <meta name="msapplication-TileColor" content="#FFFFFF">
+        <meta name="msapplication-TileImage" content="images/torrentwatch-xa-logo144.png">
+
+        <!-- Chrome for Android -->
+        <link rel="icon" sizes="192x192" href="images/torrentwatch-xa-logo192.png">
+
         <link rel="stylesheet" type="text/css" href="css/reset.css" />
         <link rel="stylesheet" href="css/torrentwatch-xa.css" type="text/css"  />
-        <link rel="stylesheet" media="only screen and (min-device-width: 768) and (max-device-width: 1024px)" href="css/tablet.css" type="text/css" />
-        <link rel="stylesheet" media="only screen and (min-device-width: 320px) and (max-device-width: 640px)" href="css/phone.css" type="text/css" />
+        <link rel="stylesheet" media="screen and (min-width: 768px) and (max-width: 1024px) and (device-aspect-ration: 4/3, device-aspect-ratio: 16/10, device-aspect-ratio: 16/9) and (orientation: portrait)" href="css/tablet.css" type="text/css" />
+        <link rel="stylesheet" media="screen and (min-width: 320px) and (max-width: 640px)" href="css/phone.css" type="text/css" />
         <!--[if IE]>
           <link rel="Stylesheet" type="text/css" href="css/ie.css"></link>
         <![endif]-->
         <script type="text/javascript" src="javascript/jquery-1.12.4.min.js"></script>
-        <!--<script type="text/javascript" src="javascript/jquery-migrate-1.4.1.js"></script>-->
         <script type="text/javascript" src="javascript/jquery.tinysort.min.js"></script>
         <script type="text/javascript" src="javascript/jquery.cookie.js"></script>
         <script type="text/javascript" src="javascript/jquery.form.min.js"></script>
@@ -29,7 +60,7 @@
         <div id="topmenu">
             <ul id="mainoptions">
                 <li id="torrentwatch-xaLogo">
-                    <img id="twxaLogo" src="images/torrentwatch-xa-logo22.png" alt="torrentwatch-xa logo" />
+                    <img id="twxaLogo" src="images/torrentwatch-xa-logo22@2x.png" alt="torrentwatch-xa logo" width="22" height="22"/>
                     torrentwatch-xa
                 </li>
                 <li id="favoritesMenu">
@@ -61,7 +92,7 @@
                     <a class='toggleDialog' href='#show_transmission'>
                         <span class="icon"></span>
                         <span id="webuiLabel">Transmission</span>
-                        </a>
+                    </a>
                 </li>
             </ul>
             <ul id="filterbar_container">
@@ -72,7 +103,7 @@
                 <li id="filter_downloaded" class="tab"><a href="#">Downloaded</a><span id="Downloaded"></span></li>
                 <li id="filter_transmission" class="tab"><a id="torClient" href="#">Client</a><span id="activeTorrents">(-)</span></li>
                 <li id="rates"></li>
-                <li id="filter_bytext"><input type="search" results="0" placeholder="Filter" id="filter_search_input"/></li>
+                <li id="filter_bytext"><input type="search" placeholder="Filter" id="filter_search_input"/></li>
             </ul>
         </div>
         <div id='clientButtonsHolder'>

@@ -1,17 +1,12 @@
 <?php
 
 // functions for handling torrent files and Transmission
-//function getClientData($recent, $encodeJson = true) {
 function getClientData($encodeJson = true) {
     $fields = array('id', 'name', 'errorString', 'hashString', 'uploadRatio', 'percentDone',
         'leftUntilDone', 'downloadDir', 'totalSize', 'addedDate', 'status', 'eta',
         'peersSendingToUs', 'peersGettingFromUs', 'peersConnected', 'seedRatioLimit',
         'recheckProgress', 'rateDownload', 'rateUpload');
-    /* if ($recent) { //TODO if converting to boolean, beware of string parameter passing of "true" or "false"
-      $request = array('arguments' => array('fields' => $fields, 'ids' => 'recently-active'), 'method' => 'torrent-get');
-      } else { */
     $request = array('arguments' => array('fields' => $fields), 'method' => 'torrent-get');
-    //}
     $response = transmission_rpc($request);
     if ($encodeJson) {
         return json_encode($response);
@@ -56,7 +51,6 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
 }
 
 function auto_del_seeded_torrents() {
-    //$response = getClientData(0, false);
     $response = getClientData(false); // request torrents to look for deletable torrents; 0 was chosen by watching both 0 and 1 output
     if ($response['result'] === "success") {
         $torrents = $response['arguments']['torrents'];
@@ -422,12 +416,10 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
     //TODO this function needs major cleanup! Be aware that return value should be an array but Javascript .dlTorrent expects a string
-    //global $config_values, $hit, $twxa_version;
     global $config_values, $twxa_version;
     if (strtolower($fav['Filter']) === "any") {
         $any = 1;
     }
-    //$hit = 1;
     if (strpos($filename, 'magnet:') === 0) {
         $tor = $filename;
         $magnet = true; // was 1
@@ -539,11 +531,6 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             $return1 = transmission_add_torrent($tor, $dest, $ti, getArrayValueByKey($fav, '$seedRatio', $seedRatio));
             break;
         case "folder":
-            /* if ($magnet) {
-              twxaDebug("Cannot save magnet links to a folder\n", 0);
-              } else {
-              $return1 = folder_add_torrent($tor, $dest, $tor_name);
-              } */
             $return1 = folder_add_torrent($tor, $dest, $tor_name, $magnet);
             break;
         default:
@@ -574,11 +561,6 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         }
         if ($config_values['Settings']['Client'] !== "folder" &&
                 $config_values['Settings']['Save Torrents']) {
-            /* if ($magnet) {
-              twxaDebug("Cannot save magnet links to a folder\n", 0);
-              } else {
-              $return2 = folder_add_torrent($tor, $config_values['Settings']['Save Torrents Dir'], $tor_name);
-              } */
             twxaDebug("Also saving to file: " . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
             if (isset($fav) && $fav['Also Save Dir'] != 'Default') {
                 $alsodest = $fav['Also Save Dir'];

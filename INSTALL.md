@@ -11,7 +11,7 @@ From the official repos:
 - php5-json
 - php5-curl
 
-### Ubuntu 16.04
+### Ubuntu 16.04 and Debian 9.x (stretch)
 
 From the official repos:
 
@@ -34,7 +34,7 @@ From the official repos:
 Installation
 ===============
 
-NOTE: For those of you upgrading from a version of torrentwatch-xa prior to 0.5.0, you MUST either replace `/etc/cron.d/torrentwatch-xa-cron` with the new one OR edit it and remove the `-D` flag (for Process Watch Dir). Otherwise, the cron job will generate an error and fail. The `install_twxa.sh` script can replace the file for you; note the `--keep-config` option that backs up your config file to your home directory and then puts it back after installing the new torrentwatch-xa files and folders.
+NOTE: For those of you upgrading to 0.8.0 from a version of torrentwatch-xa prior to 0.7.0, if you wish to carry over your config file you must skip to the section **Upgrading to 0.8.0 While Keeping Your Old Config File** below.
 
 ### Ubuntu 16.04, Ubuntu 14.04, or Debian 8.x only:
 
@@ -123,6 +123,60 @@ __RedHat-derived distros are not officially supported at this time__ though the 
 Installation Script
 ===============
 
-As of 0.4.1, there is a simple install/upgrade script called `install_twxa.sh` meant for Debian 8.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
+There is a simple install/upgrade script called `install_twxa.sh` meant for Debian 8.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It does work with the as-yet unsupported Fedora Server 25.
 
-As of 0.5.0, the `install_twxa.sh` script has an option `--keep-config` that will copy your current config file to your home directory, then copy it back after performing an upgrade.
+The install/upgrade script will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
+
+If upgrading, the `install_twxa.sh` script has an option `--keep-config` that will copy your current config file to your home directory, then copy it back after performing the upgrade.
+
+
+Upgrading to 0.8.0 While Keeping Your Old Config File
+===============
+
+torrentwatch-xa 0.8.0 stores its config file in PHP's built-in JSON objClass format.
+
+If you are upgrading from any prior version of torrentwatch-xa, please plan ahead carefully. It is best and easiest to start fresh with a default 0.8.0 config file, transferring any configuration by manually entering Configuration and Favorite settings via the web UI. To minimize data entry, it is probably best to time the upgrade to 0.8.0 to coincide with the start of a new show season, so that your list of Favorites starts fresh.
+
+If you have a huge collection of Favorites that you wish to carry over, then it may be worth your while to try the conversion tool provided with 0.8.0:
+
+/var/lib/torrentwatch-xa/lib/upgrade0_7_0ConfigTo0_8_0.php
+
+This converter will back up your current 0.7.0 config file and then replace it with an 0.8.0 equivalent, BUT you must be careful to run this converter quickly, as the window of opportunity to use it is small.
+
+The steps to follow are:
+
+1) If you are running any version of torrentwatch-xa earlier than 0.7.0, please upgrade to 0.7.0 first and use the conversion tool that came with 0.7.0 to update your config file:
+
+/var/lib/torrentwatch-xa/lib/upgradeConfigTo0_7_0.php
+
+Make sure no backup config file exists at this path:
+
+/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config.bak
+
+If this file exists, the converter will not work, as it creates a new backup file.
+
+2) Download torrentwatch-xa 0.8.0 to your home directory or any other temporary location:
+
+git clone https://github.com/dchang0/torrentwatch-xa.git
+
+3) Then, pay special attention to the clock. Because the cron job runs automatically every 15 minutes and the config file will be overwritten if it cannot be read, you have at most a 15 minute window to upgrade from 0.7.0 to 0.8.0 and finish the rest of this procedure. Close any browser window that has torrentwatch-xa in it, as the Javascript may run torrentwatch-xa. It is best to start right after the cron job has finished (such as at the start of each hour). When ready, proceed to step 4.
+
+4) Quickly install 0.8.0 using the included install_twxa.sh script:
+
+sudo torrentwatch-xa/install_twxa.sh --keep-config
+
+This will backup the old 0.7.0 config file to your home directory and then copy it back into place at the proper location:
+
+/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
+
+5) Quickly run the converter:
+
+sudo /usr/bin/php /var/lib/torrentwatch-xa/lib/upgrade0_7_0ConfigTo0_8_0.php
+
+It will back up the 0.7.0 config file and then replace it with an 0.8.0 JSON config file.
+
+You can only run the converter once. If you must run it again, rename the 0.7.0 backup config file back to the original config file name, then run the converter again.
+
+All this must be done before torrentwatch-xa's next run. Like I said, it's easier to start over fresh with a default 0.8.0 config file.
+
+The converter provided with 0.8.0 will only be available in 0.8.0. By the next release, any code related to the older Windows INI format will be deleted.

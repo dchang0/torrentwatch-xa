@@ -548,14 +548,42 @@ Code changes
 - commented out 'recent' logic in getClientData() functions
 - modified install script to try Debian/Ubuntu then Fedora apache2 username
 
+0.8.0
+
+Functional changes
+
+- added HiDPI logos
+- added HiDPI favicons
+- added Configure > Favorites > New Add to Favorites Get: (Detected Resolutions Only) selector
+- rewrote episode_filter() to handle new season and episode notation style
+- switched config file from Windows INI format to PHP's JSON format by rewriting read_config_file() as readjSONConfigFile() and writeConfigFile() as writejSONConfigFile(); also fixed bug with other parts of $config_values['Global']['Feeds'][] ending up in the $config_values['Settings']['Favorites'] section of the config file by avoiding use of array_walk() to generate Windows INI format config file
+- removed pre-0.7.0 to 0.7.0 config file converter
+
+Code changes
+
+- changed DOCTYPE from XHTML to HTML5 in order for HiDPI favicons to work
+- changed CSS media queries to improve detection of tablets and phones
+- removed commented-out code
+- rewrote write_config_file() as writeConfigFile() to avoid using recursive array_walk callbacks, but commented it out for new JSON config file format
+- removed array_walk() callback in process_feed() that used to callback check_for_torrent() that broke updateFavoriteEpisode()
+- removed array_walk() callback in favorites.tpl
+- rewrote update_global_config() as updateGlobalConfig() so it sets all missing settings to null
+- added missing button classes as empty styles in index.html to address warnings
+- added filter_input() in some reads (not writes) of $_GET or $_SERVER
+- changed comparison operators == to === and != to !== in multiple places in torrentwatch-xa.js
+
 Next Version
 
 Functional changes
 
 IN PROGRESS
 
+- "3-gatsu no Lion" is treated as 1x3 even though the episode number occurs later in the title 
+- fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
+- continue converting button icons to HiDPI
+- sometimes adding/updating a Favorite does not close the dialog and refresh the browser
+- Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
-- rewrite episode_filter(), especially to combat problem of multiple numbering styles for the same show
 - 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
 - make twxaDebug() show alerts in web UI
 
@@ -563,6 +591,13 @@ Code changes
 
 IN PROGRESS
 
+- remove read_config_file() and 0.7.0 to 0.8.0 converter
+- why write the config file so many times in a row?
+- continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
+- move set_client_passwd() and set_smtp_passwd() functions outside of writeConfigFile() so that they are only run when needed
+- improve writeConfigFile() to avoid using global $config_value
+- spread writeConfigFile() error handling throughout other functions
+- add function that detects errors in $config_values
 - figure out window.gotAllData and window.getFail logic, maybe merge window.gotAllData into window.updatingClientData or remove one
   - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
 - continue validating and commenting torrentwatch-xa.js

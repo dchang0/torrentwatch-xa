@@ -19,7 +19,7 @@ foreach ($twxaIncludePaths as $twxaIncludePath) {
 set_include_path($includePath);
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "0.7.0";
+$twxa_version[0] = "0.8.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -53,12 +53,6 @@ function parse_options($twxa_version) {
     }
     switch ($commands[0]) {
         case 'getClientData':
-            /* if ($_REQUEST['recent']) {
-              $response = getClientData(1);
-              } else {
-              $response = getClientData(0);
-              }
-              echo $response; */
             echo getClientData();
             exit;
         case 'delTorrent':
@@ -78,18 +72,12 @@ function parse_options($twxa_version) {
             echo "$response";
             exit;
         case 'stopTorrent':
-            /* $response = stopTorrent($_REQUEST['stopTorrent']);
-              echo "$response"; */
             echo stopTorrent($_REQUEST['stopTorrent']);
             exit;
         case 'startTorrent':
-            /* $response = startTorrent($_REQUEST['startTorrent']);
-              echo "$response"; */
             echo startTorrent($_REQUEST['startTorrent']);
             exit;
         case 'moveTo':
-            /* $response = moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash'], $_REQUEST['batch']);
-              echo "$response"; */
             echo moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash']);
             exit;
         case 'updateFavorite':
@@ -105,8 +93,8 @@ function parse_options($twxa_version) {
             clear_cache_by_cache_type();
             break;
         case 'setGlobals':
-            update_global_config();
-            write_config_file();
+            updateGlobalConfig();
+            writejSONConfigFile();
             break;
         case 'addFavorite':
             $feedLink = $_GET['rss'];
@@ -115,14 +103,6 @@ function parse_options($twxa_version) {
                     $idx = $key;
                 }
             }
-            /*if ($config_values['Feeds'][$idx]['seedRatio']) {
-                $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];
-            } else {
-                $seedRatio = $config_values['Settings']['Default Seed Ratio'];
-            }
-            if (!($seedRatio)) {
-                $seedRatio = -1;
-            }*/            
             if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
                 $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
                 switch ($config_values['Settings']['Match Style']) {
@@ -143,7 +123,6 @@ function parse_options($twxa_version) {
                 $_GET['button'] = 'Add';
                 $_GET['downloaddir'] = 'Default';
                 $_GET['alsosavedir'] = 'Default';
-                //$_GET['seedratio'] = $seedRatio;
                 $_GET['seedratio'] = "";
             } else {
                 $_GET['name'] = $_GET['title'];
@@ -153,12 +132,9 @@ function parse_options($twxa_version) {
                 $_GET['button'] = 'Add';
                 $_GET['downloaddir'] = 'Default';
                 $_GET['alsosavedir'] = 'Default';
-                //$_GET['seedratio'] = $seedRatio;
                 $_GET['seedratio'] = "";
             }
-            if ($config_values['Settings']['Default Feed All'] &&
-                    //preg_match('/^(\d+)x(\d+)p?$|^(\d{8})$/i', $tmp['episode'])) {
-                    $tmp['numberSequence'] > 0) { // set default feed to all only if serialized
+            if ($config_values['Settings']['Default Feed All'] && $tmp['numberSequence'] > 0) { // set default feed to all only if serialized
                 $_GET['feed'] = 'All';
             }
             $response = update_favorite();
@@ -193,7 +169,8 @@ function parse_options($twxa_version) {
             }
             $r = client_add_torrent(str_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
             if ($r == "Success") {
-                $torHash = get_torHash(add_cache($_GET['title']));
+                //$torHash = get_torHash(add_cache($_GET['title']));
+                $torHash = get_torHash(add_cache(filter_input(INPUT_GET, 'title')));
             }
             if (isset($torHash)) {
                 echo $torHash;
@@ -223,7 +200,8 @@ function parse_options($twxa_version) {
             echo checkVersion($twxa_version);
             exit;
         case 'get_dialog_data':
-            switch ($_GET['get_dialog_data']) {
+            //switch ($_GET['get_dialog_data']) {
+            switch (filter_input(INPUT_GET, 'get_dialog_data')) {
                 case '#favorites':
                     display_favorites();
                     exit;
@@ -252,7 +230,8 @@ function parse_options($twxa_version) {
                     exit;
             }
         default:
-            $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . $_SERVER['PHP_SELF'] . ":  " . $_SERVER['REQUEST_URI'] . "');</script>";
+            //TODO check filter_input() is not false before using it
+            $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . filter_input(INPUT_SERVER, 'PHP_SELF') . ":  " . filter_input(INPUT_SERVER, 'REQUEST_URI') . "');</script>";
     }
 
     if (isset($output)) {
@@ -314,7 +293,7 @@ function display_global_config() {
     }
 
     // Favorites tab
-    $matchregexp = $matchglob = $matchsimple = '';
+    $matchregexp = $matchglob = $matchsimple = $resoallqualities = $resoresolutionsonly = '';
     $favdefaultall = $require_epi_info = $onlynewer = $fetchversions = $ignorebatches = '';
     switch ($config_values['Settings']['Match Style']) {
         case 'glob': $matchglob = "selected='selected'";
@@ -338,6 +317,12 @@ function display_global_config() {
     }
     if ($config_values['Settings']['Ignore Batches'] == 1) {
         $ignorebatches = 'checked=1';
+    }
+    switch ($config_values['Settings']['Resolutions Only']) {
+        case 'yes': $resoresolutionsonly = "selected='selected'";
+            break;
+        case 'all':
+        default: $resoallqualities = "selected='selected'";
     }
 
     // Trigger tab
@@ -537,7 +522,6 @@ function check_files() {
 }
 
 function checkVersion($twxa_version) {
-    //global $twxa_version;
     if (!isset($_COOKIE['VERSION-CHECK'])) {
         $get = curl_init();
         $curlOptions[CURLOPT_URL] = 'http://silverlakecorp.com/torrentwatch-xa/VERSION.txt';
@@ -576,10 +560,12 @@ function get_tr_location() {
     global $config_values;
     $host = $config_values['Settings']['Transmission Host'];
     if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
-        $host = preg_replace('/:.*/', "", $_SERVER['HTTP_HOST']);
+        //$host = preg_replace('/:.*/', "", $_SERVER['HTTP_HOST']);
+        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'HTTP_HOST'));
     }
     if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
-        $host = preg_replace('/:.*/', "", $_SERVER['SERVER_NAME']);
+        //$host = preg_replace('/:.*/', "", $_SERVER['SERVER_NAME']);
+        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'SERVER_NAME'));
     }
     $host = $host . ':' . $config_values['Settings']['Transmission Port'] . "/transmission/web/";
     return $host;
@@ -596,13 +582,13 @@ function get_client() {
 
 $main_timer = getElapsedMicrotime(0);
 setup_default_config();
-read_config_file();
+readjSONConfigFile();
 if (!isset($config_values['Settings']['Sanitize Hidelist']) || $config_values['Settings']['Sanitize Hidelist'] != 1) {
     // cleans titles of items in hidelist of most symbols
     update_hidelist();
     $config_values['Settings']['Sanitize Hidelist'] = 1;
     twxaDebug("Updated Hide List\n", 2);
-    write_config_file();
+    writejSONConfigFile();
 }
 //authenticateFeeds();
 
@@ -626,7 +612,7 @@ process_all_feeds($config_values['Feeds']);
 get_client();
 close_html();
 
-$footer = "Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16.png\" alt=\"torrentwatch-xa logo\" /></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.";
+$footer = "Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.";
 echo "<div id=\"footer\">$footer</div>";
 
 if ($config_values['Settings']['Hide Donate Button'] != 1) {

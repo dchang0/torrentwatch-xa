@@ -410,7 +410,7 @@ $(document).ready(function () { // first binding to document ready
             // get torrent list from transmission-daemon via PHP
             $.get('torrentwatch-xa.php', {
                 'getClientData': 1
-                //'recent': 0
+                        //'recent': 0
             }, function (json) {
                 window.updatingClientData = false; // set to false now to indicate getClientData is done getting data
 
@@ -673,7 +673,7 @@ $(document).ready(function () { // first binding to document ready
                         $("#transmission_list").prepend(getClientItem(item, clientData, liClass, percentage, convertedEta)); // gets Transmission item html
                         /* add class="clientId_" to all items in filters including Transmission
                          * item in Transmission filter will already have the class from getClientItem above
-                         * must use "li.item_" because "client_Id_" doesn't exist yet
+                         * must use "li.item_" because "clientId_" doesn't exist yet
                          * we're counting on the PHP side to put the hash into the item for the next line to work */
                         $("li.item_" + item.hashString).addClass("clientId_" + item.id);
                         //TODO optional: add update of progress bar, infoDiv, torInfo, and torEta from prior block here, just without identifier
@@ -1343,9 +1343,9 @@ $(document).ready(function () { // first binding to document ready
                 function (torHash) {
                     //TODO clean up and validate this entire function
                     /*if (link.match(/^magnet:/) && window.client === "folder") {
-                        alert('Can not save magnet links to a folder'); //TODO use error function
-                        return;
-                    }*/
+                     alert('Can not save magnet links to a folder'); //TODO use error function
+                     return;
+                     }*/
                     if (torHash.match(/Error:\s\w+/) && window.client !== "folder") {
                         alert('Something went wrong while adding this torrent. ' + torHash); //TODO use error function
                         return;
@@ -1518,8 +1518,8 @@ $(document).ready(function () { // first binding to document ready
     };
 
     $.toggleFeed = function (feed, speed) {
-        if (speed == 1) {
-            if ($.cookie('feed_' + feed) == 1) {
+        if (speed === 1 || speed === '1') {
+            if ($.cookie('feed_' + feed) === '1') { // was ==
                 $("#feed_" + feed + " ul").removeClass("hiddenFeed").show();
                 $("#feed_" + feed + " .header").removeClass("header_hidden");
                 $.cookie('feed_' + feed, null, {expires: 666});
@@ -1529,7 +1529,7 @@ $(document).ready(function () { // first binding to document ready
                 $.cookie('feed_' + feed, 1, {expires: 666});
             }
         } else {
-            if ($.cookie('feed_' + feed) == 1) {
+            if ($.cookie('feed_' + feed) === '1') { // was ==
                 $("#feed_" + feed + " ul").removeClass("hiddenFeed").slideDown();
                 $("#feed_" + feed + " .header").removeClass("header_hidden");
                 $.cookie('feed_' + feed, null, {expires: 666});
@@ -1544,7 +1544,7 @@ $(document).ready(function () { // first binding to document ready
     $.checkHiddenFeeds = function (speed) {
         $.each($('#torrentlist_container .feed'), function () {
             if ($.cookie(this.id)) {
-                if (speed == 1) {
+                if (speed === 1) {
                     $("#feed_" + this.id.match(/feed_(\d)/)[1] + " ul").hide().addClass("hiddenFeed");
                 } else {
                     $("#feed_" + this.id.match(/feed_(\d)/)[1] + " ul").slideUp().addClass("hiddenFeed");
@@ -1641,7 +1641,7 @@ $(document).ready(function () { // first binding to document ready
 
             if (action === 'addFavorite') {
                 var favInterval = setInterval(function () {
-                    if (window.favving != 1) {
+                    if (window.favving !== 1) {
                         $.addFavorite(feedLink, title);
                         clearInterval(favInterval);
                     }
@@ -1654,7 +1654,7 @@ $(document).ready(function () { // first binding to document ready
                         break;
                     case 'hideItem':
                         var hideInterval = setInterval(function () {
-                            if (window.hiding != 1) {
+                            if (window.hiding !== 1) {
                                 $.hideItem(title, id);
                                 clearInterval(hideInterval);
                             }

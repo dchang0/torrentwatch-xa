@@ -7,6 +7,8 @@ For the most part, torrentwatch-xa is very intuitive and self-explanatory. These
 
 If set to a positive number, each Favorite's seed ratio setting overrides its parent Feed's seed ratio setting, which overrides the global Default Seed Ratio setting. To allow inheritance to occur, leave the setting blank. Any negative number gets overridden by -1. If the global Default Seed Ratio is blank, it is overridden by -1.
 
+Transmission itself has a seed ratio limit that will override any limit set within torrentwatch-xa.
+
 ### Configure > Feeds
 
 torrentwatch-xa provides you with several default feeds when starting fresh with no config file. If you've added your own feeds, you should probably disable or remove any of these default feeds that you don't use to improve twxacli.php's performance and reduce the load placed on the feed host(s), saving their operators bandwidth. Please be sure to visit your favorite feeds' websites often so that they can earn advertising revenue from your support and help keep the anime fansubbing community alive--thanks!

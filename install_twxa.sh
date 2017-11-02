@@ -57,12 +57,15 @@ then
     then
         echo "Backup of config file to ~/torrentwatch-xa.config.bak failed; exiting."
         exit
+    else
+        echo "Backed up config file to ~/torrentwatch-xa.config.bak"
     fi
 fi
 
 # DOES NOT BACK UP THE DOWNLOAD CACHE!
 
 # destroy the old installation
+echo "Destroying the old installation..."
 if [ -f /etc/cron.d/torrentwatch-xa-cron ]
 then
     sudo rm /etc/cron.d/torrentwatch-xa-cron
@@ -77,6 +80,7 @@ then
 fi
 
 # copy in the new installation
+echo "Copying in the new installation..."
 sudo cp -R var/lib/torrentwatch-xa /var/lib
 # try to chown the cache directories using Debian/Ubuntu default Apache user and group www-data
 sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache
@@ -90,6 +94,7 @@ sudo cp etc/cron.d/torrentwatch-xa-cron /etc/cron.d
 sudo chown root:root /etc/cron.d/torrentwatch-xa-cron
 
 # copy in the old config file
+echo "Copying the old config file back into the new installation..."
 if [[ $KEEPCONFIG == 1 ]]
 then
     sudo cp ~/torrentwatch-xa.config.bak /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config
@@ -109,3 +114,4 @@ then
 fi
 
 # DEFAULT CONFIG IS AUTOMATICALLY GENERATED ON FIRST RUN OF NEW INSTALL IF CONFIG FILE NOT FOUND
+echo "Done."

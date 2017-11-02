@@ -25,37 +25,21 @@ Common setups:
 Status
 ===============
 
-### Notice 11/1/2017
-
-#### Config File Format Will Change to JSON in 0.8.0
-
-The upcoming version of torrentwatch-xa, 0.8.0, features the config file formatted in PHP's built-in JSON format and abandon the old Windows INI format. While I will provide a converter that converts 0.7.0 config files to 0.8.0, it will probably be easier for you to simply time your upgrade to 0.8.0 to the start of a new season and start fresh with a default config file without carrying over any Favorites.
-
-#### Avoid PHP 7.0 for Now Until Upgrading to 0.8.0
-
-I've fixed the segfault with PHP 7.0 seen on the ODROID C1+ running Ubuntu 16.04.3 in torrentwatch-xa 0.7.0. The problem with $config_values getting mangled appears to be array_walk() callbacks and/or recursion in write_config_file() causing portions of $config_values['Global']['Feeds'] to end up in $config_values['Favorites']. I fixed this by sidestepping the array_walk() callbacks and recursion with the new JSON config file format to be released in 0.8.0.
-
-I have also found another, third, bug with PHP 7.0: the Favorites do not get their episodes updated properly on all platforms. This does not happen in PHP 5.6 with the exact same source code. The problem appears to also be a consequence of using array_walk (but no recursion as with the segfault bug). Apparently PHP 7.0 does not handle parameter passing by reference in array_walk the same way as PHP 5.6, so modifications to referenced variables don't get passed back up outside of the function called by array_walk.
-
-The easiest way for you to avoid these bugs is to run PHP 5.6 (in Ubuntu 14.04.x or Debian 8.x) until the upgrade to 0.8.0.
-
 ### Current Version
 
-I've posted 0.7.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 0.8.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-__If upgrading to torrentwatch-xa 0.7.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, you must run__
+torrentwatch-xa 0.8.0 now stores its config file in PHP's built-in JSON format.
 
-`php /var/lib/torrentwatch-xa/upgradeConfigTo0_7_0.php`
+__If upgrading to torrentwatch-xa 0.8.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, go to [INSTALL.md](INSTALL.md) and read the section **Upgrading to 0.8.0 While Keeping Your Old Config File** first.__
 
-__to upgrade your Favorites. This script will only be available in the 0.7.0 release; it is always possible to "upgrade" a Favorite by deleting it and re-creating it.__
+Switching the config file to JSON is a major change that simultaneously simplifies the config file read/write functions and also avoids the segfault caused by using array_walk() and passing parameters by reference in PHP 7.0 (probably PHP bug #71241 and #72622).
 
-I've completed all of the currently-outstanding season and episode detection patterns. What remains in the detection engine are bugfixes; just about every numbering style I've seen so far has been added to the engine.
+The Episode Filter in each Favorite now uses the new season and episode notation.
 
-PROPER/REPACK/RERIP keywords are treated as item version 99 so that it preempts all lower versions.
+Prior to 0.8.0, when using the contextual menu's Add to Favorites, it would add the detected video qualities to the Qualities filter, which in RegExp mode would then often add all the different resolutions that an item is available in. To solve this, there is now a Configure > Favorites > New Add to Favorites Get: (Detected Resolutions Only) selector in 0.8.0. If set to Detected Resolutions Only, the video qualities won't be inserted into the Qualities filter, which usually means only the selected resolution is matched. 
 
-0.7.0 now saves magnet links to files for either the _Client: Save Torrent in Folder_ or _Also Save Torrent Files_ features.
-
-Individual Favorites can now override the global default _Download Dir_ and the _Also Save Torrent Files Dir_ settings. This is the reason for the upgrade script mentioned above.
+For instance, HorribleSubs releases 1080p, 720p, and 480p versions of each item, all in MKV quality. By selecting Detected Resolutions Only, MKV is no longer added to the Qualities filter, so if you chose only 480p to Add to Favorites, only the 480p resolution is matched and not all three resolutions.
 
 Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 
@@ -68,7 +52,6 @@ I hope to:
 - continue cleaning up or improving old code (still about half of torrentwatch-xa.js and several functions in twxa_feed.php and twxa_torrent.php need improvement).
 - shorten the time to the first firing of getClientData after a browser refresh
 - start comprehensive testing of the _Client: Save torrent in folder_ feature, which may require readjustment of the list item states
-- rewrite the episode_filter() function to handle the new season and episode notation style
 - finish twxaDebug() and $verbosity
 
 
