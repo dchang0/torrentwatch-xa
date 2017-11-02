@@ -228,23 +228,23 @@ function read_config_file() {
     $comment = ";";
     $group = "NONE";
 
-    if (!file_exists($config_file)) {
+    /*if (!file_exists($config_file)) {
         twxaDebug("No config file found--creating default config at $config_file\n", 1);
-        //writeConfigFile();
-    }
+        writeConfigFile();
+    }*/
 
-    if (file_exists($config_cache)) {
+    /*if (file_exists($config_cache)) {
         $CacheAge = time() - filemtime($config_cache);
         $ConfigAge = time() - filemtime($config_file);
-    }
+    }*/
 
-    if (file_exists($config_cache) && $CacheAge <= 300 && $CacheAge <= $ConfigAge) {
+    /*if (file_exists($config_cache) && $CacheAge <= 300 && $CacheAge <= $ConfigAge) {
         $config_values = unserialize(file_get_contents($config_cache));
         if (!$config_values['Settings']) {
             unlink($config_cache);
             read_config_file();
         }
-    } else {
+    } else {*/
         if (!($fp = fopen($config_file, "r"))) {
             twxaDebug("Could not open $config_file\n", -1);
             exit(1);
@@ -280,9 +280,9 @@ function read_config_file() {
             flock($fp, LOCK_UN);
         }
         fclose($fp);
-        file_put_contents($config_cache, serialize($config_values));
-        chmod($config_cache, 0660);
-    }
+        //file_put_contents($config_cache, serialize($config_values));
+        //chmod($config_cache, 0660);
+    //}
 
     // Create the base arrays if not already
 
@@ -339,13 +339,13 @@ function read_config_file() {
         ];
         //writeConfigFile();
     }
-    if (isset($config_values['Settings']['Time Zone'])) {
+    /*if (isset($config_values['Settings']['Time Zone'])) {
         $return = date_default_timezone_set($config_values['Settings']['Time Zone']);
         if ($return === false) {
             twxaDebug("Unable to set timezone to: " . $config_values['Settings']['Time Zone'] . "; using UTC instead\n", -1);
             date_default_timezone_set("UTC");
         }
-    }
+    }*/
     return true;
 }
 
