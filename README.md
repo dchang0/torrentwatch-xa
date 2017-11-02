@@ -31,7 +31,7 @@ I've posted 0.8.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 torrentwatch-xa 0.8.0 now stores its config file in PHP's built-in JSON format.
 
-__If upgrading to torrentwatch-xa 0.8.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, go to [INSTALL.md](INSTALL.md) and read the section **Upgrading to 0.8.0 While Keeping Your Old Config File** first.__
+__If upgrading to torrentwatch-xa 0.8.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, go to [INSTALL.md](INSTALL.md) and read the section _Upgrading to 0.8.0 While Keeping Your Old Config File_ first.__
 
 Switching the config file to JSON is a major change that simultaneously simplifies the config file read/write functions and also avoids the segfault caused by using array_walk() and passing parameters by reference in PHP 7.0 (probably PHP bug #71241 and #72622).
 
