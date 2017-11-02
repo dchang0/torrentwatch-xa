@@ -141,7 +141,7 @@ If you have a huge collection of Favorites that you wish to carry over, then it 
 
 /var/lib/torrentwatch-xa/lib/upgrade0_7_0ConfigTo0_8_0.php
 
-This converter will back up your current 0.7.0 config file and then replace it with an 0.8.0 equivalent, BUT you must be careful to run this converter quickly, as the window of opportunity to use it is small.
+This converter will back up your current 0.7.0 config file and then replace it with an 0.8.0 equivalent, BUT you must be careful to run this converter quickly, as the window of opportunity to use it is small. (Either that, or disable the cron job for the duration of the conversion.)
 
 The steps to follow are:
 
