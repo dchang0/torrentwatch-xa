@@ -668,8 +668,14 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                                 break;
                             }
                         case true :
-                            // isolated or buttressed EEE
+                            // isolated EEE
                             $result = matchTitle1_1_30_6($ti, $seps);
+                            if (is_string($result['matFnd'])) {
+                                break;
+                            }
+                        case true :
+                            // isolated or buttressed EEE
+                            $result = matchTitle1_1_30_7($ti, $seps);
                             if (is_string($result['matFnd'])) {
                                 break;
                             }

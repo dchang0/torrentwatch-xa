@@ -571,6 +571,7 @@ Code changes
 - added missing button classes as empty styles in index.html to address warnings
 - added filter_input() in some reads (not writes) of $_GET or $_SERVER
 - changed comparison operators == to === and != to !== in multiple places in torrentwatch-xa.js
+- fixed "3-gatsu no Lion 25" is treated as 1x3 even though the episode number 25 occurs later in the title
 
 Next Version
 
@@ -578,7 +579,6 @@ Functional changes
 
 IN PROGRESS
 
-- "3-gatsu no Lion" is treated as 1x3 even though the episode number occurs later in the title 
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
 - continue converting button icons to HiDPI
 - sometimes adding/updating a Favorite does not close the dialog and refresh the browser
