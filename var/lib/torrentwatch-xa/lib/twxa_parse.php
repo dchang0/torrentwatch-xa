@@ -350,6 +350,9 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
         "&#40;C88&#41;",
         "(C91)",
         "&#40;C91&#41;",
+        "(C92)",
+        "&#40;C92&#41;",
+        //TODO maybe switch to (C\d\d) regex
         "Al3asq",
         "F4A-MDS",
         "blad761",
