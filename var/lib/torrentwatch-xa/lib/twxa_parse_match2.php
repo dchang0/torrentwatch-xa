@@ -1063,7 +1063,30 @@ function matchTitle2_43($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{1,2})[$seps]?[\-\(\)#\x{3010}\x{3011}][$seps]?(\d{1,4})[$seps]?[\-\(\)\x{3010}\x{3011}].*/u";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[2] > 0) {
+        if (
+                (
+                $mat[2] == '1080' ||
+                $mat[2] == '720' ||
+                $mat[2] == '480'
+                ) &&
+                (
+                $mat[1] + 0 > 1 ||
+                substr($mat[1], 0, 1) == '0' // leading digit of first ## is 0
+                )
+        ) {
+            // probably EE with Resolution
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => 1,
+                'seasEd' => 1,
+                'episSt' => $mat[1],
+                'episEd' => $mat[1],
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "2_43-1"
+            ];
+        } else if ($mat[2] + 0 > 0) {
             // S (EEE)
             return [
                 'medTyp' => 1,
@@ -1074,7 +1097,7 @@ function matchTitle2_43($ti, $seps) {
                 'episEd' => $mat[2],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "2_43-1"
+                'matFnd' => "2_43-2"
             ];
         } else {
             // treat as PV 0
@@ -1087,7 +1110,7 @@ function matchTitle2_43($ti, $seps) {
                 'episEd' => 0,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "2_43-2"
+                'matFnd' => "2_43-3"
             ];
         }
     }
