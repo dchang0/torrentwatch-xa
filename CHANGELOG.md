@@ -558,6 +558,8 @@ Functional changes
 - rewrote episode_filter() to handle new season and episode notation style
 - switched config file from Windows INI format to PHP's JSON format by rewriting read_config_file() as readjSONConfigFile() and writeConfigFile() as writejSONConfigFile(); also fixed bug with other parts of $config_values['Global']['Feeds'][] ending up in the $config_values['Settings']['Favorites'] section of the config file by avoiding use of array_walk() to generate Windows INI format config file
 - removed pre-0.7.0 to 0.7.0 config file converter
+- fixed "3-gatsu no Lion 25" is treated as 1x3 even though the episode number 25 occurs later in the title
+- decided to modify match function to ignore 1080, 720, 480 resolutions without i or p on the end so that 05 720 is not detected as 5x720 but as 1x5
 
 Code changes
 
@@ -571,7 +573,7 @@ Code changes
 - added missing button classes as empty styles in index.html to address warnings
 - added filter_input() in some reads (not writes) of $_GET or $_SERVER
 - changed comparison operators == to === and != to !== in multiple places in torrentwatch-xa.js
-- fixed "3-gatsu no Lion 25" is treated as 1x3 even though the episode number 25 occurs later in the title
+
 
 Next Version
 

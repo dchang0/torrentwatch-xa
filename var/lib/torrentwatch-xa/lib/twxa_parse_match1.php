@@ -575,7 +575,7 @@ function matchTitle1_1_30_5($ti, $seps) {
 }
 
 function matchTitle1_1_30_6($ti, $seps) {
-    // isolated EEE
+    // isolated EEE (must be just before isolated or buttressed EEE)
     $mat = [];
     $re = "/([$seps])(\d+)([$seps]|$).*/";
     if (preg_match($re, $ti, $mat)) {

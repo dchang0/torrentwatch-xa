@@ -1099,26 +1099,31 @@ function matchTitle2_44($ti, $seps) {
     $re = "/\b(\d{1,4})[$seps](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         if (
-                (strlen($mat[1]) < strlen($mat[2])) || // SS EEE or S EE
-                ($mat[1] >= $mat[2]) // EE EE usually has lower episodes first
+                (
+                $mat[2] == '1080' ||
+                $mat[2] == '720' ||
+                $mat[2] == '480'
+                ) &&
+                (
+                $mat[1] + 0 > 1 ||
+                substr($mat[1], 0, 1) == '0' // leading digit of first ## is 0
+                )
         ) {
-            // isolated SS EE
+            // probably EE with Resolution
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
-                'seasSt' => $mat[1],
-                'seasEd' => $mat[1],
-                'episSt' => $mat[2],
-                'episEd' => $mat[2],
+                'seasSt' => 1,
+                'seasEd' => 1,
+                'episSt' => $mat[1],
+                'episEd' => $mat[1],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "2_44-1"
             ];
         } else if (
-                $mat[1] < $mat[2] &&
-                $mat[1] < 6 && // most cours never pass 5
-                $mat[1] + 1 != $mat[2] && // seq. numbers likely EE EE
-                $mat[2] - $mat[1] < 14 // seasons usually have less than 14 episodes
+                (strlen($mat[1]) < strlen($mat[2])) || // SS EEE or S EE
+                ($mat[1] + 0 >= $mat[2] + 0) // EE EE usually has lower episodes first
         ) {
             // isolated SS EE
             return [
@@ -1132,6 +1137,24 @@ function matchTitle2_44($ti, $seps) {
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "2_44-2"
             ];
+        } else if (
+                $mat[1] + 0 < $mat[2] + 0 &&
+                $mat[1] + 0 < 6 && // most cours never pass 5
+                $mat[1] + 1 != $mat[2] + 0 && // seq. numbers likely EE EE
+                $mat[2] + 0 < $mat[1] + 14 // seasons usually have less than 14 episodes
+        ) {
+            // isolated SS EE
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => $mat[1],
+                'seasEd' => $mat[1],
+                'episSt' => $mat[2],
+                'episEd' => $mat[2],
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "2_44-3"
+            ];
         } else {
             // isolated EE EE
             return [
@@ -1143,7 +1166,7 @@ function matchTitle2_44($ti, $seps) {
                 'episEd' => $mat[2],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "2_44-3"
+                'matFnd' => "2_44-4"
             ];
         }
     }
