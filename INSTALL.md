@@ -36,13 +36,15 @@ Installation
 
 NOTE: For those of you upgrading to 0.8.0 from a version of torrentwatch-xa prior to 0.7.0, if you wish to carry over your config file you must skip to the section **Upgrading to 0.8.0 While Keeping Your Old Config File** below.
 
-### Ubuntu 16.04, Ubuntu 14.04, or Debian 8.x only:
+There is a rudimentary installation script included with torrentwatch-xa. You may use the script or follow the directions in this section. Skip to the section **Installation Script** below if you prefer using the script.
+
+### Ubuntu 16.04, Ubuntu 14.04, Debian 8.x or Debian 9.x only:
 
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon git`
-- For Ubuntu 16.04:
-  - Start with an Ubuntu 16.04 installation.
+- For Ubuntu 16.04 or Debian 9.x:
+  - Start with a Debian 9.x or Ubuntu 16.04 installation.
   - If your OS is not up to date, update it now.
     - `sudo apt-get update; sudo apt-get upgrade`
   - `sudo apt-get install apache2 php php-mbstring php-curl libapache2-mod-php transmission-daemon git`
@@ -123,7 +125,7 @@ __RedHat-derived distros are not officially supported at this time__ though the 
 Installation Script
 ===============
 
-There is a simple install/upgrade script called `install_twxa.sh` meant for Debian 8.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It does work with the as-yet unsupported Fedora Server 25.
+There is a rudimentary install/upgrade script called `install_twxa.sh` meant for Debian 8.x/9.x (but not Debian 7.x) and Ubuntu 14.04/16.04. It does work with the as-yet unsupported Fedora Server 25.
 
 The install/upgrade script will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
 

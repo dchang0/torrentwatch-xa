@@ -579,6 +579,8 @@ Next Version
 
 Functional changes
 
+- add_feed() now validates the feed URL before attempting to add it
+
 IN PROGRESS
 
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
@@ -591,10 +593,18 @@ IN PROGRESS
 
 Code changes
 
+- improved del_feed() and renamed it to deleteFeed()
+- improved update_feed() and renamed it to updateFeed()
+- improved add_feed() and renamed it to addFeed()
+- improved update_feed_data() and renamed it to updateFeedData()
+- improved del_favorite() and renamed it to deleteFavorite()
+- removed global $config_values from get_smtp_passwd() and renamed it to decryptsMTPPassword()
+
+
 IN PROGRESS
 
 - remove read_config_file() and 0.7.0 to 0.8.0 converter
-- why write the config file so many times in a row?
+- reducing unnecessary writes to config file
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() functions outside of writeConfigFile() so that they are only run when needed
 - improve writeConfigFile() to avoid using global $config_value

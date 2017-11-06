@@ -104,7 +104,7 @@ Sadly, because the engine was forced to make the choice, fans of "Holly Stage fo
 
 ### 720 and 1080 Without i or p
 
-Titles such as Gamers! - 05 720.mkv should be recognized as Season 1, Episode 5 with resolution of 720p, but because there are many highly-popular series that have episode numbers going past 720 (or even 1080 in rare cases), torrentwatch-xa treats 720 as a number rather than a resolution even though the resolution abbreviation is far, far more common.
+Titles such as Gamers! - 05 720.mkv are now recognized as Season 1, Episode 5 with resolution of 720p. For a long while, I allowed torrentwatch-xa to continue mismatching it as Season 5, Episode 720 on the off chance that the series is popular enough to have episodes that go that high, but such long-running series are just too outnumbered by the crews who release titles without i or p after 720 and 1080.
 
 ### Item Says It's an Old Favorite but is Actually New and Should Be Downloaded
 
