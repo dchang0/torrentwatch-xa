@@ -45,16 +45,6 @@ Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (J
 
 New in alpha: Fedora Server 25 is being tested but will not be officially supported for quite a while.
 
-### Next Version
-
-I hope to:
-
-- continue cleaning up or improving old code (still about half of torrentwatch-xa.js and several functions in twxa_feed.php and twxa_torrent.php need improvement).
-- shorten the time to the first firing of getClientData after a browser refresh
-- start comprehensive testing of the _Client: Save torrent in folder_ feature, which may require readjustment of the list item states
-- finish twxaDebug() and $verbosity
-
-
 Documentation
 ===============
 
