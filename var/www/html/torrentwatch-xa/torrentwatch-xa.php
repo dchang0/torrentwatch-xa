@@ -19,7 +19,7 @@ foreach ($twxaIncludePaths as $twxaIncludePath) {
 set_include_path($includePath);
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "0.8.0";
+$twxa_version[0] = "0.9.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -87,14 +87,13 @@ function parse_options($twxa_version) {
             }
             break;
         case 'updateFeed':
-            update_feed();
+            updateFeed();
             break;
         case 'clearCache':
             clear_cache_by_cache_type();
             break;
         case 'setGlobals':
             updateGlobalConfig();
-            writejSONConfigFile();
             break;
         case 'addFavorite':
             $feedLink = $_GET['rss'];
@@ -143,16 +142,19 @@ function parse_options($twxa_version) {
             }
             exit;
         case 'hide':
-            $response = add_hidden(ucwords($_GET['hide']));
-            if ($response) {
-                echo "ERROR:$response";
-            } else {
-                $guess = detectMatch(html_entity_decode($_GET['hide']));
-                echo $guess['favTitle']; // use favTitle, not title
-            }
+            /* $response = add_hidden(ucwords($_GET['hide']));
+              if ($response) {
+              echo "ERROR:$response";
+              } else {
+              $guess = detectMatch(html_entity_decode($_GET['hide']));
+              echo $guess['favTitle']; // use favTitle, not title
+              } */
+            addHidden($_GET['hide']);
             exit;
         case 'delHidden':
-            del_hidden($_GET['unhide']);
+            if (!empty($_GET['unhide'])) {
+                delHidden($_GET['unhide']); // filter_input() will fail here because $_GET['unhide'] is an array
+            }
             break;
         case 'dlTorrent':
             // Loaded via ajax
@@ -195,6 +197,10 @@ function parse_options($twxa_version) {
         case 'get_autodel':
             global $config_values;
             echo $config_values['Settings']['Auto-Del Seeded Torrents'];
+            exit;
+        case 'getDisableHideList':
+            global $config_values;
+            echo $config_values['Settings']['Disable Hide List'];
             exit;
         case 'checkVersion':
             echo checkVersion($twxa_version);
@@ -277,11 +283,11 @@ function display_global_config() {
     }
 
     // Torrent tab
-    $deepfull = $deeptitle = $deepTitleSeason = $deepoff = '';
+    /* $deepfull = */$deeptitle = $deepTitleSeason = $deepoff = '';
     $autodel = '';
     switch ($config_values['Settings']['Deep Directories']) {
-        case 'Full': $deepfull = 'selected="selected"';
-            break;
+        /* case 'Full': $deepfull = 'selected="selected"';
+          break; */
         case 'Title': $deeptitle = 'selected="selected"';
             break;
         case 'Title_Season': $deepTitleSeason = 'selected="selected"';
@@ -583,14 +589,6 @@ function get_client() {
 $main_timer = getElapsedMicrotime(0);
 setup_default_config();
 readjSONConfigFile();
-if (!isset($config_values['Settings']['Sanitize Hidelist']) || $config_values['Settings']['Sanitize Hidelist'] != 1) {
-    // cleans titles of items in hidelist of most symbols
-    update_hidelist();
-    $config_values['Settings']['Sanitize Hidelist'] = 1;
-    twxaDebug("Updated Hide List\n", 2);
-    writejSONConfigFile();
-}
-//authenticateFeeds();
 
 $config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";

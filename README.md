@@ -27,19 +27,11 @@ Status
 
 ### Current Version
 
-I've posted 0.8.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 0.9.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-torrentwatch-xa 0.8.0 now stores its config file in PHP's built-in JSON format.
+As of torrentwatch-xa 0.8.0, stores its config file in PHP's built-in JSON format. I recommend starting with a fresh default config file with 0.9.0. If you _must_ upgrade a config file from a version prior to 0.8.0, you should upgrade first to 0.8.0 following the special instructions in [INSTALL.md](INSTALL.md), then upgrade to 0.9.0.
 
-__If upgrading to torrentwatch-xa 0.8.0 from any prior version and keeping the Favorites in torrentwatch-xa.config, go to [INSTALL.md](INSTALL.md) and read the section _Upgrading to 0.8.0 While Keeping Your Old Config File_ first.__
-
-Switching the config file to JSON is a major change that simultaneously simplifies the config file read/write functions and also avoids the segfault caused by using array_walk() and passing parameters by reference in PHP 7.0 (probably PHP bug #71241 and #72622).
-
-The Episode Filter in each Favorite now uses the new season and episode notation.
-
-Prior to 0.8.0, when using the contextual menu's Add to Favorites, it would add the detected video qualities to the Qualities filter, which in RegExp mode would then often add all the different resolutions that an item is available in. To solve this, there is now a Configure > Favorites > New Add to Favorites Get: (Detected Resolutions Only) selector in 0.8.0. If set to Detected Resolutions Only, the video qualities won't be inserted into the Qualities filter, which usually means only the selected resolution is matched. 
-
-For instance, HorribleSubs releases 1080p, 720p, and 480p versions of each item, all in MKV quality. By selecting Detected Resolutions Only, MKV is no longer added to the Qualities filter, so if you chose only 480p to Add to Favorites, only the 480p resolution is matched and not all three resolutions.
+0.9.0 has an improved Hide List and simplified Deep Directories feature. All of the Configuration options have been validated and tested. 0.9.0 writes to the config file less often and writes to the log file earlier in its run. 0.9.0 starts the transition from JQuery 1.12.4 to 3.x.
 
 Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 

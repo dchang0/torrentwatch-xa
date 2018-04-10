@@ -1,11 +1,10 @@
 $(document).ready(function () { // first binding to document ready
-    // binding for Menu Bar and other buttons that show/hide a dialog
+// binding for Menu Bar and other buttons that show/hide a dialog
     $(document).on("click", "a.toggleDialog",
             function () {
                 $(this).toggleDialog();
             }
     );
-
     displayFilter = function (filter, empty) {
         // define hideMe function by browser/userAgent/device
         var timeOut = 400;
@@ -133,9 +132,9 @@ $(document).ready(function () { // first binding to document ready
         $('#filter_' + filter).addClass('selected').siblings().removeClass("selected"); // this filter is selected, the others are deselected
         $('#filter_search_input').val(''); // clear the search input field
     };
-
     // binding for Filter Bar buttons
-    $("#filterbar_container li:not(#filter_bytext)").click(function () {
+    //$("#filterbar_container li:not(#filter_bytext)").click(function () {
+    $("#filterbar_container li:not(#filter_bytext)").on("click", function () {
         if ($(this).is('.selected')) {
             return;
         }
@@ -164,7 +163,6 @@ $(document).ready(function () { // first binding to document ready
             }
         });
     });
-
     processSearchInput = function () {
         // process search input including clearing
         var filterText = $(this).val().toLowerCase();
@@ -175,10 +173,9 @@ $(document).ready(function () { // first binding to document ready
         }).markAlt();
     };
     // keyup binding for Filter Bar search input key events
-    $("#filter_search_input").keyup(processSearchInput);
+    $("#filter_search_input").on("keyup", processSearchInput);
     // on search binding for Filter Bar search input key and click events
     $("#filter_search_input").on("search", processSearchInput);
-
     updateMatchCounts = function () {
         // update filter and feed headers with total match counts
         var activeTorrents = $('#transmission_list li').length;
@@ -206,7 +203,6 @@ $(document).ready(function () { // first binding to document ready
         listSelector();
         updateClientButtons();
     };
-
     // toggle visible web UI elements for different torrent clients
     changeClient = function (client) {
         switch (client) {
@@ -226,10 +222,8 @@ $(document).ready(function () { // first binding to document ready
                 break;
         }
     };
-
     // perform the first load of the dynamic information
     $.get('torrentwatch-xa.php', '', $.loadDynamicData, 'html');
-
     // binding for Configure form and Favorites form ajax submit
     $(document).on("click", "a.submitForm",
             function (e) {
@@ -256,11 +250,9 @@ $(document).ready(function () { // first binding to document ready
                 $.get(this.href, '', $.loadDynamicData, 'html');
                 return false;
             });
-
     Math.formatBytes = function (bytes) {
         var size;
         var unit;
-
         // Terabytes (TB).
         if (bytes >= 1099511627776) {
             size = bytes / 1099511627776;
@@ -286,14 +278,11 @@ $(document).ready(function () { // first binding to document ready
         // single-digit numbers have greater precision
         var precision = 2;
         size = Math.roundWithPrecision(size, precision);
-
         return size + unit;
     };
-
     Math.roundWithPrecision = function (floatnum, precision) {
         return Math.round(floatnum * Math.pow(10, precision)) / Math.pow(10, precision);
     };
-
     convertEta = function (eta) {
         // convert numeric eta in seconds to human-friendly string
         if (eta >= 86400) {
@@ -325,7 +314,6 @@ $(document).ready(function () { // first binding to document ready
         }
         return etaString;
     };
-
     // toggle between Resume or Pause in context menu based on current state
     toggleTorResumePause = function (torHash) {
         var curObject = $('li.item_' + torHash + ' div.torResume');
@@ -342,7 +330,6 @@ $(document).ready(function () { // first binding to document ready
         }
         curObject = null;
     };
-
     // hides or shows Move button in button bar
     toggleTorMove = function (torHash) {
         var curObject = $('#clientButtons li.move_data, #clientButtons li#Move');
@@ -353,7 +340,6 @@ $(document).ready(function () { // first binding to document ready
         }
         curObject = null;
     };
-
     // assemble html for item in only the Transmission filter list
     getClientItem = function (item, clientData, liClass, percentage, eta) {
         var transmissionItem =
@@ -370,13 +356,11 @@ $(document).ready(function () { // first binding to document ready
                 '</td></tr></table></li>';
         return (transmissionItem);
     };
-
     // show error div
     showClientError = function (error) {
         $('#clientError p').html(error);
         $('#clientError').slideDown();
     };
-
     // register handler for ajax error; for Transmission connection errors
     window.clientErrorCount = 0;
     $(document).ajaxError(function (event, request, settings) {
@@ -392,11 +376,21 @@ $(document).ready(function () { // first binding to document ready
             }
         }
     });
-
     getClientData = function () {
         if (window.ajaxActive) {
             return; // quit if ajax request is active
         }
+        // get the state of Disable Hide List
+        window.hideProgressBar = true; // prevents recurring progress bar in Configure dialog
+        $.get('torrentwatch-xa.php', {getDisableHideList: 1}, function (response) {
+            // do not put this inside toggleClientButtons or updateClientButtons as it will slow down the browser
+            if (response) {
+                window.disableHideList = true;
+            } else {
+                window.disableHideList = false; // need this to avoid undefined
+            }
+        });
+        window.hideProgressBar = false;
         if (window.client === "Transmission") {
             window.updatingClientData = true;
             window.hideProgressBar = true; // setting this to true turns off progress bar via ajaxStart
@@ -406,7 +400,6 @@ $(document).ready(function () { // first binding to document ready
                     $('li#webui a span').addClass('altIcon'); // adds spinning busy icon
                 }
             }, 1500);
-
             // get torrent list from transmission-daemon via PHP
             $.get('torrentwatch-xa.php', {
                 'getClientData': 1
@@ -448,17 +441,14 @@ $(document).ready(function () { // first binding to document ready
                 window.clientErrorCount = 0;
                 $('li#filter_transmission a').removeClass('error');
                 $('div.feed .torInfo').removeClass('torInfoErr');
-
 //TODO end simplify JSON error handling
 
                 processTransmissionData(json);
-
                 $('li#webui a span').removeClass('altIcon'); // remove the spinning busy icon
             });
             window.hideProgressBar = false; // setting this to false turns on progress bar via ajaxStart
         } // end window.client === "Transmission"
     };
-
     processTransmissionData = function (json) {
         var upSpeed = 0;
         var downSpeed = 0;
@@ -467,7 +457,6 @@ $(document).ready(function () { // first binding to document ready
         $.each(json['arguments']['torrents'],
                 function (i, item) {
                     transmissionItemIds.push("clientId_" + item.id);
-
                     ///// compile torrent item for Transmission filter list
 
                     // remap Transmission pre-2.4 status codes to 2.4
@@ -479,7 +468,6 @@ $(document).ready(function () { // first binding to document ready
 
                     // progress bar
                     var percentage = Math.roundWithPrecision(100 * item.percentDone, 2);
-
                     /* infoDiv's torInfo
                      * item.recheckProgress: When tr_stat.activity is TR_STATUS_CHECK or TR_STATUS_CHECK_WAIT,
                      * this is the percentage of how much of the files has been
@@ -600,7 +588,6 @@ $(document).ready(function () { // first binding to document ready
                                 $(this).append('<div class="infoDiv"><span class="torInfo"></span><span class="torEta"></span></div>');
                             }
                         });
-
                         // set torInfo and torEta for item in all filters
                         torListElmt.find(".torInfo").text(clientData);
                         torListElmt.find("span.torEta").text(convertedEta);
@@ -697,7 +684,6 @@ $(document).ready(function () { // first binding to document ready
                         item.remove(); // essentially removes item from Transmission filter by id="clientId_" not class="clientId_"
                     }
                 });
-
         ///// process items not in Transmission across all filters other than Transmission
 
         // loop through in #torrentlist_container that have st_waitTorCheck
@@ -733,11 +719,9 @@ $(document).ready(function () { // first binding to document ready
                 $(this).removeClass("st_waitTorCheck");
             }
         });
-
         setTimeout(updateMatchCounts(), 100); // update match counts in UI
         $("#transmission_list>li").tsort("span.dateAdded", {order: "desc"}); // sort the items in the Transmission filter
         $("#transmission_list").find("li.torrent").markAlt();
-
         //TODO probably don't need window.getfail and window.gotAllData logic any more
         if (window.getfail) {
             window.getfail = false;
@@ -748,18 +732,20 @@ $(document).ready(function () { // first binding to document ready
     listSelector = function () {
         $('#torrentlist_container').find('li.torrent').not('.selActive').each(function () {
             $(this).addClass('selActive');
-            $('#' + this.id).mousedown(function () {
+            //$('#' + this.id).mousedown(function () {
+            $('#' + this.id).on("mousedown", function () {
                 toggleSelect(this);
             });
         });
-        $('li.torrent').find('a').mousedown(function () {
+        //$('li.torrent').find('a').mousedown(function () {
+        $('li.torrent').find('a').on("mousedown", function () {
             return false;
         });
-        $('li.torrent').find('div.contextItem').mousedown(function () {
+        //$('li.torrent').find('div.contextItem').mousedown(function () {
+        $('li.torrent').find('div.contextItem').on("mousedown", function () {
             return false;
         });
     };
-
     toggleSelect = function (item) {
         if ($(item).hasClass('selected')) {
             $(item).removeClass('selected');
@@ -774,11 +760,9 @@ $(document).ready(function () { // first binding to document ready
             $('#moveTo').val('');
         }
     };
-
     updateClientButtons = function (fast) {
         var obj;
         var tor = [];
-
         if ($('#transmission_data').is(":visible")) {
             $('#clientButtons .add_fav, #clientButtons .start, #clientButtons .hide_item').hide();
             $('#clientButtons .move_button').show();
@@ -790,7 +774,7 @@ $(document).ready(function () { // first binding to document ready
         if ($('#torrentlist_container .feed  li.torrent.selected').length) {
             tor['fav'] = 1;
         }
-        if ($('#torrentlist_container .feed  li.torrent.selected.st_notAMatch').length) {
+        if ($('#torrentlist_container .feed  li.torrent.selected.st_notAMatch').length && window.disableHideList !== true) {
             tor['hide'] = 1;
         }
         //TODO maybe block other interim states (do not show start button on st_waitTorCheck, etc.)
@@ -852,10 +836,8 @@ $(document).ready(function () { // first binding to document ready
         buttons = buttons.slice(0, buttons.length - 1);
         $('#clientButtons li.button:not(buttons)').addClass('disabled');
         $(buttons).removeClass('disabled');
-
         toggleClientButtons(fast);
     };
-
     toggleClientButtons = function (fast) {
         if (navigator.userAgent.toLowerCase().search('(iphone|ipod|ipad|android)') > -1) {
             fast = 1;
@@ -900,7 +882,6 @@ $(document).ready(function () { // first binding to document ready
             $('#clientButtons .move_data').hide();
         }
     };
-
     function adjustWebUIButton() {
         switch (window.client) {
             case "Transmission" :
@@ -922,14 +903,14 @@ $(document).ready(function () { // first binding to document ready
         }
     }
     function adjustUIElements() {
-        // NOTE: No need to overdo handling below 640px wide due to phone.css
-        // shrink/expand Downloading
+// NOTE: No need to overdo handling below 640px wide due to phone.css
+// shrink/expand Downloading
         if ($(window).width() < 650) {
             $("#filterbar_container li#filter_downloading.tab").hide();
         } else {
             $("#filterbar_container li#filter_downloading.tab").show();
         }
-        // shrink/expand Downloaded
+// shrink/expand Downloaded
         if ($(window).width() < 650) {
             $("#filterbar_container li#filter_downloaded.tab").hide();
         } else {
@@ -959,22 +940,25 @@ $(document).ready(function () { // first binding to document ready
             }
         }, 500);
     });
-
-    $(window).focus(function (e) {
-        // if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
+    //$(window).focus(function (e) {
+    $(window).on("focus", function (e) {
+// if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
         window.ctrlKey = 0;
     });
-    $(window).focusout(function (e) {
-        // if browser loses focus, reset Mac Cmd key toggle to partially block Cmd-Tab
+    //$(window).focusout(function (e) {
+    $(window).on("focusout", function (e) {
+// if browser loses focus, reset Mac Cmd key toggle to partially block Cmd-Tab
         window.ctrlKey = 0;
     });
-    $(document).keyup(function (e) {
+    $(document).on("keyup", function (e) {
         if (e.keyCode === 27) {
             if ($('.dialog').length) {
-                $('.dialog .close').click();
+                //$('.dialog .close').click();
+                $('.dialog .close').trigger("click");
                 $('div.contextMenu').hide();
             } else if ($('#clientButtons .move_data').is(":visible")) {
-                $('#clientButtons .close').click();
+                //$('#clientButtons .close').click();
+                $('#clientButtons .close').trigger("click");
             } else if ($('#torrentlist_container li.torrent.selected').length) {
                 $('#torrentlist_container li.torrent.selected').removeClass('selected');
                 updateClientButtons();
@@ -982,16 +966,19 @@ $(document).ready(function () { // first binding to document ready
         }
         if (e.keyCode === 13) {
             if ($('.dialog .confirm').length) {
-                $('.dialog .confirm').click();
+                //$('.dialog .confirm').click();
+                $('.dialog .confirm').trigger("click");
             } else if ($('#clientButtons .move_data').is(":visible")) {
-                $('#clientButtons #Move').click();
+                //$('#clientButtons #Move').click();
+                $('#clientButtons #Move').trigger("click");
             }
         }
         if (e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93 || e.keyCode === 224) { // Mac Cmd key
             window.ctrlKey = 0;
         }
     });
-    $(document).keydown(function (e) {
+    //$(document).keydown(function (e) {
+    $(document).on("keydown", function (e) {
         if (e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93 || e.keyCode === 224) { // Mac Cmd key
             window.ctrlKey = 1;
         }
@@ -1005,12 +992,11 @@ $(document).ready(function () { // first binding to document ready
             return false;
         }
     });
-
     // Ajax progress bar
     $(document).ajaxStart(function () {
         window.ajaxActive = 1;
         if (!(window.hideProgressBar)) {
-            $('#refresh a').html('<img src="images/ajax-loader-small.gif">');
+            $('#refresh a').html('<img src="images/ajax-loader-small.gif" alt="Working...">');
             if ($('div.dialog').is(":visible")) {
                 $('#progress').removeClass('progress_full').fadeIn();
             }
@@ -1018,13 +1004,13 @@ $(document).ready(function () { // first binding to document ready
                 window.visibleButtons = $('#clientButtonsHolder li.button').not('.hidden');
                 window.hideButtonHolder = setTimeout(function () {
                     $(window.visibleButtons).hide();
-                    $('#clientButtons').append('<div id="clientButtonsBusy"><img src="images/ajax-loader-small.gif">Working...</div>');
+                    $('#clientButtons').append('<div id="clientButtonsBusy"><img src="images/ajax-loader-small.gif" alt="Working...">Working...</div>');
                 }, 500);
             }
         }
     }).ajaxStop(function () {
         window.ajaxActive = 0;
-        $('#refresh a').html('<img src="images/refresh.png">');
+        $('#refresh a').html('<img src="images/refresh_32x32.png" alt="Refresh" width="16" height="16">');
         $('#progress').fadeOut();
         $('#clientButtonsBusy').remove();
         if (window.hideButtonHolder) {
@@ -1041,11 +1027,9 @@ $(document).ready(function () { // first binding to document ready
     // set timeout for all ajax queries to 20 seconds.
     $.ajaxSetup({timeout: '20000'});
 });
-
 (function ($) {
     var current_favorite,
             current_dialog;
-
     // Remove old dynamic content, replace it with passed html(ajax success function)
     $.loadDynamicData = function (html) {
         window.gotAllData = 0;
@@ -1102,7 +1086,6 @@ $(document).ready(function () { // first binding to document ready
                         }, false);
                     }
                 });
-
                 setTimeout(getClientData, 10);
                 var initGetData = setInterval(function () {
                     if (window.gotAllData) {
@@ -1120,10 +1103,8 @@ $(document).ready(function () { // first binding to document ready
                         setTimeout(getClientData, 10);
                     }
                 }, 500);
-
                 window.client = $('#clientId').html();
                 changeClient(window.client);
-
             }, 50);
             if ($('#torrentlist_container div.header.combined').length === 1) {
                 $('.torrentlist>li').tsort('#unixTime', {order: 'desc'});
@@ -1142,7 +1123,6 @@ $(document).ready(function () { // first binding to document ready
             }, 1000);
         }, 100);
     };
-
     $.submitForm = function (button) {
         var form;
         if ($(button).is('form')) {
@@ -1174,7 +1154,6 @@ $(document).ready(function () { // first binding to document ready
             $.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
         }
     };
-
     $.fn.toggleDialog = function () {
         this.each(function () {
             if (window.input_change && this.text !== 'Next') {
@@ -1206,12 +1185,14 @@ $(document).ready(function () { // first binding to document ready
                     }
                     $(current_dialog).fadeIn("normal");
                     setTimeout(function () {
-                        $("#dynamicdata .dialog_window input, #dynamicdata .dialog_window select").change(function () {
+                        //$("#dynamicdata .dialog_window input, #dynamicdata .dialog_window select").change(function () {
+                        $("#dynamicdata .dialog_window input, #dynamicdata .dialog_window select").on("change", function () {
                             window.input_change = 1;
                         });
                     }, 500);
                     window.dialog = 1;
-                    $(current_dialog + ' a.submitForm').click(function () {
+                    //$(current_dialog + ' a.submitForm').click(function () {
+                    $(current_dialog + ' a.submitForm').on("click", function () {
                         window.dialog = 0;
                     });
                 });
@@ -1231,21 +1212,22 @@ $(document).ready(function () { // first binding to document ready
         });
         return this;
     };
-
     $.fn.initFavorites = function () {
         var selector = this.selector;
         setTimeout(function () {
             $(selector + ":first a").toggleFavorite();
             $('#favorite_new a#Update').addClass('disabled').removeClass('submitForm');
-        },
-                300);
+        }, 300);
         this.not(":first").tsort('a');
-        return this.not(":first").end().click(function () {
+        //TODO failure to show New Favorite form when opening Favorites is probably due to a bug in this function or tsort
+        //return this.not(":first").end().click(function () {
+        return this.not(":first").end().on("click", function () {
             $(this).find("a").toggleFavorite();
         });
     };
     $.fn.initForm = function () {
-        this.submit(function (e) {
+        //this.submit(function (e) {
+        this.on("submit", function (e) {
             e.stopImmediatePropagation();
             $.submitForm(this);
             return false;
@@ -1263,7 +1245,7 @@ $(document).ready(function () { // first binding to document ready
             }
             var last = current_favorite;
             current_favorite = this.hash;
-            $("#favorites input").keyup(function () {
+            $("#favorites input").on("keyup", function () {
                 if ($(current_favorite + ' input:text[name=name]').val().length &&
                         $(current_favorite + ' input:text[name=filter]').val().length) {
                     $(current_favorite + ' a#Update').removeClass('disabled').addClass('submitForm');
@@ -1271,7 +1253,6 @@ $(document).ready(function () { // first binding to document ready
                     $(current_favorite + ' a#Update').addClass('disabled').removeClass('submitForm');
                 }
             });
-
             if (!last) {
                 $(current_favorite).show();
             } else {
@@ -1285,7 +1266,8 @@ $(document).ready(function () { // first binding to document ready
         return this;
     };
     $.fn.initConfigDialog = function () {
-        $('select#client').change();
+        //$('select#client').change();
+        $('select#client').trigger("change");
         return this;
     };
     $.fn.buildDataString = function (buttonElement) {
@@ -1318,7 +1300,8 @@ $(document).ready(function () { // first binding to document ready
                     }
                 }, 5000);
             } else {
-                response = $.parseJSON(response);
+                //response = $.parseJSON(response);
+                response = JSON.parse(response);
                 $.each($("ul#torrentlist li"), function (i, item) {
                     if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(response.title.toLowerCase()) &&
                             $('li#' + item.id + ' input.show_quality').val().toLowerCase().match(response.quality.toLowerCase()) &&
@@ -1331,7 +1314,6 @@ $(document).ready(function () { // first binding to document ready
             window.favving = 0;
         }, 'html');
     };
-
     $.dlTorrent = function (title, link, feed, id) {
         $.get("torrentwatch-xa.php", {
             dlTorrent: 1,
@@ -1377,16 +1359,12 @@ $(document).ready(function () { // first binding to document ready
                     $('li#id_' + id + ' div.torTrash').removeClass("hidden");
                     $('li#id_' + id + ' div.torDelete').show();
                     $('li#id_' + id + ' div.torDelete').removeClass("hidden");
-
                     $('li#id_' + id).removeClass('item_###torHash###').addClass('item_' + torHash);
-
                     var item = $('li#id_' + id);
                     item.html(item.html().replace(/###torHash###/g, torHash));
-
                     setTimeout(getClientData, 10);
                 });
     };
-
     $.delTorrent = function (torHash, trash, sure, checkCache) {
         if (trash && sure !== true && sure !== 'true' && !$.cookie('TorTrash')) {
             var dialog = '<div id="confirmTrash" class="dialog confirm" style="display: block; ">' +
@@ -1455,7 +1433,6 @@ $(document).ready(function () { // first binding to document ready
                     });
         }
     };
-
     $.stopStartTorrent = function (stopStart, torHash) {
         var param;
         if (stopStart === 'stop') {
@@ -1475,7 +1452,6 @@ $(document).ready(function () { // first binding to document ready
                     }
                 });
     };
-
     $.moveTorrent = function (torHash) {
         path = $('input#moveTo')[0].value;
         $.getJSON('torrentwatch-xa.php', {
@@ -1487,19 +1463,17 @@ $(document).ready(function () { // first binding to document ready
                     setTimeout(getClientData, 10);
                 });
     };
-
     $.toggleFeedNameUrl = function (idx) {
         $('div.feeditem .feed_name').toggle();
         $('div.feeditem .feed_url').toggle();
         $('#feedNameUrl .item').toggle();
     };
-
     $.hideItem = function (title, id) {
         window.hiding = 1;
         $.get('torrentwatch-xa.php', {hide: title}, function (response) {
-            if (response.match(/^ERROR:/)) {
+            if (response.match(/^twxa-ERROR:/)) {
                 var errorID = new Date().getTime();
-                $('#twError').show().append('<p id="error_' + errorID + '">' + response.match(/^ERROR:(.*)/)[1] + '</p>');
+                $('#twError').show().append('<p id="error_' + errorID + '">' + response.match(/^twxa-ERROR:(.*)/)[1] + '</p>');
                 setTimeout(function () {
                     $('#twError p#error_' + errorID).remove();
                     if (!$('#twError p').length) {
@@ -1516,7 +1490,6 @@ $(document).ready(function () { // first binding to document ready
             window.hiding = null;
         });
     };
-
     $.toggleFeed = function (feed, speed) {
         if (speed === 1 || speed === '1') {
             if ($.cookie('feed_' + feed) === '1') { // was ==
@@ -1540,7 +1513,6 @@ $(document).ready(function () { // first binding to document ready
             }
         }
     };
-
     $.checkHiddenFeeds = function (speed) {
         $.each($('#torrentlist_container .feed'), function () {
             if ($.cookie(this.id)) {
@@ -1553,7 +1525,6 @@ $(document).ready(function () { // first binding to document ready
             }
         });
     };
-
     $.toggleConfigTab = function (tab, button) {
         $(".toggleConfigTab").removeClass("selTab");
         $(button).addClass("selTab");
@@ -1568,7 +1539,6 @@ $(document).ready(function () { // first binding to document ready
         }
         $(tab).animate({opacity: 'toggle'}, 500);
     };
-
     $.toggleContextMenu = function (item_id, id) {
         // do NOT use slideUp() or slideDown() in this function as they are too slow and get interrupted
         if ($('div.contextMenu').not(item_id).is(":visible")) {
@@ -1578,26 +1548,30 @@ $(document).ready(function () { // first binding to document ready
             $(item_id).hide();
         } else {
             $(item_id).show();
-            $('div.contextMenu, a.contextButton').mouseleave(function () {
+            //$('div.contextMenu, a.contextButton').mouseleave(function () {
+            $('div.contextMenu, a.contextButton').on("mouseleave", function () {
                 var contextTimeout = setTimeout(function () {
                     $(item_id).hide();
                 }, 500);
-                $('div.contextMenu, a#contextButton_' + id).mouseenter(function () {
+                //$('div.contextMenu, a#contextButton_' + id).mouseenter(function () {
+                $('div.contextMenu, a#contextButton_' + id).on("mouseenter", function () {
                     clearTimeout(contextTimeout);
                 });
-                $('div.contextItem').mouseover(function () {
+                //$('div.contextItem').mouseover(function () {
+                $('div.contextItem').on("mouseover", function () {
                     $(this).addClass('alt');
-                    $(this).mouseleave(function () {
+                    //$(this).mouseleave(function () {
+                    $(this).on("mouseleave", function () {
                         $(this).removeClass('alt');
                     });
                 });
-                $(item_id).click(function () {
+                //$(item_id).click(function () {
+                $(item_id).on("click", function () {
                     $(this).hide();
                 });
             });
         }
     };
-
     $.processSelected = function (action) {
         if (!$('#torrentlist_container .torrent.selected').length) {
             return;
@@ -1605,7 +1579,7 @@ $(document).ready(function () { // first binding to document ready
 
         var list = '';
         $.each($('#torrentlist_container li.torrent.selected'), function (i, item) {
-            var trItem = '';
+            //var trItem = '';
             if (this.className.match(/item_\w+/) && !this.className.match(/item_###torHash###/)) {
                 if (list) {
                     list = list + ',' + this.className.match(/item_(\w+)/)[1];
@@ -1614,7 +1588,6 @@ $(document).ready(function () { // first binding to document ready
                 }
             }
         });
-
         switch (action) {
             case 'trash':
                 var trash = true; // used to be 1
@@ -1638,7 +1611,6 @@ $(document).ready(function () { // first binding to document ready
             var link = $('li#' + this.id + ' input.link').val();
             var feedLink = $('li#' + this.id + ' input.feed_link').val();
             var id = $('li#' + this.id + ' input.client_id').val();
-
             if (action === 'addFavorite') {
                 var favInterval = setInterval(function () {
                     if (window.favving !== 1) {
@@ -1664,7 +1636,6 @@ $(document).ready(function () { // first binding to document ready
             }
         });
     };
-
     $.noEnter = function (evt) {
         var evt = (evt) ? evt : ((event) ? event : null);
         var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);

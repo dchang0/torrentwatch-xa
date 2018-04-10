@@ -16,9 +16,9 @@ function setupCache() {
     if (isset($config_values['Settings']['Cache Dir'])) {
         $cacheDir = $config_values['Settings']['Cache Dir'];
         twxaDebug("Enabling cache in: $cacheDir\n", 2);
-        if(file_exists($cacheDir)) {
-            if(is_dir($cacheDir)) {
-                if(is_writeable($cacheDir)) {
+        if (file_exists($cacheDir)) {
+            if (is_dir($cacheDir)) {
+                if (is_writeable($cacheDir)) {
                     // cache is already set up
                 } else {
                     twxaDebug("Cache Dir not writeable: $cacheDir\n", -1);
@@ -53,20 +53,18 @@ function clear_cache_by_feed_type($file) {
 }
 
 function clear_cache_by_cache_type() {
-    if (isset($_GET['type'])) {
-        switch ($_GET['type']) {
-            case 'feeds':
-                clear_cache_by_feed_type("rsscache_*");
-                clear_cache_by_feed_type("atomcache_*");
-                break;
-            case 'torrents':
-                clear_cache_by_feed_type("dl_*");
-                break;
-            case 'all':
-                clear_cache_by_feed_type("dl_*");
-                clear_cache_by_feed_type("rsscache_*");
-                clear_cache_by_feed_type("atomcache_*");
-        }
+    switch (filter_input(INPUT_GET, 'type')) {
+        case 'feeds':
+            clear_cache_by_feed_type("rsscache_*");
+            clear_cache_by_feed_type("atomcache_*");
+            break;
+        case 'torrents':
+            clear_cache_by_feed_type("dl_*");
+            break;
+        case 'all':
+            clear_cache_by_feed_type("dl_*");
+            clear_cache_by_feed_type("rsscache_*");
+            clear_cache_by_feed_type("atomcache_*");
     }
 }
 
@@ -132,8 +130,7 @@ function check_cache_episode($ti) {
                         // full season, compare
                         if ($cacheguess['episBatEnd'] !== "" && is_numeric($cacheguess['episBatEnd'])) {
                             return true; // title is a full season and is likely newer than the last episode in cache, do download
-                        }
-                        else {
+                        } else {
                             twxaDebug("Equiv. in cache: ignoring: $ti (" . $guess['seasBatEnd'] . "x" . $guess['episBatEnd'] . ")\n", 2);
                             return false; // both are full seasons
                         }

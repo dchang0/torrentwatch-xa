@@ -275,14 +275,14 @@ function get_deep_dir($dest, $tor_name) {
         case 'Title':
             $guess = detectMatch($tor_name);
             if (isset($guess['favTitle'])) {
-                $dest = $dest . "/" . ucwords(strtolower($guess['title']));
+                $dest = $dest . "/" . ucwords(strtolower($guess['favTitle']));
                 break;
             }
             twxaDebug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
-        case 'Full':
+        /*case 'Full':
         default:
             $dest = $dest . "/" . ucwords(strtolower($tor_name));
-            break;
+            break;*/
     }
     return $dest;
 }

@@ -575,21 +575,21 @@ Code changes
 - changed comparison operators == to === and != to !== in multiple places in torrentwatch-xa.js
 
 
-Next Version
+0.9.0
 
 Functional changes
 
 - add_feed() now validates the feed URL before attempting to add it
-
-IN PROGRESS
-
-- fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
-- continue converting button icons to HiDPI
-- sometimes adding/updating a Favorite does not close the dialog and refresh the browser
-- Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
-- fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
-- 'Only Newer' checks the episode number and compares with the Favorite record--why would we want to download anything but the newest?
-- make twxaDebug() show alerts in web UI
+- converted all context menu and button bar and Filter bar icons to HiDPI
+- changed Hide List to hide all items that match the detected favTitle regardless of season and episode (a Hide List entry acts like an anti-Favorite)
+- items in Hide List are no longer all-lowercase
+- added notice of disabled Hide List to top of Hide List
+- changed "You have not hidden any shows." to "No entries found." in Hide List
+- if Disable Hide List is checked, button bar now disables the Hide button
+- removed 0.7.0 to 0.8.0 config file converter
+- validated Deep Directories (all Configure options have now been validated working)
+- removed Sanitize Hidelist feature, since Hide List now uses favTitles, which are already sanitized
+- commented out Deep Directories > Full setting as it is pretty much useless
 
 Code changes
 
@@ -599,19 +599,43 @@ Code changes
 - improved update_feed_data() and renamed it to updateFeedData()
 - improved del_favorite() and renamed it to deleteFavorite()
 - removed global $config_values from get_smtp_passwd() and renamed it to decryptsMTPPassword()
+- improved del_hidden() and renamed it to delHidden()
+- consolidated add_hidden(), changed its error handling and logging, and renamed it to addHidden()
+- removed read_config_file()
+- reduced unnecessary writes to config file
+- fixed: PHP Warning:  rename(/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config_tmp,/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config): No such file or directory in /var/lib/torrentwatch-xa/lib/twxa_config_lib.php on line 290 by reducing time zone calls to writejSONConfigFile()
+- added rudimentary protection against writing config file while ongoing write is renaming config temp file
+- twxaDebug() can now write to the log file before $config_values is populated by readjSONConfigFile()
+- migrating from JQuery 1.12.4 to 3.2.1 using JQuery-migrate 3.0.1 (all changes were replacing deprecated shortcuts)
 
+Next Version
+
+Functional changes
 
 IN PROGRESS
 
-- remove read_config_file() and 0.7.0 to 0.8.0 converter
-- reducing unnecessary writes to config file
+- when opening Favorites, New Favorite is no longer selected by default
+- if torrent is deleted from outside twxa while active, it disappears from Transmission list but not other filter lists:
+<li id="id_046" name="046" class="torrent st_notAMatch  selActive item_955b78543b7c2c72bbe6691639f6ed93003c43b7 st_downloaded tc_seeding alt selected" style="display: list-item;">
+
+- fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
+- sometimes adding/updating a Favorite does not close the dialog and refresh the browser
+- Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
+- fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
+- make twxaDebug() show alerts in web UI
+
+Code changes
+
+IN PROGRESS
+
+- synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
-- move set_client_passwd() and set_smtp_passwd() functions outside of writeConfigFile() so that they are only run when needed
-- improve writeConfigFile() to avoid using global $config_value
-- spread writeConfigFile() error handling throughout other functions
+- move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
+- improve writejSONConfigFile() to avoid using global $config_value
 - add function that detects errors in $config_values
 - figure out window.gotAllData and window.getFail logic, maybe merge window.gotAllData into window.updatingClientData or remove one
   - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
 - continue validating and commenting torrentwatch-xa.js
 - continue cleaning up CSS with csslint.net
 - fix Quality filtering in check_for_torrent() before checking the download cache
+- upgrade JQuery to 3.x

@@ -24,7 +24,7 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
     $guess = detectMatch($item['title']);
 
     if (!$config_values['Settings']['Disable Hide List']) {
-        if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))])) {
+        if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['favTitle'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))])) {
             return;
         }
     }

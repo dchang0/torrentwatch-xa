@@ -289,7 +289,10 @@ label.category {
     border: 1px solid #5D80A1;
     -moz-border-radius: 2px;
     border-radius: 2px;
-    padding: 1px 2px 2px 1px;
+    background: #FFF url('../images/search_32x32.png') top left no-repeat;
+    background-size: 14px 14px;
+    padding: 1px 2px 2px 18px;
+    /*padding: 1px 2px 2px 1px;*/
     margin: 1px 5px 1px 0;
 }
 
@@ -662,35 +665,43 @@ div.contextMenu .contextItem.alt {
 }
 
 div.contextMenu .addFavorite {
-    background: url(../images/tor_fav_10x10.png) no-repeat left center;
+    background: url(../images/tor_fav_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .torStart {
-    background: url(../images/tor_start_10x10.png) no-repeat left center;
+    background: url(../images/tor_start_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .hideItem {
-    background: url(../images/tor_hide_10x10.png) no-repeat left center;
+    background: url(../images/tor_hide_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .torResume {
-    background: url(../images/tor_resume_10x10.png) no-repeat left center;
+    background: url(../images/tor_resume_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .torPause {
-    background: url(../images/tor_pause_10x10.png) no-repeat left center;
+    background: url(../images/tor_pause_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .torDelete {
-    background: url(../images/tor_stop_10x10.png) no-repeat left center;
+    background: url(../images/tor_stop_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .torTrash {
-    background: url(../images/tor_trash_10x10.png) no-repeat left center;
+    background: url(../images/tor_trash_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 div.contextMenu .torMove {
-    background: url(../images/tor_move_10x10.png) no-repeat left center;
+    background: url(../images/tor_move_20x20.png) no-repeat left center;
+    background-size: 10px 10px;
     background-position: 2px 3px;
 }
 
@@ -1337,8 +1348,9 @@ div.legend input {
     height: 18px;
     margin: 0;
     padding: 1px 3px 0 20px;
-    background: #FFF url('../images/filter_icon.png') top left no-repeat;
-    font-size: 0.8em;
+    background: #FFF url('../images/search_32x32.png') top left no-repeat;
+    background-size: 17px 17px;
+    font-size: 0.9em;
 }
 
 #hidelistContainer {

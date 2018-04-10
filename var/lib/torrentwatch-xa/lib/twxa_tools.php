@@ -137,7 +137,7 @@ function twxaDebug($string, $lvl = -1) {
         default:
             $errLabel = "DBG:";
     }
-    if ($config_values['Settings']['debugLevel'] >= $lvl) {
+    if (empty($config_values['Settings']['debugLevel']) || $config_values['Settings']['debugLevel'] + 0 >= $lvl) {
         /* if ($lvl === -1 && isset($config_values['Global']['HTMLOutput'])) {
           $string = trim(strtr($string, array("'" => "\\'")));
           $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once
@@ -197,7 +197,7 @@ function notifyByEmail($msg, $subject) {
                 $email->SMTPAuth = true;
                 $email->AuthType = $config_values['Settings']['SMTP Authentication'];
                 $email->Username = $config_values['Settings']['SMTP User'];
-                $email->Password = get_smtp_passwd();
+                $email->Password = decryptsMTPPassword($config_values['Settings']['SMTP Password']);
 
                 switch ($config_values['Settings']['SMTP Encryption']) {
                     case 'None':
@@ -282,17 +282,3 @@ function parseURLForCookies($url) {
         return array('url' => $url, 'cookies' => $cookies);
     }
 }
-
-/* function authenticateFeeds() {
-  global $config_values;
-
-  if ($_SERVER['PHP_AUTH_USER'] == 'twxa' && $_SERVER['PHP_AUTH_PW'] == 'twxa'
-  ) {
-  $_SESSION['http_logged'] = 1;
-  } else {
-  $_SESSION['http_logged'] = 0;
-  header('WWW-Authenticate: Basic realm="torrentwatch-xa"');
-  header('HTTP/1.0 401 Unauthorized');
-  exit;
-  }
-  } */

@@ -48,7 +48,9 @@
         <!--[if IE]>
           <link rel="Stylesheet" type="text/css" href="css/ie.css"></link>
         <![endif]-->
-        <script type="text/javascript" src="javascript/jquery-1.12.4.min.js"></script>
+        <!--<script type="text/javascript" src="javascript/jquery-1.12.4.min.js"></script>-->
+        <script type="text/javascript" src="javascript/jquery-3.2.1.min.js"></script>
+        <!--<script type="text/javascript" src="javascript/jquery-migrate-3.0.1.js"></script>-->
         <script type="text/javascript" src="javascript/jquery.tinysort.min.js"></script>
         <script type="text/javascript" src="javascript/jquery.cookie.js"></script>
         <script type="text/javascript" src="javascript/jquery.form.min.js"></script>
@@ -96,7 +98,7 @@
                 </li>
             </ul>
             <ul id="filterbar_container">
-                <li id="refresh" class="tab filter_left"><a href="#"><img src="images/refresh.png" alt="Refresh"/></a></li>
+                <li id="refresh" class="tab filter_left"><a href="#"><img src="images/refresh_32x32.png" alt="Refresh" width="16" height="16"/></a></li>
                 <li id="filter_all" class="tab"><a href="#">All</a></li>
                 <li id="filter_matching" class="tab"><a href="#">Matching</a><span id="Matching"></span></li>
                 <li id="filter_downloading" class="tab"><a href="#">Downloading</a><span id="Downloading"></span></li>
@@ -108,14 +110,14 @@
         </div>
         <div id='clientButtonsHolder'>
             <ul id='clientButtons'>
-                <li class='button start' title='Start Torrent' onclick="javascript:$.processSelected('dlTorrent')"><img src='images/tor_start_20x20.png' alt="Start"/></li>
-                <li class='button add_fav' onclick="javascript:$.processSelected('addFavorite')"><img src='images/tor_fav_20x20.png' alt="Add Favorite"/></li>
-                <li class='button hide_item' onclick="javascript:$.processSelected('hideItem')"><img src='images/tor_hide_20x20.png' alt="Hide Item"/></li>
-                <li class='button resume' onclick="javascript:$.processSelected('start')"><img src='images/tor_resume_20x20.png' alt="Resume"/></li>
-                <li class='button pause' onclick="javascript:$.processSelected('stop')"><img src='images/tor_pause_20x20.png' alt="Pause"/></li>
-                <li class='button delete' onclick="javascript:$.processSelected('delete')"><img src='images/tor_stop_20x20.png' alt="Delete"/></li>
-                <li class='button trash' onclick="javascript:$.processSelected('trash')"><img src='images/tor_trash_20x20.png' alt="Trash"/></li>
-                <li class='button move_button' onclick="toggleTorMove();"><img src='images/tor_move_20x20.png' alt="Move"/></li>
+                <li class='button start' title='Start Torrent' onclick="javascript:$.processSelected('dlTorrent')"><img src='images/tor_start_40x40.png' alt="Start" width="20" height="20"/></li>
+                <li class='button add_fav' onclick="javascript:$.processSelected('addFavorite')"><img src='images/tor_fav_40x40.png' alt="Add Favorite" width="20" height="20"/></li>
+                <li class='button hide_item' onclick="javascript:$.processSelected('hideItem')"><img src='images/tor_hide_40x40.png' alt="Hide Item" width="20" height="20"/></li>
+                <li class='button resume' onclick="javascript:$.processSelected('start')"><img src='images/tor_resume_40x40.png' alt="Resume" width="20" height="20"/></li>
+                <li class='button pause' onclick="javascript:$.processSelected('stop')"><img src='images/tor_pause_40x40.png' alt="Pause" width="20" height="20"/></li>
+                <li class='button delete' onclick="javascript:$.processSelected('delete')"><img src='images/tor_stop_40x40.png' alt="Delete" width="20" height="20"/></li>
+                <li class='button trash' onclick="javascript:$.processSelected('trash')"><img src='images/tor_trash_40x40.png' alt="Trash" width="20" height="20"/></li>
+                <li class='button move_button' onclick="toggleTorMove();"><img src='images/tor_move_40x40.png' alt="Move" width="20" height="20"/></li>
                 <li class="move_data hidden"><input id="moveTo" type="text" class="text" name="moveTo"/></li>
                 <li id="Move" class='button move_data hidden' onclick="$.processSelected('move')">Move</li>
                 <li class='close hidden' onclick="$('#clientButtons .move_data').fadeOut();"></li>

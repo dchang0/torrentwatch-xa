@@ -3,6 +3,10 @@ Usage
 
 For the most part, torrentwatch-xa is very intuitive and self-explanatory. These usage notes explain some of the advanced features, details, and behaviors that are not immediately obvious.
 
+### Directly Editing Config File
+
+If you want to change the handful of settings that are not accessible by any means except directly editing the config file, please make sure you back up the config file before starting, as torrentwatch-xa will overwrite the file with a blank one in some circumstances. During the editing, make sure that you do not have the web UI open in your browser (as the Javascript will trigger config file access every few seconds) and that you temporarily disabled the cron job. You should also immediately delete the config cache file after saving the config file, to make sure the changes are not overwritten by the cached settings.
+
 ### Seed Ratio Settings
 
 If set to a positive number, each Favorite's seed ratio setting overrides its parent Feed's seed ratio setting, which overrides the global Default Seed Ratio setting. To allow inheritance to occur, leave the setting blank. Any negative number gets overridden by -1. If the global Default Seed Ratio is blank, it is overridden by -1.

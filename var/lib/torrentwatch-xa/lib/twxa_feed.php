@@ -514,5 +514,5 @@ function guess_feed_type($feedurl) {
         }
     }
     twxaDebug("Cannot determine feed type: $feedurl\n", 0);
-    return "Unknown"; // was set to "RSS" as default, but this seemed to cause errors in add_feed()
+    return "Unknown"; // was set to "RSS" as default, but this seemed to cause errors in addFeed()
 }

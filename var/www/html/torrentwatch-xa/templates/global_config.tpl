@@ -146,14 +146,6 @@
                                 <input type="text" class="text" name="savetorrentsdir" value="<?php echo $config_values['Settings']['Save Torrents Dir']; ?>"/>
                             </div>
                         </div>
-                        <!--<div id="config_torrentExtension">
-                            <div class="left">
-                                <label class="item">File Extension:</label>
-                            </div>
-                            <div class="right">
-                                <input type="text" class="text" name="torrentextension" value="<?php echo $config_values['Settings']['Torrent Extension']; ?>"/>
-                            </div>
-                        </div>-->
                     </div>
                 </div>
                 <div id="config_tor" class="configTab hidden">
@@ -164,7 +156,7 @@
                             </div>
                             <div class="right">
                                 <select name="deepdir">
-                                    <option value="Full" <?php echo $deepfull; ?>>Full Name</option>
+                                    <!--<option value="Full" <?php echo $deepfull; ?>>Full Name</option>-->
                                     <option value="Title" <?php echo $deeptitle; ?>>Show Title</option>
                                     <option value="Title_Season" <?php echo $deepTitleSeason; ?>>Show Title and Season</option>
                                     <option value="0" <?php echo $deepoff; ?>>Off</option>
@@ -421,6 +413,9 @@
         </div>
         <form action="torrentwatch-xa.php?delHidden=1" id="hidelist_form" name="hidelist_form" class="hidden">
             <div id="config_hideList" class="hidden configTab">
+                <?php if($config_values['Settings']['Disable Hide List']): ?>
+                <div style='border-bottom: 1px solid #979797'><span class="hiddenItem">&nbsp;Hide List is disabled: entries below are ignored.</span></div>
+                <?php endif; ?>
                 <div id="hideListContainer">
                     <ul class="hidelist">
                         <?php if($config_values['Hidden']): ?>
@@ -429,17 +424,17 @@
                         <li>
                             <label class="item checkbox">
                                 <input type="checkbox" name="unhide[]" value="<?=$key?>"/>
-                                <span class="hiddenItem"><?php echo $key; ?></span></label>
+                                <span class="hiddenItem"><?php echo $item; ?></span></label>
                         </li>
                         <?php endforeach; ?>
                         <?php else: ?>
-                        <li><h2 style='color: red; text-align: center'>You have not hidden any shows.</h2></li>
+                        <li>&nbsp;Hide List is empty.</li>
                         <?php endif; ?>
                     </ul>
                 </div>
             </div>
             <div id="hideSearch">
-                <input type="text" id="hideSearchText" name="hideSearch"></input>
+                <input type="text" id="hideSearchText" placeholder="Filter" name="hideSearch"></input>
             </div>
             <div class="buttonContainer">
                 <a class="submitForm button" id="Unhide" href="#">Unhide</a>

@@ -24,7 +24,6 @@ All other files have functions that need improvement or rewrites or validation.
 ## Testing tasks
 
 - test _Save torrent in folder_ client and make sure progress bar works properly in this mode
-- validate Deep Directories feature
 - what is the purpose of `clientId_` and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
 - verify the settings and complete their hints in the config panels
 - test the Atom-related functions and conform them to their equivalent RSS functions if necessary
@@ -67,6 +66,7 @@ All other files have functions that need improvement or rewrites or validation.
 - use error function instead of alert() in torrentwatch-xa.js
 - add itemVersion handling to batches such as 1x03v2-1x05v2 (requires changing many match functions to handle version numbers)
 - make list items double-tall for smartphone displays and wrap the title text properly
+- possibly change Hide List from using favTitle to a list of regexes so the user can block anything they like
 - $config_values['Global'] appears to be a crappy way of globally passing some data--maybe improve it
 - times shown in feed list might not obey 'Time Zone' setting until next twxacli.php run, but log datestamps take effect immediately; maybe force a feed cache refresh immediately after 'Time Zone' is changed 
 - if deleting active torrent manually before it completes, perhaps it should not be labeled as match_inCacheNotActive if it isn't actually in the download cache; in other words, this would require adding the ability to check the cache to the Javascript side
@@ -87,8 +87,6 @@ All other files have functions that need improvement or rewrites or validation.
 - make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)
 - finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
   - check to make sure that new decimal PV numbering system works throughout entire app
-- Disable Hide List does disable Hide Show from contextual menus but doesn't hide the Configure > Hide List tab or at least mark it disabled
-- convert Hide List from hiding individual titles to hiding by pattern matching (just like the Favorites Filter)
 
 - replace global variables EXCEPT $html_out with proper parameter passing
   - $config_values (not likely--will probably increase CPU util too much)
