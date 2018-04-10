@@ -283,11 +283,9 @@ function display_global_config() {
     }
 
     // Torrent tab
-    /* $deepfull = */$deeptitle = $deepTitleSeason = $deepoff = '';
+    $deeptitle = $deepTitleSeason = $deepoff = '';
     $autodel = '';
     switch ($config_values['Settings']['Deep Directories']) {
-        /* case 'Full': $deepfull = 'selected="selected"';
-          break; */
         case 'Title': $deeptitle = 'selected="selected"';
             break;
         case 'Title_Season': $deepTitleSeason = 'selected="selected"';

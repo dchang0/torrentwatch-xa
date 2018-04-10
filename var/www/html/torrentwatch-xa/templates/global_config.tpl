@@ -156,7 +156,6 @@
                             </div>
                             <div class="right">
                                 <select name="deepdir">
-                                    <!--<option value="Full" <?php echo $deepfull; ?>>Full Name</option>-->
                                     <option value="Title" <?php echo $deeptitle; ?>>Show Title</option>
                                     <option value="Title_Season" <?php echo $deepTitleSeason; ?>>Show Title and Season</option>
                                     <option value="0" <?php echo $deepoff; ?>>Off</option>
