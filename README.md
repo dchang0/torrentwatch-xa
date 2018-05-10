@@ -37,6 +37,10 @@ Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (J
 
 New in alpha: Fedora Server 25 is being tested but will not be officially supported for quite a while.
 
+### Next Version (probably 1.0.0)
+
+I'm working on one of the requests in Issue #1: making it easier to change the base and web directory paths. It's non-trivial and will require fairly big changes of file locations.
+
 Documentation
 ===============
 
