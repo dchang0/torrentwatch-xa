@@ -22,6 +22,17 @@ From the official repos:
 - php (php7.0)
 - php-curl (php7.0-curl)
 
+### Ubuntu 18.04 (Not officially supported at this time, but the instructions for Ubuntu 16.04 do work.)
+
+From the official repos:
+
+- transmission-daemon
+- apache2
+- php-mbstring (php7.2-mbstring)
+- libapache2-mod-php (libapache2-mod-php7.2)
+- php (php7.2)
+- php-curl (php7.2-curl)
+
 ### Fedora Server 25 (Not officially supported at this time, but the instructions below do work.)
 
 From the official repos:

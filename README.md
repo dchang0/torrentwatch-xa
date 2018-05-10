@@ -35,7 +35,7 @@ As of torrentwatch-xa 0.8.0, stores its config file in PHP's built-in JSON forma
 
 Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 
-New in alpha: Fedora Server 25 is being tested but will not be officially supported for quite a while.
+New in alpha: Fedora Server 25 and Ubuntu 18.04 are being tested and work fine but will not be officially supported for quite a while.
 
 ### Next Version (probably 1.0.0)
 
