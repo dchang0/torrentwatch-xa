@@ -197,7 +197,8 @@ $(document).ready(function () { // first binding to document ready
             $('#Downloading').html('(' + totalDownloading + ')');
         }
         $.each($('.feed'), function (i, item) {
-            var matches = $('#' + item.id + ' li.torrent').not('.st_notAMatch').not(':hidden').length;
+            //var matches = $('#' + item.id + ' li.torrent').not('.st_notAMatch').not(':hidden').length;
+            var matches = $('#' + item.id + ' li.torrent').not('.st_notAMatch').length;
             $('#' + item.id + ' span.matches').html('(' + matches + ')');
         });
         listSelector();

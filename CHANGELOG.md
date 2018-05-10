@@ -590,6 +590,7 @@ Functional changes
 - validated Deep Directories (all Configure options have now been validated working)
 - removed Sanitize Hidelist feature, since Hide List now uses favTitles, which are already sanitized
 - commented out Deep Directories > Full setting as it is pretty much useless
+- Feed header item counter no longer flips to (0) if the feed is hidden
 
 Code changes
 
