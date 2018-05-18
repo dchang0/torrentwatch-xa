@@ -10,7 +10,7 @@ function get_baseDir() {
 
 // torrentwatch-xa web UI installation directory
 function get_webDir() {
-    return "/var/www/html/torrentwatch-xa"; // if you change this, be sure to update torrentwatch-xa-cron too
+    return "/var/www/html/torrentwatch-xa"; // if you change this, be sure to change it in torrentwatch-xa-cron too
 }
 
 // torrentwatch-xa log file path
