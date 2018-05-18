@@ -5,7 +5,7 @@ For the most part, torrentwatch-xa is very intuitive and self-explanatory. These
 
 ### Item Colors
 
-The small colored bars on the left edge of some items describe the states of the items. Click the Legend button to see what each color means.
+The small colored bars on the left edge of some items indicate the states of the items. Click the Legend button to see what each color means.
 
 ### Seed Ratio Settings
 
