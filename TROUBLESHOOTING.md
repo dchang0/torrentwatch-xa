@@ -10,6 +10,13 @@ There are four places to check for error messages:
 - /tmp/twxalog (errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
 - web browser Javascript console (Javascript errors only, typically minor errors in the web UI)
 
+#### If you change the installation path(s)
+
+If you change the paths for the base or web directories, you must also do:
+
+- Change the paths in get_webDir() and get_baseDir() in config.php (default location is /var/www/html/torrentwatch-xa/config.php as of 1.0.0)
+- Manually modify the torrentwatch-xa.config file (default location is /var/lib/torrentwatch-xa/config_cache), which stores the base directory in the variables Settings > Cache Dir and Settings > History. Be sure to delete the torrentwatch-xa-config.cache file afterward.
+
 #### Browser shows entirely or mostly blank page
 
 This is almost always due to missing PHP packages or functions. Check the web server error log for more details.

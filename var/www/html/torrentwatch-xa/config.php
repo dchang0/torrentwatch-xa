@@ -5,7 +5,7 @@
 
 // torrentwatch-xa base installation directory
 function get_baseDir() {
-    return "/var/lib/torrentwatch-xa"; // default path; change this here and in torrentwatch-xa.php
+    return "/var/lib/torrentwatch-xa"; // default path
 }
 
 // torrentwatch-xa web UI installation directory
