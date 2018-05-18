@@ -122,7 +122,7 @@ __RedHat-derived distros are not officially supported at this time__ though the 
 ### Continue below for all distros:
 
 - Open a web browser and visit `http://[hostname or IP of torrentwatch-xa webserver]/torrentwatch-xa`
-- You may see error messages if apache2 is unable to write to the three cache folders. Correct any such errors.
+- You may see error messages if apache2 is unable to write to the two cache folders. Correct any such errors.
 - Use the Configure > Client panel to set up the Transmission connection.
   - The Configure > Client > Download Dir setting needs to be a path that Transmission can reach and write to. If your Transmission daemon is running on a remote host, be aware that the Download Dir setting refers to a path on the remote host, not on the local host where torrentwatch-xa is running.
   - It may be necessary to restart Transmission to get torrentwatch-xa to connect.
