@@ -5,12 +5,12 @@
 
 // torrentwatch-xa base installation directory
 function get_baseDir() {
-    return "/var/lib/torrentwatch-xa"; // default path
+    return "/var/lib/torrentwatch-xa"; // if you change this, be sure to change it in torrentwatch-xa.config if it is cached there
 }
 
 // torrentwatch-xa web UI installation directory
 function get_webDir() {
-    return "/var/www/html/torrentwatch-xa";
+    return "/var/www/html/torrentwatch-xa"; // if you change this, be sure to update torrentwatch-xa-cron too
 }
 
 // torrentwatch-xa log file path
