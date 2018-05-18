@@ -27,7 +27,6 @@ All other files have functions that need improvement or rewrites or validation.
 - what is the purpose of `clientId_` and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
 - verify the settings and complete their hints in the config panels
 - test the Atom-related functions and conform them to their equivalent RSS functions if necessary
-- find out what configure.js and json2.js are for
 
 ## Code cleanup tasks
 
@@ -38,9 +37,9 @@ All other files have functions that need improvement or rewrites or validation.
 - move $items assignment from inside process_feed() up to process_all_feeds()
 - break client_add_torrent() into smaller functions
 - refactor transmission_rpc request code that is used over and over in twxa_tools.php functions
+- simplify/performance tune JQuery code, especially implicit .each loops
 - apply JQuery Best Practices from: http://lab.abhinayrathore.com/jquery-standards/
 - remove support for Internet Explorer 6 through 8
-- Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help http://xhr.spec.whatwg.org/  jquery-1.12.4.min.js:4:26272
 
 ## Bugfixes
 
@@ -50,11 +49,9 @@ All other files have functions that need improvement or rewrites or validation.
 - improve handling of "Feed inaccessible" (usually 403 or 404 errors on the URL)
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
 - handle resolution and quality 1080p60 (1080p gets recognized and removed, leaving behind 60)
-- Safari browser seems to semi-randomly fire torrentwatch-xa.php call in JQuery twice, second time about 1.2ms after the first, in the middle of rss_perform_matching()'s main foreach loop processing the first feed
 
 ## Improvements
 
-- count in header of hidden feed should not drop to zero just because the feed's items are hidden (but legitimately hidden items should never be counted)
 - store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by one or all of the below:
@@ -79,8 +76,7 @@ All other files have functions that need improvement or rewrites or validation.
 - allow user to create Favorites from items in the History list
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
 - add error handling to the Transmission functions
-- migrate jquery.tinysort.js to tinysort (no longer dependent on jquery and faster) http://tinysort.sjeiti.com
-- upgrade jquery.cookie.js to js-cookie at https://github.com/js-cookie/js-cookie/tree/v1.5.1
+- upgrade jquery.cookie.js to js-cookie at https://github.com/js-cookie/js-cookie
 - add config option "Videos Only" beneath "Require Episode Info" to only show items with at least one video quality
 - add auto-refresh of list (might already auto-refresh when favorite is matched and starts download)
 - make the Favorites panel's Update button not close the panel after updating (same behavior as the Delete button)
@@ -110,4 +106,4 @@ All other files have functions that need improvement or rewrites or validation.
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
 - sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version
-
+- switch from JQuery to ES6 (unlikely to happen for quite a while)

@@ -1,6 +1,6 @@
 <?php
 
-require_once('/var/lib/torrentwatch-xa/lib/twxa_parse.php');
+require_once('twxa_parse.php');
 
 /* function guess_atom_torrent($summary) {
   $wc = '[\/\:\w\.\+\?\&\=\%\;]+';

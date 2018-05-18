@@ -316,6 +316,25 @@ function matchTitle1_1_15($ti, $seps) {
 }
 
 function matchTitle1_1_16($ti, $seps) {
+    // OVA - ##
+    $mat = [];
+    $re = "/\b(OVA|OAV)[$seps]\-[$seps](\d+).*/i";
+    if (preg_match($re, $ti, $mat)) {
+        return [
+            'medTyp' => 1,
+            'numSeq' => 32,
+            'seasSt' => 1, // assume Season 1
+            'seasEd' => 1,
+            'episSt' => 1, // assume OVA Episode 1
+            'episEd' => 1,
+            'itemVr' => $mat[2], // only number is the version number
+            'favTi' => preg_replace($re, "", $ti),
+            'matFnd' => "1_1_16"
+        ];
+    }
+}
+
+function matchTitle1_1_17($ti, $seps) {
     // OVA (####) or OVA (YYYY) or OVA ####
     $mat = [];
     $re = "/\b(OVA|OAV)[$seps]?\(?[$seps]?(\d{1,4})[$seps]?\)?.*/i";
@@ -501,7 +520,7 @@ function matchTitle1_1_30_1($ti, $seps) {
 function matchTitle1_1_30_2($ti, $seps) {
     // Japanese ## Print Media Book/Volume
     $mat = [];
-    $re = "/(\x{7B2C}|\x{5168})(\d+)\x{5dfb}.*/u";
+    $re = "/(\x{7B2C}|\x{5168})(\d+)(\x{5dfb}|\x{5377}).*/u"; //5138
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 4,

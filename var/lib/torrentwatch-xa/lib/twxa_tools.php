@@ -2,20 +2,9 @@
 
 global $config_values;
 
-$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib", "/var/www/html/torrentwatch-xa/templates/"];
-$includePath = get_include_path();
-foreach ($twxaIncludePaths as $twxaIncludePath) {
-    if (strpos($includePath, $twxaIncludePath) === false) {
-        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
-    }
-}
-set_include_path($includePath);
-
 // PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
+
 require_once("twxa_config_lib.php");
-if (file_exists("config.php")) {
-    require_once("config.php");
-}
 require_once("twxa_lastRSS.php");
 require_once("twxa_atomparser.php");
 require_once("class.bdecode.php");
@@ -253,7 +242,7 @@ function runScript($param, $title, $errorMessage = "") {
                         $msg .= "\n" . $responseMsg . "\n\n";
                         $debugMsg .= " $param $escapedTitle $escapedErrorMessage: " . $responseMsg;
                     }
-                    $msg .= "Please examine the example scripts in /var/lib/torrentwatch-xa/examples for more info about how to make a compatible script.";
+                    $msg .= "Please examine the example scripts in " . get_baseDir() . "/examples for more info about how to make a compatible script.";
                     twxaDebug("$debugMsg\n", 0);
                 } else {
                     twxaDebug("Success running: $script\n", 2);

@@ -609,16 +609,42 @@ Code changes
 - twxaDebug() can now write to the log file before $config_values is populated by readjSONConfigFile()
 - migrating from JQuery 1.12.4 to 3.2.1 using JQuery-migrate 3.0.1 (all changes were replacing deprecated shortcuts)
 
+1.0.0
+
+Functional changes
+
+- corrected feed header item counters in Matched/Downloaded/Downloading depending on active filter
+- committed to a three-part version number and fixed a bug in the version number comparison logic
+- fixed "Steins Gate 0" where 0 is part of the title and not a season nor episode
+- fixed "Mob Pyscho 100 OVA - 01" where 100 is part of the title and OVA is present
+- fixed "Persona 5 The Animation - 01" where 5 is part of the title and OVA is not present
+- added (C85) and "Doujinshi (C91)" to crew names
+- when opening Favorites, New Favorite is again selected by default (broke in 0.9.0 because .selector was removed in JQuery 3.0)
+- fixed when torrent is deleted from outside twxa while active, it disappears from Transmission list but not other filter lists
+- minor bugfixes to twxacli.php
+
+Code changes
+
+- removed older JQuery 1.12.4 files
+- upgraded from JQuery 3.2.1 to 3.3.1
+- tuned updateMatchCounts and listSelector functions because of apparent slow memory leak in JQuery's rebinding of on mousedown that became obvious with JQuery 3.3.1
+- fixed PHP Warning about type cast from string to int when calling checkdate()
+- removed redundant PHP include path code from multiple files; it should be in only one place, at the end of config.php
+- moved default get_baseDir(), get_webDir(), get_logFile(), and get_tr_sessionIdFile() out of twxa_config_lib.php into config.php
+- moved config.php and twxacli.php into /var/www/html/torrentwatch-xa
+- fixed ""synchronous XMLHttpRequest on the main thread is deprecated" by merging contents of configure.js into global_config.tpl
+- removed json2.js because modern web browsers have JSON.parse built-in
+- started testing tinysort.min.js, but it produces benign warnings when the Transmission list is empty, so we stuck with jquery.tinysort.min.js for now
+- switched back to preg_ functions in video and audio codecs detection to fix bug with avi being removed from the middle of Davinci
+- fixed minor bug in audio codecs function
+
 Next Version
 
 Functional changes
 
 IN PROGRESS
 
-- when opening Favorites, New Favorite is no longer selected by default
-- if torrent is deleted from outside twxa while active, it disappears from Transmission list but not other filter lists:
-<li id="id_046" name="046" class="torrent st_notAMatch  selActive item_955b78543b7c2c72bbe6691639f6ed93003c43b7 st_downloaded tc_seeding alt selected" style="display: list-item;">
-
+- validate twxacli.php functionality and remove obsolete code
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
 - sometimes adding/updating a Favorite does not close the dialog and refresh the browser
 - Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
@@ -629,7 +655,7 @@ Code changes
 
 IN PROGRESS
 
-- synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience
+- JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
 - improve writejSONConfigFile() to avoid using global $config_value
@@ -639,4 +665,3 @@ IN PROGRESS
 - continue validating and commenting torrentwatch-xa.js
 - continue cleaning up CSS with csslint.net
 - fix Quality filtering in check_for_torrent() before checking the download cache
-- upgrade JQuery to 3.x

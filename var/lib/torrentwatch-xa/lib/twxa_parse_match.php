@@ -413,7 +413,7 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
             }
         case true :
             // isolated ###.#
-            $result = matchTitle2_33($ti, $seps);
+            $result = matchTitle2_33($ti);
             if (is_string($result['matFnd'])) {
                 break;
             }
@@ -480,6 +480,12 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
         case true :
             // isolated SS EE, SS EEE, or isolated EE EE
             $result = matchTitle2_44($ti, $seps);
+            if (is_string($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // two numbers separated by words
+            $result = matchTitle2_45($ti, $seps);
             if (is_string($result['matFnd'])) {
                 break;
             }
@@ -599,8 +605,14 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                         break;
                     }
                 case true :
-                    // OVA (####) or OVA (YYYY) or OVA ####
+                    // OVA - ##
                     $result = matchTitle1_1_16($ti, $seps);
+                    if (is_string($result['matFnd'])) {
+                        break;
+                    }
+                case true :
+                    // OVA (####) or OVA (YYYY) or OVA ####
+                    $result = matchTitle1_1_17($ti, $seps);
                     if (is_string($result['matFnd'])) {
                         break;
                     }
@@ -702,13 +714,13 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             } else {
                 $pair1 = substr($matNum[1], 0, 2);
                 $pair2 = substr($matNum[1], 2);
-                if (checkdate($pair2, $pair1, $thisYear)) {
+                if (checkdate($pair2 + 0, $pair1 + 0, $thisYear)) {
                     // probably DDMM (assume YYYY is current year)
                     $result['numSeq'] = 2;
                     $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                     $result['episEd'] = $result['episSt'] = $pair2 . $pair1;
                     $result['matFnd'] = "1_2-2-1";
-                } else if (checkdate($pair1, $pair2, $thisYear)) {
+                } else if (checkdate($pair1 + 0, $pair2 + 0, $thisYear)) {
                     // probably MMDD (assume YYYY is current year)
                     $result['numSeq'] = 2;
                     $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0

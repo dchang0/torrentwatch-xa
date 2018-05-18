@@ -1,42 +1,34 @@
-#!/usr/bin/php -q
 <?php
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 // twxacli.php
-// command line interface to torrentwatch-xa
+// torrentwatch-xa command line interface typically used with cron
 
-$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
-$includePath = get_include_path();
-foreach ($twxaIncludePaths as $twxaIncludePath) {
-    if (strpos($includePath, $twxaIncludePath) === false) {
-        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
-    }
-}
-set_include_path($includePath);
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+require_once("config.php");
 require_once("twxa_tools.php");
 
 function usage() {
-    twxaDebug(__FILE__ . " <options>\nCommand line interface to torrentwatch-xa\nOptions:\n", 0);
-    twxaDebug("           -c <dir> : enable cache\n", 0);
-    twxaDebug("           -C : disable cache\n", 0);
-    twxaDebug("           -h : show this help\n", 0);
-    twxaDebug("           -q : quiet (no output)\n", 0);
-    twxaDebug("           -v : verbose output\n", 0);
-    twxaDebug("           -vv: verbose output(even more)\n", 0);
-    twxaDebug("    NOTE: This interface only writes to the config file when using the -i option\n", 0);
+    print(__FILE__ . " [options]\ntorrentwatch-xa command line interface\nOptions:\n");
+//    print("           -c <dir> : enable cache\n");
+//    print("           -C : disable cache\n");
+    print("           -h : show this help\n");
+    print("           -q : quiet (no output)\n");
+    print("           -v : verbose output\n");
+    print("           -vv: verbose output(even more)\n");
 }
 
 function parse_args() {
     global $config_values, $argc;
     for ($i = 1; $i < $argc; $i++) {
         switch ($_SERVER['argv'][$i]) {
-            case '-c':
-                $i++;
-                $config_values['Settings']['Cache Dir'] = $_SERVER['argv'][$i];
-                break;
-            case '-C':
-                unset($config_values['Settings']['Cache Dir']);
-                break;
+//            case '-c':
+//                $i++;
+//                $config_values['Settings']['Cache Dir'] = $_SERVER['argv'][$i];
+//                break;
+//            case '-C':
+//                unset($config_values['Settings']['Cache Dir']);
+//                break;
             case '-h':
             case '--help':
                 usage();
@@ -51,7 +43,7 @@ function parse_args() {
                 $config_values['Settings']['debugLevel'] = 2;
                 break;
             default:
-                twxaDebug("Invalid command line argument:  " . $_SERVER['argv'][$i] . "\n", 0);
+                print ("Invalid command line argument:  " . $_SERVER['argv'][$i] . "\n");
         }
     }
 }

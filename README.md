@@ -27,19 +27,17 @@ Status
 
 ### Current Version
 
-I've posted 0.9.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.0.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-As of torrentwatch-xa 0.8.0, stores its config file in PHP's built-in JSON format. I recommend starting with a fresh default config file with 0.9.0. If you _must_ upgrade a config file from a version prior to 0.8.0, you should upgrade first to 0.8.0 following the special instructions in [INSTALL.md](INSTALL.md), then upgrade to 0.9.0.
+It is now much easier to change torrentwatch-xa's install paths. get_webDir(), get_baseDir(), and all the PHP include path calculations are now located only in config.php. As a result, twxacli.php and config.php were moved from the base directory to the web directory and config.php is no longer optional.
 
-0.9.0 has an improved Hide List and simplified Deep Directories feature. All of the Configuration options have been validated and tested. 0.9.0 writes to the config file less often and writes to the log file earlier in its run. 0.9.0 starts the transition from JQuery 1.12.4 to 3.x.
+1.0.0 includes several JQuery 3 bug fixes, including a fix for a slow memory leak in listSelector.
+
+Some new detection errors were fixed, especially where a number is part of the title, as with Steins;Gate 0. Bugs in the video and audio codec detection functions were fixed by switching back to the slower PHP preg_ functions. A bug in the version number comparison was fixed by committing to a three-number format.
 
 Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 
 New in alpha: Fedora Server 25 and Ubuntu 18.04 are being tested and work fine but will not be officially supported for quite a while.
-
-### Next Version (probably 1.0.0)
-
-I'm working on one of the requests in Issue #1: making it easier to change the base and web directory paths. It's non-trivial and will require fairly big changes of file locations.
 
 Documentation
 ===============

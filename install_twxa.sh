@@ -32,7 +32,7 @@ then
 fi
 
 # make sure new torrentwatch-xa package is accessible
-if [ ! -e var/lib/torrentwatch-xa/twxacli.php ]
+if [ ! -e var/lib/torrentwatch-xa/lib/twxa_tools.php ]
 then
     echo "Cannot find new torrentwatch-xa lib tree to install; exiting."
     exit

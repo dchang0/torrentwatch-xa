@@ -1,6 +1,19 @@
 Troubleshooting
 ===============
 
+#### Error messages and logs
+
+There are four places to check for error messages:
+
+- a pop-up in the web browser (typically configuration errors such as permissions problems or unreachable paths)
+- web server error log, /var/log/apache2/error.log (all PHP errors, warnings, and notifications)
+- /tmp/twxalog (errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
+- web browser Javascript console (Javascript errors only, typically minor errors in the web UI)
+
+#### Browser shows entirely or mostly blank page
+
+This is almost always due to missing PHP packages or functions. Check the web server error log for more details.
+
 #### Can't add some feeds
 
 I have found that some feeds can't be added for various reasons, including:
@@ -89,3 +102,21 @@ You should see entries like these:
 `Dec 20 10:00:01 hostname CRON[4493]: (www-data) CMD (/usr/bin/php -q /var/lib/torrentwatch-xa/rss_dl.php -D >/dev/null 2>&1)`
 
 Otherwise you will likely see errors with short instructions on how to fix the problem(s).
+
+#### "Invalid or corrupt torrent file"
+
+Very rarely, a zero-length or corrupt torrent file will be downloaded from the RSS feed, producing this error. If the item is still in the feed and the Favorite does not think it has already downloaded the item, the easiest way to solve this is to clear all caches, which should trigger the auto-download of the torrent file from the RSS feed and the the auto-download of the torrent in Transmission.
+
+If you don't want to clear your caches, you can manually delete the individual torrent file from the download cache.
+
+If the RSS feed is still serving a corrupt torrent file, there is not much you can do about it except find a different source for the same item.
+
+#### Time zone setting is not taking effect
+
+After setting the time zone in Configuration > General > Time Zone, it may be necessary to do any or all of the following to get the time zone to take effect:
+
+- Clear feed caches
+- Restart web server
+- Double-check that the time zone setting is valid--invalid time zones will generate errors in the web server error log
+
+It still might not be possible to change the timestamps in the RSS/Atom feeds themselves if they are hardcoded into the feed.

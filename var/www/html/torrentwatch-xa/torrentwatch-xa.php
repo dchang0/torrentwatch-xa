@@ -9,17 +9,10 @@ header("Pragma: no-cache");
 //error_reporting(E_ERROR | E_WARNING | E_PARSE);
 error_reporting(E_ALL);
 
-$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
-$includePath = get_include_path();
-foreach ($twxaIncludePaths as $twxaIncludePath) {
-    if (strpos($includePath, $twxaIncludePath) === false) {
-        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
-    }
-}
-set_include_path($includePath);
+require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "0.9.0";
+$twxa_version[0] = "1.0.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -537,22 +530,34 @@ function checkVersion($twxa_version) {
         $isLatestHigher = false;
         $thisVersion = explode(".", $twxa_version[0]);
         $latestVersion = explode(".", $latestFromWebsite);
-        $maxPartCount = max(count($thisVersion), count($latestVersion));
-        for ($i = 0; $i < $maxPartCount; $i++) {
-            if (isset($thisVersion[$i])) {
-                if (isset($latestVersion[$i])) {
-                    if ($latestVersion[$i] + 0 > $thisVersion[$i] + 0) {
-                        $isLatestHigher = true;
-                    }
+
+        // Assume there are 3 parts to the version number; compare them part by part
+        if ($thisVersion[0] + 0 > $latestVersion[0] + 0) {
+            //$isLatestHigher = false;
+        } else if ($thisVersion[0] + 0 === $latestVersion[0] + 0) {
+            // first parts are the same, compare the second parts
+            if ($thisVersion[1] + 0 > $latestVersion[1] + 0) {
+                //$isLatestHigher = false;
+            } else if ($thisVersion[1] + 0 === $latestVersion[1] + 0) {
+                // second parts are the same, compare the third parts
+                if ($thisVersion[2] + 0 >= $latestVersion[2] + 0) {
+                    //$isLatestHigher = false;
+                } else if ($thisVersion[2] + 0 < $latestVersion[2] + 0) {
+                    $isLatestHigher = true;
+                } else {
+                    // one of the values is non-numeric
                 }
+            } else if ($thisVersion[1] + 0 < $latestVersion[1] + 0) {
+                $isLatestHigher = true;
             } else {
-                if (isset($latestVersion[$i])) {
-                    if ($latestVersion[$i] + 0 > 0) {
-                        $isLatestHigher = true;
-                    }
-                }
+                // one of the values is non-numeric
             }
+        } else if ($thisVersion[0] + 0 < $latestVersion[0] + 0) {
+            $isLatestHigher = true;
+        } else {
+            // one of the values is non-numeric
         }
+
         if ($isLatestHigher) {
             return "<div id=\"newVersion\" class=\"dialog_window\" style=\"display: block\">torrentwatch-xa $latestFromWebsite is available.
                    Click <a href=\"https://github.com/dchang0/torrentwatch-xa/\">here</a> for more information.</div>";

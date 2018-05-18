@@ -5,14 +5,6 @@
 
 $seps = '\s\.\_'; // separator chars: - and () were formerly also separators but caused problems; we need - for some Season and Episode notations
 // load matchTitle function files
-$twxaIncludePaths = ["/var/lib/torrentwatch-xa/lib"];
-$includePath = get_include_path();
-foreach ($twxaIncludePaths as $twxaIncludePath) {
-    if (strpos($includePath, $twxaIncludePath) === false) {
-        $includePath .= PATH_SEPARATOR . $twxaIncludePath;
-    }
-}
-set_include_path($includePath);
 require_once("twxa_parse_match.php");
 require_once("twxa_parse_match0.php");
 require_once("twxa_parse_match1.php");
@@ -85,7 +77,7 @@ function validateYYYYMMDD($date) {
     $YYYY = substr($date, 0, 4);
     $MM = substr($date, 4, 2);
     $DD = substr($date, 6, 2);
-    return checkdate($MM, $DD, $YYYY);
+    return checkdate($MM + 0, $DD + 0, $YYYY + 0);
 }
 
 function simplifyTitle($ti) {
@@ -293,9 +285,11 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'TELESYNC'
     ];
     foreach ($qualityList as $qualityListItem) {
-        if (stripos($ti, $qualityListItem) !== false) {
+        //if (stripos($ti, $qualityListItem) !== false) {
+        if (preg_match("/\b" . $qualityListItem . "\b/i", $ti) !== false) {
             $detQualities[] = $qualityListItem;
-            $ti = str_ireplace($qualityListItem, "", $ti);
+            //$ti = str_ireplace($qualityListItem, "", $ti);
+            $ti = preg_replace("/\b" . $qualityListItem . "\b/i", "", $ti);
         }
     }
     return [
@@ -326,10 +320,12 @@ function detectAudioCodecs($ti) {
         '2ch'
     ];
     foreach ($audioCodecList as $audioCodecListItem) {
-        if (stripos($ti, $audioCodecListItem) !== false) {
+        //if (stripos($ti, $audioCodecListItem) !== false) {
+        if (preg_match("/\b" . $audioCodecListItem . "\b/i", $ti) !== false) {
             $detAudioCodecs[] = $audioCodecListItem;
             // cascade down through, removing immediately-surrouding dashes
-            $ti = str_ireplace($audioCodecList, "", $ti);
+            //$ti = str_ireplace($audioCodecListItem, "", $ti);
+            $ti = preg_replace("/\b" . $audioCodecListItem . "\b/i", "", $ti);
         }
     }
     return [
@@ -346,10 +342,13 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
     $crewNameList = [
         "(C72)",
         "&#40;C72&#41;", //TODO why do these HTML entities make it into our $ti in the first place?
+        "(C85)",
+        "&#40;C85&#41;",
         "(C88)",
         "&#40;C88&#41;",
         "(C91)",
         "&#40;C91&#41;",
+        "Doujinshi (C91)",
         "(C92)",
         "&#40;C92&#41;",
         //TODO maybe switch to (C\d\d) regex
@@ -377,7 +376,7 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
 function detectpROPERrEPACK($ti) {
     $mat = [];
     $detected = "";
-    $re = "/\b(PROPER|REPACK|RERIP|RERip|RERiP)\b/";
+    $re = "/\b(PROPER|REPACK|Repack|RERIP|RERip|RERiP)\b/";
     if (preg_match($re, $ti, $mat)) {
         $detected = $mat[0];
         $ti = collapseExtraSeparators(str_replace($detected, "", $ti));

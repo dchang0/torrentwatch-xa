@@ -1,4 +1,14 @@
-<script type="text/javascript" src="javascript/configure.js"></script>
+<script type="text/javascript">
+    // Hide Search -- By Text
+    $("input#hideSearchText").on("keyup", function () {
+        var hideSearchText = $(this).val().toLowerCase();
+        $("#hideListContainer li").addClass('hidden').each(function () {
+            if ($(this).find("span.hiddenItem").text().toLowerCase().match(hideSearchText)) {
+                $(this).removeClass('hidden');
+            }
+        })
+    });
+</script>
 <div id="configDialog" class="dialog">
     <div class="dialogTitle">
         <a class="toggleDialog button titleClose" href="#"></a>

@@ -640,7 +640,7 @@ function matchTitle2_31($ti, $seps) {
         if (strlen($mat[3]) == 1) {
             $mat[3] = '0' . $mat[3];
         }
-        if ($mat[3] != '' && checkdate($mat[3], 1, $mat[2])) {
+        if ($mat[3] != '' && checkdate($mat[3] + 0, 1, $mat[2] + 0)) {
             // moon character = month
             return [
                 'medTyp' => 4,
@@ -689,7 +689,7 @@ function matchTitle2_32($ti, $seps) {
     }
 }
 
-function matchTitle2_33($ti, $seps) {
+function matchTitle2_33($ti) {
     // isolated ###.#
     $mat = [];
     $re = "/\b(\d{1,4}\.\d)\b.*/";
@@ -1018,11 +1018,12 @@ function matchTitle2_42($ti, $seps) {
                 'matFnd' => "2_42-3"
             ];
         } else if (
-                substr($mat[1], 0, 1) == '0' || // leading digit of first ## is 0
-                (
                 strlen($mat[1]) > 1 && // first ## is more than 1 digit
+                (substr($mat[1], 0, 1) == '0' || // leading digit of first ## is 0
+                (
                 strlen($mat[2]) - strlen($mat[1]) < 2 && // second ## is no more than 1 digit longer
                 $mat[1] + 0 < $mat[2] + 0 // second ## is greater than first ##
+                )
                 )
         ) {
             // probably not a season but isolated EE - EE, such as 09 - 11
@@ -1036,6 +1037,22 @@ function matchTitle2_42($ti, $seps) {
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "2_42-4"
+            ];
+        } else if ($mat[1] == "0" && strlen($mat[2]) > 1) {
+            // isolated 0 - EE
+            // assume 0 is part of title, Season 1 - EE
+            // Examples:
+            // Steins Gate 0
+            return [
+                'medTyp' => 1,
+                'numSeq' => 1,
+                'seasSt' => 1,
+                'seasEd' => 1,
+                'episSt' => $mat[2],
+                'episEd' => $mat[2],
+                'itemVr' => 1,
+                'favTi' => preg_replace("/[$seps]?\-[$seps]?(\d{1,4})[$seps]?\b.*/", "", $ti),
+                'matFnd' => "2_42-5"
             ];
         } else {
             // isolated S - EE
@@ -1051,7 +1068,7 @@ function matchTitle2_42($ti, $seps) {
                 'episEd' => $mat[2],
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "2_42-5"
+                'matFnd' => "2_42-6"
             ];
         }
     }
@@ -1192,5 +1209,28 @@ function matchTitle2_44($ti, $seps) {
                 'matFnd' => "2_44-4"
             ];
         }
+    }
+}
+
+function matchTitle2_45($ti, $seps) {
+    // ## words - ##
+    // ## words ##
+    // assume the first number is part of the title
+    $mat = [];
+    if (
+            preg_match("/(\d{1,4})(\D+)[$seps]\-[$seps](\d{1,4})\b/", $ti, $mat) &&
+             preg_match("/(OVA|OAV)/", $mat[2]) != 1
+            ) {
+        return [
+            'medTyp' => 1,
+            'numSeq' => 1,
+            'seasSt' => 1,
+            'seasEd' => 1,
+            'episSt' => $mat[3],
+            'episEd' => $mat[3],
+            'itemVr' => 1,
+            'favTi' => preg_replace("/[$seps]\-[$seps](\d{1,4})\b.*/", "", $ti),
+            'matFnd' => "2_45"
+        ];
     }
 }

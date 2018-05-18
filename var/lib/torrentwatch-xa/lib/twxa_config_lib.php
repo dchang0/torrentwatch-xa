@@ -1,38 +1,6 @@
 <?php
 
 // configuration-related functions
-// OVERRIDABLE dynamic config file and config cache file location
-if (!(function_exists('get_baseDir'))) {
-
-    function get_baseDir() {
-        return "/var/lib/torrentwatch-xa"; // default path
-    }
-
-}
-
-if (!(function_exists('get_webDir'))) {
-
-    function get_webDir() {
-        return "/var/www/html/torrentwatch-xa"; // default path
-    }
-
-}
-
-if (!(function_exists('get_logFile'))) {
-
-    function get_logFile() {
-        return "/tmp/twxalog"; // default path
-    }
-
-}
-
-if (!(function_exists('get_tr_sessionIdFile'))) {
-
-    function get_tr_sessionIdFile() {
-        return '/tmp/.Transmission-Session-Id';
-    }
-
-} // END OVERRIDABLE
 
 function getConfigCacheDir() {
     return get_baseDir() . "/config_cache";
