@@ -23,9 +23,9 @@ This is almost always due to missing PHP packages or functions. Check the web se
 
 #### Some configuration settings keep disappearing
 
-This is due to a serious bug in the creation of a default config and the config cache file torrentwatch-xa-config.cache. In some circumstances, a valid config file will get caught in an overwrite loop where it keeps getting destroyed and replaced with only some of the default settings (Feeds, but nothing else).
+This is due to a serious bug in the creation of a default config file torrentwatch-xa.config and the config cache file torrentwatch-xa-config.cache. In some circumstances, a valid config file will get caught in an overwrite loop where it keeps getting destroyed and replaced with only some of the default settings (Feeds, but nothing else).
 
-The way to break out of this loop is to close the browser, delete torrentwatch-xa.config and torrentwatch-xa-config.cache, reopen the browser, and start the web UI to create a brand new default config file. Be aware that the cron job can interfere, as it will also trigger the creation of a default config file.
+The way to break out of this loop is to close the browser, delete torrentwatch-xa.config and torrentwatch-xa-config.cache, reopen the browser, and start the web UI to create a brand new default config. Be aware that the cron job can interfere, as it will also trigger the creation of a default config.
 
 #### Can't add some feeds
 
