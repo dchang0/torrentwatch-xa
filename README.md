@@ -39,6 +39,10 @@ Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (J
 
 New in alpha: Fedora Server 25 and Ubuntu 18.04 are being tested and work fine but will not be officially supported for quite a while.
 
+### Next Version
+
+I'm working on making the default config logic foolproof so that it is possible to write a command-line bulk Favorite importer.
+
 Documentation
 ===============
 
