@@ -3,6 +3,10 @@ Usage
 
 For the most part, torrentwatch-xa is very intuitive and self-explanatory. These usage notes explain some of the advanced features, details, and behaviors that are not immediately obvious.
 
+### Item Colors
+
+The small colored bars on the left edge of some items describe the states of the items. Click the Legend button to see what each color means.
+
 ### Seed Ratio Settings
 
 If set to a positive number, each Favorite's seed ratio setting overrides its parent Feed's seed ratio setting, which overrides the global Default Seed Ratio setting. To allow inheritance to occur, leave the setting blank. Any negative number gets overridden by -1. If the global Default Seed Ratio is blank, it is overridden by -1.
