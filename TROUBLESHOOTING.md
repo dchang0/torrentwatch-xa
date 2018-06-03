@@ -6,71 +6,68 @@ Troubleshooting
 There are four places to check for error messages:
 
 - a pop-up in the web browser (typically configuration errors such as permissions problems or unreachable paths)
-- web server error log, /var/log/apache2/error.log (all PHP errors, warnings, and notifications)
-- /tmp/twxalog (errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
-- web browser Javascript console (Javascript errors only, typically minor errors in the web UI)
+- web server error log: /var/log/apache2/error.log (all PHP errors, warnings, and notifications)
+- torrentwatch-xa error log: /tmp/twxalog (all errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
+- web browser Javascript console (Javascript errors only, typically minor errors in torrentwatch-xa's web UI)
 
 #### If you change the installation path(s)
 
-If you change the paths for the base or web directories, you must also do:
+If you change the base or web directories' paths, you must also:
 
 - Change the paths in get_webDir() and get_baseDir() in config.php (default location is /var/www/html/torrentwatch-xa/config.php as of 1.0.0)
-- Change the path to twxacli.php in the cron file torrentwatch-xa-cron (default location is /etc/cron.d/torrentwatch-xa-cron
+- Change the path to twxa_cli.php in the cron file torrentwatch-xa-cron (default location is /etc/cron.d/torrentwatch-xa-cron)
 
 #### Browser shows entirely or mostly blank page
 
-This is almost always due to missing PHP packages or functions. Check the web server error log for more details.
+This is almost always due to missing PHP packages or functions OR problems with the config file or config cache directory. Check the web server error log for more details.
 
-#### Some configuration settings keep disappearing
-
-This is due to a serious bug in the creation of a default config file torrentwatch-xa.config and the config cache file torrentwatch-xa-config.cache. In some circumstances, a valid config file will get caught in an overwrite loop where it keeps getting destroyed and replaced with only some of the default settings (Feeds, but nothing else).
-
-The way to break out of this loop is to close the browser, delete torrentwatch-xa.config and torrentwatch-xa-config.cache, reopen the browser, and start the web UI to create a brand new default config. Be aware that the cron job can interfere, as it will also trigger the creation of a default config.
 
 #### Can't add some feeds
 
-I have found that some feeds can't be added for various reasons, including:
+Some feeds can't be added for various reasons including:
 
 - rejection of SSL certificate chain
 - feed format is not recognized as Atom or RSS
 - can't handle HTTP redirects
 
-Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their rarity. It seems that RSS is far more common for torrent feeds.
+Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their extreme rarity.
 
 #### Feed is totally missing; "Feed inaccessible" in log
 
-From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed, I learned the hard way that if the feed URL is not even valid (usually returning a 404 or 403 HTTP status code), and the UI will never get the chance to show the section header that says "Feed is not available" in red. I will have to rewrite certain functions to handle this, but for now, if a feed is totally missing from the list, first, wait for the cron job to force a reload of the feed cache, then refresh the browser, which should then show the missing feed. If not, check the log file, which might say "Feed inaccessible: " instead of "Feed down: ". If it says "Feed inaccessible," the feed URL is likely not valid or experiencing serious server problems or traffic congestion.
+From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed, I learned the hard way that if the feed URL is not valid (usually returning a 404 or 403 HTTP status code), the UI will never get the chance to show the section header that says "Feed is not available" in red. I will have to rewrite certain functions to handle this, but for now, if a feed is totally missing from the list, first, wait for the cron job to force a reload of the feed cache, then refresh the browser, which should then show the missing feed. If not, check the log file, which might say "Feed inaccessible: " instead of "Feed down: ". If it says "Feed inaccessible," the feed URL is likely not valid or experiencing serious server problems or traffic congestion.
 
 #### Can't handle compressed torrent files
 
-Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same media or content via some other torrent file that is not compressed, possibly even on the same feed.
+Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same content via some other torrent file that is not compressed, possibly even on the same feed.
 
-#### Email notifications not actually sending (SMTP errors in the log file)
+#### Email notifications not sending (SMTP errors in the log file)
 
 SMTP sending is done via PHPMailer 5.2.23. You may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear. See https://github.com/PHPMailer/PHPMailer
 
 Typically, you should double-check the following:
 
 - From Email is valid and correct (if left blank or it is invalid, it defaults to To Email)
-- To Email addresses is valid and correct
+- To Email address is valid and correct
 - SMTP Server is valid and correct
-- SMTP Port number is correct (if left blank, it defaults to port 25). Typically SSL uses port 465 and TLS uses port 587.
-- SMTP Authentication is usually PLAIN but might be LOGIN. torrentwatch-xa does not support other authentication methods such as NTLM, etc.
-- SMTP Encryption is usually TLS. SSL is obsolete and None (no encryption) is banned on most SMTP servers.
+- SMTP Port number is correct (if left blank, it defaults to port 25). Typically SSL uses port 465, and TLS uses port 587.
+- SMTP Authentication is usually PLAIN but might be LOGIN. torrentwatch-xa does not support other authentication methods such as NTLM.
+- SMTP Encryption is usually TLS. SSL is obsolete, and None (no encryption) is banned on most SMTP servers.
 - SMTP User and Password are correct
 
 There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO field. torrentwatch-xa attempts to automatically generate a valid HELO field based on your From Email, but if the value it provides to the SMTP server is rejected, you may need to modify the source code to set the value.
 
 #### Allowed memory size of ... exhausted
 
-PHP memory_limit may be too low to handle some of the larger feeds or if you have many feeds. Edit your php.ini file for Apache2 (typically /etc/php5/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
+PHP memory_limit may be too low to handle some of the larger feeds or if you have many feeds. Edit your php.ini file for Apache2 (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
 
 
-#### "I created a Favorite but it doesn't work, even though I see the item it should match right there. I've tried reloading the page but it just doesn't start the auto-download."
+#### "I created a Favorite but it doesn't work, even though I see the item it should match in the feed list. I've tried reloading the page but it just doesn't start the auto-download."
 
 First, please review the section of [INSTALL.md](INSTALL.md) called **Use the Favorites panel to set up your automatic downloads**. You will know whether a Favorite matches properly if it causes items to show up in the Matching filter.
 
 Second, check the Favorite's Quality filter and make sure it's not too restrictive, then make sure there are no typos in any of the Favorite's fields.
+
+Third, check torrentwatch-xa's log (typically /tmp/twxalog) for errors.
 
 If you have followed the instructions correctly and are still having trouble, turn on Configure > Interface > Show Item Debug Info and refresh the browser so that you can see the show_title that must be matched by your Favorite Filter. You will likely find a typo in your Favorite's Filter that needs correcting.
 
@@ -116,17 +113,21 @@ You should see entries like these:
 
 Otherwise you will likely see errors with short instructions on how to fix the problem(s).
 
+It may also be necessary to check torrentwatch-xa's log file (typically /tmp/twxalog) for other errors preventing the auto-download.
+
 #### "Invalid or corrupt torrent file"
 
 Very rarely, a zero-length or corrupt torrent file will be downloaded from the RSS feed, producing this error. If the item is still in the feed and the Favorite does not think it has already downloaded the item, the easiest way to solve this is to clear all caches, which should trigger the auto-download of the torrent file from the RSS feed and the the auto-download of the torrent in Transmission.
 
 If you don't want to clear your caches, you can manually delete the individual torrent file from the download cache.
 
+If the Favorite already thinks it has downloaded the item, you will need to change the season and episode in the Favorite to trigger, then clear the cache.
+
 If the RSS feed is still serving a corrupt torrent file, there is not much you can do about it except find a different source for the same item.
 
 #### Time zone setting is not taking effect
 
-After setting the time zone in Configuration > General > Time Zone, it may be necessary to do any or all of the following to get the time zone to take effect:
+After setting the time zone in Configure > Interface > Time Zone, it may be necessary to do any or all of the following to get the time zone to take effect:
 
 - Clear feed caches
 - Restart web server

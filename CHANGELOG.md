@@ -637,28 +637,74 @@ Code changes
 - started testing tinysort.min.js, but it produces benign warnings when the Transmission list is empty, so we stuck with jquery.tinysort.min.js for now
 - switched back to preg_ functions in video and audio codecs detection to fix bug with avi being removed from the middle of Davinci
 - fixed minor bug in audio codecs function
+- validated twxacli.php and removed obsolete code
 
-Next Version
+1.1.0
 
 Functional changes
 
+- renamed twxacli.php to twxa_cli.php to conform to file naming convention
+- added twxa_fav_import.php in alpha testing
+- improved check_requirements() and renamed it to checkpHPRequirements()
+- added Configure > Interface > Check for Updates
+- increased Check for Updates delay from 1 to 7 days
+- moved and renamed hidden debugLevel to Configure > Interface > Log Level
+- updated Paypal donation button
+- massive rewrite of check_files() as checkFilesAndDirs()
+  - added check for DownloadCacheDir
+  - added check for Save Torrents Dir
+  - added check for permissions on ConfigFile if it exists
+  - added check for permissions on ConfigCacheFile if it exists
+  - added check for permissions on DownloadHistoryFile if it exists
+  - improved error messages
+- Favorite > Also Save Dir now defaults to global Also Save Torrent Files Dir if left blank or if path is not writable
+- Favorite > Download Dir now defaults to global Download Dir if left blank
+
+Code changes
+
+- fixed bad bug where most of the Configuration settings are lost and replaced with some default settings (Feeds)
+  - massive rewrite of setup_default_config() as setupDefaultConfig()
+  - massive rewrite of readjSONConfigFile()
+  - moved some code from readjSONConfigFile() to smaller functions
+  - improved writejSONConfigFile()
+- moved hidden settings out of torrentwatch-xa.config into twxa_config_lib.php:
+  - download cache directory location
+  - history file location
+  - torrent file extension
+  - magnet file extension
+  - Transmission URI (path to Transmission RPC)
+- added setpHPTimeZone()
+- renamed get_tr_location() to getTransmissionWebuRL() and moved it to twxa_config_lib.php
+- added getTransmissionWebPath()
+- renamed close_html() to closehTML()
+- added outputErrorDialog()
+- renamed get_client() to outputClient()
+- renamed twxaDebug() to writeToLog()
+- fixed bug in writeToLog() where ERROR wrote every level
+- removed $SERVER global from twxa_cli.php
+
+Next Version
+
+Functional Changes
+
 IN PROGRESS
 
-- validate twxacli.php functionality and remove obsolete code
+- add PHP prerequisite check to twxa_cli.php
+- fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
 - sometimes adding/updating a Favorite does not close the dialog and refresh the browser
 - Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
-- make twxaDebug() show alerts in web UI
+- show alerts in web UI
+- remove Default setting from Favorite > Also Save Dir and Favorite > Download Dir (will allow saving in a directory called Default)
 
-Code changes
+Code Changes
 
 IN PROGRESS
 
 - JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
-- improve writejSONConfigFile() to avoid using global $config_value
 - add function that detects errors in $config_values
 - figure out window.gotAllData and window.getFail logic, maybe merge window.gotAllData into window.updatingClientData or remove one
   - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container

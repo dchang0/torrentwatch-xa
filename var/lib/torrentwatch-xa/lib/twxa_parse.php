@@ -285,10 +285,8 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'TELESYNC'
     ];
     foreach ($qualityList as $qualityListItem) {
-        //if (stripos($ti, $qualityListItem) !== false) {
         if (preg_match("/\b" . $qualityListItem . "\b/i", $ti) !== false) {
             $detQualities[] = $qualityListItem;
-            //$ti = str_ireplace($qualityListItem, "", $ti);
             $ti = preg_replace("/\b" . $qualityListItem . "\b/i", "", $ti);
         }
     }
@@ -320,11 +318,9 @@ function detectAudioCodecs($ti) {
         '2ch'
     ];
     foreach ($audioCodecList as $audioCodecListItem) {
-        //if (stripos($ti, $audioCodecListItem) !== false) {
         if (preg_match("/\b" . $audioCodecListItem . "\b/i", $ti) !== false) {
             $detAudioCodecs[] = $audioCodecListItem;
-            // cascade down through, removing immediately-surrouding dashes
-            //$ti = str_ireplace($audioCodecListItem, "", $ti);
+            //TODO cascade down through, removing immediately-surrouding dashes
             $ti = preg_replace("/\b" . $audioCodecListItem . "\b/i", "", $ti);
         }
     }
@@ -603,34 +599,34 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
             if (is_numeric($result['episEd'])) {
                 $result['episEd'] += 0;
             } else {
-                twxaDebug($result['matFnd'] . ": " . $result['episEd'] . " is not numeric in $ti\n", -1);
+                writeToLog($result['matFnd'] . ": " . $result['episEd'] . " is not numeric in $ti\n", -1);
             }
         }
         if (isset($result['episSt']) && $result['episSt'] != "") {
             if (is_numeric($result['episSt'])) {
                 $result['episSt'] += 0;
             } else {
-                twxaDebug($result['matFnd'] . ": " . $result['episSt'] . " is not numeric in $ti\n", -1);
+                writeToLog($result['matFnd'] . ": " . $result['episSt'] . " is not numeric in $ti\n", -1);
             }
         }
         if (isset($result['seasEd']) && $result['seasEd'] != "") {
             if (is_numeric($result['seasEd'])) {
                 $result['seasEd'] += 0;
             } else {
-                twxaDebug($result['matFnd'] . ": " . $result['seasEd'] . " is not numeric in $ti\n", -1);
+                writeToLog($result['matFnd'] . ": " . $result['seasEd'] . " is not numeric in $ti\n", -1);
             }
         }
         if (isset($result['seasSt']) && $result['seasSt'] != "") {
             if (is_numeric($result['seasSt'])) {
                 $result['seasSt'] += 0;
             } else {
-                twxaDebug($result['matFnd'] . ": " . $result['seasSt'] . " is not numeric in $ti\n", -1);
+                writeToLog($result['matFnd'] . ": " . $result['seasSt'] . " is not numeric in $ti\n", -1);
             }
         }
     } else {
         // handle no-numeral episodes
         $result = matchTitle0_($ti, $seps);
-    } //END if(isset($matNums[0]))
+    } // END if(isset($matNums[0]))
     if (!isset($result['seasSt'])) {
         $result['seasSt'] = "";
     }
@@ -770,7 +766,7 @@ function episode_filter($item, $filter) {
                 if (strpos($filterSets[$i], '-') !== false) {
                     $filterPieces = explode('-', $filterSets[$i]);
                     if (isset($filterPieces[2])) {
-                        twxaDebug("Bad episode filter: $filter\n", 0);
+                        writeToLog("Bad episode filter: $filter\n", 0);
                     }
                     if (isset($filterPieces[0])) {
                         $start = parseSxEvVNotation($filterPieces[0]);
@@ -779,7 +775,7 @@ function episode_filter($item, $filter) {
                             $startEpisode = $start['episode'];
                             $startEpisodeVersion = $start['version'];
                         } else {
-                            twxaDebug("Bad episode filter: $filter\n", 0);
+                            writeToLog("Bad episode filter: $filter\n", 0);
                         }
                     } else {
                         $startSeason = 1;
@@ -801,7 +797,7 @@ function episode_filter($item, $filter) {
                             }
                             $stopEpisodeVersion = $stop['version'];
                         } else {
-                            twxaDebug("Bad episode filter: $filter\n", 0);
+                            writeToLog("Bad episode filter: $filter\n", 0);
                         }
                     } else {
                         $stopSeason = 99999;
@@ -824,7 +820,7 @@ function episode_filter($item, $filter) {
                         $stopEpisode = $start['episode'];
                         $startEpisodeVersion = $stopEpisodeVersion = $start['version'];
                     } else {
-                        twxaDebug("Bad episode filter: $filter\n", 0);
+                        writeToLog("Bad episode filter: $filter\n", 0);
                     }
                 }
 

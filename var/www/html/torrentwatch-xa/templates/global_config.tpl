@@ -76,6 +76,14 @@
                                 <input type="checkbox" name="hidedonate" value="1" <?php echo $hidedonate; ?> />
                             </div>
                         </div>
+                        <div id="config_check_updates">
+                            <div class="left">
+                                <label class="item checkbox">Check for Updates:</label>
+                            </div>
+                            <div class="right">
+                                <input type="checkbox" name="checkversion" value="1" <?php echo $checkversion; ?> />
+                            </div>
+                        </div>
                         <div id="tz" title="Set your Time Zone (Default UTC). See http://php.net/manual/en/timezones.php for a list of supported timezones. Change won't appear to take effect in feed lists until next feed cache refresh.">
                             <div class="left">
                                 <label class="item">Time Zone:</label>
@@ -83,6 +91,19 @@
                             <div class="right">
                                 <input type="text" name="tz" class="text"
                                        value="<?php echo $config_values['Settings']['Time Zone']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="config_log_level">
+                            <div class="left">
+                                <label class="item select">Log Level:</label>
+                            </div>
+                            <div class="right">
+                                <select name="loglevel">
+                                    <!--<option value="-1" <?php echo $loglevelalert; ?>>ALERT</option>-->
+                                    <option value="0" <?php echo $loglevelerror; ?>>ERROR</option>
+                                    <option value="1" <?php echo $loglevelinfo; ?>>INFO</option>
+                                    <option value="2" <?php echo $logleveldebug; ?>>DEBUG</option>
+                                </select>
                             </div>
                         </div>
                     </div>

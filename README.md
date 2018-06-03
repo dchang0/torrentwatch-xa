@@ -25,23 +25,30 @@ Common setups:
 Status
 ===============
 
-### Current Version
+I've posted 1.1.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-I've posted 1.0.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+_twxacli.php has been renamed to twxa_cli.php to conform to the file naming convention; please be aware that the cron job file will need to be updated to call twxa_cli.php_
 
-It is now much easier to change torrentwatch-xa's install paths. get_webDir(), get_baseDir(), and all the PHP include path calculations are now located only in config.php. As a result, twxacli.php and config.php were moved from the base directory to the web directory and config.php is no longer optional.
+1.1.0 fixed some leftover bugs in changing install paths by moving the hidden settings Cache Dir and History from torrentwatch-xa.config to twxa_config_lib.php.
 
-1.0.0 includes several JQuery 3 bug fixes, including a fix for a slow memory leak in listSelector.
+A very bad but very rare bug where the Configuration settings were wiped and replaced with some default settings was finally fixed in 1.1.0. The bug was carried over from TorrentWatch-X 0.8.9 but was made worse by the conversion of the config file to JSON. Fixing it required a major rewrite of readjSONConfigFile() to change the way torrentwatch-xa.config and torrentwatch-xa-config.cache are handled.
 
-Some new detection errors were fixed, especially where a number is part of the title, as with Steins;Gate 0. Bugs in the video and audio codec detection functions were fixed by switching back to the slower PHP preg_ functions. A bug in the version number comparison was fixed by committing to a three-number format.
+This config file bug had to be fixed in order to add a new, experimental feature: a command-line bulk Favorites importer, `twxa_fav_import.php`, now in alpha. You can now import a plain-text TSV (tab-separate values) file directly into your Favorites. Please read the usage notes for instructions.
 
-Still in alpha since 0.4.0: a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+The formerly hidden setting debugLevel was renamed to Log Level and exposed via Configure > Interface > Log Level
 
-New in alpha: Fedora Server 25 and Ubuntu 18.04 are being tested and work fine but will not be officially supported for quite a while.
+There's a new configuration option: Configure > Interface > Check for Updates
 
-### Next Version
+1.1.0 has improved checks for important files or directories that do not exist or have incorrect permissions.
 
-I'm working on making the default config logic foolproof so that it is possible to write a command-line bulk Favorite importer.
+#### Still in Alpha
+
+- a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+- Fedora Server 25 and Ubuntu 18.04 are being tested and work fine but will not be officially supported for quite a while.
+
+#### Any Atom Feeds Out There?
+
+I'd like to finally test and bugfix the Atom feed capability of torrentwatch-xa. If anyone knows of a public Atom feed that contains torrents, please message me at dchang0 at Github or open an Issue. If it's got anime torrents, even better, as I can include it as a default feed. Thanks!
 
 Documentation
 ===============

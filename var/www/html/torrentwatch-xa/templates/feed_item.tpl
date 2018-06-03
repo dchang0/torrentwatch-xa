@@ -10,7 +10,7 @@ $showEpisodeNumber = null; // to contain HTML code of the show episode number, e
 $pubDate = null; // to contain publication date of the item
 $unixTime = null; // to contain UNIX timestamp
 
-//TOOD improve passing of $guess[], $id, $ulink, and $feed into this file
+//TODO improve passing of $guess[], $id, $ulink, and $feed into this file
 
 if(isset($item['title'])) {
     $utitle = str_replace('&shy;', '', $item['title']);

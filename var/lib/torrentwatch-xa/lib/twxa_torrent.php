@@ -66,16 +66,16 @@ function auto_del_seeded_torrents() {
                 $result = check_cache_for_torHash($torrent['hashString']);
                 if ($result !== "") {
                     $deleted = true;
-                    twxaDebug("Auto-del torrent in cache: " . substr($result, 3) . "\n", 1);
+                    writeToLog("Auto-del torrent in cache: " . substr($result, 3) . "\n", 1);
                     delTorrent($torrent['hashString'], false, false); // torHash, toTrash, checkCache
                 }
             }
         }
         if ($deleted === false) {
-            twxaDebug("No torrents eligible for auto-delete\n", 2);
+            writeToLog("No torrents eligible for auto-delete\n", 2);
         }
     } else {
-        twxaDebug("RPC error in auto-delete: " . print_r($response, true) . "\n", 0);
+        writeToLog("RPC error in auto-delete: " . print_r($response, true) . "\n", 0);
     }
 }
 
@@ -101,7 +101,7 @@ function transmission_sessionId() {
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) {
         $myuid = posix_getuid();
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?
-        twxaDebug("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
+        writeToLog("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
         return;
     }
 
@@ -117,11 +117,10 @@ function transmission_sessionId() {
         $tr_pass = get_client_passwd();
         $tr_host = $config_values['Settings']['Transmission Host'];
         $tr_port = $config_values['Settings']['Transmission Port'];
-        $tr_uri = $config_values['Settings']['Transmission URI'];
 
         $sid = curl_init();
         $curl_options = array(
-            CURLOPT_URL => "http://$tr_host:$tr_port$tr_uri",
+            CURLOPT_URL => "http://$tr_host:$tr_port" . getTransmissionrPCPath(),
             CURLOPT_HEADER => true,
             CURLOPT_NOBODY => true,
             CURLOPT_USERPWD => "$tr_user:$tr_pass"
@@ -153,13 +152,12 @@ function transmission_rpc($request) {
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) { //TODO break this out into a small function
         $myuid = posix_getuid();
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?
-        twxaDebug("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
+        writeToLog("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
         return;
     }
 
     $tr_user = $config_values['Settings']['Transmission Login'];
     $tr_pass = get_client_passwd();
-    $tr_uri = $config_values['Settings']['Transmission URI'];
     $tr_host = $config_values['Settings']['Transmission Host'];
     $tr_port = $config_values['Settings']['Transmission Port'];
 
@@ -172,10 +170,10 @@ function transmission_rpc($request) {
 
         $post = curl_init();
         $curl_options = array(
-            CURLOPT_URL => "http://$tr_host:$tr_port$tr_uri",
+            CURLOPT_URL => "http://$tr_host:$tr_port" . getTransmissionrPCPath(),
             CURLOPT_USERPWD => "$tr_user:$tr_pass",
             CURLOPT_HTTPHEADER => array(
-                "POST $tr_uri HTTP/1.1",
+                "POST " . getTransmissionrPCPath() . " HTTP/1.1",
                 "Host: $tr_host",
                 "X-Transmission-Session-Id: $SessionId",
                 'Connection: Close',
@@ -271,30 +269,29 @@ function get_deep_dir($dest, $tor_name) {
                 }
                 break;
             }
-            twxaDebug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
+            writeToLog("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
         case 'Title':
             $guess = detectMatch($tor_name);
             if (isset($guess['favTitle'])) {
                 $dest = $dest . "/" . ucwords(strtolower($guess['favTitle']));
                 break;
             }
-            twxaDebug("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
-        /*case 'Full':
-        default:
-            $dest = $dest . "/" . ucwords(strtolower($tor_name));
-            break;*/
+            writeToLog("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
+        /* case 'Full':
+          default:
+          $dest = $dest . "/" . ucwords(strtolower($tor_name));
+          break; */
     }
     return $dest;
 }
 
 function makeTorrentOrMagnetFilename($ti, $isMagnet) {
-    global $config_values;
     // prepare filesystem-safe path
     $filename = trim(sanitizeFilename($ti));
     if ($isMagnet) {
-        $extension = ltrim(trim(sanitizeFilename($config_values['Settings']['Magnet Extension'])), ".");
+        $extension = ltrim(trim(sanitizeFilename(getMagnetFileExtension())), ".");
     } else {
-        $extension = ltrim(trim(sanitizeFilename($config_values['Settings']['Torrent Extension'])), ".");
+        $extension = ltrim(trim(sanitizeFilename(getTorrentFileExtension())), ".");
     }
     if ($extension !== "") {
         return "$filename.$extension";
@@ -343,7 +340,6 @@ function folder_add_torrent($tor, $dest, $ti, $isMagnet = false) {
 }
 
 function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
-    global $config_values;
     // transmission dies with bad folder if it doesn't end in a /
     if (substr($dest, strlen($dest) - 1, 1) != '/') {
         $dest .= '/';
@@ -358,14 +354,14 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     if (isset($response1['result'])) {
         if ($response1['result'] === 'success') {
             if (isset($response1['arguments']['torrent-added'])) {
-                $cache = $config_values['Settings']['Cache Dir'] . "/dl_" . sanitizeFilename($ti);
+                $cache = getDownloadCacheDir() . "/dl_" . sanitizeFilename($ti);
                 $torHash = $response1['arguments']['torrent-added']['hashString'];
                 if (!isset($torHash) || $torHash === "") {
-                    twxaDebug("Empty torrent hash for: $ti\n", 0);
+                    writeToLog("Empty torrent hash for: $ti\n", 0);
                 }
                 // write torrent hash to item's cache file
                 if (file_put_contents($cache, $torHash) === false) {
-                    twxaDebug("Failed writing $torHash into: $cache\n", -1);
+                    writeToLog("Failed writing $torHash into: $cache\n", -1);
                 }
                 // set seed ratio
                 if ($seedRatio >= 0) {
@@ -379,7 +375,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
                     );
                     $response2 = transmission_rpc($request2);
                     if ($response2['result'] !== 'success') {
-                        twxaDebug("Failed setting seed ratio limit for $ti\n", 0);
+                        writeToLog("Failed setting seed ratio limit for $ti\n", 0);
                     }
                 }
                 return [
@@ -460,14 +456,14 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
                     $url = $retried;
                 }
                 $errMsg = "No torrent file link found in $url. Might be a gzipped torrent.";
-                twxaDebug("$errMsg\n", -1);
+                writeToLog("$errMsg\n", -1);
                 return $errMsg;
             }
         } // do not add else with return here as it will break adding some torrent files
 
         if (!$tor) {
             $errMsg = "Couldn't open torrent: $filename";
-            twxaDebug("$errMsg\n", -1);
+            writeToLog("$errMsg\n", -1);
             return $errMsg;
         }
     }
@@ -480,7 +476,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
     if (!isset($dest)) {
         $dest = $config_values['Settings']['Download Dir'];
     }
-    if (isset($fav) && $fav['Download Dir'] != 'Default') {
+    if (isset($fav) && !empty($fav['Download Dir']) && $fav['Download Dir'] != 'Default') {
         if (is_dir($fav['Download Dir']) && is_writeable($fav['Download Dir'])) {
             $dest = $fav['Download Dir'];
         } else {
@@ -497,7 +493,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             if (!is_dir($dest)) {
                 // it's a file--destroy and recreate it as a directory
                 $old_umask = umask(0);
-                twxaDebug("Attempting to destroy file and recreate as directory: $dest\n", 2);
+                writeToLog("Attempting to destroy file and recreate as directory: $dest\n", 2);
                 unlink($dest);
                 mkdir($dest, 0775, true);
                 umask($old_umask);
@@ -505,7 +501,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         } else {
             // path doesn't exist, create it as a directory
             $old_umask = umask(0);
-            twxaDebug("Attempting to create directory: $dest\n", 2);
+            writeToLog("Attempting to create directory: $dest\n", 2);
             mkdir($dest, 0775, true);
             umask($old_umask);
         }
@@ -534,12 +530,12 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             $return1 = folder_add_torrent($tor, $dest, $tor_name, $magnet);
             break;
         default:
-            twxaDebug("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
+            writeToLog("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
             exit(1); //TODO deal with this in revamping return of this function
     }
     if ($return1['errorCode'] === 0) {
         add_history($tor_name);
-        twxaDebug("Started: $tor_name in $dest\n", 1);
+        writeToLog("Started: $tor_name in $dest\n", 1);
         if (isset($fav)) {
             if ($config_values['Settings']['SMTP Notifications']) {
                 $subject = "\"$tor_name\" started downloading";
@@ -551,9 +547,9 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             }
             if (!isset($any) || !$any) {
                 if (updateFavoriteEpisode($fav, $ti)) {
-                    twxaDebug("Updated Favorite: $ti\n", 2);
+                    writeToLog("Updated Favorite: $ti\n", 2);
                 } else {
-                    twxaDebug("Failed to update Favorite: $ti\n", 2);
+                    writeToLog("Failed to update Favorite: $ti\n", 2);
                 }
             }
         } else if ($config_values['Settings']['Enable Script']) {
@@ -561,12 +557,18 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         }
         if ($config_values['Settings']['Client'] !== "folder" &&
                 $config_values['Settings']['Save Torrents']) {
-            twxaDebug("Also saving to file: " . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
-            if (isset($fav) && $fav['Also Save Dir'] != 'Default') {
+            if (
+                    isset($fav) &&
+                    !empty($fav['Also Save Dir']) &&
+                    $fav['Also Save Dir'] != 'Default' &&
+                    is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
+                    is_writeable($fav['Also Save Dir'])
+            ) {
                 $alsodest = $fav['Also Save Dir'];
             } else {
                 $alsodest = $config_values['Settings']['Save Torrents Dir'];
             }
+            writeToLog("Also saving to file: $alsodest/" . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
             $return2 = folder_add_torrent($tor, $alsodest, $tor_name, $magnet);
             if ($return2['errorCode'] !== 0) {
                 return "Error: " . $return2['errorMessage']; //TODO deal with this in revamping return of this function
@@ -574,7 +576,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         }
         return "Success"; //TODO deal with this in revamping return of this function
     } else {
-        twxaDebug("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
+        writeToLog("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
         $msg = "torrentwatch-xa tried to start \"$tor_name\" but failed with the following error:\n\n";
         $msg .= $return1['errorMessage'] . "\n";
         if ($config_values['Settings']['SMTP Notifications']) {

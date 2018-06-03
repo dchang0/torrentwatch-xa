@@ -7,6 +7,10 @@ For the most part, torrentwatch-xa is very intuitive and self-explanatory. These
 
 The small colored bars on the left edge of some items indicate the states of the items. Click the Legend button to see what each color means.
 
+### Check for Updates
+
+Check for Updates checks once every 7 days for new versions. If you turn it off, then turn it back on, it will take up to 7 days to check again.
+
 ### Seed Ratio Settings
 
 If set to a positive number, each Favorite's seed ratio setting overrides its parent Feed's seed ratio setting, which overrides the global Default Seed Ratio setting. To allow inheritance to occur, leave the setting blank. Any negative number gets overridden by -1. If the global Default Seed Ratio is blank, it is overridden by -1.
@@ -15,7 +19,7 @@ Transmission itself has a seed ratio limit that will override any limit set with
 
 ### Configure > Feeds
 
-torrentwatch-xa provides you with several default feeds when starting fresh with no config file. If you've added your own feeds, you should probably disable or remove any of these default feeds that you don't use to improve twxacli.php's performance and reduce the load placed on the feed host(s), saving their operators bandwidth. Please be sure to visit your favorite feeds' websites often so that they can earn advertising revenue from your support and help keep the anime fansubbing community alive--thanks!
+torrentwatch-xa provides you with several default feeds when starting fresh with no config file. If you've added your own feeds, you should probably disable or remove any of these default feeds that you don't use to improve twxa_cli.php's performance and reduce the load placed on the feed host(s), saving their operators bandwidth. Please be sure to visit your favorite feeds' websites often so that they can earn advertising revenue from your support and help keep the anime fansubbing community alive--thanks!
 
 ### Configure > Trigger
 
@@ -78,15 +82,50 @@ See the section "Only Public Torrent RSS or Atom Feeds Are Supported" in the **D
 
 ### Auto-Del Seeded Torrents
 
-As of 0.5.0, Auto-Del Seeded Torrents has been fully implemented such that when enabled, either the web UI or twxacli.php (run by the cron job) will automatically delete completely-downloaded, fully-seeded torrents from Transmission without trashing the torrent's contents. Auto-Del Seeded Torrents is also smart enough not to delete any torrents that are not found in the download cache, preventing it from deleting torrents that were added to Transmission via other means.
+As of 0.5.0, Auto-Del Seeded Torrents has been fully implemented such that when enabled, either the web UI or twxa_cli.php (run by the cron job) will automatically delete completely-downloaded, fully-seeded torrents from Transmission without trashing the torrent's contents. Auto-Del Seeded Torrents is also smart enough not to delete any torrents that are not found in the download cache, preventing it from deleting torrents that were added to Transmission via other means.
 
-As of 0.6.0, the web UI is fully synchronized with Transmission so that items auto-deleted by twxacli.php will be removed from the web UI correctly without requiring a browser refresh.
+As of 0.6.0, the web UI is fully synchronized with Transmission so that items auto-deleted by twxa_cli.php will be removed from the web UI correctly without requiring a browser refresh.
 
 ### Saving Magnet Links as Files
 
 As of 0.6.1, the features that save torrent files to the filesystem can now save magnet links as files. This seems counterintuitive, since the point of magnet links is to avoid having to deal with downloading, storing, and hosting torrent files. However, there is no other way to record magnet links for later retrieval except by writing them to a file, so that's what torrentwatch-xa does. Luckily, there are third-party tools that easily convert magnet links stored in text files to torrent files, if you prefer the torrent file over the magnet link.
 
 The ability to save magnet links was added to deal with the increasingly-common feeds that have only magnet links and no links to torrent files.
+
+### Bulk Favorites Importer twxa_fav_import.php
+
+_WARNING!! The bulk importer is experimental; use it at your own risk! Be sure to back up your config file before any bulk import!_
+
+1.1.0 includes twxa_fav_import.php, a command-line tool that can import a tab-separated-values (TSV) file containing a list of favorites.
+
+A good way to use the bulk Favorites importer is to go to anichart.net, look up next season's anime titles, and then create the TSV and import it. This will catch the first episode of each show right when it starts. Be aware that importing a massive number of Favorites will slow down torrentwatch-xa if you are running a Raspberry Pi or other low-powered CPU.
+
+Create a plain text TSV file with these columns in order from left to right:
+
+1. Name (required)
+2. Filter (required)
+3. Quality (optional)
+
+Filter and Quality can be regular expressions. (Set Configure > Favorites > Matching Style to RegExp in order to use regular expressions.)
+
+Close the browser if you have torrentwatch-xa's web UI open.
+
+Then, at the command line, run:
+
+`sudo cp /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config <path to put the backup>`
+
+`sudo /usr/bin/php /var/www/html/torrentwatch-xa/twxa_fav_import.php <path to TSV>`
+
+You can watch the web server's log file (default: /var/log/apache2/error.log) for PHP errors and torrentwatch-xa's log (default: /tmp/twxalog) for import errors.
+
+If there are no errors, go ahead and open torrentwatch-xa in the browser and make sure the new Favorites are imported.
+
+
+If the TSV file confuses PHP's fgetcsv() function, there is a good possibility you will corrupt your config file. If you have to put the backup file back, do this:
+
+Close the browser if you have torrentwatch-xa's web UI open.
+
+`sudo cp <path to put the backup> /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config`
 
 Design Decisions Explained
 ===============

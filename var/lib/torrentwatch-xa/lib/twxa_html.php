@@ -3,20 +3,17 @@
 function show_feed_lists_container() {
     global $html_out;
     $html_out .= "<div id='torrentlist_container'>\n";
-    return;
 }
 
 function close_feed_lists_container() {
     global $html_out;
     $html_out .= "</div>\n";
-    return;
 }
 
 function show_transmission_div() {
     global $html_out;
     $html_out .= '<div id="transmission_data" class="transmission">';
     $html_out .= '<ul id="transmission_list" class="torrentlist">';
-    return;
 }
 
 function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id) {
@@ -51,8 +48,6 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
     require('templates/feed_item.tpl');
     $html_out .= ob_get_contents();
     ob_end_clean();
-
-    return;
 }
 
 // open and show the div which contains all the feed items (one div per feed list)
@@ -81,7 +76,6 @@ function show_feed_list($idx) {
         $html_out .= "</tr></table></div>\n";
     }
     $html_out .= "<ul id='torrentlist' class='torrentlist'>";
-    return;
 }
 
 function show_feed_down_header($idx) {
@@ -92,12 +86,10 @@ function show_feed_down_header($idx) {
         $ti = $config_values['Feeds'][$idx]['Name'];
     }
     $html_out .= "<div class=\"errorHeader\">$ti is not available.</div>\n";
-    return;
 }
 
 // close the div that contains all the feed items
 function close_feed_list() {
     global $html_out;
     $html_out .= '</ul></div>';
-    return;
 }

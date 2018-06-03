@@ -27,7 +27,7 @@ done
 
 if [[ $HELP == 1 ]]
 then
-    echo "installtwxa.sh {--keep-config}"
+    echo "install_twxa.sh {--keep-config}"
     exit
 fi
 

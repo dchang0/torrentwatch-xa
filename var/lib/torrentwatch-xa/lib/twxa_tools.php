@@ -112,10 +112,12 @@ function sanitizeFilename($filename) {
     return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
 }
 
-function twxaDebug($string, $lvl = -1) {
+function writeToLog($string, $lvl = -1) {
     global $config_values;
     switch ($lvl) {
         case -1: // ALERT:
+            $errLabel = "ALR:";
+            break;
         case 0:
             $errLabel = "ERR:";
             break;
@@ -126,7 +128,7 @@ function twxaDebug($string, $lvl = -1) {
         default:
             $errLabel = "DBG:";
     }
-    if (empty($config_values['Settings']['debugLevel']) || $config_values['Settings']['debugLevel'] + 0 >= $lvl) {
+    if (!isset($config_values['Settings']['Log Level']) || $config_values['Settings']['Log Level'] + 0 >= $lvl) {
         /* if ($lvl === -1 && isset($config_values['Global']['HTMLOutput'])) {
           $string = trim(strtr($string, array("'" => "\\'")));
           $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once
@@ -160,7 +162,7 @@ function notifyByEmail($msg, $subject) {
             $email->SMTPDebug = 0;
             // set the From: email address
             if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
-                twxaDebug("From Email is invalid, using To Email as From Email\n", 0);
+                writeToLog("From Email is invalid, using To Email as From Email\n", 0);
                 $fromEmail = $toEmail;
             }
             $email->From = $fromEmail;
@@ -170,13 +172,13 @@ function notifyByEmail($msg, $subject) {
             $getMX = dns_get_record($splitEmail[1], DNS_MX);
             if (isset($getMX['target'])) {
                 $helo = $getMX['target'];
-                twxaDebug("Detected HELO from From Email: $helo\n", 2);
+                writeToLog("Detected HELO from From Email: $helo\n", 2);
             } else if ($splitEmail[1]) {
                 $helo = $splitEmail[1];
-                twxaDebug("Detected HELO from From Email: $helo\n", 2);
+                writeToLog("Detected HELO from From Email: $helo\n", 2);
             } else {
                 $helo = "localhost.localdomain";
-                twxaDebug("Unable to detect HELO from From Email, using default: $helo\n", 2);
+                writeToLog("Unable to detect HELO from From Email, using default: $helo\n", 2);
             }
             $email->Helo = $helo;
             $email->AddAddress("$toEmail");
@@ -203,17 +205,17 @@ function notifyByEmail($msg, $subject) {
             $email->Subject = $subject;
             $email->Body = $msg;
             if (!$email->Send()) {
-                twxaDebug("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
+                writeToLog("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
             } else {
-                twxaDebug("Mail sent to $toEmail: $subject\n", 1);
+                writeToLog("Mail sent to $toEmail: $subject\n", 1);
             }
         } else {
             // To Email is not valid
-            twxaDebug("Email failed: required To Email is not valid\n", -1);
+            writeToLog("Email failed: required To Email is not valid\n", -1);
         }
     } else {
         // SMTP Port is not valid
-        twxaDebug("Email failed: SMTP Port not valid; leave blank for default of 25 or provide integer from 0-65535\n", -1);
+        writeToLog("Email failed: SMTP Port not valid; leave blank for default of 25 or provide integer from 0-65535\n", -1);
     }
 }
 
@@ -225,12 +227,12 @@ function runScript($param, $title, $errorMessage = "") {
         if (preg_match("/\s+/", $script)) {
             $subject = "Parameters not allowed in Trigger Script: $script";
             $msg = "torrentwatch-xa does not allow parameters in Configure > Trigger > Script: $script";
-            twxaDebug("Parameters not allowed in Trigger Script: $script\n", 0);
+            writeToLog("Parameters not allowed in Trigger Script: $script\n", 0);
         } else {
             if (is_file($script)) {
                 $escapedTitle = escapeshellarg($title);
                 $escapedErrorMessage = escapeshellarg($errorMessage);
-                twxaDebug("Running script: $script $param $escapedTitle $escapedErrorMessage\n", 1);
+                writeToLog("Running script: $script $param $escapedTitle $escapedErrorMessage\n", 1);
                 $response = [];
                 $return = 0;
                 exec("$script $param $escapedTitle $escapedErrorMessage 2>&1", $response, $return);
@@ -243,20 +245,20 @@ function runScript($param, $title, $errorMessage = "") {
                         $debugMsg .= " $param $escapedTitle $escapedErrorMessage: " . $responseMsg;
                     }
                     $msg .= "Please examine the example scripts in " . get_baseDir() . "/examples for more info about how to make a compatible script.";
-                    twxaDebug("$debugMsg\n", 0);
+                    writeToLog("$debugMsg\n", 0);
                 } else {
-                    twxaDebug("Success running: $script\n", 2);
+                    writeToLog("Success running: $script\n", 2);
                 }
             } else {
                 $subject = "Trigger Script not found: $script";
                 $msg = "torrentwatch-xa was unable to find Trigger Script: $script";
-                twxaDebug("Trigger Script not found: $script\n", 0);
+                writeToLog("Trigger Script not found: $script\n", 0);
             }
         }
     } else {
         $subject = "Trigger Script not specified";
         $msg = "torrentwatch-xa: Configure > Trigger > Script not specified";
-        twxaDebug("Trigger Script not specified\n", 0);
+        writeToLog("Trigger Script not specified\n", 0);
     }
     if ($subject && $config_values['Settings']['SMTP Notifications']) {
         notifyByEmail($msg, $subject);

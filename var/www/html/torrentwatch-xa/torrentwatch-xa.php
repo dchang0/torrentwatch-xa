@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.0.0";
+$twxa_version[0] = "1.1.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -113,8 +113,8 @@ function parse_options($twxa_version) {
                 }
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
-                $_GET['downloaddir'] = 'Default';
-                $_GET['alsosavedir'] = 'Default';
+                $_GET['downloaddir'] = '';
+                $_GET['alsosavedir'] = '';
                 $_GET['seedratio'] = "";
             } else {
                 $_GET['name'] = $_GET['title'];
@@ -122,8 +122,8 @@ function parse_options($twxa_version) {
                 $_GET['quality'] = 'All';
                 $_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
-                $_GET['downloaddir'] = 'Default';
-                $_GET['alsosavedir'] = 'Default';
+                $_GET['downloaddir'] = '';
+                $_GET['alsosavedir'] = '';
                 $_GET['seedratio'] = "";
             }
             if ($config_values['Settings']['Default Feed All'] && $tmp['numberSequence'] > 0) { // set default feed to all only if serialized
@@ -135,13 +135,6 @@ function parse_options($twxa_version) {
             }
             exit;
         case 'hide':
-            /* $response = add_hidden(ucwords($_GET['hide']));
-              if ($response) {
-              echo "ERROR:$response";
-              } else {
-              $guess = detectMatch(html_entity_decode($_GET['hide']));
-              echo $guess['favTitle']; // use favTitle, not title
-              } */
             addHidden($_GET['hide']);
             exit;
         case 'delHidden':
@@ -150,7 +143,7 @@ function parse_options($twxa_version) {
             }
             break;
         case 'dlTorrent':
-            // Loaded via ajax
+// Loaded via ajax
             foreach ($config_values['Favorites'] as $fav) {
                 $guess = detectMatch(html_entity_decode($_GET['title']));
                 $name = trim(strtr($guess['title'], "._", "  "));
@@ -164,7 +157,6 @@ function parse_options($twxa_version) {
             }
             $r = client_add_torrent(str_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
             if ($r == "Success") {
-                //$torHash = get_torHash(add_cache($_GET['title']));
                 $torHash = get_torHash(add_cache(filter_input(INPUT_GET, 'title')));
             }
             if (isset($torHash)) {
@@ -176,11 +168,12 @@ function parse_options($twxa_version) {
             break;
         case 'clearHistory':
             // Loaded via ajax
-            if (file_exists($config_values['Settings']['History'])) {
-                unlink($config_values['Settings']['History']);
+            $downloadHistoryFile = getDownloadHistoryFile();
+            if (file_exists($downloadHistoryFile)) {
+                unlink($downloadHistoryFile);
             }
             display_history();
-            close_html();
+            closeHtml();
             exit(0);
             break;
         case 'get_client':
@@ -196,22 +189,18 @@ function parse_options($twxa_version) {
             echo $config_values['Settings']['Disable Hide List'];
             exit;
         case 'checkVersion':
-            echo checkVersion($twxa_version);
+            global $config_values;
+            if ($config_values['Settings']['Check for Updates'] == 1) {
+                echo checkVersion($twxa_version);
+            }
             exit;
         case 'get_dialog_data':
-            //switch ($_GET['get_dialog_data']) {
             switch (filter_input(INPUT_GET, 'get_dialog_data')) {
                 case '#favorites':
                     display_favorites();
                     exit;
                 case '#configuration':
                     display_global_config();
-                    exit;
-                case '#hidelist':
-                    display_hidelist();
-                    exit;
-                case '#feeds':
-                    display_feeds();
                     exit;
                 case '#history':
                     display_history();
@@ -229,7 +218,7 @@ function parse_options($twxa_version) {
                     exit;
             }
         default:
-            //TODO check filter_input() is not false before using it
+//TODO check filter_input() is not false before using it
             $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . filter_input(INPUT_SERVER, 'PHP_SELF') . ":  " . filter_input(INPUT_SERVER, 'REQUEST_URI') . "');</script>";
     }
 
@@ -241,14 +230,14 @@ function parse_options($twxa_version) {
         echo $html_out;
         $html_out = "";
     }
-    return;
 }
 
 function display_global_config() {
     global $config_values;
 
-    // Interface tab
-    $combinefeeds = $dishidelist = $showdebug = $hidedonate = '';
+// Interface tab
+    $combinefeeds = $dishidelist = $showdebug = $hidedonate = $checkversion = '';
+    $loglevelalert = $loglevelerror = $loglevelinfo = $logleveldebug = '';
     if ($config_values['Settings']['Combine Feeds'] == 1) {
         $combinefeeds = 'checked=1';
     }
@@ -261,8 +250,25 @@ function display_global_config() {
     if ($config_values['Settings']['Hide Donate Button'] == 1) {
         $hidedonate = 'checked=1';
     }
+    if ($config_values['Settings']['Check for Updates'] == 1) {
+        $checkversion = 'checked=1';
+    }
+    switch ($config_values['Settings']['Log Level']) {
+        case '2':
+            $logleveldebug = 'selected="selected"';
+            break;
+        case '1':
+            $loglevelinfo = 'selected="selected"';
+            break;
+        case '-1':
+            $loglevelalert = 'selected="selected"';
+            break;
+        case '0':
+        default:
+            $loglevelerror = 'selected="selected"';
+    }
 
-    // Client tab
+// Client tab
     $transmission = $folderclient = $savetorrents = '';
     switch ($config_values['Settings']['Client']) {
         case "Transmission":
@@ -275,7 +281,7 @@ function display_global_config() {
         $savetorrents = 'checked=1';
     }
 
-    // Torrent tab
+// Torrent tab
     $deeptitle = $deepTitleSeason = $deepoff = '';
     $autodel = '';
     switch ($config_values['Settings']['Deep Directories']) {
@@ -289,7 +295,7 @@ function display_global_config() {
         $autodel = 'checked=1';
     }
 
-    // Favorites tab
+// Favorites tab
     $matchregexp = $matchglob = $matchsimple = $resoallqualities = $resoresolutionsonly = '';
     $favdefaultall = $require_epi_info = $onlynewer = $fetchversions = $ignorebatches = '';
     switch ($config_values['Settings']['Match Style']) {
@@ -322,7 +328,7 @@ function display_global_config() {
         default: $resoallqualities = "selected='selected'";
     }
 
-    // Trigger tab
+// Trigger tab
     $enableScript = $enableSMTP = '';
     $smtpAuthNone = $smtpAuthLOGIN = $smtpAuthPLAIN = '';
     $smtpEncNone = $smtpEncTLS = $smtpEncSSL = '';
@@ -353,7 +359,7 @@ function display_global_config() {
             $smtpEncSSL = 'selected="selected"';
     }
 
-    // Include the templates and append the results to html_out
+// Include the templates and append the results to html_out
     ob_start();
     require('templates/global_config.tpl');
     return ob_get_contents();
@@ -377,7 +383,7 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
             $feed_options .= '>' . $feed['Name'] . '</option>';
         }
     }
-    // Dont handle with object buffer, is called inside display_favorites ob_start
+// Dont handle with object buffer, is called inside display_favorites ob_start
     require('templates/favorites_info.tpl');
 }
 
@@ -388,33 +394,25 @@ function display_favorites() {
     return ob_get_contents();
 }
 
-function display_hidelist() {
-    global $config_values, $html_out;
-    ob_start();
-    require('templates/hidelist.tpl');
-    return ob_get_contents();
-}
-
 function update_hidelist() {
     global $config_values;
     foreach ($config_values['Hidden'] as $key => $hidden) {
         unset($config_values['Hidden'][$key]);
         $config_values['Hidden'][strtolower(strtr($key, [":" => "", "," => "", "'" => "", "." => " ", "_" => " "]))] = "hidden";
     }
-    return;
-}
-
-function display_feeds() {
-    global $config_values, $html_out;
-    ob_start();
-    require('templates/feeds.tpl');
-    return ob_get_contents();
 }
 
 function display_history() {
-    global $html_out, $config_values;
-    if (file_exists($config_values['Settings']['History'])) {
-        $history = array_reverse(unserialize(file_get_contents($config_values['Settings']['History'])));
+    global $html_out;
+    $downloadHistoryFile = getDownloadHistoryFile();
+    if (file_exists($downloadHistoryFile)) {
+        $historyContents = unserialize(file_get_contents($downloadHistoryFile));
+        if ($historyContents === false) {
+            writeToLog("Unable to unserialize history file: $downloadHistoryFile\n", 0);
+            $history = [];
+        } else {
+            $history = array_reverse($historyContents);
+        }
     } else {
         $history = [];
     }
@@ -432,7 +430,7 @@ function display_legend() {
 
 function display_transmission() {
     global $html_out;
-    $host = get_tr_location();
+    $host = getTransmissionWebuRL();
     ob_start();
     require('templates/transmission.tpl');
     return ob_get_contents();
@@ -445,76 +443,195 @@ function display_clearCache() {
     return ob_get_contents();
 }
 
-function close_html() {
-    global $html_out;
-    echo $html_out;
-    $html_out = "";
-}
-
-function check_requirements() {
+function checkpHPRequirements() {
     if (!(function_exists('json_encode'))) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No JSON support found in your PHP installation.<br>
-	    In Ubuntu 14.04 or Debian 8.x, install php5-json and restart Apache2.</div>";
+        outputErrorDialog("No JSON support found in your PHP installation.<br>Try installing php5-json and restart the web server.");
         return 1;
     }
     if (!(function_exists('curl_init'))) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No cURL support found in your PHP installation. In Ubuntu 14.04 or Debian 8.x install php5-curl and restart Apache2.</div>";
+        outputErrorDialog("No cURL support found in your PHP installation.<br/>Try installing php-curl or php5-curl and restart the web server.");
         return 1;
     }
     if (!(function_exists('mb_convert_kana'))) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No mbstring (multibyte string) support found in your PHP installation. In Ubuntu 16.04 or Fedora install php-mbstring and restart Apache2.</div>";
+        outputErrorDialog("No mbstring (multibyte string) support found in your PHP installation.<br/>Try installing php-mbstring and restart the web server.");
         return 1;
     }
     if (!(function_exists('posix_getuid'))) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">
-            No posix_getuid() support found in your PHP installation. In Fedora install php-process and restart Apache2.</div>";
+        outputErrorDialog("No posix_getuid() support found in your PHP installation.<br/>Try installing php-process and restart the web server.");
         return 1;
     }
 }
 
-function check_files() {
+function checkFilesAndDirs() {
     global $config_values;
 
-    $myuid = posix_getuid();
-    $configDir = getConfigCacheDir() . '/';
-    if (!is_writable($configDir)) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please create the directory $configDir and make sure it's readable and writeable for the user running the webserver (uid: $myuid). </div>";
-    }
-    $cwd = getcwd();
-    if (!(get_webDir() == $cwd)) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">Please edit " . get_baseDir() . "/config.php and change the webDir from " . get_webDir() . " to:<br /> \"$cwd\".<br />Then click your browser's reload button.</div>";
-        return;
-    }
+    $myuID = posix_getuid();
+    $configCacheDir = getConfigCacheDir();
+    $configFile = getConfigFile();
+    $configCacheFile = getConfigCacheFile();
+    $downloadCacheDir = getDownloadCacheDir();
+    $downloadHistoryFile = getDownloadHistoryFile();
+    $downloadDir = $config_values['Settings']['Download Dir'];
+    $saveTorrentsDir = $config_values['Settings']['Save Torrents Dir'];
 
-    $toCheck['cache_dir'] = $config_values['Settings']['Cache Dir'];
-    if (strtolower($config_values['Settings']['Transmission Host']) == 'localhost' ||
-            $config_values['Settings']['Transmission Host'] == '127.0.0.1') {
-        $toCheck['download_dir'] = $config_values['Settings']['Download Dir'];
+    // only check DownloadDir if it is local
+    if (
+            $config_values['Settings']['Client'] === "folder" ||
+            (
+            $config_values['Settings']['Client'] === "Transmission" &&
+            preg_match('/(localhost|127\.0\.0\.1)/', $config_values['Settings']['Transmission Host']
+            )
+            )
+    ) {
+        $checkLocalDownloadDir = true;
+    } else {
+        $checkLocalDownloadDir = false;
     }
-
-    $deepDir = $config_values['Settings']['Deep Directories'];
-
-    $error = false;
-    foreach ($toCheck as $key => $file) {
-        if (!(file_exists($file))) {
-            $error .= "$key:&nbsp;<i>\"$file\"</i>&nbsp;&nbsp;does not exist <br />";
-        }
-        if (!($deepDir) && $key == 'download_dir') {
-            break;
-        }
-        if (!(is_writable($file))) {
-            $error .= "$key:&nbsp;<i>\"$file\"</i>&nbsp;&nbsp;is not writable for uid: $myuid <br />";
-        }
-        if (!(is_readable($file))) {
-            $error .= "$key:&nbsp;<i>\"$file\"</i>&nbsp;&nbsp;is not readable for uid: $myuid <br />";
-        }
+    // only check Save Torrents Dir if Save Torrents is on
+    if (
+            $config_values['Settings']['Client'] !== "folder" &&
+            $config_values['Settings']['Save Torrents'] &&
+            !empty($config_values['Settings']['Save Torrents Dir'])
+    ) {
+        $checkSaveTorrentsDir = true;
+    } else {
+        $checkSaveTorrentsDir = false;
     }
 
-    if ($error) {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$error</div>";
+    $errorMessage = false;
+    // cascade through checks
+    switch (true) {
+        case true:
+            if (!file_exists($configCacheDir)) {
+                $errorMessage .= "ConfigCacheDir <b>$configCacheDir</b> not found.<br/>";
+                break;
+            }
+        case true:
+            if (!is_dir($configCacheDir)) {
+                $errorMessage .= "ConfigCacheDir <b>$configCacheDir</b> isn't a directory.<br/>";
+                break;
+            }
+        case true:
+            $temp = checkPathReadableAndWriteable($configCacheDir, "ConfigCacheDir", $myuID);
+            if (!empty($temp)) {
+                $errorMessage .= $temp;
+                break;
+            }
+        case true:
+            // check ConfigFile file; if it exists, it needs to be readable and writable
+            if (is_file($configFile)) {
+                $temp = checkPathReadableAndWriteable($configFile, "ConfigFile", $myuID);
+                if (!empty($temp)) {
+                    $errorMessage .= $temp;
+                    break;
+                }
+            }
+        case true:
+            // check ConfigCacheFile file; if it exists, it needs to be readable and writable
+            if (is_file($configCacheFile)) {
+                $temp = checkPathReadableAndWriteable($configCacheFile, "ConfigCacheFile", $myuID);
+                if (!empty($temp)) {
+                    $errorMessage .= $temp;
+                    break;
+                }
+            }
+        case true:
+            if (!file_exists($downloadCacheDir)) {
+                $errorMessage .= "DownloadCacheDir <b>$downloadCacheDir</b> not found.<br/>";
+                break;
+            }
+        case true:
+            if (!is_dir($downloadCacheDir)) {
+                $errorMessage .= "DownloadCacheDir <b>$downloadCacheDir</b> isn't a directory.<br/>";
+                break;
+            }
+        case true:
+            $temp = checkPathReadableAndWriteable($downloadCacheDir, "DownloadCacheDir", $myuID);
+            if (!empty($temp)) {
+                $errorMessage .= $temp;
+                break;
+            }
+        case true:
+            // check download history file; if it exists, it needs to be readable and writable
+            if (is_file($downloadHistoryFile)) {
+                $temp = checkPathReadableAndWriteable($downloadHistoryFile, "DownloadHistoryFile", $myuID);
+                if (!empty($temp)) {
+                    $errorMessage .= $temp;
+                    break;
+                }
+            }
+        case true:
+            // if local, check DownloadDir
+            if ($checkLocalDownloadDir) {
+                if (!file_exists($downloadDir)) {
+                    $errorMessage .= "DownloadDir <b>$downloadDir</b> not found.<br/>";
+                    break;
+                }
+            }
+        case true:
+            // if local, check DownloadDir
+            if ($checkLocalDownloadDir) {
+                if (!is_dir($downloadDir)) {
+                    $errorMessage .= "DownloadDir <b>$downloadDir</b> isn't a directory.<br/>";
+                    break;
+                }
+            }
+        case true:
+            // if local, check DownloadDir
+            if ($checkLocalDownloadDir) {
+                $temp = checkPathReadableAndWriteable($downloadDir, "DownloadDir", $myuID);
+                if (!empty($temp)) {
+                    $errorMessage .= $temp;
+                    break;
+                }
+            }
+        case true:
+            // if Save Torrents is on, check 'Save Torrents Dir'
+            if ($checkSaveTorrentsDir) {
+                if (!file_exists($saveTorrentsDir)) {
+                    $errorMessage .= "Save Torrents Dir <b>$saveTorrentsDir</b> not found.<br/>";
+                    break;
+                }
+            }
+        case true:
+            // if Save Torrents is on, check 'Save Torrents Dir'
+            if ($checkSaveTorrentsDir) {
+                if (!is_dir($saveTorrentsDir)) {
+                    $errorMessage .= "Save Torrents Dir <b>$saveTorrentsDir</b> isn't a directory.<br/>";
+                    break;
+                }
+            }
+        case true:
+            // if Save Torrents is on, check 'Save Torrents Dir'
+            if ($checkSaveTorrentsDir) {
+                $temp = checkPathReadableAndWriteable($saveTorrentsDir, "Save Torrents Dir", $myuID);
+                if (!empty($temp)) {
+                    $errorMessage .= $temp;
+                    break;
+                }
+            }
+        //TODO check all Also Save Dir paths in all Favorites
+    }
+
+    // output any errors to the web UI
+    if ($errorMessage) {
+        outputErrorDialog($errorMessage);
+    }
+}
+
+function checkPathReadableAndWriteable($path, $description, $uID) {
+    // check if path is readable and writable
+    if (!is_readable($path) && !is_writeable($path)) {
+        return "UID $uID can't read or write $description <b>$path</b><br/>";
+    } else {
+        // check if path is readable
+        if (!is_readable($path)) {
+            return "UID $uID can't read $description <b>$path</b><br/>";
+        }
+        // check if path is writeable
+        if (!is_writeable($path)) {
+            return "UID $uID can't write $description <b>$path</b><br/>";
+        }
     }
 }
 
@@ -531,7 +648,7 @@ function checkVersion($twxa_version) {
         $thisVersion = explode(".", $twxa_version[0]);
         $latestVersion = explode(".", $latestFromWebsite);
 
-        // Assume there are 3 parts to the version number; compare them part by part
+        // Assume there are 3 numeric parts to the version number; compare them part by part
         if ($thisVersion[0] + 0 > $latestVersion[0] + 0) {
             //$isLatestHigher = false;
         } else if ($thisVersion[0] + 0 === $latestVersion[0] + 0) {
@@ -565,66 +682,61 @@ function checkVersion($twxa_version) {
     }
 }
 
-function get_tr_location() {
-    global $config_values;
-    $host = $config_values['Settings']['Transmission Host'];
-    if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
-        //$host = preg_replace('/:.*/', "", $_SERVER['HTTP_HOST']);
-        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'HTTP_HOST'));
-    }
-    if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
-        //$host = preg_replace('/:.*/', "", $_SERVER['SERVER_NAME']);
-        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'SERVER_NAME'));
-    }
-    $host = $host . ':' . $config_values['Settings']['Transmission Port'] . "/transmission/web/";
-    return $host;
-}
-
-function get_client() {
+function outputClient() {
     global $config_values;
     echo "<div id='clientId' class='hidden'>";
     echo $config_values['Settings']['Client'];
     echo "</div>";
 }
 
+function closehTML() {
+    global $html_out;
+    echo $html_out;
+    $html_out = "";
+}
+
+function outputErrorDialog($message) {
+    echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">" . $message . "</div>";
+}
+
 /// main
 
 $main_timer = getElapsedMicrotime(0);
-setup_default_config();
 readjSONConfigFile();
 
 $config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";
 
 parse_options($twxa_version);
-if (check_requirements()) {
+if (checkpHPRequirements()) {
     return;
 }
-check_files();
+checkFilesAndDirs();
+closehTML();
+//flush();
 
-echo $html_out;
-$html_out = "";
-flush();
-twxaDebug("=====torrentwatch-xa.php started running at $main_timer\n", 2);
-// Feeds
+writeToLog("=====torrentwatch-xa.php started running at $main_timer\n", 2); // cannot put this line any earlier
+
 load_all_feeds($config_values['Feeds']);
 process_all_feeds($config_values['Feeds']);
 
-get_client();
-close_html();
+outputClient();
+closehTML();
 
-$footer = "Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.";
-echo "<div id=\"footer\">$footer</div>";
+echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.</div>";
 
 if ($config_values['Settings']['Hide Donate Button'] != 1) {
-    echo '<div id="donate">
-	<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-        <input type="hidden" name="cmd" value="_s-xclick">
-        <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
-        <input type="image" src="images/donate-button.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-        </form>
-    </div>';
+    echo '<div id="donate"><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="foss@silverlakecorp.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="item_name" value="foss@silverlakecorp.com">
+<input type="hidden" name="item_number" value="torrentwatch-xa">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHostedGuest">
+<input type="image" src="images/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form></div>';
 }
 
-twxaDebug("=====torrentwatch-xa.php finished running in " . getElapsedMicrotime($main_timer) . "s\n", 2);
+writeToLog("=====torrentwatch-xa.php finished running in " . getElapsedMicrotime($main_timer) . "s\n", 2);
 exit(0);

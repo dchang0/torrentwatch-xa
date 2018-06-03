@@ -972,22 +972,22 @@ $(document).ready(function () { // first binding to document ready
             $("li#filter_bytext").show();
         }
     }
-
-    $(document).ready(function () { // second, nested binding to document ready
+    //$(document).ready(function () { // second, nested binding to document ready, keep these tags for future rewrite of .ready()
+    adjustUIElements();
+    var supportsOrientationChange = "onorientationchange" in window,
+            orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
+    window.addEventListener(orientationEvent, toggleClientButtons, false);
+    window.onresize = function (event) {
         adjustUIElements();
-        var supportsOrientationChange = "onorientationchange" in window,
-                orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
-        window.addEventListener(orientationEvent, toggleClientButtons, false);
-        window.onresize = function (event) {
-            adjustUIElements();
-        };
-        var waitForDynData = setInterval(function () {
-            if ($('#dynamicdata').length) {
-                listSelector();
-                clearInterval(waitForDynData);
-            }
-        }, 500);
-    });
+    };
+    var waitForDynData = setInterval(function () {
+        if ($('#dynamicdata').length) {
+            listSelector();
+            clearInterval(waitForDynData);
+        }
+    }, 500);
+    //});
+    
     $(window).on("focus", function (e) {
         // if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
         window.ctrlKey = 0;
@@ -1159,7 +1159,7 @@ $(document).ready(function () { // first binding to document ready
                         setTimeout(function () {
                             $('#newVersion').slideUp().remove();
                         }, 15000);
-                        $.cookie('VERSION-CHECK', '1', {expires: 1});
+                        $.cookie('VERSION-CHECK', '1', {expires: 7});
                     });
                 }
             }, 1000);
@@ -1174,7 +1174,7 @@ $(document).ready(function () { // first binding to document ready
         } else {
             form = $(button).closest("form");
         }
-        if (button.id === "Delete") {
+        if (button.id === "Delete") { //TODO for some reason this line is reached when clicking the Paypal donate button
             $.get(form.get(0).action, form.buildDataString(button));
             if (button.href.match(/#feedItem/)) {
                 var id = button.href.match(/#feedItem_(\d+)/)[1];
@@ -1210,7 +1210,8 @@ $(document).ready(function () { // first binding to document ready
             current_dialog = target === last && window.dialog === 1 ? '' : this.hash;
             if (last) {
                 $(last).fadeOut("normal");
-                $('#favorites, #configuration, #feeds, #history, #hidelist').remove();
+                //$('#favorites, #configuration, #feeds, #history, #hidelist').remove();
+                $('#favorites, #configuration, #history, #show_legend, #clear_cache').remove(); //TODO does this really need #show_legend and #clear_cache?
                 $('#mainoptions li a').removeClass('selected');
                 $('#dynamicdata .dialog .dialog_window, .dialogTitle').remove();
                 $('#dynamicdata .dialog').addClass('dialog_last');

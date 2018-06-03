@@ -24,13 +24,12 @@ All other files have functions that need improvement or rewrites or validation.
 ## Testing tasks
 
 - test _Save torrent in folder_ client and make sure progress bar works properly in this mode
-- what is the purpose of `clientId_` and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
+- what is the purpose of getClient()'s `clientId`, `clientId_`, and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
 - verify the settings and complete their hints in the config panels
 - test the Atom-related functions and conform them to their equivalent RSS functions if necessary
 
 ## Code cleanup tasks
 
-- it doesn't seem possible to disable the cache--why?
 - div#linkButtons ID is assigned in three elements--is this correct?
 - fix collision between ul#torrentlist and ul.torrentlist in phone.css
 - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
@@ -48,10 +47,12 @@ All other files have functions that need improvement or rewrites or validation.
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - improve handling of "Feed inaccessible" (usually 403 or 404 errors on the URL)
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
-- handle resolution and quality 1080p60 (1080p gets recognized and removed, leaving behind 60)
+- handle resolution and quality 1080p60
+- check setupCacheDir() to see if file_exists() check fails even if download cache dir exists but permissions are wrong
 
 ## Improvements
 
+- remove uninitialized variables in twxa_atomparser.php
 - store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by one or all of the below:
@@ -65,14 +66,13 @@ All other files have functions that need improvement or rewrites or validation.
 - make list items double-tall for smartphone displays and wrap the title text properly
 - possibly change Hide List from using favTitle to a list of regexes so the user can block anything they like
 - $config_values['Global'] appears to be a crappy way of globally passing some data--maybe improve it
-- times shown in feed list might not obey 'Time Zone' setting until next twxacli.php run, but log datestamps take effect immediately; maybe force a feed cache refresh immediately after 'Time Zone' is changed 
+- times shown in feed list might not obey 'Time Zone' setting until next twxa_cli.php run, but log datestamps take effect immediately; maybe force a feed cache refresh immediately after 'Time Zone' is changed 
 - if deleting active torrent manually before it completes, perhaps it should not be labeled as match_inCacheNotActive if it isn't actually in the download cache; in other words, this would require adding the ability to check the cache to the Javascript side
 - add toggle to config for local/remote Transmission and disable features like Deep Directories for remote Transmission
 - if keeping st_downloaded and st_downloading in the PHP side, change st_favReady to st_downloaded for folder client after checking to make sure the .torrent file was successfully downloaded
 - convert Configure > Feeds one-form-per-feed into one form for all the feeds
   - add Feed Title input above each Feed URL
   - add extra input for website of feed operator, to which the feed title in headers will link
-- add a bulk import form for Favorites (big textarea, one line per title, all of them receive the same defaults and become individual Favorites)
 - allow user to create Favorites from items in the History list
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
 - add error handling to the Transmission functions

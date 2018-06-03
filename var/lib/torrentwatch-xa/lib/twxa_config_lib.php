@@ -2,11 +2,12 @@
 
 // configuration-related functions
 
+// NOTE: DO NOT put trailing slashes on any of these paths
 function getConfigCacheDir() {
     return get_baseDir() . "/config_cache";
 }
 
-function getConfigCache() {
+function getConfigCacheFile() {
     return getConfigCacheDir() . "/torrentwatch-xa-config.cache";
 }
 
@@ -14,173 +15,287 @@ function getConfigFile() {
     return getConfigCacheDir() . "/torrentwatch-xa.config";
 }
 
-function setup_default_config() {
+function getDownloadCacheDir() {
+    return get_baseDir() . "/dl_cache";
+}
+
+function getDownloadHistoryFile() {
+    return get_baseDir() . "/dl_cache/dl_history";
+}
+
+function getTransmissionrPCPath() {
+    return "/transmission/rpc"; // do not change this without good reason
+}
+
+function getTransmissionWebPath() {
+    return "/transmission/web"; // do not change this without good reason
+}
+
+function getTorrentFileExtension() {
+    return "torrent"; // do not include leading period
+}
+
+function getMagnetFileExtension() {
+    return "magnet"; // do not include leading period
+}
+
+function getTransmissionWebuRL() {
+    global $config_values;
+    $host = $config_values['Settings']['Transmission Host'];
+    if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
+        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'HTTP_HOST'));
+    }
+    if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
+        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'SERVER_NAME'));
+    }
+    $host = $host . ':' . $config_values['Settings']['Transmission Port'] . getTransmissionWebPath() . "/"; // ending slash is required
+    return $host;
+}
+
+function writeDefaultConfigFile() {
     global $config_values;
 
-    function _default($a, $b) {
-        global $config_values;
-        if (!isset($config_values['Settings'][$a])) {
-            $config_values['Settings'][$a] = $b;
-        }
-    }
-
-    if (!isset($config_values['Settings'])) {
-        $config_values['Settings'] = [];
-    }
-    // set defaults
-    $baseDir = get_baseDir();
+    // wipe the Settings section
+    $config_values['Settings'] = [];
+    // set defaults for the Settings section
     // Interface tab
-    _default('Combine Feeds', "0");
-    _default('Disable Hide List', "0");
-    _default('Show Debug', "0");
-    _default('Hide Donate Button', "0");
-    _default('Time Zone', 'UTC');
+    $config_values['Settings']['Combine Feeds'] = "0";
+    $config_values['Settings']['Disable Hide List'] = "0";
+    $config_values['Settings']['Show Debug'] = "0";
+    $config_values['Settings']['Hide Donate Button'] = "0";
+    $config_values['Settings']['Check for Updates'] = "1";
+    $config_values['Settings']['Time Zone'] = "UTC";
+    $config_values['Settings']['Log Level'] = "0";
     // Client tab
-    _default('Client', "Transmission");
-    _default('Download Dir', '/var/lib/transmission-daemon/downloads');
-    _default('Transmission Host', 'localhost');
-    _default('Transmission Port', '9091');
-    _default('Transmission Login', 'transmission'); // default for Debian's transmission-daemon
-    _default('Transmission Password', 'transmission');
-    _default('Transmission URI', '/transmission/rpc'); // hidden setting
-    _default('Save Torrents', "0");
-    _default('Save Torrents Dir', "");
+    $config_values['Settings']['Client'] = "Transmission";
+    $config_values['Settings']['Download Dir'] = "/var/lib/transmission-daemon/downloads";
+    $config_values['Settings']['Transmission Host'] = "localhost";
+    $config_values['Settings']['Transmission Port'] = "9091";
+    $config_values['Settings']['Transmission Login'] = "transmission"; // default for Debian's transmission-daemon
+    $config_values['Settings']['Transmission Password'] = "transmission";
+    $config_values['Settings']['Save Torrents'] = "0";
+    $config_values['Settings']['Save Torrents Dir'] = "";
     // Torrent tab
-    _default('Deep Directories', "0");
-    _default('Default Seed Ratio', "-1");
-    _default('Auto-Del Seeded Torrents', "1");
+    $config_values['Settings']['Deep Directories'] = "0";
+    $config_values['Settings']['Default Seed Ratio'] = "-1";
+    $config_values['Settings']['Auto-Del Seeded Torrents'] = "1";
     // Favorites tab
-    _default('Match Style', "regexp");
-    _default('Default Feed All', "1");
-    _default('Require Episode Info', "1");
-    _default('Only Newer', "1");
-    _default('Ignore Batches', "1");
-    _default('Download Versions', "1");
-    _default('Resolutions Only', "0");
+    $config_values['Settings']['Match Style'] = "regexp";
+    $config_values['Settings']['Default Feed All'] = "1";
+    $config_values['Settings']['Require Episode Info'] = "1";
+    $config_values['Settings']['Only Newer'] = "1";
+    $config_values['Settings']['Ignore Batches'] = "1";
+    $config_values['Settings']['Download Versions'] = "1";
+    $config_values['Settings']['Resolutions Only'] = "0";
     // Trigger tab
-    _default('Enable Script', "0");
-    _default('Script', '');
-    _default('SMTP Notifications', "0");
-    _default('From Email', '');
-    _default('To Email', '');
-    _default('SMTP Server', 'localhost');
-    _default('SMTP Port', '25');
-    _default('SMTP Authentication', 'None');
-    _default('SMTP Encryption', 'TLS');
-    _default('SMTP User', '');
-    _default('SMTP Password', '');
-    // Other hidden settings
-    _default('debugLevel', "0");
-    _default('Torrent Extension', "torrent");
-    _default('Magnet Extension', "magnet");
-    _default('Cache Dir', $baseDir . "/dl_cache/");
-    _default('History', $baseDir . "/dl_cache/dl_history");
+    $config_values['Settings']['Enable Script'] = "0";
+    $config_values['Settings']['Script'] = "";
+    $config_values['Settings']['SMTP Notifications'] = "0";
+    $config_values['Settings']['From Email'] = "";
+    $config_values['Settings']['To Email'] = "";
+    $config_values['Settings']['SMTP Server'] = "localhost";
+    $config_values['Settings']['SMTP Port'] = "25";
+    $config_values['Settings']['SMTP Authentication'] = "None";
+    $config_values['Settings']['SMTP Encryption'] = "None";
+    $config_values['Settings']['SMTP User'] = "";
+    $config_values['Settings']['SMTP Password'] = "";
+    // wipe the Favorites section
+    $config_values['Favorites'] = [];
+    // wipe the Hidden section
+    $config_values['Hidden'] = [];
+    // set defaults for the Feeds section
+    $config_values['Feeds'] = [
+        0 => [
+            'Link' => 'http://horriblesubs.info/rss.php?res=all',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 1,
+            'Name' => 'HorribleSubs Latest RSS'
+        ],
+        1 => [
+            'Link' => 'https://nyaa.si/?page=rss',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 1,
+            'Name' => 'Nyaa Torrent File RSS'
+        ],
+        2 => [
+            'Link' => 'https://eztv.wf/ezrss.xml',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 1,
+            'Name' => 'TV Torrents RSS feed - EZTV'
+        ],
+        3 => [
+            'Link' => 'http://tokyotosho.info/rss.php?filter=1',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 1,
+            'Name' => 'TokyoTosho.info Anime'
+        ],
+        4 => [
+            'Link' => 'https://anidex.info/rss/cat/0',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 0,
+            'Name' => 'AniDex'
+        ],
+        5 => [
+            'Link' => 'https://www.acgnx.se/rss.xml',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 0,
+            'Name' => 'AcgnX Torrent Resources Base.Global'
+        ]
+    ];
+    setpHPTimeZone($config_values['Settings']['Time Zone']);
+    return writejSONConfigFile();
 }
 
 function readjSONConfigFile() {
     // reads config file written in PHP's JSON format
-    global $config_values; //TODO remove use of global
+    global $config_values;
 
     $configFile = getConfigFile();
-    $configCache = getConfigCache();
+//    $configTempFile = $configFile . "_tmp";
+    $configCacheFile = getConfigCacheFile();
 
-    //twxaDebug("Reading config file: $configFile\n", 2); // this line will fill the log file due to getClientData calls
-
-    if (!file_exists($configFile) && !file_exists($configFile . "_tmp")) { // check for temp file assumes rename is in progress
-        twxaDebug("No config file found--creating default config at: $configFile\n", 1);
-        writejSONConfigFile();
+    //writeToLog("Reading config file: $configFile\n", 2); // this line will fill the log file due to getClientData calls
+    // file ages are integer UNIX timestamp: seconds since epoch
+    // check for config file
+    if (file_exists($configFile)) {
+        // config file exists
+        $configFileExists = true;
+        // check age of config cache file
+        $configFileAge = time() - filemtime($configFile);
+    } else {
+        // config file doesn't exist
+        $configFileExists = false;
+        $configFileAge = -1;
+    }
+//    // check for _tmp file
+//    if (file_exists($configTempFile)) {
+//        // config temp file exists, assume it is in the midst of a rename
+//        $configTempFileExists = true;
+//        $configTempFileAge = time() - filemtime($configTempFile);
+//    } else {
+//        // config temp file does not exist
+//        $configTempFileExists = false;
+//        $configTempFileAge = -1;
+//    }
+    // check for config cache file
+    if (file_exists($configCacheFile)) {
+        // check whether config temp file or config cache file is newer and read that
+        $configCacheFileExists = true;
+        $configCacheFileAge = time() - filemtime($configCacheFile);
+    } else {
+        // config cache file does not exist
+        $configCacheFileExists = false;
+        $configCacheFileAge = -1;
     }
 
-    $toggleReadConfigFile = false;
-
-    // handle config cache file
-    if (file_exists($configCache)) {
-        $cacheAge = time() - filemtime($configCache);
-    }
-    if (file_exists($configCache) && $cacheAge <= 300 && $cacheAge <= time() - filemtime($configFile)) {
-        $config_values = unserialize(file_get_contents($configCache));
-        if (!$config_values['Settings']) {
-            unlink($configCache);
-            $toggleReadConfigFile = true;
+    // figure out where to get the config
+    $useWhich = "";
+    if ($configFileExists) {
+        if ($configCacheFileExists) {
+            if ($configFileAge > 300 && $configCacheFileAge <= 300) {
+                $useWhich = "cache";
+            } else {
+                $useWhich = "config";
+            }
+        } else {
+            $useWhich = "config";
         }
     } else {
-        $toggleReadConfigFile = true;
+        /* if ($configTempFileExists) {
+          if ($configCacheFileExists && $configCacheFileAge <= $configTempFileAge) {
+          $useWhich = "cache";
+          } else {
+          $useWhich = "temp";
+          }
+          } else */ if ($configCacheFileExists) {
+            $useWhich = "cacheToConfig";
+        } else {
+            // create new default config file
+            writeToLog("No config file found--creating default config at: $configFile\n", 1);
+            $useWhich = "new";
+        }
     }
 
-    // read config file if necessary
-    if ($toggleReadConfigFile) {
-        $config_values = json_decode(file_get_contents($configFile), true);
-
-        // create the base arrays if not already populated
-        //TODO move this entire section to setup_default_config()
-        if (!isset($config_values['Favorites'])) {
-            $config_values['Favorites'] = [];
-        }
-        if (!isset($config_values['Hidden'])) {
-            $config_values['Hidden'] = [];
-        }
-        if (!isset($config_values['Feeds'])) {
-            $config_values['Feeds'] = [
-                0 => [
-                    'Link' => 'http://horriblesubs.info/rss.php?res=all',
-                    'Type' => 'RSS',
-                    'seedRatio' => "",
-                    'enabled' => 1,
-                    'Name' => 'HorribleSubs Latest RSS'
-                ],
-                1 => [
-                    'Link' => 'https://nyaa.si/?page=rss',
-                    'Type' => 'RSS',
-                    'seedRatio' => "",
-                    'enabled' => 1,
-                    'Name' => 'Nyaa Torrent File RSS'
-                ],
-                2 => [
-                    'Link' => 'https://eztv.wf/ezrss.xml',
-                    'Type' => 'RSS',
-                    'seedRatio' => "",
-                    'enabled' => 1,
-                    'Name' => 'TV Torrents RSS feed - EZTV'
-                ],
-                3 => [
-                    'Link' => 'http://tokyotosho.info/rss.php?filter=1',
-                    'Type' => 'RSS',
-                    'seedRatio' => "",
-                    'enabled' => 1,
-                    'Name' => 'TokyoTosho.info Anime'
-                ],
-                4 => [
-                    'Link' => 'https://anidex.info/rss/cat/0',
-                    'Type' => 'RSS',
-                    'seedRatio' => "",
-                    'enabled' => 1,
-                    'Name' => 'AniDex'
-                ],
-                5 => [
-                    'Link' => 'https://www.acgnx.se/rss.xml',
-                    'Type' => 'RSS',
-                    'seedRatio' => "",
-                    'enabled' => 1,
-                    'Name' => 'AcgnX Torrent Resources Base.Global'
-                ]
-            ];
-            writejSONConfigFile();
-        }
-        if (isset($config_values['Settings']['Time Zone']) && date_default_timezone_get() !== $config_values['Settings']['Time Zone']) {
-            //TODO compare current timezone before writing
-            $return = date_default_timezone_set($config_values['Settings']['Time Zone']);
-            if ($return === false) {
-                twxaDebug("Unable to set timezone to: " . $config_values['Settings']['Time Zone'] . "; using UTC instead\n", -1);
-                date_default_timezone_set("UTC");
+    // get the config
+    $return = false;
+    switch ($useWhich) {
+//        case "temp":
+//            $config_values = json_decode(file_get_contents($configTempFile), true);
+//            //TODO handle errors--what if temp file doesn't contain useful settings?
+//            if (isset($config_values)) {
+//                $return = writejSONConfigFile() && writeConfigCacheFile($configCacheFile, $config_values);
+//            } else {
+//                writeToLog("Unable to read JSON config temp file: $configTempFile\n", -1);
+//            }
+//            break;
+        case "cache":
+            $config_values = unserialize(file_get_contents($configCacheFile));
+            if ($config_values === false) {
+                // fall through to config below
             } else {
-                writejSONConfigFile();
+                //TODO test to see if $config_values contains useful settings
+                break;
             }
-        }
+        case "config":
+            $config_values = json_decode(file_get_contents($configFile), true);
+            if (isset($config_values)) {
+                $return = writeConfigCacheFile($configCacheFile, $config_values);
+            } else {
+                writeToLog("Unable to read JSON config file: $configFile\n", -1);
+            }
+            break;
+        case "cacheToConfig":
+            $config_values = unserialize(file_get_contents($configCacheFile));
+            if ($config_values === false) {
+                // fall through to new below
+            } else {
+                //TODO test to see if $config_values contains useful settings
+                if (isset($config_values)) {
+                    $return = writejSONConfigFile();
+                } else {
+                    writeToLog("Unable to read JSON config cache file: $configCacheFile\n", -1);
+                }
+                break;
+            }
+        case "new":
+        default:
+            $return = writeDefaultConfigFile() && writeConfigCacheFile($configCacheFile, $config_values);
+    }
 
-        // write new cache file
-        //TODO possibly remove $config_values['Global']['Feeds'] before writing config cache, but read_config_file() did not do so
-        file_put_contents($configCache, serialize($config_values));
-        chmod($configCache, 0660);
+    if (isset($config_values['Settings']['Time Zone'])) {
+        setpHPTimeZone($config_values['Settings']['Time Zone']);
+    }
+    return $return;
+}
+
+function writeConfigCacheFile($configCacheFile, $config_values) {
+    // write cache file
+    //TODO possibly remove $config_values['Global']['Feeds'] before writing config cache, but read_config_file() did not do so
+    file_put_contents($configCacheFile, serialize($config_values)); // apparently serialize can't return a failure
+    chmod($configCacheFile, 0660);
+}
+
+function setpHPTimeZone($timezone) {
+    if (date_default_timezone_get() !== $timezone) {
+        $rc1 = date_default_timezone_set($timezone);
+        if ($rc1 === false) {
+            writeToLog("Unable to set timezone to: " . $timezone . "; using UTC instead\n", -1);
+            $rc2 = date_default_timezone_set("UTC"); // could use recursion, but might make an infinite loop
+            if ($rc2 === false) {
+                writeToLog("Unable to set timezone to UTC; leaving at PHP default\n", -1);
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 }
 
@@ -201,8 +316,6 @@ function set_client_passwd() {
 }
 
 function decryptsMTPPassword($encryptedPassword) {
-    //global $config_values;
-    //return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['SMTP Password']));
     return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $encryptedPassword));
 }
 
@@ -220,7 +333,7 @@ function set_smtp_passwd() {
 function createConfigDir() {
     $dir = getConfigCacheDir();
     if (!is_dir($dir)) {
-        twxaDebug("Creating configuration directory: $dir\n", 1);
+        writeToLog("Creating configuration directory: $dir\n", 1);
         if (file_exists($dir)) {
             unlink($dir);
         }
@@ -228,11 +341,11 @@ function createConfigDir() {
             if (chmod($dir, 0755)) {
                 return true;
             } else {
-                twxaDebug("Unable to chmod config directory: $dir\n", -1);
+                writeToLog("Unable to chmod config directory: $dir\n", -1);
                 return false;
             }
         } else {
-            twxaDebug("Unable to create config directory: $dir\n", -1);
+            writeToLog("Unable to create config directory: $dir\n", -1);
             return false;
         }
     }
@@ -243,11 +356,10 @@ function writejSONConfigFile() {
     // replacement for old write_config_file() that avoids array_walk callbacks and recursion and uses PHP's JSON format
 
     $configFile = getConfigFile();
-    $configCache = getConfigCache();
+    $configTempFile = $configFile . "_tmp";
+    $configCache = getConfigCacheFile();
 
-    if ($config_values['Settings']['debugLevel'] == 2) {
-        twxaDebug(debug_backtrace()[1]['function'] . " calling to write config file: $configFile\n", 2);
-    }
+    writeToLog("Writing config file: $configFile\n", 2);
 
     set_client_passwd(); //TODO this should happen outside this function
     set_smtp_passwd(); //TODO this should happen outside this function
@@ -257,29 +369,37 @@ function writejSONConfigFile() {
 
     createConfigDir();
 
-    if (file_put_contents($configFile . "_tmp", print_r(json_encode($configOut, JSON_PRETTY_PRINT), true), LOCK_EX) !== false) {
-        if (file_exists($configFile . "_tmp")) {
-            if (rename($configFile . "_tmp", $configFile)) {
-                if (chmod($configFile, 0600)) {
-                    if (file_exists($configCache)) {
-                        twxaDebug("Removing config cache: $configCache\n", 2);
-                        unlink($configCache);
+    $configjSON = json_encode($configOut, JSON_PRETTY_PRINT);
+    if ($configjSON !== false) {
+        if (file_put_contents($configTempFile, print_r($configjSON, true), LOCK_EX) !== false) {
+            if (file_exists($configTempFile)) {
+                if (rename($configTempFile, $configFile)) {
+                    if (chmod($configFile, 0600)) {
+                        if (file_exists($configCache)) {
+                            writeToLog("Removing config cache: $configCache\n", 2);
+                            unlink($configCache);
+                        }
+                        writeToLog("Successfully wrote config file: $configFile\n", 2);
+                        return true;
+                    } else {
+                        writeToLog("Unable to chmod config file: $configFile\n", -1);
+                        return false;
                     }
-                    twxaDebug("Successfully wrote config file: $configFile\n", 2);
-                    return true;
                 } else {
-                    twxaDebug("Unable to chmod config file: $configFile\n", -1);
+                    writeToLog("Unable to rename temp config file: $configTempFile\n", 0);
                     return false;
                 }
             } else {
-                twxaDebug("Unable to rename temp config file: $configFile" . "_tmp\n", -1);
+                writeToLog("Unable to find temp config file to rename: $configTempFile\n", 1);
                 return false;
             }
         } else {
-            twxaDebug("Unable to find temp config file to rename: $configFile" . "_tmp\n", -1);
+            writeToLog("Unable to write temp config file: $configTempFile\n", -1);
+            return false;
         }
     } else {
-        twxaDebug("Unable to write temp config file: $configFile" . "_tmp\n", -1);
+        // failed to encode JSON
+        writeToLog("Unable to encode config as JSON: $configFile\n", -1);
         return false;
     }
 }
@@ -297,7 +417,9 @@ function updateGlobalConfig() {
         'Disable Hide List' => 'dishidelist',
         'Show Debug' => 'showdebug',
         'Hide Donate Button' => 'hidedonate',
+        'Check for Updates' => 'checkversion',
         'Time Zone' => 'tz',
+        'Log Level' => 'loglevel',
         // Client tab
         'Client' => 'client',
         'Download Dir' => 'downdir',
@@ -354,27 +476,10 @@ function update_favorite() { //TODO seems to break Add to Favorites javascript i
     }
     if (isset($response)) {
         return $response;
-    } else {
-        return;
-    }
+    } /* else {
+      return;
+      } */
 }
-
-/* function add_hidden($name) {
-  global $config_values;
-  $guess = detectMatch($name);
-  if ($guess) {
-  $name = strtolower(trim(strtr($guess['title'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))));
-  foreach ($config_values['Favorites'] as $fav) {
-  if ($name == strtolower(strtr($fav['Name'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " ")))) {
-  return($fav['Name'] . " exists in favorites. Not adding to hide list.");
-  }
-  }
-  $config_values['Hidden'][$name] = 'hidden';
-  writejSONConfigFile();
-  } else {
-  return("Bad form data, not added to favorites"); // Bad form data
-  }
-  } */
 
 function addHidden($name) {
     global $config_values;
@@ -384,21 +489,20 @@ function addHidden($name) {
             $lctitle = strtolower(trim(strtr($guess['favTitle'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))));
             foreach ($config_values['Favorites'] as $fav) {
                 if ($lctitle == strtolower(strtr($fav['Name'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " ")))) {
-                    twxaDebug($fav['Name'] . " exists in favorites. Not adding to hide list.\n", 0);
+                    writeToLog($fav['Name'] . " exists in favorites. Not adding to hide list.\n", 0);
                     echo "twxa-ERROR:" . $fav['Name'] . " exists in favorites. Not adding to hide list.";
                     return;
                 }
             }
             $config_values['Hidden'][strtolower($guess['favTitle'])] = $guess['favTitle'];
             writejSONConfigFile();
-            twxaDebug("Hid: $name\n", 1);
+            writeToLog("Hid: $name\n", 1);
             echo $guess['favTitle']; // use favTitle, not title
             return;
         }
     } else {
-        twxaDebug("Nothing to hide--ignoring.\n", 0);
+        writeToLog("Nothing to hide--ignoring.\n", 0);
         echo "twxa-ERROR:Nothing to hide--ignoring.";
-        return;
     }
 }
 
@@ -408,7 +512,7 @@ function delHidden($list) {
         foreach ($list as $item) {
             if (isset($config_values['Hidden'][$item])) {
                 unset($config_values['Hidden'][$item]);
-                twxaDebug("Unhid: $item\n", 1);
+                writeToLog("Unhid: $item\n", 1);
             }
         }
         return(writejSONConfigFile());
@@ -540,11 +644,9 @@ function updateFavoriteEpisode(&$fav, $ti) {
 function addFeed($feedLink) {
     global $config_values;
     if (!empty($feedLink) && filter_var($feedLink, FILTER_VALIDATE_URL)) {
-        //$feedLink = str_replace(' ', '%20', $feedLink);
-        //$feedLink = preg_replace('/^%20|%20$/', '', $feedLink);
-        twxaDebug("Checking feed: $feedLink\n", 2);
+        writeToLog("Checking feed: $feedLink\n", 2);
         if ($guessedFeedType = guess_feed_type($feedLink) != 'Unknown') {
-            twxaDebug("Adding feed: $feedLink\n", 1);
+            writeToLog("Adding feed: $feedLink\n", 1);
             $config_values['Feeds'][]['Link'] = $feedLink;
             $arrayKeys = array_keys($config_values['Feeds']);
             $idx = end($arrayKeys);
@@ -561,10 +663,10 @@ function addFeed($feedLink) {
             }
             writejSONConfigFile();
         } else {
-            twxaDebug("Could not connect to feed or guess feed type: $feedLink\n", -1);
+            writeToLog("Could not connect to feed or guess feed type: $feedLink\n", -1);
         }
     } else {
-        twxaDebug("Ignoring empty or invalid feed URL\n", 0);
+        writeToLog("Ignoring empty or invalid feed URL\n", 0);
     }
 }
 
@@ -590,14 +692,13 @@ function updateFeedData() {
             $feedName = filter_input(INPUT_GET, 'feed_name');
             if ($feedName !== false) {
                 $old_feedurl = $config_values['Feeds'][$index]['Link'];
-                twxaDebug("Updating feed: $old_feedurl\n", 1);
+                writeToLog("Updating feed: $old_feedurl\n", 1);
                 foreach ($config_values['Favorites'] as &$favorite) {
                     if ($favorite['Feed'] == $old_feedurl) {
                         $favorite['Feed'] = str_replace(' ', '%20', $feedLink);
                     }
                 }
                 $config_values['Feeds'][$index]['Name'] = $feedName;
-                //$config_values['Feeds'][$index]['Link'] = preg_replace('/^%20|%20$/', '', str_replace(' ', '%20', $feedLink));
                 $config_values['Feeds'][$index]['Link'] = $feedLink;
                 $config_values['Feeds'][$index]['seedRatio'] = filter_input(INPUT_GET, 'seed_ratio');
                 if (filter_input(INPUT_GET, 'feed_on') == "feed_on") {
@@ -607,13 +708,13 @@ function updateFeedData() {
                 }
                 writejSONConfigFile();
             } else {
-                twxaDebug("Ignoring empty feed Name", 0);
+                writeToLog("Ignoring empty feed Name", 0);
             }
         } else {
-            twxaDebug("Ignoring empty or invalid feed URL", 0);
+            writeToLog("Ignoring empty or invalid feed URL", 0);
         }
     } else {
-        twxaDebug("Unable to update feed. Could not find feed index: $index\n", -1);
+        writeToLog("Unable to update feed. Could not find feed index: $index\n", -1);
     }
 }
 
@@ -621,10 +722,10 @@ function deleteFeed() {
     global $config_values;
     $index = filter_input(INPUT_GET, 'idx');
     if ($index !== false && isset($config_values['Feeds'][$index])) {
-        twxaDebug("Deleting feed with index: $index\n", 1);
+        writeToLog("Deleting feed with index: $index\n", 1);
         unset($config_values['Feeds'][$index]);
         writejSONConfigFile();
     } else {
-        twxaDebug("Unable to delete feed. Could not find feed index: $index\n", -1);
+        writeToLog("Unable to delete feed. Could not find feed index: $index\n", -1);
     }
 }

@@ -2,10 +2,11 @@
 
 // config.php: Main config file for torrentwatch-xa
 // As of version 1.0.0, this file is required. twxa_config_lib.php no longer provides default settings
-
+// 
+// NOTE: do not put trailing slashes on the paths below
 // torrentwatch-xa base installation directory
 function get_baseDir() {
-    return "/var/lib/torrentwatch-xa"; // if you change this, be sure to change it in torrentwatch-xa.config if it is cached there
+    return "/var/lib/torrentwatch-xa";
 }
 
 // torrentwatch-xa web UI installation directory
@@ -23,6 +24,7 @@ function get_tr_sessionIdFile() {
     return '/tmp/.Transmission-Session-Id';
 }
 
+// NOTE: More settings are located at the top of twxa_config_lib.php, but it is better to leave them alone.
 // Set include paths
 $twxaIncludePaths = [get_baseDir() . "/lib"];
 $includePath = get_include_path();

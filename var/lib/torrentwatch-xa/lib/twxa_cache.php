@@ -3,51 +3,57 @@
 // cache and history functions
 
 function add_history($ti) {
-    global $config_values;
-    if (file_exists($config_values['Settings']['History'])) {
-        $history = unserialize(file_get_contents($config_values['Settings']['History']));
+    $downloadCacheDir = getDownloadCacheDir();
+    $downloadHistoryFile = getDownloadHistoryFile();
+    if (file_exists($downloadHistoryFile)) {
+        $history = unserialize(file_get_contents($downloadHistoryFile));
     }
     $history[] = array('Title' => $ti, 'Date' => date("Y.m.d H:i"));
-    file_put_contents($config_values['Settings']['History'], serialize($history));
+    if (
+            (
+            !file_exists($downloadHistoryFile) &&
+            is_dir($downloadCacheDir) &&
+            is_writable($downloadCacheDir)
+            ) ||
+            is_writable($downloadHistoryFile)
+    ) {
+        file_put_contents($downloadHistoryFile, serialize($history));
+    } else {
+        writeToLog("Unable to write history to $downloadHistoryFile\n", 0);
+    }
 }
 
 function setupCache() {
-    global $config_values;
-    if (isset($config_values['Settings']['Cache Dir'])) {
-        $cacheDir = $config_values['Settings']['Cache Dir'];
-        twxaDebug("Enabling cache in: $cacheDir\n", 2);
-        if (file_exists($cacheDir)) {
-            if (is_dir($cacheDir)) {
-                if (is_writeable($cacheDir)) {
-                    // cache is already set up
-                } else {
-                    twxaDebug("Cache Dir not writeable: $cacheDir\n", -1);
-                }
+    $downloadCacheDir = getDownloadCacheDir();
+    writeToLog("Enabling cache in: $downloadCacheDir\n", 2);
+    if (file_exists($downloadCacheDir)) { //TODO this might trigger even if file exists but permissions aren't right
+        if (is_dir($downloadCacheDir)) {
+            if (is_writeable($downloadCacheDir)) {
+                // cache is already set up
             } else {
-                twxaDebug("Cache Dir not a directory: $cacheDir\n", -1);
+                writeToLog("Download Cache Dir not writeable: $downloadCacheDir\n", -1);
             }
         } else {
-            twxaDebug("Cache Dir does not exist, creating: $cacheDir\n", 2);
-            mkdir($cacheDir, 0775, true);
+            writeToLog("Download Cache Dir not a directory: $downloadCacheDir\n", -1);
         }
+    } else {
+        writeToLog("Download Cache Dir does not exist, creating: $downloadCacheDir\n", 2);
+        //TODO make sure $downloadCacheDir looks like a path
+        mkdir($downloadCacheDir, 0775, true);
     }
 }
 
 function add_cache($ti) {
-    global $config_values;
-    if (isset($config_values['Settings']['Cache Dir'])) {
-        $cache_file = $config_values['Settings']['Cache Dir'] . '/dl_' . sanitizeFilename($ti);
-        touch($cache_file);
-        return($cache_file);
-    }
+    $cache_file = getDownloadCacheDir() . '/dl_' . sanitizeFilename($ti);
+    touch($cache_file);
+    return($cache_file);
 }
 
 function clear_cache_by_feed_type($file) {
-    global $config_values;
-    $fileglob = $config_values['Settings']['Cache Dir'] . '/' . $file;
-    twxaDebug("Clearing $fileglob\n", 2);
+    $fileglob = getDownloadCacheDir() . '/' . $file;
+    writeToLog("Clearing $fileglob\n", 2);
     foreach (glob($fileglob) as $fn) {
-        twxaDebug("Removing $fn\n", 2);
+        writeToLog("Removing $fn\n", 2);
         unlink($fn);
     }
 }
@@ -75,28 +81,28 @@ function get_torHash($cache_file) {
             $torHash = fread($handle, filesize($cache_file));
             return $torHash;
         } else {
-            twxaDebug("No torrent hash in cache file: $cache_file\n", 0);
+            writeToLog("No torrent hash in cache file: $cache_file\n", 0);
         }
     } else {
-        twxaDebug("Unable to open cache file: $cache_file\n", 0);
+        writeToLog("Unable to open cache file: $cache_file\n", 0);
     }
 }
 
 function check_cache_for_torHash($torHash) {
-    global $config_values;
-    $handle = opendir($config_values['Settings']['Cache Dir']);
+    $dowloadCacheDir = getDownloadCacheDir();
+    $handle = opendir($dowloadCacheDir);
     if ($handle !== false) {
         while (false !== ($file = readdir($handle))) {
-            // loop through each cache file in the Cache Directory and check its torHash
+            // loop through each cache file in the Download Cache Dir and check its torHash
             if (substr($file, 0, 3) === "dl_") {
-                $tmpTorHash = get_torHash($config_values['Settings']['Cache Dir'] . "/" . $file);
+                $tmpTorHash = get_torHash($dowloadCacheDir . "/" . $file);
                 if ($torHash === $tmpTorHash) {
                     return $file;
                 }
             }
         }
     } else {
-        twxaDebug("Unable to open Cache Directory: " . $config_values['Settings']['Cache Dir'] . "\n", -1);
+        writeToLog("Unable to open Download Cache Dir: $dowloadCacheDir\n", -1);
     }
     return "";
 }
@@ -106,13 +112,16 @@ function check_cache_episode($ti) {
     global $config_values;
     $guess = detectMatch($ti);
     if ($guess['favTitle'] === "") {
-        twxaDebug("Unable to guess a favoriteTitle for $ti\n", 0);
+        writeToLog("Unable to guess a favoriteTitle for $ti\n", 0);
         return true; // do download
     }
-    $handle = opendir($config_values['Settings']['Cache Dir']);
-    if ($handle !== false) {
+    $downloadCacheDir = getDownloadCacheDir();
+    if (is_dir($downloadCacheDir) && is_readable($downloadCacheDir)) {
+        $handle = opendir($downloadCacheDir);
+    }
+    if (isset($handle) && $handle !== false) {
         while (false !== ($file = readdir($handle))) {
-            // loop through each cache file in the Cache Directory
+            // loop through each cache file in the Download Cache Dir
             if (substr($file, 0, 3) !== "dl_") {
                 continue;
             }
@@ -131,7 +140,7 @@ function check_cache_episode($ti) {
                         if ($cacheguess['episBatEnd'] !== "" && is_numeric($cacheguess['episBatEnd'])) {
                             return true; // title is a full season and is likely newer than the last episode in cache, do download
                         } else {
-                            twxaDebug("Equiv. in cache: ignoring: $ti (" . $guess['seasBatEnd'] . "x" . $guess['episBatEnd'] . ")\n", 2);
+                            writeToLog("Equiv. in cache: ignoring: $ti (" . $guess['seasBatEnd'] . "x" . $guess['episBatEnd'] . ")\n", 2);
                             return false; // both are full seasons
                         }
                     } else if ($guess['episBatEnd'] === $cacheguess['episBatEnd']) {
@@ -139,15 +148,15 @@ function check_cache_episode($ti) {
                             if ($config_values['Settings']['Download Versions']) {
                                 return true; // difference in item version, do download
                             } else {
-                                twxaDebug("Older version in cache: ignoring newer: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);
+                                writeToLog("Older version in cache: ignoring newer: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);
                                 return false; // title is found in cache, version is newer, Download Versions is off, so don't download
                             }
                         } else {
-                            twxaDebug("Equiv. in cache: ignoring: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);
+                            writeToLog("Equiv. in cache: ignoring: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);
                             return false; // title and same version is found in cache, don't download
                         }
                     } else if ($guess['episBatEnd'] >= $cacheguess['episBatStart'] && $guess['episBatEnd'] < $cacheguess['episBatEnd']) {
-                        twxaDebug("Ignoring: $ti (Cur:Cache " . $cacheguess['seasBatEnd'] . "x" . $cacheguess['episBatStart']
+                        writeToLog("Ignoring: $ti (Cur:Cache " . $cacheguess['seasBatEnd'] . "x" . $cacheguess['episBatStart']
                                 . "<=" . $guess['seasBatEnd'] . "x" . $guess['episBatEnd'] .
                                 "<" . $cacheguess['seasBatEnd'] . "x" . $cacheguess['episBatEnd'] . ")\n", 2);
                         return false; // end episode is within the episode batch found in cache, don't download
@@ -157,7 +166,7 @@ function check_cache_episode($ti) {
                         return true;
                     }
                 } else if ($guess['seasBatEnd'] >= $cacheguess['seasBatStart'] && $guess['seasBatEnd'] < $cacheguess['seasBatEnd']) {
-                    twxaDebug("Ignoring: $ti (Cur:Cache " . $cacheguess['seasBatEnd'] . "x" . $cacheguess['episBatStart']
+                    writeToLog("Ignoring: $ti (Cur:Cache " . $cacheguess['seasBatEnd'] . "x" . $cacheguess['episBatStart']
                             . "<=" . $guess['seasBatEnd'] . "x" . $guess['episBatEnd'] .
                             "<" . $cacheguess['seasBatEnd'] . "x" . $cacheguess['episBatEnd'] . ")\n", 2);
                     return false; // end season appears to overlap with season range in cache, but is too old to compare episodes; don't download
@@ -169,21 +178,16 @@ function check_cache_episode($ti) {
             }
         }
     } else {
-        twxaDebug("Unable to open Cache Directory: " . $config_values['Settings']['Cache Dir'] . "\n", -1);
+        writeToLog("Unable to open Download Cache Dir: $downloadCacheDir\n", -1);
     }
     return true; // do download
 }
 
 function check_cache($ti) {
-    global $config_values;
-    if (isset($config_values['Settings']['Cache Dir'])) {
-        $cache_file = $config_values['Settings']['Cache Dir'] . '/dl_' . sanitizeFilename($ti);
-        if (!file_exists($cache_file)) {
-            return check_cache_episode($ti);
-        } else {
-            return false;
-        }
+    $cache_file = getDownloadCacheDir() . '/dl_' . sanitizeFilename($ti);
+    if (!file_exists($cache_file)) {
+        return check_cache_episode($ti);
     } else {
-        return true; // cache is disabled, always download
+        return false;
     }
 }

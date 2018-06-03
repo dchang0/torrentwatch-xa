@@ -15,7 +15,6 @@ class myAtomParser {
 
     // default caching time (50min)
     // constructor for new object
-    //function myAtomParser($file, $cache_dir = '', $cache_time = 3000)
     function __construct($file, $cache_dir = '', $cache_time = 3000) {
         // Cache routine from twxa_lastRSS.php
         if ($cache_dir != '') {
@@ -24,9 +23,10 @@ class myAtomParser {
             if ($timedif < $cache_time) {
                 // New Enough
                 $this->output = unserialize(join('', file($cache_file)));
-                //set 'cached' to 1 only if cached file is correct
-                if ($this->output)
+                // set 'cached' to 1 only if cached file is correct
+                if ($this->output) {
                     $this->output['cached'] = 1;
+                }
             } else {
                 // cached file is too old, create new
                 $this->Parse($file);
@@ -35,17 +35,18 @@ class myAtomParser {
                     fwrite($f, $serialized, strlen($serialized));
                     fclose($f);
                 }
-                if ($this->output)
+                if ($this->output) {
                     $this->output['cached'] = 0;
+                }
             }
         }
         // If CACHE DISABLED >> load and parse the file directly
         else {
             $this->Parse($file);
-            if ($this->output)
+            if ($this->output) {
                 $this->output['cached'] = 0;
+            }
         }
-        return;
     }
 
     // Old Constructor
@@ -73,9 +74,11 @@ class myAtomParser {
         if ($this->encoding) {
             // content is encoded - so keep elements intact
             $tmpdata = "<$tagname";
-            if ($attrs)
-                foreach ($attrs as $key => $val)
+            if ($attrs) {
+                foreach ($attrs as $key => $val) {
                     $tmpdata .= " $key=\"$val\"";
+                }
+            }
             $tmpdata .= ">";
             $this->parseData($parser, $tmpdata);
         } else {
@@ -84,16 +87,18 @@ class myAtomParser {
                 $this->parseData($parser, $attrs['HREF']);
                 $this->endElement($parser, 'LINK');
             }
-            if ($attrs['TYPE'])
+            if ($attrs['TYPE']) {
                 $this->encoding[$tagname] = $attrs['TYPE'];
+            }
 
             // check if this element can contain others - list may be edited
             if (preg_match("/^(FEED|ENTRY)$/", $tagname)) {
                 if ($this->tags) {
                     $depth = count($this->tags);
                     list($parent, $num) = each($tmp = end($this->tags));
-                    if ($parent)
+                    if ($parent) {
                         $this->tags[$depth - 1][$parent][$tagname] ++;
+                    }
                 }
                 array_push($this->tags, array($tagname => array()));
             } else {
@@ -110,8 +115,9 @@ class myAtomParser {
                 unset($this->encoding[$tagname]);
                 array_pop($this->tags);
             } else {
-                if (!preg_match("/(BR|IMG)/", $tagname))
+                if (!preg_match("/(BR|IMG)/", $tagname)) {
                     $this->parseData($parser, "</$tagname>");
+                }
             }
         } else {
             array_pop($this->tags);
@@ -120,17 +126,20 @@ class myAtomParser {
 
     function parseData($parser, $data) {
         // return if data contains no text
-        if (!trim($data))
+        if (!trim($data)) {
             return;
+        }
         $evalcode = "\$this->output";
         foreach ($this->tags as $tag) {
             if (is_array($tag)) {
                 list($tagname, $indexes) = each($tag);
                 $evalcode .= "[\"$tagname\"]";
-                if (${$tagname})
+                if (${$tagname}) {
                     $evalcode .= "[" . (${$tagname} - 1) . "]";
-                if ($indexes)
+                }
+                if ($indexes) {
                     extract($indexes);
+                }
             } else {
                 if (preg_match("/^([A-Z]+):([A-Z]+)$/", $tag, $matches)) {
                     $evalcode .= "[\"$matches[1]\"][\"$matches[2]\"]";
@@ -153,22 +162,26 @@ class myAtomParser {
         if ($TITLE) {
             // display feed information
             $this->retval .= "<h1>";
-            if ($LINK)
+            if ($LINK) {
                 $this->retval .= "<a href=\"$LINK\" target=\"_blank\">";
+            }
             $this->retval .= stripslashes($TITLE);
-            if ($LINK)
+            if ($LINK) {
                 $this->retval .= "</a>";
+            }
             $this->retval .= "</h1>\n";
-            if ($TAGLINE)
+            if ($TAGLINE) {
                 $this->retval .= "<P>" . stripslashes($TAGLINE) . "</P>\n\n";
+            }
             $this->retval .= "<div class=\"divider\"><!-- --></div>\n\n";
         }
         if ($ENTRY) {
             // display feed entry(s)
             foreach ($ENTRY as $item) {
                 $this->display_entry($item, "FEED");
-                if (is_int($limit) && --$limit <= 0)
+                if (is_int($limit) && --$limit <= 0) {
                     break;
+                }
             }
         }
     }
@@ -176,18 +189,22 @@ class myAtomParser {
     // display a single entry as HTML
     function display_entry($data, $parent) {
         extract($data);
-        if (!$TITLE)
+        if (!$TITLE) {
             return;
+        }
 
         $this->retval .= "<p><b>";
-        if ($LINK)
+        if ($LINK) {
             $this->retval .= "<a href=\"$LINK\" target=\"_blank\">";
+        }
         $this->retval .= stripslashes($TITLE);
-        if ($LINK)
+        if ($LINK) {
             $this->retval .= "</a>";
+        }
         $this->retval .= "</b>";
-        if ($ISSUED)
+        if ($ISSUED) {
             $this->retval .= " <small>($ISSUED)</small>";
+        }
         $this->retval .= "</p>\n";
 
         if ($AUTHOR) {
@@ -201,8 +218,9 @@ class myAtomParser {
     }
 
     function fixEncoding($input, $output_encoding) {
-        if (!function_exists('mb_detect_encoding'))
+        if (!function_exists('mb_detect_encoding')) {
             return $input;
+        }
 
         $encoding = mb_detect_encoding($input);
         switch ($encoding) {
@@ -223,8 +241,9 @@ class myAtomParser {
 
         switch ($start_tag) {
             case "FEED":
-                foreach ($this->output as $feed)
+                foreach ($this->output as $feed) {
                     $this->display_feed($feed, $limit);
+                }
                 break;
             default:
                 die("Error: unrecognized start tag '$start_tag' in getOutput()");
@@ -239,5 +258,3 @@ class myAtomParser {
     }
 
 }
-
-?>

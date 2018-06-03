@@ -1036,8 +1036,8 @@ div.legend input {
     text-align: center;
     width: 350px;
     margin-left: 80px;
-    color: red;
-    background: #eee;
+    color: black;
+    background: #fdd;
     z-index: 100;
     display: none;
 }
@@ -1053,12 +1053,12 @@ div.legend input {
 }
 
 #errorDialog {
-    top: 60px;
-    color: red;
-    background-color: #bbb;
-    text-align: center;
-    width: 650px;
-    margin-left: -310px;
+    top: 62px;
+    color: black;
+    background-color: #fdd;
+    text-align: left;
+    width: 700px;
+    margin-left: -350px;
     z-index: 100;
 }
 
