@@ -143,7 +143,7 @@ function parse_options($twxa_version) {
             }
             break;
         case 'dlTorrent':
-// Loaded via ajax
+            // Loaded via ajax
             foreach ($config_values['Favorites'] as $fav) {
                 $guess = detectMatch(html_entity_decode($_GET['title']));
                 $name = trim(strtr($guess['title'], "._", "  "));
@@ -151,8 +151,13 @@ function parse_options($twxa_version) {
                     $downloadDir = $fav['Download Dir'];
                 }
             }
-            if ((!isset($downloadDir) || $downloadDir == "Default" ) &&
-                    isset($config_values['Settings']['Download Dir'])) {
+            if (
+                    (
+                    empty($downloadDir) ||
+                    $downloadDir == "Default"
+                    ) &&
+                    !empty($config_values['Settings']['Download Dir'])
+            ) {
                 $downloadDir = $config_values['Settings']['Download Dir'];
             }
             $r = client_add_torrent(str_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
@@ -474,14 +479,14 @@ function checkFilesAndDirs() {
     $downloadDir = $config_values['Settings']['Download Dir'];
     $saveTorrentsDir = $config_values['Settings']['Save Torrents Dir'];
 
-    // only check DownloadDir if it is local
+    // only check DownloadDir if it is local and client is folder
     if (
-            $config_values['Settings']['Client'] === "folder" ||
-            (
-            $config_values['Settings']['Client'] === "Transmission" &&
-            preg_match('/(localhost|127\.0\.0\.1)/', $config_values['Settings']['Transmission Host']
-            )
-            )
+            $config_values['Settings']['Client'] === "folder" /* ||
+      (
+      $config_values['Settings']['Client'] === "Transmission" &&
+      preg_match('/(localhost|127\.0\.0\.1)/', $config_values['Settings']['Transmission Host']
+      )
+      ) */
     ) {
         $checkLocalDownloadDir = true;
     } else {

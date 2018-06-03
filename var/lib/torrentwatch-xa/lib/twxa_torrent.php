@@ -477,7 +477,12 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         $dest = $config_values['Settings']['Download Dir'];
     }
     if (isset($fav) && !empty($fav['Download Dir']) && $fav['Download Dir'] != 'Default') {
-        if (is_dir($fav['Download Dir']) && is_writeable($fav['Download Dir'])) {
+        if (
+                ($config_values['Settings']['Client'] === "folder" &&
+                is_dir($fav['Download Dir']) &&
+                is_writeable($fav['Download Dir'])) ||
+                $config_values['Settings']['Client'] !== "folder"
+                ) {
             $dest = $fav['Download Dir'];
         } else {
             $dest = $config_values['Settings']['Download Dir'];
