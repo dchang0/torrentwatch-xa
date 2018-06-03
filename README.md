@@ -31,7 +31,7 @@ __twxacli.php has been renamed to twxa_cli.php to conform to the file naming con
 
 1.1.0 fixed some leftover bugs in changing install paths by moving the hidden settings Cache Dir and History from torrentwatch-xa.config to twxa_config_lib.php.
 
-A very bad but very rare bug where the Configuration settings were wiped and replaced with some default settings was finally fixed in 1.1.0. The bug was carried over from TorrentWatch-X 0.8.9 but was made worse by the conversion of the config file to JSON. Fixing it required a major rewrite of readjSONConfigFile() to change the way torrentwatch-xa.config and torrentwatch-xa-config.cache are handled.
+A very bad but very rare bug where the Configure settings were wiped and replaced with some default settings was finally fixed in 1.1.0. The bug was carried over from TorrentWatch-X 0.8.9 but was made worse by the conversion of the config file to JSON. Fixing it required a major rewrite of readjSONConfigFile() to change the way torrentwatch-xa.config and torrentwatch-xa-config.cache are handled.
 
 This config file bug had to be fixed in order to add a new, experimental feature: a command-line bulk Favorites importer, twxa_fav_import.php, now in alpha. You can now import a plain-text TSV (tab-separate values) file directly into your Favorites. Please read the usage notes for instructions.
 

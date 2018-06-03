@@ -100,7 +100,7 @@ function transmission_sessionId() {
     $sessionIdFile = get_tr_sessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) {
         $myuid = posix_getuid();
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work? Replace it with outputErrorDialog()
         writeToLog("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
         return;
     }
@@ -151,7 +151,7 @@ function transmission_rpc($request) {
     $sessionIdFile = get_tr_sessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) { //TODO break this out into a small function
         $myuid = posix_getuid();
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?  Replace it with outputErrorDialog()
         writeToLog("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
         return;
     }

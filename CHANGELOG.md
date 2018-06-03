@@ -53,7 +53,7 @@ Functional changes
 - moved torrent list container down 6px in phone.css so that the filter bar no longer partially obscures it
 - totally revamped detectResolution() to detect ###x### ####x### or ####x#### and check it for aspect ratios
 - added Enhanced Definition TV resolution 576i and 576p
-- temporarily removed font size setting because it only changes the font size of the Configuration UI
+- temporarily removed font size setting because it only changes the font size of the Configure UI
 - added removal of audio codecs before episode detection (AC3 is being seen as an episode number)
 - improved removal of all-numeric 8-digit checksums
 - revamped Season and Episode detection to improve performance by focusing on "low-hanging fruit"
@@ -232,7 +232,7 @@ Code changes
 - renamed NMT-mailscript.sh to example-mailscript.sh and improved its comments,
 - hid the Configure > Other > Script field since it is read-only
 - upgraded PHPMailer from 5.2 to 5.2.23, but not using any of the SMTP auth features yet
-- cleaned up all the undefined variable PHP notices that occur when Configuration is saved:
+- cleaned up all the undefined variable PHP notices that occur when Configure is saved:
   - PHP Notice:  Undefined index: combinefeeds in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
   - PHP Notice:  Undefined index: epionly in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
   - PHP Notice:  Undefined index: require_epi_info in /var/lib/torrentwatch-xa/lib/config_lib.php on line 330
@@ -662,7 +662,7 @@ Functional changes
 
 Code changes
 
-- fixed bad bug where most of the Configuration settings are lost and replaced with some default settings (Feeds)
+- fixed bad bug where most of the Configure settings are lost and replaced with some default settings (Feeds)
   - massive rewrite of setup_default_config() as setupDefaultConfig()
   - massive rewrite of readjSONConfigFile()
   - moved some code from readjSONConfigFile() to smaller functions
