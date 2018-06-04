@@ -33,7 +33,7 @@ __twxacli.php has been renamed to twxa_cli.php to conform to the file naming con
 
 A very bad but very rare bug where the Configure settings were wiped and replaced with some default settings was finally fixed in 1.1.0. The bug was carried over from TorrentWatch-X 0.8.9 but was made worse by the conversion of the config file to JSON. Fixing it required a major rewrite of readjSONConfigFile() to change the way torrentwatch-xa.config and torrentwatch-xa-config.cache are handled.
 
-This config file bug had to be fixed in order to add a new, experimental feature: a command-line bulk Favorites importer, twxa_fav_import.php, now in alpha. You can now import a plain-text TSV (tab-separate values) file directly into your Favorites. Please read the usage notes for instructions.
+This config file bug had to be fixed in order to add a new, experimental feature: a command-line bulk Favorites importer, twxa_fav_import.php, now in alpha. You can now import a plain-text TSV (tab-separated values) file directly into your Favorites. Please read the usage notes for instructions.
 
 The formerly hidden setting debugLevel was renamed to Log Level and exposed via Configure > Interface > Log Level
 
