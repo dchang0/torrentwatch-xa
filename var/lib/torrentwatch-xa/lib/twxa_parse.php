@@ -285,7 +285,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'TELESYNC'
     ];
     foreach ($qualityList as $qualityListItem) {
-        if (preg_match("/\b" . $qualityListItem . "\b/i", $ti) !== false) {
+        if (preg_match("/\b" . $qualityListItem . "\b/i", $ti)) {
             $detQualities[] = $qualityListItem;
             $ti = preg_replace("/\b" . $qualityListItem . "\b/i", "", $ti);
         }
@@ -318,7 +318,7 @@ function detectAudioCodecs($ti) {
         '2ch'
     ];
     foreach ($audioCodecList as $audioCodecListItem) {
-        if (preg_match("/\b" . $audioCodecListItem . "\b/i", $ti) !== false) {
+        if (preg_match("/\b" . $audioCodecListItem . "\b/i", $ti)) {
             $detAudioCodecs[] = $audioCodecListItem;
             //TODO cascade down through, removing immediately-surrouding dashes
             $ti = preg_replace("/\b" . $audioCodecListItem . "\b/i", "", $ti);
