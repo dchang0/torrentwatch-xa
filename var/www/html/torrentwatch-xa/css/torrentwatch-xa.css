@@ -1259,7 +1259,9 @@ div.legend input {
 
 #config_feeds #feedItems {
     max-height: 280px;
-    overflow: auto;
+    /*overflow: auto;*/
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #addFeed {
@@ -1304,8 +1306,8 @@ div.legend input {
 }
 
 #config_feeds div.feeditem input[type=text] {
-    /*width: 296px;*/
-    width: 280px;
+    /*width: 280px;*/
+    width: 275px;
     margin: 3px 0;
     padding: 1px 3px 1px 3px;
     left: 0;
