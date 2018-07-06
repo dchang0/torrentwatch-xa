@@ -659,6 +659,7 @@ Functional changes
   - improved error messages
 - Favorite > Also Save Dir now defaults to global Also Save Torrent Files Dir if left blank or if path is not writable
 - Favorite > Download Dir now defaults to global Download Dir if left blank
+- adjusted Configure > Feeds so that rows don't wrap when vertical scrollbar shows
 
 Code changes
 
@@ -682,10 +683,13 @@ Code changes
 - renamed twxaDebug() to writeToLog()
 - fixed bug in writeToLog() where ERROR wrote every level
 - removed $SERVER global from twxa_cli.php
+- fixed bug where FULL seasons are not treated as batches
 
 Next Version
 
 Functional Changes
+
+- removed Default setting keyword from Favorite > Also Save Dir and Favorite > Download Dir (will allow saving in a directory called Default)
 
 IN PROGRESS
 
@@ -696,7 +700,6 @@ IN PROGRESS
 - Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
 - show alerts in web UI
-- remove Default setting from Favorite > Also Save Dir and Favorite > Download Dir (will allow saving in a directory called Default)
 
 Code Changes
 
