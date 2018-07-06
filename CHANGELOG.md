@@ -657,8 +657,8 @@ Functional changes
   - added check for permissions on ConfigCacheFile if it exists
   - added check for permissions on DownloadHistoryFile if it exists
   - improved error messages
-- Favorite > Also Save Dir now defaults to global Also Save Torrent Files Dir if left blank or if path is not writable
-- Favorite > Download Dir now defaults to global Download Dir if left blank
+- Favorite > Also Save Dir now defaults to global Also Save Torrent Files Dir if left blank or if path is not writable ("Default" keyword no longer works)
+- Favorite > Download Dir now defaults to global Download Dir if left blank ("Default" keyword no longer works)
 - adjusted Configure > Feeds so that rows don't wrap when vertical scrollbar shows
 
 Code changes
