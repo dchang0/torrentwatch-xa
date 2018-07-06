@@ -201,7 +201,15 @@ function check_for_torrent(&$item, $key, $opts) {
                                     }
                                 }
                             } else {
-                                // probably empty string, do download
+                                // probably empty string (FULL season), do download
+                                if ($config_values['Settings']['Ignore Batches'] == 0) {
+                                    
+                                } else {
+                                    // ignore batches
+                                    writeToLog("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
+                                    $itemState = "st_ignoredFavBatch";
+                                    return false;
+                                }
                             }
                         } else if ($guessedItem['seasBatEnd'] > $guessedItem['seasBatStart']) {
                             if ($config_values['Settings']['Ignore Batches'] == 0) {
