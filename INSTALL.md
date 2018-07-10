@@ -52,9 +52,24 @@ Installation Script
 
 There is a rudimentary install/upgrade script called `install_twxa.sh` meant for Debian 8.x/9.x (but not Debian 7.x) and Ubuntu 14.04/16.04/18.04. It does work with the as-yet unsupported Fedora Server 25.
 
-The install/upgrade script will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
+The install/upgrade script will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. It does not install any prerequisite packages for you, nor does it configure or start/restart the Apache2 webserver. See Manual Installation below for those steps.
 
-If upgrading, the `install_twxa.sh` script has an option `--keep-config` that will copy your current config file to your home directory, then copy it back after performing the upgrade.
+Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be easiest to provide a .deb installation package.
+
+To use the script, make sure you have sudo privileges or are running as root, then:
+
+- `git clone https://github.com/dchang0/torrentwatch-xa.git`
+- `cd torrentwatch-xa`
+
+Then, if you are upgrading and want to keep your previous config:
+
+- `./install_twxa.sh --keep-config`
+
+Or for fresh installs or where you want to discard your config:
+
+- `./install_twxa.sh`
+
+The script will back up the config file if it sees one even if `--keep-config` is not specified. It will put the backup in your home folder as `~/torrentwatch-xa.config.bak`. Your config file might be too old to use if you are upgrading from a very old version.
 
 Manual Installation
 ===============

@@ -201,9 +201,9 @@ function check_for_torrent(&$item, $key, $opts) {
                                     }
                                 }
                             } else {
-                                // probably empty string (FULL season), do download
+                                // probably empty string (FULL season)
                                 if ($config_values['Settings']['Ignore Batches'] == 0) {
-                                    
+                                    // do download
                                 } else {
                                     // ignore batches
                                     writeToLog("Ignoring batch: " . $guessedItem['title'] . "\n", 1);

@@ -42,6 +42,8 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Bugfixes
 
+- widen Seed Ratio textbox in Favorite to handle three-digit ratios like 0.15
+- with the episode filter it also ignores all the batches regardless of the setting to ignore batches
 - fix debug console in web UI
 - when using Add to Favorites on multiple different titles, added items correctly turn orange for Favorite Ready, but Refresh button does not cause complete browser reload, which means the items stay orange instead of turning yellow for Waiting and then gaining progress bars
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
@@ -52,6 +54,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- Clear Cache dialog closes automatically after any button is pressed
 - remove uninitialized variables in twxa_atomparser.php
 - store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
