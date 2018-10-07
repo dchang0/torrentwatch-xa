@@ -645,7 +645,8 @@ function addFeed($feedLink) {
     global $config_values;
     if (!empty($feedLink) && filter_var($feedLink, FILTER_VALIDATE_URL)) {
         writeToLog("Checking feed: $feedLink\n", 2);
-        if ($guessedFeedType = guess_feed_type($feedLink) != 'Unknown') {
+        $guessedFeedType = guess_feed_type($feedLink);
+        if ($guessedFeedType != 'Unknown') {
             writeToLog("Adding feed: $feedLink\n", 1);
             $config_values['Feeds'][]['Link'] = $feedLink;
             $arrayKeys = array_keys($config_values['Feeds']);
