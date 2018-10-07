@@ -2,8 +2,7 @@
 
 // twxa_fav_import.php
 // torrentwatch-xa bulk Favorites importer
-// Imports a single-column text file into multiple Favorites. Each line is
-// copied verbatim into one Filter field.
+// Imports a tab-separated text file into multiple Favorites.
 // WARNING: This file is experimental and may be removed from torrentwatch-xa
 // at any time.
 
@@ -48,7 +47,12 @@ if (is_readable($argv[1])) {
     if (($handle = fopen($argv[1], "r")) !== false) {
         while (($data = fgetcsv($handle, 1000, "\t")) !== false) {
             $return = null;
-            if (count($data) === 2) {
+            if (count($data) === 1) {
+                // first field is only field provided, use it as Name and Filter
+                print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[0] . "\n");
+                writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[0] . "\n", 1);
+                $return = addOneBulkFavorite($data[0], $data[0]);
+            } else if (count($data) === 2) {
                 // first field is Name, second is Filter
                 print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\n");
                 writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\n", 1);
@@ -59,10 +63,10 @@ if (is_readable($argv[1])) {
                 writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tQuality: " . $data[2] . "\n", 1);
                 $return = addOneBulkFavorite($data[0], $data[1], $data[2]);
             } else {
-                print("Can't detect at least two tab-separated fields, skipping line: $row\n");
-                writeToLog("Can't detect at least two tab-separated fields, skipping line: $row\n", 0);
+                print("Can't detect at least one tab-separated field, skipping line: $row\n");
+                writeToLog("Can't detect at least one tab-separated field, skipping line: $row\n", 0);
             }
-            if(!empty($return)) {
+            if (!empty($return)) {
                 print($return . "\n");
                 writeToLog($return . "\n", 1);
             }
@@ -70,10 +74,8 @@ if (is_readable($argv[1])) {
         }
         fclose($handle);
     }
-    //print_r($config_values);
 
     if (is_writable($configFile) && is_numeric($configOwner)) {
-        //writeToLog("Writing config file: $configFile\n", 2);
         if (writejSONConfigFile()) {
             // IMPORTANT: must change ownership on new config file to the user Apache2 is running as
             if (chown($configFile, $configOwner)) {
@@ -109,6 +111,7 @@ function addOneBulkFavorite($name, $filter, $quality = "") {
 
         $config_values['Favorites'][$idx]['Filter'] = urldecode($filter);
         $config_values['Favorites'][$idx]['Quality'] = urldecode($quality);
+        $config_values['Favorites'][$idx]['Feed'] = 'All';
 
         $list = array(
             //"name" => "Name",
@@ -117,7 +120,7 @@ function addOneBulkFavorite($name, $filter, $quality = "") {
             "downloaddir" => "Download Dir",
             "alsosavedir" => "Also Save Dir",
             "episodes" => "Episodes",
-            "feed" => "Feed",
+            //"feed" => "Feed",
             //"quality" => "Quality",
             "seedratio" => "seedRatio",
             "season" => "Season",
