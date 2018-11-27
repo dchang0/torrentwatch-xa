@@ -28,6 +28,8 @@ Common setups:
 Status
 ===============
 
+__NOTE: In Ubuntu 18.04 (not yet supported), there is some definitely some security feature preventing Apache2 from writing to /tmp/twxalog. I am also noticing some other bugs in PHP that may prevent the download of some Favorites. While torrentwatch-xa does mostly work on Ubuntu 18.04, I recommend that you use Ubuntu 16.04 instead.__
+
 I've posted 1.1.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 __twxacli.php has been renamed to twxa_cli.php to conform to the file naming convention; please be aware that the cron job file will need to be updated to call twxa_cli.php__
