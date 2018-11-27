@@ -23,12 +23,12 @@ Common setups:
 
 &sup1; PHP 5.6.0alpha3 is really only required by PHPMailer's SMTP 5.2.23 library to support TLS 1.1 and 1.2. torrentwatch-xa itself only requires PHP 5.4.0. If you are not using email triggers with TLS 1.1 or 1.2, you should be able to avoid this version requirement by downgrading PHPMailer's SMTP library.
 
-&sup2; around 18 seconds for the web UI to process all six default feeds with 32 favorites, as compared to around 5 seconds on an ODROID C1+
+&sup2; It takes around 18 seconds for the web UI to process all six default feeds with 32 favorites, as compared to around 5 seconds on an ODROID C1+.
 
 Status
 ===============
 
-__NOTE: In Ubuntu 18.04 (not yet supported), there is a new systemd security feature called PrivateTmp preventing Apache2 from writing to /tmp/twxalog, while the cron job has no problem writing to /tmp/twxalog. This results in there being two twxalog files on the system, one for the web UI and one for the cron job. PrivateTmp must be turned off for Apache2 to restore the typical behavior. To conform to PrivateTmp properly in the near future, I will probably move the files that torrentwatch-xa places in /tmp into a subdirectory under /var/lib/torrentwatch-xa.__
+__NOTE:__ In Ubuntu 18.04 (not yet supported), there is a new systemd security feature called PrivateTmp preventing Apache2 from writing to /tmp/twxalog; instead, a temporary, private, virtual /tmp folder is created for Apache2 to write to. Meanwhile, the cron job continues to write to /tmp/twxalog. This results in there being two twxalog files on the system. __PrivateTmp does not affect the normal function of torrentwatch-xa: it will still download items properly. However, if you don't want dual log files, you can opt to disable PrivateTmp for Apache2.__ In 1.2.0, the files placed in /tmp will be moved to other locations so that PrivateTmp does not have to be disabled.
 
 I've posted 1.1.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
