@@ -28,7 +28,7 @@ Common setups:
 Status
 ===============
 
-__NOTE: In Ubuntu 18.04 (not yet supported), there is some definitely some security feature preventing Apache2 from writing to /tmp/twxalog. I am also noticing some other bugs in PHP that may prevent the download of some Favorites. While torrentwatch-xa does mostly work on Ubuntu 18.04, I recommend that you use Ubuntu 16.04 instead.__
+__NOTE: In Ubuntu 18.04 (not yet supported), there is a new systemd security feature called PrivateTmp preventing Apache2 from writing to /tmp/twxalog, while the cron job has no problem writing to /tmp/twxalog. This results in there being two twxalog files on the system, one for the web UI and one for the cron job. PrivateTmp must be turned off for Apache2 to restore the typical behavior. To conform to PrivateTmp properly in the near future, I will probably move the files that torrentwatch-xa places in /tmp into a subdirectory under /var/lib/torrentwatch-xa.__
 
 I've posted 1.1.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
