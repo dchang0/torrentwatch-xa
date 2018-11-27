@@ -376,7 +376,7 @@ function matchTitle1_1_18($ti, $seps) {
     // Use "Sword Art Online" instead. But this is counterintuitive--people would think of the "II" as being
     // part of the title.
     $mat = [];
-    $re = "/\b(I{1,3})[\-$seps]{0,3}(\d+).*/";
+    $re = "/\b(I{1,3}|i{1,3})[\-$seps]{0,3}(\d+).*/";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
