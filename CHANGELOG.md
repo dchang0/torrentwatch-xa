@@ -110,7 +110,7 @@ Functional changes
 - added Auto-Delete Seeded Torrents to automatically delete completely downloaded and seeded torrents from Transmission, leaving behind just the torrent's contents
 - updated Transmission icon with latest official design
 - fixed but temporarily removed Episodes Only toggle from config panel (entire concept of Episodes needs to be reworked now that print media can be faved)
-- removed all NMT and Mac OS X support (only supported OS is currently Debian 7.x)
+- removed all NMT and Mac OS X support
 - fixed feed section header and filter button match counts so that they obey the selected filter
 - added horizontal scrolling capability to History panel for long titles
 
@@ -660,6 +660,8 @@ Functional changes
 - Favorite > Also Save Dir now defaults to global Also Save Torrent Files Dir if left blank or if path is not writable ("Default" keyword no longer works)
 - Favorite > Download Dir now defaults to global Download Dir if left blank ("Default" keyword no longer works)
 - adjusted Configure > Feeds so that rows don't wrap when vertical scrollbar shows
+- bulk favorite importer now recognizes one field as both Name and Filter
+- fixed detection of Roman numeral seasons
 
 Code changes
 
@@ -684,15 +686,33 @@ Code changes
 - fixed bug in writeToLog() where ERROR wrote every level
 - removed $SERVER global from twxa_cli.php
 - fixed bug where FULL seasons are not treated as batches
+- feed type is correctly saved to config file
+
+1.2.0
+
+Functional Changes
+
+- CURL now passes through the user's User-Agent header value
+- due to systemd's PrivateTmp security feature in Ubuntu 18.04:
+  - moved /tmp/twxalog to /var/log/twxalog
+  - moved /tmp/.Transmission-Session-Id to /var/lib/torrentwatch-xa/dl_cache/.Transmission-Session-Id
+  - updated documentation to reflect new twxalog path
+- fixed detection of Roman-numeral season
+- changed client_add_torrent() to use torrent hash from URL if DDoS blockers like CloudFlare drop the connection
+
+Code Changes
+
+- renamed get_tr_sessionIdFile() to getTransmissionSessionIdFile()
+- moved getTransmissionSessionIdFile() from config.php to twxa_config_lib.php
+- added explicit int casts to validateYYYYMMDD()
 
 Next Version
 
 Functional Changes
 
-- removed Default setting keyword from Favorite > Also Save Dir and Favorite > Download Dir (will allow saving in a directory called Default)
-
 IN PROGRESS
 
+- handle gzipped torrent file (using gzuncompress() if file contents are returned directly or gzopen() and gzread() if file is downloaded)
 - add PHP prerequisite check to twxa_cli.php
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)

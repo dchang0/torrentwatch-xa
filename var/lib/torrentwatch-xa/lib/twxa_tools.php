@@ -88,13 +88,20 @@ function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
 }
 
 function getcURLDefaults(&$curlOptions) {
-    $curlOptions[CURLOPT_CONNECTTIMEOUT] = 15;
+    global $twxa_version;
+    $curlOptions[CURLOPT_CONNECTTIMEOUT] = 20; // was 15
     $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
     $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
     $curlOptions[CURLOPT_FOLLOWLOCATION] = true;
     $curlOptions[CURLOPT_UNRESTRICTED_AUTH] = true;
-    $curlOptions[CURLOPT_TIMEOUT] = 20;
+    $curlOptions[CURLOPT_TIMEOUT] = 30; // was 20
     $curlOptions[CURLOPT_RETURNTRANSFER] = true;
+    if (filter_input(INPUT_SERVER, "HTTP_USER_AGENT") == "") {
+        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
+        //$curlOptions[CURLOPT_USERAGENT] = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13';
+    } else {
+        $curlOptions[CURLOPT_USERAGENT] = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
+    }
     return($curlOptions);
 }
 
@@ -134,7 +141,7 @@ function writeToLog($string, $lvl = -1) {
           $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once
           } */
         // write plain text to log file
-        if(file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND) === false) {
+        if (file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND) === false) {
             //TODO failed to write, send error to HTML
         }
     }

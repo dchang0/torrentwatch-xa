@@ -23,6 +23,10 @@ function getDownloadHistoryFile() {
     return get_baseDir() . "/dl_cache/dl_history";
 }
 
+function getTransmissionSessionIdFile() {
+    return getDownloadCacheDir() . "/.Transmission-Session-Id";
+}
+
 function getTransmissionrPCPath() {
     return "/transmission/rpc"; // do not change this without good reason
 }

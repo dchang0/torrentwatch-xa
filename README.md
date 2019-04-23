@@ -28,23 +28,11 @@ Common setups:
 Status
 ===============
 
-__NOTE:__ In Ubuntu 18.04 (not yet supported), there is a new systemd security feature called PrivateTmp preventing Apache2 from writing to /tmp/twxalog; instead, a temporary, private, virtual /tmp folder is created for Apache2 to write to. Meanwhile, the cron job continues to write to /tmp/twxalog. This results in there being two twxalog files on the system. __PrivateTmp does not affect the normal function of torrentwatch-xa: it will still download items properly. However, if you don't want dual log files, you can opt to disable PrivateTmp for Apache2.__ In 1.2.0, the files placed in /tmp will be moved to other locations so that PrivateTmp does not have to be disabled.
+I've posted 1.2.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-I've posted 1.1.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+1.2.0 can detect a torrent hash in the URL and use it if it cannot retrieve a torrent file. This ability can get around DDoS blockers like CloudFlare if the URL happens to contain the hash. (Thanks to efelon on GitHub for reporting this issue.)
 
-__twxacli.php has been renamed to twxa_cli.php to conform to the file naming convention; please be aware that the cron job file will need to be updated to call twxa_cli.php__
-
-1.1.0 fixed some leftover bugs in changing install paths by moving the hidden settings Cache Dir and History from torrentwatch-xa.config to twxa_config_lib.php.
-
-A very bad but very rare bug where the Configure settings were wiped and replaced with some default settings was finally fixed in 1.1.0. The bug was carried over from TorrentWatch-X 0.8.9 but was made worse by the conversion of the config file to JSON. Fixing it required a major rewrite of readjSONConfigFile() to change the way torrentwatch-xa.config and torrentwatch-xa-config.cache are handled.
-
-This config file bug had to be fixed in order to add a new, experimental feature: a command-line bulk Favorites importer, twxa_fav_import.php, now in alpha. You can now import a plain-text TSV (tab-separated values) file directly into your Favorites. Please read the usage notes for instructions.
-
-The formerly hidden setting debugLevel was renamed to Log Level and exposed via Configure > Interface > Log Level
-
-There's a new configuration option: Configure > Interface > Check for Updates
-
-1.1.0 has improved checks for important files or directories that do not exist or have incorrect permissions.
+To obviate Ubuntu 18.04's PrivateTmp feature, the twxalog file has been moved to /var/log/txwalog. If you use logrotate to rotate twxalog, remember to use this new path.
 
 #### Still in Alpha
 

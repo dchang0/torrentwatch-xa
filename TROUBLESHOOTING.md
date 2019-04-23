@@ -7,7 +7,7 @@ There are four places to check for error messages:
 
 - a pop-up in the web browser (typically configuration errors such as permissions problems or unreachable paths)
 - web server error log: /var/log/apache2/error.log (all PHP errors, warnings, and notifications)
-- torrentwatch-xa error log: /tmp/twxalog (all errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
+- torrentwatch-xa error log: /var/log/twxalog (all errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
 - web browser Javascript console (Javascript errors only, typically minor errors in torrentwatch-xa's web UI)
 
 #### If you change the installation path(s)
@@ -28,7 +28,7 @@ Some feeds can't be added for various reasons including:
 
 - rejection of SSL certificate chain
 - feed format is not recognized as Atom or RSS
-- can't handle HTTP redirects
+- can't handle HTTP redirects or DDoS blockers like CloudFlare
 
 Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their extreme rarity.
 
@@ -67,7 +67,7 @@ First, please review the section of [INSTALL.md](INSTALL.md) called **Use the Fa
 
 Second, check the Favorite's Quality filter and make sure it's not too restrictive, then make sure there are no typos in any of the Favorite's fields.
 
-Third, check torrentwatch-xa's log (typically /tmp/twxalog) for errors.
+Third, check torrentwatch-xa's log (typically /var/log/twxalog) for errors.
 
 If you have followed the instructions correctly and are still having trouble, turn on Configure > Interface > Show Item Debug Info and refresh the browser so that you can see the show_title that must be matched by your Favorite Filter. You will likely find a typo in your Favorite's Filter that needs correcting.
 
@@ -113,7 +113,7 @@ You should see entries like these:
 
 Otherwise you will likely see errors with short instructions on how to fix the problem(s).
 
-It may also be necessary to check torrentwatch-xa's log file (typically /tmp/twxalog) for other errors preventing the auto-download.
+It may also be necessary to check torrentwatch-xa's log file (typically /var/log/twxalog) for other errors preventing the auto-download.
 
 #### "Invalid or corrupt torrent file"
 

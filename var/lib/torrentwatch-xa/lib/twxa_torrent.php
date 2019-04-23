@@ -97,7 +97,7 @@ function moveTorrent($location, $torHash) {
 
 function transmission_sessionId() {
     global $config_values;
-    $sessionIdFile = get_tr_sessionIdFile();
+    $sessionIdFile = getTransmissionSessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) {
         $myuid = posix_getuid();
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work? Replace it with outputErrorDialog()
@@ -148,7 +148,7 @@ function transmission_sessionId() {
 
 function transmission_rpc($request) {
     global $config_values;
-    $sessionIdFile = get_tr_sessionIdFile();
+    $sessionIdFile = getTransmissionSessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) { //TODO break this out into a small function
         $myuid = posix_getuid();
         echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?  Replace it with outputErrorDialog()
@@ -161,8 +161,8 @@ function transmission_rpc($request) {
     $tr_host = $config_values['Settings']['Transmission Host'];
     $tr_port = $config_values['Settings']['Transmission Port'];
 
-    $request = json_encode($request);
-    $reqLen = strlen($request);
+    $requestjSON = json_encode($request);
+    $reqLen = strlen($requestjSON);
 
     $run = 1;
     while ($run) {
@@ -180,7 +180,7 @@ function transmission_rpc($request) {
                 "Content-Length: $reqLen",
                 'Content-Type: application/json'
             ),
-            CURLOPT_POSTFIELDS => "$request"
+            CURLOPT_POSTFIELDS => "$requestjSON"
         );
         getcURLDefaults($curl_options);
         curl_setopt_array($post, $curl_options);
@@ -412,15 +412,15 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
     //TODO this function needs major cleanup! Be aware that return value should be an array but Javascript .dlTorrent expects a string
-    global $config_values, $twxa_version;
+    global $config_values;
     if (strtolower($fav['Filter']) === "any") {
         $any = 1;
     }
     if (strpos($filename, 'magnet:') === 0) {
         $tor = $filename;
-        $magnet = true; // was 1
+        $magnet = true;
     } else {
-        $magnet = false; // was 0
+        $magnet = false;
         $filename = htmlspecialchars_decode($filename);
 
         // Detect and append cookies from the feed url
@@ -439,27 +439,37 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
         if (isset($cookies)) {
             $curlOptions[CURLOPT_COOKIE] = $cookies;
         }
-        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
         getcURLDefaults($curlOptions);
         curl_setopt_array($get, $curlOptions);
         $tor = curl_exec($get);
         curl_close($get);
 
         if (strncasecmp($tor, 'd8:announce', 11) != 0) { // Check for torrent magic-entry
-            //This was not a torrent-file, so it's probably some kind of xml / html.
-            if (!$retried) {
-                //Try to retrieve a .torrent link from the content.
-                $link = find_torrent_link($url, $tor);
-                return client_add_torrent($link, $dest, $ti, $feed, $fav, $url); // $url is used as boolean in $retried here but also as value in else below
+            // not a torrent file, so it's probably XML / HTML content or possibly a gzipped torrent file
+            // first, check the URL for a torrent hash and use that
+            $mat = [];
+            if (preg_match('/([a-fA-F0-9]{40})/', $filename, $mat) === 1) {
+                writeToLog("Using torrent hash found in the URL: " . $mat[1] . "\n", 1);
+                $tor = "magnet:?xt=urn:btih:$mat[1]";
+                $magnet = true;
             } else {
-                if (isset($retried)) {
-                    $url = $retried;
+                if (!$retried) {
+                    // try to retrieve a .torrent link from the content.
+                    $link = find_torrent_link($url, $tor);
+                    //TODO test the link before recursively calling client_add_torrent
+                    return client_add_torrent($link, $dest, $ti, $feed, $fav, $url); // $url is used as boolean in $retried here but also as value in else below
+                } else {
+                    if (isset($retried)) {
+                        $url = $retried;
+                    }
+                    $errMsg = "No torrent file link found in $url. Might be a gzipped torrent.";
+                    writeToLog("$errMsg\n", -1);
+                    //TODO remove this later
+                    writeToLog("HTTP response: $tor\n", 2);
+                    return $errMsg;
                 }
-                $errMsg = "No torrent file link found in $url. Might be a gzipped torrent.";
-                writeToLog("$errMsg\n", -1);
-                return $errMsg;
             }
-        } // do not add else with return here as it will break adding some torrent files
+        } // do not add else with return here as it will break adding torrent files
 
         if (!$tor) {
             $errMsg = "Couldn't open torrent: $filename";
@@ -476,13 +486,13 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
     if (!isset($dest)) {
         $dest = $config_values['Settings']['Download Dir'];
     }
-    if (isset($fav) && !empty($fav['Download Dir']) /*&& $fav['Download Dir'] != 'Default'*/) {
+    if (isset($fav) && !empty($fav['Download Dir']) /* && $fav['Download Dir'] != 'Default' */) {
         if (
                 ($config_values['Settings']['Client'] === "folder" &&
                 is_dir($fav['Download Dir']) &&
                 is_writeable($fav['Download Dir'])) ||
                 $config_values['Settings']['Client'] !== "folder"
-                ) {
+        ) {
             $dest = $fav['Download Dir'];
         } else {
             $dest = $config_values['Settings']['Download Dir'];
@@ -565,7 +575,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             if (
                     isset($fav) &&
                     !empty($fav['Also Save Dir']) &&
-                    /*$fav['Also Save Dir'] != 'Default' &&*/
+                    /* $fav['Also Save Dir'] != 'Default' && */
                     is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
                     is_writeable($fav['Also Save Dir'])
             ) {

@@ -74,10 +74,10 @@ function normalizeCodecs($ti, $seps = '\s\.\_') {
 }
 
 function validateYYYYMMDD($date) {
-    $YYYY = substr($date, 0, 4);
-    $MM = substr($date, 4, 2);
-    $DD = substr($date, 6, 2);
-    return checkdate($MM + 0, $DD + 0, $YYYY + 0);
+    $YYYY = (int)substr($date, 0, 4);
+    $MM = (int)substr($date, 4, 2);
+    $DD = (int)substr($date, 6, 2);
+    return checkdate($MM, $DD, $YYYY);
 }
 
 function simplifyTitle($ti) {

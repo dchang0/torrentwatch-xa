@@ -54,6 +54,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- implement Ignore Batches feature per Favorite as well as globally
 - Clear Cache dialog closes automatically after any button is pressed
 - remove uninitialized variables in twxa_atomparser.php
 - store item version numbers in Favorite Last Downloaded field

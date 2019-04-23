@@ -39,7 +39,7 @@ To run a shell script, check Enable Script, provide the full path to a single sh
 
 To use the built-in SMTP notifications, check SMTP Notifications and fill in the From Email and To Email fields and all the SMTP fields. SMTP Port defaults to 25 if left blank. From Email defaults to To Email if left blank or it is invalid. 
 
-For various in-depth reasons I am not providing any means of testing the SMTP settings at this time. You can trigger a real email notification by initiating a Favorite download (by cron job) and checking the log file at /tmp/twxalog for errors.
+No means of testing the SMTP settings are provided at this time. You can trigger a real email notification by initiating a Favorite download (by cron job) and checking the log file at /var/log/twxalog for errors.
 
 torrentwatch-xa uses PHPMailer 5.2.23 to send emails, so you may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear.
 
@@ -76,19 +76,19 @@ The Episodes filter currently in each Favorite is still the old TorrentWatch-X f
 
 The Favorites fields behave differently in RegEx Matching Style than in Simple or Glob in that PCRE Unicode regular expressions are used in the Filter, Not, and Qualities fields in RegEx mode.
 
-### Authentication for private RSS Feeds
+### Authentication for Private RSS Feeds
 
 See the section "Only Public Torrent RSS or Atom Feeds Are Supported" in the **Design Decisions Explained** section below for more details.
 
 ### Auto-Del Seeded Torrents
 
-As of 0.5.0, Auto-Del Seeded Torrents has been fully implemented such that when enabled, either the web UI or twxa_cli.php (run by the cron job) will automatically delete completely-downloaded, fully-seeded torrents from Transmission without trashing the torrent's contents. Auto-Del Seeded Torrents is also smart enough not to delete any torrents that are not found in the download cache, preventing it from deleting torrents that were added to Transmission via other means.
+When enabled, either the web UI or twxa_cli.php (run by the cron job) will automatically delete completely-downloaded, fully-seeded torrents from Transmission without trashing the torrent's contents. Auto-Del Seeded Torrents is also smart enough not to delete any torrents that are not found in the download cache, preventing it from deleting torrents that were added to Transmission via other means.
 
-As of 0.6.0, the web UI is fully synchronized with Transmission so that items auto-deleted by twxa_cli.php will be removed from the web UI correctly without requiring a browser refresh.
+The web UI is fully synchronized with Transmission so that items auto-deleted by twxa_cli.php will be removed from the web UI correctly without requiring a browser refresh.
 
-### Saving Magnet Links as Files
+### Magnet Links Saved as Files
 
-As of 0.6.1, the features that save torrent files to the filesystem can now save magnet links as files. This seems counterintuitive, since the point of magnet links is to avoid having to deal with downloading, storing, and hosting torrent files. However, there is no other way to record magnet links for later retrieval except by writing them to a file, so that's what torrentwatch-xa does. Luckily, there are third-party tools that easily convert magnet links stored in text files to torrent files, if you prefer the torrent file over the magnet link.
+If Also Save Torrent Files is enabled and torrentwatch-xa retrieves a magnet link instead of a .torrent file, it will save the magnet link in a file. There are third-party tools that easily convert magnet links stored in text files to torrent files, if you prefer the torrent file over the magnet link.
 
 The ability to save magnet links was added to deal with the increasingly-common feeds that have only magnet links and no links to torrent files.
 
@@ -116,10 +116,8 @@ Then, at the command line, run:
 
 `sudo /usr/bin/php /var/www/html/torrentwatch-xa/twxa_fav_import.php <path to TSV>`
 
-You can watch the web server's log file (default: /var/log/apache2/error.log) for PHP errors and torrentwatch-xa's log (default: /tmp/twxalog) for import errors.
-
+You can watch the web server's log file (default: /var/log/apache2/error.log) for PHP errors and torrentwatch-xa's log (default: /var/log/twxalog) for import errors.
 If there are no errors, go ahead and open torrentwatch-xa in the browser and make sure the new Favorites are imported.
-
 
 If the TSV file confuses PHP's fgetcsv() function, there is a good possibility you will corrupt your config file. If you have to put the backup file back, do this:
 
@@ -163,4 +161,4 @@ If one starts an item downloading from a feed list, and that item is bumped off 
 
 ### Watch Dir
 
-As it turns out, the Watch Dir functionality has not actually worked since TorrentWatch-X 0.8.9 due to the design of find_torrent_link(). Because transmission-daemon already has a much faster watch directory capability built-in, Watch Dir has been removed from torrentwatch-xa as of 0.5.0 rather than repaired. To enable the watch directory in transmission-daemon, use `watch-dir` and `watch-dir-enabled` in `settings.json`.
+transmission-daemon provides a watch directory feature. To enable it, use `watch-dir` and `watch-dir-enabled` in `settings.json`.

@@ -16,12 +16,7 @@ function get_webDir() {
 
 // torrentwatch-xa log file path
 function get_logFile() {
-    return "/tmp/twxalog";
-}
-
-// Transmission session-id cache file path
-function get_tr_sessionIdFile() {
-    return '/tmp/.Transmission-Session-Id';
+    return "/var/log/twxalog";
 }
 
 // NOTE: More settings are located at the top of twxa_config_lib.php, but it is better to leave them alone.
