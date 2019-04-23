@@ -699,12 +699,13 @@ Functional Changes
   - updated documentation to reflect new twxalog path
 - fixed detection of Roman-numeral season
 - changed client_add_torrent() to use torrent hash from URL if DDoS blockers like CloudFlare drop the connection
+- updated EZTV feed URL in default feeds
 
 Code Changes
 
 - renamed get_tr_sessionIdFile() to getTransmissionSessionIdFile()
 - moved getTransmissionSessionIdFile() from config.php to twxa_config_lib.php
-- added explicit int casts to validateYYYYMMDD()
+- added explicit int casts to checkdate() calls
 
 Next Version
 
