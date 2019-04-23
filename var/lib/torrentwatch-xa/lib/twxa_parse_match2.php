@@ -730,7 +730,7 @@ function matchTitle2_34($ti, $seps, $detVid) {
                     'matFnd' => "2_34-1"
                 ];
             } else {
-                if (checkdate($mat[2] + 0, 1, $mat[1] + 0)) {
+                if (checkdate((int)$mat[2], 1, (int)$mat[1])) {
                     // assume Print Media YYYY-MM
                     if (strlen($mat[2]) == 1) {
                         $mat[2] = "0" . $mat[2];
@@ -802,7 +802,7 @@ function matchTitle2_35($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{1,2})[$seps]?-[$seps]?(\d{4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        if (checkdate($mat[1] + 0, 1, $mat[2] + 0) && $mat[2] + 0 <= getdate()['year'] && $mat[2] + 0 > 1895) {
+        if (checkdate((int)$mat[1], 1, (int)$mat[2]) && (int)$mat[2] <= getdate()['year'] && (int)$mat[2] > 1895) {
             // MM-YYYY
             if (strlen($mat[1]) == 1) {
                 $mat[1] = "0" . $mat[1];

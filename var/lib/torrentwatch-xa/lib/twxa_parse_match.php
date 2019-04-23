@@ -714,13 +714,13 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             } else {
                 $pair1 = substr($matNum[1], 0, 2);
                 $pair2 = substr($matNum[1], 2);
-                if (checkdate($pair2 + 0, $pair1 + 0, $thisYear)) {
+                if (checkdate((int)$pair2, (int)$pair1, $thisYear)) {
                     // probably DDMM (assume YYYY is current year)
                     $result['numSeq'] = 2;
                     $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                     $result['episEd'] = $result['episSt'] = $pair2 . $pair1;
                     $result['matFnd'] = "1_2-2-1";
-                } else if (checkdate($pair1 + 0, $pair2 + 0, $thisYear)) {
+                } else if (checkdate((int)$pair1, (int)$pair2, $thisYear)) {
                     // probably MMDD (assume YYYY is current year)
                     $result['numSeq'] = 2;
                     $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
@@ -751,25 +751,25 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $pair3 = substr($four2, 0, 2);
             $pair4 = substr($four2, 2, 2);
             $thisYear = getdate()['year'];
-            if (checkdate($pair3 + 0, $pair4 + 0, $four1 + 0) && $four1 + 0 <= $thisYear && $four1 + 0 > 1895) {
+            if (checkdate((int)$pair3, (int)$pair4, (int)$four1) && (int)$four1 <= $thisYear && (int)$four1 > 1895) {
                 // YYYYMMDD
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $matNum[1];
                 $result['matFnd'] = "1_3-1";
-            } else if (checkdate($pair4 + 0, $pair3 + 0, $four1 + 0) && $four1 + 0 <= $thisYear && $four1 + 0 > 1895) {
+            } else if (checkdate((int)$pair4, (int)$pair3, (int)$four1) && (int)$four1 <= $thisYear && (int)$four1 > 1895) {
                 // YYYYDDMM
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $four1 . $pair4 . $pair3;
                 $result['matFnd'] = "1_3-2";
-            } else if (checkdate($pair1 + 0, $pair2 + 0, $four2 + 0) && $four2 + 0 <= $thisYear && $four2 + 0 > 1895) {
+            } else if (checkdate((int)$pair1, (int)$pair2, (int)$four2) && (int)$four2 <= $thisYear && (int)$four2 > 1895) {
                 // MMDDYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $four2 . $four1;
                 $result['matFnd'] = "1_3-3";
-            } else if (checkdate($pair2 + 0, $pair1 + 0, $four2 + 0) && $four2 + 0 <= $thisYear && $four2 + 0 > 1895) {
+            } else if (checkdate((int)$pair2, (int)$pair1, (int)$four2) && (int)$four2 <= $thisYear && (int)$four2 > 1895) {
                 // DDMMYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
@@ -801,37 +801,37 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $pair3 = substr($matNum[1], 4, 2);
             $thisYear = getdate()['year'];
             $thisYearPair1 = substr($thisYear, 0, 2);
-            if (checkdate($pair3 + 0, 1, $pair1 . $pair2 + 0) && $pair1 . $pair2 + 0 <= $thisYear && $pair1 . $pair2 + 0 > 1895) {
+            if (checkdate((int)$pair3, 1, (int)($pair1 . $pair2)) && (int)($pair1 . $pair2) <= $thisYear && (int)($pair1 . $pair2) > 1895) {
                 // YYYYMM
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $matNum[1];
                 $result['matFnd'] = "1_4-1";
-            } else if (checkdate($pair1 + 0, 1, $pair2 . $pair3 + 0) && $pair2 . $pair3 + 0 <= $thisYear && $pair2 . $pair3 + 0 > 1895) {
+            } else if (checkdate((int)$pair1, 1, $pair2 . (int)$pair3) && (int)($pair2 . $pair3) <= $thisYear && (int)($pair2 . $pair3) > 1895) {
                 // MMYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $pair2 . $pair3 . $pair1;
                 $result['matFnd'] = "1_4-2";
-            } else if (checkdate($pair2 + 0, $pair3 + 0, $thisYearPair1 . $pair1 + 0) && $thisYearPair1 . $pair1 + 0 <= $thisYear && $thisYearPair1 . $pair1 + 0 > 1895) {
+            } else if (checkdate((int)$pair2, (int)$pair3, (int)($thisYearPair1 . $pair1)) && (int)($thisYearPair1 . $pair1) <= $thisYear && (int)($thisYearPair1 . $pair1) > 1895) {
                 // YYMMDD
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $thisYearPair1 . $pair1 . $pair2 . $pair3;
                 $result['matFnd'] = "1_4-3";
-            } else if (checkdate($pair1 + 0, $pair2 + 0, $thisYearPair1 . $pair3 + 0) && $thisYearPair1 . $pair3 + 0 <= $thisYear && $thisYearPair1 . $pair3 + 0 > 1895) {
+            } else if (checkdate((int)$pair1, (int)$pair2, (int)($thisYearPair1 . $pair3)) && (int)($thisYearPair1 . $pair3) <= $thisYear && (int)($thisYearPair1 . $pair3) > 1895) {
                 // MMDDYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $thisYearPair1 . $pair3 . $pair1 . $pair2;
                 $result['matFnd'] = "1_4-4";
-            } else if (checkdate($pair2 + 0, $pair1 + 0, $thisYearPair1 . $pair3 + 0) && $thisYearPair1 . $pair3 + 0 <= $thisYear && $thisYearPair1 . $pair3 + 0 > 1895) {
+            } else if (checkdate((int)$pair2, (int)$pair1, (int)($thisYearPair1 . $pair3)) && (int)($thisYearPair1 . $pair3) <= $thisYear && (int)($thisYearPair1 . $pair3) > 1895) {
                 // DDMMYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['$episSt'] = $thisYearPair1 . $pair3 . $pair2 . $pair1;
                 $result['matFnd'] = "1_4-5";
-            } else if (checkdate($pair3 + 0, $pair2 + 0, $thisYearPair1 . $pair1 + 0) && $thisYearPair1 . $pair1 + 0 <= $thisYear && $thisYearPair1 . $pair1 + 0 > 1895) {
+            } else if (checkdate((int)$pair3, (int)$pair2, (int)($thisYearPair1 . $pair1)) && (int)($thisYearPair1 . $pair1) <= $thisYear && (int)($thisYearPair1 . $pair1) > 1895) {
                 // YYDDMM
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
