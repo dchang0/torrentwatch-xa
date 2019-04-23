@@ -124,7 +124,7 @@ function writeDefaultConfigFile() {
             'Name' => 'Nyaa Torrent File RSS'
         ],
         2 => [
-            'Link' => 'https://eztv.wf/ezrss.xml',
+            'Link' => 'https://eztv.io/ezrss.xml',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
