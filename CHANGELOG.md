@@ -726,6 +726,7 @@ Code Changes
 
 IN PROGRESS
 
+- replace + 0 with explicit (int) casts
 - JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed

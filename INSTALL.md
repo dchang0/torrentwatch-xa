@@ -22,7 +22,7 @@ From the official repos:
 - php (php7.0)
 - php-curl (php7.0-curl)
 
-### Ubuntu 18.04 (Not officially supported at this time, but the instructions for Ubuntu 16.04 do work.)
+### Ubuntu 18.04
 
 From the official repos:
 
@@ -74,13 +74,13 @@ The script will back up the config file if it sees one even if `--keep-config` i
 Manual Installation
 ===============
 
-### Ubuntu 18.04, Ubuntu 16.04, Ubuntu 14.04, Debian 8.x or Debian 9.x only:
+### Ubuntu 14.04/16.04/18.04, Debian 8.x/9.x only:
 
 - For Ubuntu 14.04 or Debian 8.x:
   - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon git`
-- For Ubuntu 18.04, Ubuntu 16.04, or Debian 9.x:
-  - Start with a Debian 9.x or Ubuntu 16.04 installation.
+- For Ubuntu 16.04/18.04 or Debian 9.x:
+  - Start with a Debian 9.x or Ubuntu 16.04/18.04 installation.
   - If your OS is not up to date, update it now.
     - `sudo apt-get update; sudo apt-get upgrade`
   - `sudo apt-get install apache2 php php-mbstring php-curl libapache2-mod-php transmission-daemon git`
@@ -147,7 +147,7 @@ __RedHat-derived distros are not officially supported at this time__ though the 
 - Use the Configure > Client panel to set up the Transmission connection.
   - The Configure > Client > Download Dir setting needs to be a path that Transmission can reach and write to. If your Transmission daemon is running on a remote host, be aware that the Download Dir setting refers to a path on the remote host, not on the local host where torrentwatch-xa is running.
   - It may be necessary to restart Transmission to get torrentwatch-xa to connect.
-    - For Ubuntu 18.04, Ubuntu 16.04, Ubuntu 14.04, or Debian 8.x:
+    - For Ubuntu 14.04/16.04/18.04, or Debian 8.x:
       - `sudo service transmission-daemon restart`
   - It may also be necessary to reconfigure Transmission (not described here) to get it to work.
   - Fedora may require additional SELINUX configuration to allow httpd to contact Transmission.

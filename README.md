@@ -11,7 +11,7 @@ As a fork of TorrentWatch-X, torrentwatch-xa handles Western live-action show ti
 
 To auto-download Favorite torrents, torrentwatch-xa controls a local __or remote__ Transmission BitTorrent client via Transmission RPC __and/or__ saves .torrent files or magnet links as files locally. The latter allows the use of __any__ BitTorrent client (not just Transmission) that can watch directories for .torrent files or magnet links to automatically start those torrents.
 
-torrentwatch-xa runs on an Apache 2.4.x webserver with PHP 5.6.0alpha3&sup1; or higher and the prerequisite PHP packages listed in the installation instructions. It works out-of-the-box on any up-to-date instance of Debian 8.x, Ubuntu 14.04.x, or Ubuntu 16.04.x on any architecture, and it can be made to work on current versions of RedHat, Fedora, or CentOS LINUX by installing the RPM package equivalents of the prerequisite PHP .deb packages and adjusting the firewall and SELINUX restrictions. RedHat distros are not officially supported at this time.
+torrentwatch-xa runs on an Apache 2.4.x webserver with PHP 5.6.0alpha3&sup1; or higher and the prerequisite PHP packages listed in the installation instructions. It works out-of-the-box on any up-to-date instance of Debian 8.x, Ubuntu 14.04/16.04/18.04.x on any architecture, and it can be made to work on current versions of RedHat, Fedora, or CentOS LINUX by installing the RPM package equivalents of the prerequisite PHP .deb packages and adjusting the firewall and SELINUX restrictions. RedHat distros are not officially supported at this time.
 
 torrentwatch-xa is extremely lightweight and can run decently on even a $5 Raspberry Pi Zero&sup2;. The web UI works on any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
 
@@ -34,10 +34,12 @@ I've posted 1.2.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 To obviate Ubuntu 18.04's PrivateTmp feature, the twxalog file has been moved to /var/log/txwalog. If you use logrotate to rotate twxalog, remember to use this new path.
 
+I'll be dropping support for Ubuntu 14.04 and Debian 8.x soon (PHP 5.6) soon. They should still work, but I won't be testing on those OSes further.
+
 #### Still in Alpha
 
 - a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
-- Fedora Server 25 and Ubuntu 18.04 are being tested and work fine but will not be officially supported for quite a while.
+- Fedora Server 25 is being tested and works fine but will not be officially supported for quite a while.
 
 #### Any Torrent Atom Feeds Out There?
 
