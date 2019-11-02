@@ -60,6 +60,8 @@ If you get more cryptic error messages than that, you may need to refer to the P
 
 There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO. If you must override this, uncomment and edit the HELO line in the sendEmail() function.
 
+Remember that the Test button does not save the current SMTP settings; click Save if you made changes.
+
 #### Allowed memory size of ... exhausted
 
 PHP memory_limit may be too low to handle some of the larger feeds or if you have many feeds. Edit your php.ini file for Apache2 (typically /etc/php/7.0/apache2/php.ini) and increase the size of memory_limit to something reasonable for your system.
