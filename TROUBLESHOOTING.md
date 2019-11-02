@@ -42,19 +42,23 @@ Some feeds link to some torrent files on them that are compressed (usually gzipp
 
 #### Email notifications not sending (SMTP errors in the log file or next to the Test button on the Configure>Trigger tab)
 
-SMTP sending is via PHPMailer 5.2.23. You may need to refer to PHPMailer documentation for help with any SMTP error messages that appear: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting
+The error messages for these fields are obvious:
 
-Typically, you should double-check the following:
+- From: Email
+- To: Email
+- SMTP Port is either blank (defaults to 25) or must be an integer from 0 to 65535
 
-- From Email is valid and correct
-- To Email address is valid and correct
+If you get "SMTP connect() failed," you should double-check all of these:
+
 - SMTP Server is valid and correct
-- SMTP Port number is correct (if left blank, it defaults to port 25). Typically SSL uses port 465, and TLS uses port 587.
+- SMTP Port number is correct. Typically SSL uses port 465, and TLS uses port 587.
 - SMTP Authentication is usually PLAIN but might be LOGIN. torrentwatch-xa does not support other authentication methods such as NTLM.
 - SMTP Encryption is usually TLS. SSL is obsolete, and None (no encryption) is banned on most SMTP servers.
 - SMTP User and Password are correct
 
-There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO field. If your SMTP server requires an explicitly-specified HELO, you will have to set this in the source code.
+If you get more cryptic error messages than that, you may need to refer to the PHPMailer documentation here: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting
+
+There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO. If you must override this, uncomment and edit the HELO line in the sendEmail() function.
 
 #### Allowed memory size of ... exhausted
 
