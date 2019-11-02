@@ -54,6 +54,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- orange Favorite Ready doesn't automatically change to Waiting without browser refresh
 - implement Ignore Batches feature per Favorite as well as globally
 - Clear Cache dialog closes automatically after any button is pressed
 - remove uninitialized variables in twxa_atomparser.php
@@ -69,7 +70,7 @@ All other files have functions that need improvement or rewrites or validation.
 - add itemVersion handling to batches such as 1x03v2-1x05v2 (requires changing many match functions to handle version numbers)
 - make list items double-tall for smartphone displays and wrap the title text properly
 - possibly change Hide List from using favTitle to a list of regexes so the user can block anything they like
-- $config_values['Global'] appears to be a crappy way of globally passing some data--maybe improve it
+
 - times shown in feed list might not obey 'Time Zone' setting until next twxa_cli.php run, but log datestamps take effect immediately; maybe force a feed cache refresh immediately after 'Time Zone' is changed 
 - if deleting active torrent manually before it completes, perhaps it should not be labeled as match_inCacheNotActive if it isn't actually in the download cache; in other words, this would require adding the ability to check the cache to the Javascript side
 - add toggle to config for local/remote Transmission and disable features like Deep Directories for remote Transmission
@@ -88,13 +89,13 @@ All other files have functions that need improvement or rewrites or validation.
 - finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
   - check to make sure that new decimal PV numbering system works throughout entire app
 
-- replace global variables EXCEPT $html_out with proper parameter passing
-  - $config_values (not likely--will probably increase CPU util too much)
+- improve global variable $config_values EXCEPT $html_out
+  - $config_values['Global'] appears to be a crappy way of globally passing some data, change it to $GLOBALS
+  - Change $config_values['Settings'] to $GLOBALS['twxaSettings'] and get rid of global $config_values
   - $hit
   - $itemState  <--- IMPORTANT, as the use of global $itemState makes most of twxa_feed.php's functions hard to maintain
   - $config_out <--- IMPORTANT, as the use of global $config_out makes most of twxa_config_lib.php's functions hard to maintain
 
-- add Test SMTP button to Configure > Notify or automatically test on Save and use Javascript alert to show failure
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design
 - add ability to gunzip torrents coming from some feeds (such as ezRSS.it)
 - allow user to clear individual items from the cache

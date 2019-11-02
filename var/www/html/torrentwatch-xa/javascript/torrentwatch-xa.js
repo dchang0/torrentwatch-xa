@@ -987,7 +987,7 @@ $(document).ready(function () { // first binding to document ready
         }
     }, 500);
     //});
-    
+
     $(window).on("focus", function (e) {
         // if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
         window.ctrlKey = 0;

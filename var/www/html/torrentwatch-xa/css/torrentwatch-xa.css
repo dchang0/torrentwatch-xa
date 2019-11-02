@@ -1362,6 +1362,26 @@ div.legend input {
     float: right;
 }
 
+#script {
+    padding-bottom: 5px;
+}
+
+#enableSMTP {
+    border-top: 1px solid #979797;
+    padding-top: 5px;
+}
+
+div.smtpTestLeft {
+    vertical-align: top;
+}
+
+div.smtpTestRight {
+    width: 277px;
+    padding: 10px 0 3px 3px;
+    font-size: 0.9em;
+    word-break: break-all;
+}
+
 /***********************************
  * F A V O R I T E S   D I A L O G
  **********************************/

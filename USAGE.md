@@ -39,7 +39,7 @@ To run a shell script, check Enable Script, provide the full path to a single sh
 
 To use the built-in SMTP notifications, check SMTP Notifications and fill in the From Email and To Email fields and all the SMTP fields. SMTP Port defaults to 25 if left blank. From Email defaults to To Email if left blank or it is invalid. 
 
-No means of testing the SMTP settings are provided at this time. You can trigger a real email notification by initiating a Favorite download (by cron job) and checking the log file at /var/log/twxalog for errors.
+The Test button tests the SMTP settings currently in the form by sending a test email. You must click the Save button to actually save the settings.
 
 torrentwatch-xa uses PHPMailer 5.2.23 to send emails, so you may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear.
 

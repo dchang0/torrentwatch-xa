@@ -147,12 +147,23 @@ function writeToLog($string, $lvl = -1) {
     }
 }
 
-function notifyByEmail($msg, $subject) {
+function notifyByEmail($body, $subject) {
     global $config_values;
 
     $fromEmail = $config_values['Settings']['From Email'];
     $toEmail = $config_values['Settings']['To Email'];
+    $smtpServer = $config_values['Settings']['SMTP Server'];
     $smtpPort = $config_values['Settings']['SMTP Port'];
+    $smtpAuthentication = $config_values['Settings']['SMTP Authentication'];
+    $smtpEncryption = $config_values['Settings']['SMTP Encryption'];
+    $smtpUser = $config_values['Settings']['SMTP User'];
+    $smtpPassword = $config_values['Settings']['SMTP Password'];
+
+    $output = sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $subject, $body);
+    writeToLog($output['message'], $output['rc']);
+}
+
+function sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $subject, $body) {
     if (
             (
             $smtpPort != '' &&
@@ -168,61 +179,62 @@ function notifyByEmail($msg, $subject) {
             $email->isSMTP();
             $email->SMTPDebug = 0;
             // set the From: email address
-            if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
-                writeToLog("From Email is invalid, using To Email as From Email\n", 0);
-                $fromEmail = $toEmail;
-            }
-            $email->From = $fromEmail;
-            //$email->FromName = "torrentwatch-xa";
-            // prepare the HELO FQDN from the From Email
-            $splitEmail = explode('@', $fromEmail);
-            $getMX = dns_get_record($splitEmail[1], DNS_MX);
-            if (isset($getMX['target'])) {
-                $helo = $getMX['target'];
-                writeToLog("Detected HELO from From Email: $helo\n", 2);
-            } else if ($splitEmail[1]) {
-                $helo = $splitEmail[1];
-                writeToLog("Detected HELO from From Email: $helo\n", 2);
-            } else {
-                $helo = "localhost.localdomain";
-                writeToLog("Unable to detect HELO from From Email, using default: $helo\n", 2);
-            }
-            $email->Helo = $helo;
-            $email->AddAddress("$toEmail");
-            $email->Host = $config_values['Settings']['SMTP Server'];
-            $email->Port = $smtpPort;
-            if ($config_values['Settings']['SMTP Authentication'] !== 'None') {
-                $email->SMTPAuth = true;
-                $email->AuthType = $config_values['Settings']['SMTP Authentication'];
-                $email->Username = $config_values['Settings']['SMTP User'];
-                $email->Password = decryptsMTPPassword($config_values['Settings']['SMTP Password']);
+            if (filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+                $email->From = $fromEmail;
+                $email->FromName = "torrentwatch-xa";
+                // explicitly specify HELO if necessary
+                //$email->Helo = "localhost.localdomain";
+                $email->AddAddress($toEmail);
+                $email->Host = $smtpServer;
+                $email->Port = $smtpPort;
+                if ($smtpAuthentication !== 'None') {
+                    $email->SMTPAuth = true;
+                    $email->AuthType = $smtpAuthentication;
+                    $email->Username = $smtpUser;
+                    $email->Password = decryptsMTPPassword($smtpPassword);
 
-                switch ($config_values['Settings']['SMTP Encryption']) {
-                    case 'None':
-                        $email->SMTPSecure = '';
-                        break;
-                    case 'SSL':
-                        $email->SMTPSecure = "ssl";
-                        break;
-                    case 'TLS':
-                    default:
-                        $email->SMTPSecure = "tls";
+                    switch ($smtpEncryption) {
+                        case 'None':
+                            $email->SMTPSecure = '';
+                            break;
+                        case 'SSL':
+                            $email->SMTPSecure = "ssl";
+                            break;
+                        case 'TLS':
+                        default:
+                            $email->SMTPSecure = "tls";
+                    }
                 }
-            }
-            $email->Subject = $subject;
-            $email->Body = $msg;
-            if (!$email->Send()) {
-                writeToLog("Email failed; PHPMailer error: " . print_r($email->ErrorInfo, true) . "\n", 0);
+                $email->Subject = $subject;
+                $email->Body = $body;
+                if (!$email->Send()) {
+                    return [
+                        'rc' => 0,
+                        'message' => "PHPMailer error: " . $email->ErrorInfo
+                    ];
+                } else {
+                    return [
+                        'rc' => 1,
+                        'message' => "Email sent."
+                    ];
+                }
             } else {
-                writeToLog("Mail sent to $toEmail: $subject\n", 1);
+                return [
+                    'rc' => -1,
+                    'message' => "Invalid From: Email."
+                ];
             }
         } else {
-            // To Email is not valid
-            writeToLog("Email failed: required To Email is not valid\n", -1);
+            return [
+                'rc' => -1,
+                'message' => "Invalid To: Email."
+            ];
         }
     } else {
-        // SMTP Port is not valid
-        writeToLog("Email failed: SMTP Port not valid; leave blank for default of 25 or provide integer from 0-65535\n", -1);
+        return [
+            'rc' => -1,
+            'message' => "Invalid SMTP Port."
+        ];
     }
 }
 

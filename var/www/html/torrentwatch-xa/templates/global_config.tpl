@@ -8,6 +8,23 @@
             }
         })
     });
+    // binding for Test button on Trigger config tab
+    $("a#testSMTPSettings").on("click",
+            function () {
+                $.get('torrentwatch-xa.php', {
+                    sendTestEmail: 1,
+                    fromEmail: $('input[name=fromEmail]').val(),
+                    toEmail: $('input[name=toEmail]').val(),
+                    smtpServer: $('input[name=smtpServer]').val(),
+                    smtpPort: $('input[name=smtpPort]').val(),
+                    smtpAuthentication: $('select[name=smtpAuthentication]').val(),
+                    smtpEncryption: $('select[name=smtpEncryption]').val(),
+                    smtpUser: $('input[name=smtpUser]').val(),
+                    smtpPassword: $('input[name=smtpPassword').val()
+                }, function (response) {
+                    $("div#smtpTestResult").html(response);
+                }, 'html');
+            });
 </script>
 <div id="configDialog" class="dialog">
     <div class="dialogTitle">
@@ -381,6 +398,14 @@
                             <div class="right">
                                 <input type="password" class="password" name="smtpPassword" class="text"
                                        value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="smtp_test" title="Tests current SMTP settings">
+                            <div class="left smtpTestLeft">
+                                <a href="#" id="testSMTPSettings" class="button">Test</a>
+                            </div>
+                            <div class="right smtpTestRight">
+                                <div id="smtpTestResult"></div>
                             </div>
                         </div>
                     </div>

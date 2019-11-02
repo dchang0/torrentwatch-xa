@@ -40,13 +40,13 @@ From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed
 
 Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same content via some other torrent file that is not compressed, possibly even on the same feed.
 
-#### Email notifications not sending (SMTP errors in the log file)
+#### Email notifications not sending (SMTP errors in the log file or next to the Test button on the Configure>Trigger tab)
 
-SMTP sending is done via PHPMailer 5.2.23. You may need to refer to PHPMailer documentation for help in understanding any SMTP error messages that appear. See https://github.com/PHPMailer/PHPMailer
+SMTP sending is via PHPMailer 5.2.23. You may need to refer to PHPMailer documentation for help with any SMTP error messages that appear: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting
 
 Typically, you should double-check the following:
 
-- From Email is valid and correct (if left blank or it is invalid, it defaults to To Email)
+- From Email is valid and correct
 - To Email address is valid and correct
 - SMTP Server is valid and correct
 - SMTP Port number is correct (if left blank, it defaults to port 25). Typically SSL uses port 465, and TLS uses port 587.
@@ -54,7 +54,7 @@ Typically, you should double-check the following:
 - SMTP Encryption is usually TLS. SSL is obsolete, and None (no encryption) is banned on most SMTP servers.
 - SMTP User and Password are correct
 
-There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO field. torrentwatch-xa attempts to automatically generate a valid HELO field based on your From Email, but if the value it provides to the SMTP server is rejected, you may need to modify the source code to set the value.
+There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO field. If your SMTP server requires an explicitly-specified HELO, you will have to set this in the source code.
 
 #### Allowed memory size of ... exhausted
 

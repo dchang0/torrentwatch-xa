@@ -707,12 +707,26 @@ Code Changes
 - moved getTransmissionSessionIdFile() from config.php to twxa_config_lib.php
 - added explicit int casts to checkdate() calls
 
+1.3.0
+
+Functional Changes
+
+- dropped support for Ubuntu 14.04 and Debian 8.x
+- added Test button to SMTP settings on Trigger config tab
+- removed explicit HELO from email due to HELO impersonation blocking on some SMTP servers
+- added FromName (aka DisplayName) to SMTP notifications
+
+Code Changes
+
+- replaced some "+ 0" with explicit (int) casts, especially in checkdate() calls
+
 Next Version
 
 Functional Changes
 
 IN PROGRESS
 
+- change Configuration>Feeds form to use a single Update and single Delete button
 - handle gzipped torrent file (using gzuncompress() if file contents are returned directly or gzopen() and gzread() if file is downloaded)
 - add PHP prerequisite check to twxa_cli.php
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
@@ -726,7 +740,7 @@ Code Changes
 
 IN PROGRESS
 
-- replace + 0 with explicit (int) casts
+- replace "+ 0" with explicit (int) casts
 - JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed

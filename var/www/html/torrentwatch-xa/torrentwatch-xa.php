@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.2.0";
+$twxa_version[0] = "1.3.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -192,6 +192,20 @@ function parse_options($twxa_version) {
         case 'getDisableHideList':
             global $config_values;
             echo $config_values['Settings']['Disable Hide List'];
+            exit;
+        case 'sendTestEmail':
+            $fromEmail = filter_input(INPUT_GET, 'fromEmail');
+            $toEmail = filter_input(INPUT_GET, 'toEmail');
+            $smtpServer = filter_input(INPUT_GET, 'smtpServer');
+            $smtpPort = filter_input(INPUT_GET, 'smtpPort');
+            $smtpAuthentication = filter_input(INPUT_GET, 'smtpAuthentication');
+            $smtpEncryption = filter_input(INPUT_GET, 'smtpEncryption');
+            $smtpUser = filter_input(INPUT_GET, 'smtpUser');
+            $smtpPassword = filter_input(INPUT_GET, 'smtpPassword');
+            $subject = "Test email from torrentwatch-xa";
+            $body = "Test email from torrentwatch-xa sent at " . date("c");
+            $output = sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $subject, $body);
+            echo $output['message'];
             exit;
         case 'checkVersion':
             global $config_values;

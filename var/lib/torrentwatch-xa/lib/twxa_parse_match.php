@@ -807,7 +807,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $matNum[1];
                 $result['matFnd'] = "1_4-1";
-            } else if (checkdate((int)$pair1, 1, $pair2 . (int)$pair3) && (int)($pair2 . $pair3) <= $thisYear && (int)($pair2 . $pair3) > 1895) {
+            } else if (checkdate((int)$pair1, 1, (int)($pair2 . $pair3)) && (int)($pair2 . $pair3) <= $thisYear && (int)($pair2 . $pair3) > 1895) {
                 // MMYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0

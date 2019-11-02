@@ -1,7 +1,7 @@
 Prerequisites
 ===============
 
-### Ubuntu 14.04 and Debian 8.x (jessie)
+### Ubuntu 14.04 and Debian 8.x (jessie) (No longer supported, but they do work and probably will for quite a while.)
 
 From the official repos:
 

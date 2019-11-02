@@ -84,13 +84,10 @@
             <label class="lastEpisode item">x</label>
             <input class='lastEpisode text' type="text" name="episode" value="<?php echo $item['Episode']; ?>">
             <?php } else { ?>
-            <!--<input class='lastEpisode text' type="text" style="width: 55px" name="episode" value="<?php if(isset($item['Episode'])) echo $item['Episode']; ?>">-->
             <input class='lastEpisode text' type="text" name="episode" value="<?php if(isset($item['Episode'])) echo $item['Episode']; ?>">
             <?php } ?>
         </div>
     </div>
-
-    <!--<?php if($config_values['Settings']['Client'] == "folder") { echo '<br><br><br>'; }; ?>-->
     <div class="buttonContainer">
         <a class="submitForm button" id="Update" href="#">Update</a>
         <a class="submitForm button" id="Delete" href="#favorite_<?php echo $key ?>">Delete</a>
