@@ -34,7 +34,7 @@ I've posted 1.3.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 The specification and auto-generation of an SMTP HELO has been removed completely due to some SMTP servers blocking HELO impersonations. PHPMailer will provide the HELO instead. If you must override PHPMailer's behavior, you will have to uncomment and edit the HELO line in the source code.
 
-1.3.0 drops support for Ubuntu 14.04 and Debian 8.x soon (PHP 5.6). They should still work, but I will no longer be testing on those OSes.
+1.3.0 drops support for Ubuntu 14.04 and Debian 8.x (PHP 5.6). They should still work, but I will no longer be testing on those OSes.
 
 #### Still in Alpha
 
