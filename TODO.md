@@ -5,12 +5,12 @@ TODO List
 
 These files have been completely validated (no functions inside them need improvement):
 
-twxa_atomparser.php
-twxa_cache.php
-twxa_html.php
-twxa_lastRSS.php
-twxa_parse_match*.php
-twxa_test_parser.php
+- twxa_atomparser.php
+- twxa_cache.php
+- twxa_html.php
+- twxa_lastRSS.php
+- twxa_parse_match*.php
+- twxa_test_parser.php
 
 All other files have functions that need improvement or rewrites or validation.
 
@@ -23,40 +23,36 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Testing tasks
 
-- test _Save torrent in folder_ client and make sure progress bar works properly in this mode
 - what is the purpose of getClient()'s `clientId`, `clientId_`, and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
-- verify the settings and complete their hints in the config panels
 - test the Atom-related functions and conform them to their equivalent RSS functions if necessary
 
 ## Code cleanup tasks
 
-- div#linkButtons ID is assigned in three elements--is this correct?
 - fix collision between ul#torrentlist and ul.torrentlist in phone.css
 - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
 - move $items assignment from inside process_feed() up to process_all_feeds()
 - break client_add_torrent() into smaller functions
-- refactor transmission_rpc request code that is used over and over in twxa_tools.php functions
-- simplify/performance tune JQuery code, especially implicit .each loops
+- simplify/performance-tune JQuery code, especially implicit .each loops
 - apply JQuery Best Practices from: http://lab.abhinayrathore.com/jquery-standards/
 - remove support for Internet Explorer 6 through 8
 
 ## Bugfixes
 
+- _Save torrent in folder_ client works but progress bar goes into st_downloading when it should not
 - widen Seed Ratio textbox in Favorite to handle three-digit ratios like 0.15
 - with the episode filter it also ignores all the batches regardless of the setting to ignore batches
 - fix debug console in web UI
 - when using Add to Favorites on multiple different titles, added items correctly turn orange for Favorite Ready, but Refresh button does not cause complete browser reload, which means the items stay orange instead of turning yellow for Waiting and then gaining progress bars
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
-- improve handling of "Feed inaccessible" (usually 403 or 404 errors on the URL)
+- improve handling of "Feed inaccessible" (usually 403 or 404 errors on the feed URL)
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
 - handle resolution and quality 1080p60
 - check setupCacheDir() to see if file_exists() check fails even if download cache dir exists but permissions are wrong
 
 ## Improvements
 
-- orange Favorite Ready doesn't automatically change to Waiting without browser refresh
 - implement Ignore Batches feature per Favorite as well as globally
-- Clear Cache dialog closes automatically after any button is pressed
+- Clear Cache dialog closes automatically after any button is pressed; change this to Javascript with AJAX
 - remove uninitialized variables in twxa_atomparser.php
 - store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
@@ -75,26 +71,29 @@ All other files have functions that need improvement or rewrites or validation.
 - if deleting active torrent manually before it completes, perhaps it should not be labeled as match_inCacheNotActive if it isn't actually in the download cache; in other words, this would require adding the ability to check the cache to the Javascript side
 - add toggle to config for local/remote Transmission and disable features like Deep Directories for remote Transmission
 - if keeping st_downloaded and st_downloading in the PHP side, change st_favReady to st_downloaded for folder client after checking to make sure the .torrent file was successfully downloaded
+
 - convert Configure > Feeds one-form-per-feed into one form for all the feeds
   - add Feed Title input above each Feed URL
   - add extra input for website of feed operator, to which the feed title in headers will link
+  - make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)
+
 - allow user to create Favorites from items in the History list
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
 - add error handling to the Transmission functions
 - upgrade jquery.cookie.js to js-cookie at https://github.com/js-cookie/js-cookie
 - add config option "Videos Only" beneath "Require Episode Info" to only show items with at least one video quality
-- add auto-refresh of list (might already auto-refresh when favorite is matched and starts download)
+- add auto-refresh of entire list at regular intervals to show new feed items
 - make the Favorites panel's Update button not close the panel after updating (same behavior as the Delete button)
-- make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)
+
 - finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
   - check to make sure that new decimal PV numbering system works throughout entire app
 
-- improve global variable $config_values EXCEPT $html_out
-  - $config_values['Global'] appears to be a crappy way of globally passing some data, change it to $GLOBALS
-  - Change $config_values['Settings'] to $GLOBALS['twxaSettings'] and get rid of global $config_values
-  - $hit
+- reduce use of global variables 
+  - $config_values['Global'] appears to be a crappy way of globally passing some data
+  - convert $config_values['Settings'] to a class
   - $itemState  <--- IMPORTANT, as the use of global $itemState makes most of twxa_feed.php's functions hard to maintain
-  - $config_out <--- IMPORTANT, as the use of global $config_out makes most of twxa_config_lib.php's functions hard to maintain
+  - $html_out (but performance suffers badly as $html_out gets very large)
+  - $twxa_version
 
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design
 - add ability to gunzip torrents coming from some feeds (such as ezRSS.it)
