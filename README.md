@@ -30,7 +30,7 @@ Status
 
 I've posted 1.4.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-1.4.0 completely revamps the Configure>Feeds tab UI to make it much easier to add and update feeds.
+1.4.0 completely revamps the Configure > Feeds tab UI to make it much easier to add and update feeds.
 
 It also has new, optional From: Name and HELO Override settings on the Configure > Trigger tab. HELO Override can be used to fix HELO rejections on some SMTP servers.
 
