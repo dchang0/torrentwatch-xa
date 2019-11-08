@@ -40,7 +40,9 @@ From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed
 
 Some feeds link to some torrent files on them that are compressed (usually gzipped). I do not plan to fix this because it is usually very easy to find the same content via some other torrent file that is not compressed, possibly even on the same feed.
 
-#### Email notifications not sending (SMTP errors in the log file or next to the Test button on the Configure>Trigger tab)
+#### Email notifications not sending
+
+1.4.0 added a Test button to test the SMTP settings in the Configure > Trigger tab. Any errors will be shown to the right of the Test button.
 
 The error messages for these fields are obvious:
 
@@ -50,17 +52,21 @@ The error messages for these fields are obvious:
 
 If you get "SMTP connect() failed," you should double-check all of these:
 
-- SMTP Server is valid and correct
+- SMTP Server is valid and correct.
 - SMTP Port number is correct. Typically SSL uses port 465, and TLS uses port 587.
 - SMTP Authentication is usually PLAIN but might be LOGIN. torrentwatch-xa does not support other authentication methods such as NTLM.
 - SMTP Encryption is usually TLS. SSL is obsolete, and None (no encryption) is banned on most SMTP servers.
-- SMTP User and Password are correct
+- SMTP User and Password are correct.
 
 If you get more cryptic error messages than that, you may need to refer to the PHPMailer documentation here: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting
 
-There is one SMTP setting that can affect sending that is not accessible via the web UI: the SMTP HELO. If you must override this, uncomment and edit the HELO line in the sendEmail() function.
+If your SMTP server rejects the default HELO calculated by PHPMailer, use the optional HELO Override to satisfy the SMTP server. If provided, HELO Override must be a valid FQDN.
 
-Remember that the Test button does not save the current SMTP settings; click Save if you made changes.
+Remember that the Test button does not save the current SMTP settings; click Save to write the settings to the config file.
+
+IMPORTANT: The Test button and the cron job both use the same SMTP settings saved in the config file, _but_ because the Test button runs in the web server and the cron job runs at the LINUX command line, they can and do behave differently. For instance, PHPMailer uses $_SERVER['SERVER_NAME'] to calculate the HELO, but this variable is not available to the cron job.
+
+Thus, even if your settings work with the Test button, they might not work with the cron job. The cron job's SMTP errors are written to the log file, so if the automatic downloads are not sending you email notifications, you will have to check there.
 
 #### Allowed memory size of ... exhausted
 
@@ -107,7 +113,7 @@ Copy and paste that into the bug report.
 
 #### "Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
 
-Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644). 
+Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644).
 
 Watch the syslog to see CRON attempt to run /etc/cron.d/torrentwatch-xa-cron:
 

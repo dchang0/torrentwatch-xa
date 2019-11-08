@@ -150,6 +150,7 @@ function writeToLog($string, $lvl = -1) {
 function notifyByEmail($body, $subject) {
     global $config_values;
 
+    $fromName = $config_values['Settings']['From Name'];
     $fromEmail = $config_values['Settings']['From Email'];
     $toEmail = $config_values['Settings']['To Email'];
     $smtpServer = $config_values['Settings']['SMTP Server'];
@@ -158,12 +159,13 @@ function notifyByEmail($body, $subject) {
     $smtpEncryption = $config_values['Settings']['SMTP Encryption'];
     $smtpUser = $config_values['Settings']['SMTP User'];
     $smtpPassword = $config_values['Settings']['SMTP Password'];
+    $hELOOverride = $config_values['Settings']['HELO Override'];
 
-    $output = sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $subject, $body);
-    writeToLog($output['message'], $output['rc']);
+    $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
+    writeToLog($output['message'], $output['rc'], 2);
 }
 
-function sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $subject, $body) {
+function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body) {
     if (
             (
             $smtpPort != '' &&
@@ -181,9 +183,13 @@ function sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentica
             // set the From: email address
             if (filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
                 $email->From = $fromEmail;
-                $email->FromName = "torrentwatch-xa";
-                // explicitly specify HELO if necessary
-                //$email->Helo = "localhost.localdomain";
+                if ($fromName != '') {
+                    $email->FromName = $fromName;
+                }
+                if ($hELOOverride != '' && filter_var($hELOOverride, FILTER_VALIDATE_DOMAIN)) {
+                    $email->Hostname = ''; // sets empty hostname to force setting of HELO to work
+                    $email->Helo = $hELOOverride;
+                }
                 $email->AddAddress($toEmail);
                 $email->Host = $smtpServer;
                 $email->Port = $smtpPort;

@@ -1176,11 +1176,11 @@ $(document).ready(function () { // first binding to document ready
         }
         if (button.id === "Delete") { //TODO for some reason this line is reached when clicking the Paypal donate button
             $.get(form.get(0).action, form.buildDataString(button));
-            if (button.href.match(/#feedItem/)) {
-                var id = button.href.match(/#feedItem_(\d+)/)[1];
-                $("#feedItem_" + id).remove();
-                $("#feed_" + id).remove();
-            }
+            /*if (button.href.match(/#feedItem/)) {
+             var id = button.href.match(/#feedItem_(\d+)/)[1];
+             $("#feedItem_" + id).remove();
+             $("#feed_" + id).remove();
+             }*/
             if (button.href.match(/#favorite/)) {
                 var id = button.href.match(/#favorite_(\d+)/)[1];
                 $("#favorite_" + id).toggleFavorite();

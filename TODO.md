@@ -35,6 +35,7 @@ All other files have functions that need improvement or rewrites or validation.
 - simplify/performance-tune JQuery code, especially implicit .each loops
 - apply JQuery Best Practices from: http://lab.abhinayrathore.com/jquery-standards/
 - remove support for Internet Explorer 6 through 8
+- merge errorDialog into twError
 
 ## Bugfixes
 
@@ -72,10 +73,7 @@ All other files have functions that need improvement or rewrites or validation.
 - add toggle to config for local/remote Transmission and disable features like Deep Directories for remote Transmission
 - if keeping st_downloaded and st_downloading in the PHP side, change st_favReady to st_downloaded for folder client after checking to make sure the .torrent file was successfully downloaded
 
-- convert Configure > Feeds one-form-per-feed into one form for all the feeds
-  - add Feed Title input above each Feed URL
-  - add extra input for website of feed operator, to which the feed title in headers will link
-  - make the Feeds panel's Update buttons not close the panel after updating (same behavior as the Delete buttons)
+- add extra input for website of feed operator, to which the feed title in headers will link
 
 - allow user to create Favorites from items in the History list
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
@@ -92,7 +90,7 @@ All other files have functions that need improvement or rewrites or validation.
   - $config_values['Global'] appears to be a crappy way of globally passing some data
   - convert $config_values['Settings'] to a class
   - $itemState  <--- IMPORTANT, as the use of global $itemState makes most of twxa_feed.php's functions hard to maintain
-  - $html_out (but performance suffers badly as $html_out gets very large)
+  - $html_out (can't use passing by value because performance suffers badly as $html_out gets very large, so use passing by reference)
   - $twxa_version
 
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design

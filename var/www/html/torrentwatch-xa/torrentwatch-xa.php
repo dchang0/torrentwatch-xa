@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.3.0";
+$twxa_version[0] = "1.4.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -194,6 +194,7 @@ function parse_options($twxa_version) {
             echo $config_values['Settings']['Disable Hide List'];
             exit;
         case 'sendTestEmail':
+            $fromName = filter_input(INPUT_GET, 'fromName');
             $fromEmail = filter_input(INPUT_GET, 'fromEmail');
             $toEmail = filter_input(INPUT_GET, 'toEmail');
             $smtpServer = filter_input(INPUT_GET, 'smtpServer');
@@ -202,9 +203,11 @@ function parse_options($twxa_version) {
             $smtpEncryption = filter_input(INPUT_GET, 'smtpEncryption');
             $smtpUser = filter_input(INPUT_GET, 'smtpUser');
             $smtpPassword = filter_input(INPUT_GET, 'smtpPassword');
+            $hiddensMTPPassword = str_repeat('*', strlen(decryptsMTPPassword($smtpPassword)));
+            $hELOOverride = filter_input(INPUT_GET, 'hELOOverride');
             $subject = "Test email from torrentwatch-xa";
-            $body = "Test email from torrentwatch-xa sent at " . date("c");
-            $output = sendEmail($fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $subject, $body);
+            $body = "Test email from torrentwatch-xa sent at " . date("c") . " with these settings:\n\nFrom: Name = $fromName\nFrom: Email = $fromEmail\nTo: Email = $toEmail\nSMTP Server = $smtpServer\nSMTP Port = $smtpPort\nSMTP Authentication = $smtpAuthentication\nSMTP Encryption = $smtpEncryption\nSMTP User = $smtpUser\nSMTP Password = $hiddensMTPPassword\nHELO Override = $hELOOverride\n\nThe Configure > Trigger > Test button does not save these settings to the config file. Remember to click the Configure > Trigger > Save button if necessary.";
+            $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
             echo $output['message'];
             exit;
         case 'checkVersion':
@@ -237,8 +240,13 @@ function parse_options($twxa_version) {
                     exit;
             }
         default:
-//TODO check filter_input() is not false before using it
-            $output = "<script type='text/javascript'>alert('Bad Parameters passed to " . filter_input(INPUT_SERVER, 'PHP_SELF') . ":  " . filter_input(INPUT_SERVER, 'REQUEST_URI') . "');</script>";
+            $phpSelf = filter_input(INPUT_SERVER, 'PHP_SELF');
+            $requestuRI = filter_input(INPUT_SERVER, 'REQUEST_URI');
+            if ($phpSelf !== false && $requestuRI !== false) {
+                $output = "<script type='text/javascript'>alert('Bad parameters passed to $phpSelf:  $requestuRI');</script>";
+            } else {
+                $output = "<script type='text/javascript'>alert('Bad parameters');</script>";
+            }
     }
 
     if (isset($output)) {
@@ -398,6 +406,9 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
             $feed_options .= '<option value="' . urlencode($feed['Link']) . '"';
             if ($feed['Link'] == $item['Feed']) {
                 $feed_options .= ' selected="selected"';
+            }
+            if ($feed['enabled'] !== 1) {
+                $feed_options .= ' disabled';
             }
             $feed_options .= '>' . $feed['Name'] . '</option>';
         }

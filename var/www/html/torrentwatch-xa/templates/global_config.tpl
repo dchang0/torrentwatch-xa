@@ -13,6 +13,7 @@
             function () {
                 $.get('torrentwatch-xa.php', {
                     sendTestEmail: 1,
+                    fromName: $('input[name=fromName]').val(),
                     fromEmail: $('input[name=fromEmail]').val(),
                     toEmail: $('input[name=toEmail]').val(),
                     smtpServer: $('input[name=smtpServer]').val(),
@@ -20,7 +21,8 @@
                     smtpAuthentication: $('select[name=smtpAuthentication]').val(),
                     smtpEncryption: $('select[name=smtpEncryption]').val(),
                     smtpUser: $('input[name=smtpUser]').val(),
-                    smtpPassword: $('input[name=smtpPassword').val()
+                    smtpPassword: $('input[name=smtpPassword]').val(),
+                    hELOOverride: $('input[name=hELOOverride]').val()
                 }, function (response) {
                     $("div#smtpTestResult").html(response);
                 }, 'html');
@@ -46,14 +48,14 @@
                 <li id="tabFavs" class="toggleConfigTab"
                     onclick='javascript:$.toggleConfigTab("#config_favorites", "#tabFavs");'>Favorites
                 </li>
+                <li id="tabTrigger" class="toggleConfigTab"
+                    onclick='javascript:$.toggleConfigTab("#config_trigger", "#tabTrigger");'>Trigger
+                </li>
                 <li id="tabFeeds" class="toggleConfigTab"
                     onclick='javascript:$.toggleConfigTab("#config_feeds", "#tabFeeds");'>Feeds
                 </li>
-                <li id="tabHideList" class="toggleConfigTab"
+                <li id="tabHideList" class="toggleConfigTab right"
                     onclick='javascript:$.toggleConfigTab("#config_hideList", "#tabHideList");'>Hide List
-                </li>
-                <li id="tabTrigger" class="toggleConfigTab right"
-                    onclick='javascript:$.toggleConfigTab("#config_trigger", "#tabTrigger");'>Trigger
                 </li>
             </ul>
         </div>
@@ -322,13 +324,20 @@
                                 <input type="checkbox" name="enableSMTP" value="1" <?php echo $enableSMTP; ?> />
                             </div>
                         </div>
-                        <div id="from_email" title="If blank or invalid, defaults to To: Email:">
+                        <div id="from_email" title="Valid email address required">
                             <div class="left">
                                 <label class="item">From: Email:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="fromEmail" class="text"
-                                       value="<?php echo $config_values['Settings']['From Email']; ?>"/>
+                                <input type="text" name="fromEmail" class="text" value="<?php echo $config_values['Settings']['From Email']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="from_name" title="Optional From Name or Display Name">
+                            <div class="left">
+                                <label class="item">From: Name:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" name="fromName" class="text" value="<?php echo $config_values['Settings']['From Name']; ?>"/>
                             </div>
                         </div>
                         <div id="to_email" title="Valid email address required">
@@ -336,8 +345,7 @@
                                 <label class="item">To: Email:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="toEmail" class="text"
-                                       value="<?php echo $config_values['Settings']['To Email']; ?>"/>
+                                <input type="text" name="toEmail" class="text" value="<?php echo $config_values['Settings']['To Email']; ?>"/>
                             </div>
                         </div>
                         <div id="smtp_server" title="Valid FQDN or IP address of SMTP server required">
@@ -345,8 +353,7 @@
                                 <label class="item">SMTP Server:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="smtpServer" class="text"
-                                       value="<?php echo $config_values['Settings']['SMTP Server']; ?>"/>
+                                <input type="text" name="smtpServer" class="text" value="<?php echo $config_values['Settings']['SMTP Server']; ?>"/>
                             </div>
                         </div>
                         <div id="smtp_port" title="Leave blank to default to 25 or specify integer from 0-65535.">
@@ -354,8 +361,7 @@
                                 <label class="item">SMTP Port:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="smtpPort" class="text"
-                                       value="<?php echo $config_values['Settings']['SMTP Port']; ?>"/>
+                                <input type="text" name="smtpPort" class="text" value="<?php echo $config_values['Settings']['SMTP Port']; ?>"/>
                             </div>
                         </div>
                         <div id="smtp_authentication" title="Only PLAIN or LOGIN are supported, not NTLM, OAUTH etc.">
@@ -387,8 +393,7 @@
                                 <label class="item">SMTP User:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="smtpUser" class="text"
-                                       value="<?php echo $config_values['Settings']['SMTP User']; ?>"/>
+                                <input type="text" name="smtpUser" class="text" value="<?php echo $config_values['Settings']['SMTP User']; ?>"/>
                             </div>
                         </div>
                         <div id="smtp_password" title="Required for SMTP Authentication">
@@ -396,8 +401,15 @@
                                 <label class="item">SMTP Password:</label>
                             </div>
                             <div class="right">
-                                <input type="password" class="password" name="smtpPassword" class="text"
-                                       value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
+                                <input type="password" class="password" name="smtpPassword" class="text" value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
+                            </div>
+                        </div>
+                        <div id="helo_override" title="Optional HELO override; leave blank for default. If provided, must be a valid FQDN">
+                            <div class="left">
+                                <label class="item">HELO Override:</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" class="text" name="hELOOverride" class="text" value="<?php echo $config_values['Settings']['HELO Override']; ?>"/>
                             </div>
                         </div>
                         <div id="smtp_test" title="Tests current SMTP settings">
@@ -413,58 +425,64 @@
                 <div class="buttonContainer">
                     <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
                 </div>
-                <div id='linkButtons' class="buttonContainer">
+                <div class="buttonContainer linkButtons">
                     <a class='toggleDialog button close' href='#'>Close</a>
                 </div>
             </form>
-            <div id="config_feeds" class="configTab hidden">
-                <div id="addFeed">
-                    <form action="torrentwatch-xa.php?updateFeed=1" class="feedform">
-                        <a class="submitForm button" id="Add" href="#">Add</a>
-                        <label class="item">Add Feed:</label>
-                        <input type="text" class="feed_link" name="link">
-                    </form>
-                </div>
-                <div id="feedItems">
+            <form action="torrentwatch-xa.php?updateFeed=1" class="feedform">
+                <div id="config_feeds" class="configTab hidden">
                     <div id="feedItemTitles">
-                        <div id="feedNameUrl">
-                            <label class="item">Name</label>
-                            <label class="item hidden">Link</label>
-                        </div>
-                        <label class="item">On</label>
-                        <label class="item">Ratio</label>
+                        <div class="feedURLName"><span id="feedURLNameLabel">URL / Name</span></div>
+                        <div class="feedOn">On</div>
+                        <div class="seedRatio">Ratio</div>
+                        <div class="feedDelete">Delete</div>
                     </div>
-                    <?php if(isset($config_values['Feeds'])): ?>
-                    <?php foreach($config_values['Feeds'] as $key => $feed): ?>
-                    <?php print("<div id=\"feedItem_" . $key . "\" class=\"feeditem\">"); ?>
-                    <form action="torrentwatch-xa.php?updateFeed=1" class="feedform">
-                        <input type="hidden" name="idx" value="<?php echo $key; ?>">
-                        <input class="feed_name" type="text" name="feed_name"
-                               title="<?php echo $feed['Link']; ?>" value="<?php echo $feed['Name']; ?>"></input>
-                        <input class="feed_url hidden" type="text" name="feed_link"
-                               title="<?php echo $feed['Name']; ?>" value="<?php echo $feed['Link']; ?>"></input>
-                        <?php if($feed['enabled'] == 1): ?>
-                        <input class="feed_on_off" type="checkbox" name="feed_on" value="feed_on" checked></input>
-                        <?php else: ?>
-                        <input class="feed_on_off" type="checkbox" name="feed_on" value="feed_on"></input>
+                    <div id="feedItems">
+                        <?php if(isset($config_values['Feeds'])): ?>
+                        <?php foreach($config_values['Feeds'] as $key => $feed): ?>
+                        <?php print("<div id=\"feedItem_" . $key . "\" class=\"feeditem\">"); ?>
+                        <div class="feedURLName">
+                            <input class="feed_url" type="text" name="feed_link_<?php echo $key; ?>" title="<?php echo $feed['Name']; ?>" value="<?php echo $feed['Link']; ?>" placeholder="Feed URL (required)"></input>
+                            <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="<?php echo $feed['Link']; ?>" value="<?php echo $feed['Name']; ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
+                        </div>
+                        <div class="feedOn">
+                            <?php if($feed['enabled'] == 1): ?>
+                            <input class="feed_on_off" type="checkbox" name="feed_on_<?php echo $key; ?>" value="feed_on" checked></input>
+                            <?php else: ?>
+                            <input class="feed_on_off" type="checkbox" name="feed_on_<?php echo $key; ?>" value="feed_on"></input>
+                            <?php endif; ?>
+                        </div>
+                        <div class="seedRatio">
+                            <input class="seed_ratio" type="text" name="seed_ratio_<?php echo $key; ?>" title="Set default seed ratio for this feed." value="<?php echo $feed['seedRatio']; ?>"></input>
+                        </div>
+                        <div class="feedDelete">
+                            <input class="feed_delete" type="checkbox" name="feed_delete_<?php echo $key; ?>" value="feed_delete"></input>
+                        </div>
+                        <?php print("</div>"); ?>
+                        <?php endforeach; ?>
                         <?php endif; ?>
-                        <input class="seed_ratio" type="text" name="seed_ratio" title="Set default seed ratio for this feed."
-                               value="<?php echo $feed['seedRatio']; ?>"></input>
-                        <a class="submitForm button" id="Delete" href="#feedItem_<?php echo $key; ?>">Del</a>
-                        <a class="submitForm button" id="Update" href="#">Upd</a>
-                    </form>
-                </div>
-                <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-            <div id="showURL" title="Toggle between name and link input fields">
-                <?php print("<input type=\"checkbox\" onClick=\"$.toggleFeedNameUrl(" . $key . ")\">"); ?>
-                </input>
-                <label class="item">Show Feed URL</label>
-            </div>
-            <div id='linkButtons' class="buttonContainer">
-                <a class='toggleDialog button close' href='#'>Close</a>
-            </div>
+                        <div id="feedItem_new" class="feeditem">
+                            <div class="feedURLName">
+                                <input class="feed_url" type="text" name="feed_link_new" title="Add new feed URL..." placeholder="New Feed URL (required to add feed)"></input>
+                                <input class="feed_name" type="text" name="feed_name_new" title="Override new feed name or leave blank for official feed name..." placeholder="New Feed Name (optional)"></input>
+                            </div>
+                            <div class="feedOn">
+                                <input class="feed_on_off" type="checkbox" name="feed_on_new" value="feed_on" checked></input>
+                            </div>
+                            <div class="seedRatio">
+                                <input class="seed_ratio" type="text" name="seed_ratio_new" title="Set default seed ratio for this feed."></input>
+                            </div>
+                            <div class="feedDelete">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="buttonContainer">
+                        <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
+                    </div>
+                    <div class="buttonContainer linkButtons">
+                        <a class='toggleDialog button close' href='#'>Close</a>
+                    </div>
+            </form>
         </div>
         <form action="torrentwatch-xa.php?delHidden=1" id="hidelist_form" name="hidelist_form" class="hidden">
             <div id="config_hideList" class="hidden configTab">
@@ -494,7 +512,7 @@
             <div class="buttonContainer">
                 <a class="submitForm button" id="Unhide" href="#">Unhide</a>
             </div>
-            <div id='linkButtons' class="buttonContainer">
+            <div class="buttonContainer linkButtons">
                 <a class='toggleDialog button close' href='#'>Close</a>
             </div>
         </form>

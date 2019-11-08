@@ -720,13 +720,26 @@ Code Changes
 
 - replaced some "+ 0" with explicit (int) casts, especially in checkdate() calls
 
+1.4.0
+
+Functional Changes
+
+- redesigned Configuration > Feeds tab
+- disabled Feeds are no longer selectable in each Favorite
+- added Configure > Trigger > From: Name
+- added Configure > Trigger > HELO Override to satisfy some SMTP servers
+
+Code Changes
+
+- converted linkButtons from an id to a class
+- removed commented-out code
+
 Next Version
 
 Functional Changes
 
 IN PROGRESS
 
-- change Configuration>Feeds form to use a single Update and single Delete button
 - handle gzipped torrent file (using gzuncompress() if file contents are returned directly or gzopen() and gzread() if file is downloaded)
 - add PHP prerequisite check to twxa_cli.php
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list

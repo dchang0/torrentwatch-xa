@@ -28,13 +28,11 @@ Common setups:
 Status
 ===============
 
-I've posted 1.3.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.4.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-1.3.0 adds a Test button on the Configure>Trigger tab that tests the SMTP settings currently in the form. It validates the SMTP settings, and if those look good, sends a test email. Any errors from PHPMailer are shown to the right of the Test button. The Test button does not save the settings.
+1.4.0 completely revamps the Configure>Feeds tab UI to make it much easier to add and update feeds.
 
-The specification and auto-generation of an SMTP HELO has been removed completely due to some SMTP servers blocking HELO impersonations. PHPMailer will provide the HELO instead. If you must override PHPMailer's behavior, you will have to uncomment and edit the HELO line in the source code.
-
-1.3.0 drops support for Ubuntu 14.04 and Debian 8.x (PHP 5.6). They should still work, but I will no longer be testing on those OSes.
+It also has new, optional From: Name and HELO Override settings on the Configure > Trigger tab. HELO Override can be used to fix HELO rejections on some SMTP servers.
 
 #### Still in Alpha
 

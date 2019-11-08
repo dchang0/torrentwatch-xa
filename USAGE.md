@@ -37,7 +37,7 @@ Scripts trigger on these events:
 
 To run a shell script, check Enable Script, provide the full path to a single shell script with no parameters in the Script field. Your shell script must have rwx permissions for www-data, and no parameters may be supplied in the Script field. See /var/lib/torrentwatch-xa/examples for example shell scripts that you can customize to suit your needs.
 
-To use the built-in SMTP notifications, check SMTP Notifications and fill in the From Email and To Email fields and all the SMTP fields. SMTP Port defaults to 25 if left blank. From Email defaults to To Email if left blank or it is invalid. 
+To use the built-in SMTP notifications, check SMTP Notifications and fill in the From: Email and To: Email fields and all the SMTP fields. SMTP Port defaults to 25 if left blank. From: Name and HELO Override are optional and will use default settings if left blank. If the cron job has trouble sending email notifications, it is probably unable to retrieve the hostname for use as the HELO, and the HELO Override will be necessary.
 
 The Test button tests the SMTP settings currently in the form by sending a test email. You must click the Save button to actually save the settings.
 

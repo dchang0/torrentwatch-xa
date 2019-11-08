@@ -1230,7 +1230,7 @@ div.legend input {
     border-top: 0;
     background-color: #eee;
     padding: 0;
-    margin: 0 0 0 0 ;
+    margin: 0 0 0 0;
 }
 
 .config_form_container .left {
@@ -1249,87 +1249,74 @@ div.legend input {
     padding-top: 5px;
 }
 
+#config_feeds #feedItemTitles {
+    font-size: 0.9em;
+    border-bottom: 1px solid #979797;
+    padding-bottom: 3px;
+}
+
 #config_feeds #feedItems {
     max-height: 280px;
     overflow-y: scroll;
     overflow-x: hidden;
 }
 
-#addFeed {
-    border-bottom: 1px solid #979797;
-    padding-bottom: 5px;
+#config_feeds div.feedURLName {
+    display: table-cell;
+    width: 325px;
 }
 
-#feedItemTitles {
-    margin: 3px 0 5px 7px;
+#config_feeds #feedURLNameLabel {
+    padding-left: 5px;
 }
 
-#feedNameUrl {
-    margin-left: 0;
-    float: left;
-    width: 283px;
+#config_feeds div.feedOn {
+    width: 30px;
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
 }
 
-#addFeed input.feed_link[type=text] {
-    width: 310px;
-    margin: 0 0;
-    padding: 1px 3px;
-    left: 87px;
+#config_feeds div.seedRatio {
+    width: 40px;
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
 }
 
-#addFeed a.button {
-    margin: 0 10px 0 0;
-    padding: 1px 0 3px 0;
+#config_feeds div.feedDelete {
+    width: 40px;
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
 }
-
 
 #config_feeds div.feeditem {
-    height: 35px;
-}
-
-#config_feeds div.feeditem label.item {
-    position: relative;
-    white-space: nowrap;
-    overflow: hidden;
-    width: auto;
-    padding: 5px;
+    height: 50px;
+    display: table-row;
 }
 
 #config_feeds div.feeditem input[type=text] {
-    width: 267px;
-    margin: 3px 0;
-    padding: 1px 3px 1px 3px;
-    left: 0;
     font-size: 0.9em;
 }
 
 #config_feeds div.feeditem input.feed_url[type=text],
 #config_feeds div.feeditem input.feed_name[type=text] {
-    margin: 1px 3px 1px 10px;
+    width: 308px;
+    margin: 4px 5px 0 5px;
+}
+
+input.feed_on_off {
+    margin: 0 0 0 0;
 }
 
 #config_feeds div.feeditem input.seed_ratio[type=text] {
     width: 2em;
-    margin-left: 6px;
+    margin: 0 0 0 0;
 }
 
-#config_feeds div.feeditem a.button {
-    width: 30px;
-    margin: 3px 10px 0 0;
-    padding: 3px 0 3px 0;
-}
-
-#config_feeds div.feeditem a.button#Update {
-    margin-right: 5px;
-}
-
-#showURL {
-    padding: 5px 0 5px 0;
-    border-top: 1px solid #979797;
-}
-
-#showURL input[type=checkbox] {
-    margin-left: 10px;
+input.feed_delete {
+    margin: 0 0 0 0;
 }
 
 #configuration .config_form_container input#hideSearchText {
@@ -1358,7 +1345,7 @@ div.legend input {
     color: #FFF;
 }
 
-#linkButtons  {
+.linkButtons  {
     float: right;
 }
 
@@ -1447,7 +1434,7 @@ ul.favorite li a {
     vertical-align: middle;
     font-size: 0.8em;
     text-decoration: none;
-    color: #000000;
+    color: #000;
     overflow: hidden;
 }
 

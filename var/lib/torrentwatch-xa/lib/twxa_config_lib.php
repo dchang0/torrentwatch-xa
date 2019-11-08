@@ -1,7 +1,6 @@
 <?php
 
 // configuration-related functions
-
 // NOTE: DO NOT put trailing slashes on any of these paths
 function getConfigCacheDir() {
     return get_baseDir() . "/config_cache";
@@ -95,6 +94,7 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['Enable Script'] = "0";
     $config_values['Settings']['Script'] = "";
     $config_values['Settings']['SMTP Notifications'] = "0";
+    $config_values['Settings']['From Name'] = "torrentwatch-xa";
     $config_values['Settings']['From Email'] = "";
     $config_values['Settings']['To Email'] = "";
     $config_values['Settings']['SMTP Server'] = "localhost";
@@ -103,6 +103,7 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['SMTP Encryption'] = "None";
     $config_values['Settings']['SMTP User'] = "";
     $config_values['Settings']['SMTP Password'] = "";
+    $config_values['Settings']['HELO Override'] = "";
     // wipe the Favorites section
     $config_values['Favorites'] = [];
     // wipe the Hidden section
@@ -449,6 +450,7 @@ function updateGlobalConfig() {
         'Enable Script' => 'enableScript',
         'Script' => 'script',
         'SMTP Notifications' => 'enableSMTP',
+        'From Name' => 'fromName',
         'From Email' => 'fromEmail',
         'To Email' => 'toEmail',
         'SMTP Server' => 'smtpServer',
@@ -456,7 +458,8 @@ function updateGlobalConfig() {
         'SMTP Authentication' => 'smtpAuthentication',
         'SMTP Encryption' => 'smtpEncryption',
         'SMTP User' => 'smtpUser',
-        'SMTP Password' => 'smtpPassword'
+        'SMTP Password' => 'smtpPassword',
+        'HELO Override' => 'hELOOverride'
     );
     foreach ($input as $key => $data) {
         $config_values['Settings'][$key] = filter_input(INPUT_GET, $data);
@@ -645,91 +648,182 @@ function updateFavoriteEpisode(&$fav, $ti) {
 
 /// feed config functions
 
-function addFeed($feedLink) {
+function addFeed($feedItem) {
     global $config_values;
-    if (!empty($feedLink) && filter_var($feedLink, FILTER_VALIDATE_URL)) {
-        writeToLog("Checking feed: $feedLink\n", 2);
-        $guessedFeedType = guess_feed_type($feedLink);
+    if (filter_var($feedItem['feedLink'], FILTER_VALIDATE_URL)) {
+        writeToLog("Checking feed: " . $feedItem['feedLink'] . "\n", 2);
+        $guessedFeedType = guess_feed_type($feedItem['feedLink']);
         if ($guessedFeedType != 'Unknown') {
-            writeToLog("Adding feed: $feedLink\n", 1);
-            $config_values['Feeds'][]['Link'] = $feedLink;
+            writeToLog("Adding feed: " . $feedItem['feedLink'] . "\n", 1);
+            $config_values['Feeds'][]['Link'] = $feedItem['feedLink'];
             $arrayKeys = array_keys($config_values['Feeds']);
             $idx = end($arrayKeys);
             $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
-            $config_values['Feeds'][$idx]['seedRatio'] = "";
-            $config_values['Feeds'][$idx]['enabled'] = 1;
-            load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedLink)), 1, true); // pass true for newly added feeds
-            switch ($guessedFeedType) {
-                case 'RSS':
-                    $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedLink]['title'];
-                    break;
-                case 'Atom':
-                    $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedLink]['FEED']['TITLE'];
+            // check that seedRatio is numeric
+            if (is_numeric($feedItem['seedRatio'])) {
+                $config_values['Feeds'][$idx]['seedRatio'] = $feedItem['seedRatio'];
+            } else {
+                $config_values['Feeds'][$idx]['seedRatio'] = '';
             }
-            writejSONConfigFile();
+            // feed on/off
+            if ($feedItem['feedOn'] === 'feed_on') {
+                $config_values['Feeds'][$idx]['enabled'] = 1;
+            } else {
+                $config_values['Feeds'][$idx]['enabled'] = '';
+            }
+            load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
+            if ($feedItem['feedName'] === '') {
+                switch ($guessedFeedType) {
+                    case 'RSS':
+                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['title'];
+                        break;
+                    case 'Atom':
+                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['FEED']['TITLE'];
+                }
+            } else {
+                $config_values['Feeds'][$idx]['Name'] = $feedItem['feedName'];
+            }
         } else {
-            writeToLog("Could not connect to feed or guess feed type: $feedLink\n", -1);
+            writeToLog("Could not connect to feed or guess feed type: " . $feedItem['feedLink'] . "\n", -1);
         }
     } else {
-        writeToLog("Ignoring empty or invalid feed URL\n", 0);
+        writeToLog("Ignoring invalid feed URL\n", 0);
     }
 }
 
 function updateFeed() {
-    switch (filter_input(INPUT_GET, 'button')) {
-        case 'Delete':
-            deleteFeed();
-            break;
-        case 'Update':
-            updateFeedData();
-            break;
-        default:
-            addFeed(filter_input(INPUT_GET, 'link'));
-    }
-}
-
-function updateFeedData() {
     global $config_values;
-    $index = filter_input(INPUT_GET, 'idx');
-    if ($index !== false && isset($config_values['Feeds'][$index])) {
-        $feedLink = filter_input(INPUT_GET, 'feed_link');
-        if ($feedLink !== false && filter_var($feedLink, FILTER_VALIDATE_URL)) {
-            $feedName = filter_input(INPUT_GET, 'feed_name');
-            if ($feedName !== false) {
-                $old_feedurl = $config_values['Feeds'][$index]['Link'];
-                writeToLog("Updating feed: $old_feedurl\n", 1);
-                foreach ($config_values['Favorites'] as &$favorite) {
-                    if ($favorite['Feed'] == $old_feedurl) {
-                        $favorite['Feed'] = str_replace(' ', '%20', $feedLink);
+
+    // loop through each feedItem's URL input
+    $writeChanges = false;
+    $keys = array_keys($_GET); // unfortunately, must use superglobal here
+    foreach ($keys as $key) {
+        if (strpos($key, 'feed_link_') === 0) {
+            // get the item index to look up the feedItem's other inputs
+            $idx = substr($key, 10);
+            // if it's new, add this feedItem
+            if ($idx === 'new') {
+                // add this feedItem if the feed_link_ is not blank
+                $brandNewFeedItem = parseFeedItemFromGET('new');
+                if ($brandNewFeedItem['feedLink'] !== false && $brandNewFeedItem['feedLink'] !== '') {
+                    // add the new feedItem
+                    addFeed($brandNewFeedItem);
+                    $writeChanges = true;
+                }
+            } else {
+                // not a new feedItem
+                $feedItem = parseFeedItemFromGET($idx);
+                // if Delete exists and is checked, delete this feedItem
+                if ($feedItem['feedDelete'] === 'feed_delete') {
+                    // delete this feed
+                    deleteFeed($idx);
+                    $writeChanges = true;
+                } else {
+                    // Delete is not checked
+                    // if feed link is now blank, delete the entire feedItem
+                    if ($feedItem['feedLink'] === false || $feedItem['feedLink'] === '') {
+                        deleteFeed($idx);
+                        $writeChanges = true;
+                    } else {
+                        // check if each part of the feedItem has changed and update it if necessary
+                        $feedItemChanged = false; // reset the toggle for this one feedItem
+                        if ($feedItem['index'] !== false && $feedItem['index'] !== '') {
+                            // compare and update the feed link
+                            $oldFeedLink = $config_values['Feeds'][$idx]['Link'];
+                            $newFeedLink = filter_var($feedItem['feedLink'], FILTER_VALIDATE_URL);
+                            if ($newFeedLink !== false && $newFeedLink !== '') {
+                                if ($newFeedLink !== $oldFeedLink) {
+                                    // update the feed link on all associated Favorites
+                                    foreach ($config_values['Favorites'] as &$favorite) {
+                                        if ($favorite['Feed'] == $oldFeedLink) {
+                                            $favorite['Feed'] = str_replace(' ', '%20', $newFeedLink);
+                                        }
+                                    }
+                                    $config_values['Feeds'][$idx]['Link'] = $newFeedLink;
+                                    $feedItemChanged = true;
+                                }
+                            } else {
+                                writeToLog("Ignoring invalid feed URL\n", 0);
+                            }
+                            // compare and update the feed name
+                            if ($config_values['Feeds'][$idx]['Name'] !== $feedItem['feedName']) {
+                                // if the new feed name is blank, get the official feed name from the feed
+                                if ($feedItem['feedName'] === false || $feedItem['feedName'] === '') {
+                                    $guessedFeedType = guess_feed_type($feedItem['feedLink']);
+                                    if ($guessedFeedType != 'Unknown') {
+                                        load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedItem['feedLink'])), 1, true); // pass true even if feed is not enabled because we want the name
+                                        switch ($guessedFeedType) {
+                                            case 'RSS':
+                                                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['title'];
+                                                break;
+                                            case 'Atom':
+                                                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['FEED']['TITLE'];
+                                        }
+                                        $feedItemChanged = true;
+                                    } else {
+                                        writeToLog("Could not connect to feed or guess feed type: " . $feedItem['feedLink'] . "\n", -1);
+                                    }
+                                } else {
+                                    // update the feed name
+                                    $config_values['Feeds'][$idx]['Name'] = $feedItem['feedName'];
+                                    $feedItemChanged = true;
+                                }
+                            }
+                            // compare and update the feed on/off
+                            if ($config_values['Feeds'][$idx]['enabled'] === 1 && $feedItem['feedOn'] !== 'feed_on') {
+                                $config_values['Feeds'][$idx]['enabled'] = '';
+                                $feedItemChanged = true;
+                            } else if ($config_values['Feeds'][$idx]['enabled'] !== 1 && $feedItem['feedOn'] === 'feed_on') {
+                                $config_values['Feeds'][$idx]['enabled'] = 1;
+                                $feedItemChanged = true;
+                            }
+                            // compare and update the seed ratio
+                            if ($config_values['Feeds'][$idx]['seedRatio'] !== $feedItem['seedRatio']) {
+                                if (is_numeric($feedItem['seedRatio']) || $feedItem['seedRatio'] === '') {
+                                    $config_values['Feeds'][$idx]['seedRatio'] = $feedItem['seedRatio'];
+                                    $feedItemChanged = true;
+                                } else {
+                                    writeToLog("Did not change seed ratio due to non-numeric input\n", 0);
+                                }
+                            }
+                            if ($feedItemChanged === true) {
+                                $writeChanges = true;
+                                writeToLog("Updated feed: $oldFeedLink\n", 1);
+                            }
+                        }
                     }
                 }
-                $config_values['Feeds'][$index]['Name'] = $feedName;
-                $config_values['Feeds'][$index]['Link'] = $feedLink;
-                $config_values['Feeds'][$index]['seedRatio'] = filter_input(INPUT_GET, 'seed_ratio');
-                if (filter_input(INPUT_GET, 'feed_on') == "feed_on") {
-                    $config_values['Feeds'][$index]['enabled'] = 1;
-                } else {
-                    $config_values['Feeds'][$index]['enabled'] = "";
-                }
-                writejSONConfigFile();
-            } else {
-                writeToLog("Ignoring empty feed Name", 0);
             }
-        } else {
-            writeToLog("Ignoring empty or invalid feed URL", 0);
         }
-    } else {
-        writeToLog("Unable to update feed. Could not find feed index: $index\n", -1);
+    }
+    // if even one setting of one already-existing feedItem changed, write the config file
+    if ($writeChanges === true) {
+        writejSONConfigFile();
     }
 }
 
-function deleteFeed() {
+function parseFeedItemFromGET($key) {
+    // parses the GET superglobal for the feedItem specified by $key
+    $feedLink = filter_input(INPUT_GET, 'feed_link_' . $key);
+    $feedName = filter_input(INPUT_GET, 'feed_name_' . $key);
+    $feedOn = filter_input(INPUT_GET, 'feed_on_' . $key);
+    $seedRatio = filter_input(INPUT_GET, 'seed_ratio_' . $key);
+    $feedDelete = filter_input(INPUT_GET, 'feed_delete_' . $key);
+    return [
+        'index' => $key,
+        'feedLink' => $feedLink,
+        'feedName' => $feedName,
+        'feedOn' => $feedOn,
+        'seedRatio' => $seedRatio,
+        'feedDelete' => $feedDelete
+    ];
+}
+
+function deleteFeed($index) {
     global $config_values;
-    $index = filter_input(INPUT_GET, 'idx');
     if ($index !== false && isset($config_values['Feeds'][$index])) {
         writeToLog("Deleting feed with index: $index\n", 1);
         unset($config_values['Feeds'][$index]);
-        writejSONConfigFile();
     } else {
         writeToLog("Unable to delete feed. Could not find feed index: $index\n", -1);
     }
