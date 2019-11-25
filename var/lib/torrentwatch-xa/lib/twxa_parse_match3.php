@@ -192,7 +192,7 @@ function matchTitle3_8($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{4})[$seps](\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})\b.*/";
     $thisYear = getdate()['year'];
-    if (preg_match($re, $ti, $mat) && $mat[1] + 0 <= $thisYear && $mat[1] + 0 > 1895) {
+    if (preg_match($re, $ti, $mat) && (int)$mat[1] <= $thisYear && (int)$mat[1] > 1895) {
         return [
             'medTyp' => 1,
             'numSeq' => 1,
@@ -271,7 +271,7 @@ function matchTitle3_12($ti, $seps) {
     // ### to ###.# episodes
     $mat = [];
     $re = "/\b(\d{1,4})[$seps]?(through|thru|to)[$seps]?(\d{1,4}\.\d)\b.*/i";
-    if (preg_match($re, $ti, $mat) && $mat[1] <= $mat[3] + 0) {
+    if (preg_match($re, $ti, $mat) && (int)$mat[1] <= (int)$mat[3]) {
         return [
             'medTyp' => 1,
             'numSeq' => 1,
@@ -290,7 +290,7 @@ function matchTitle3_13($ti, $seps) {
     // ###.# to ### episodes
     $mat = [];
     $re = "/\b(\d{1,4}\.\d)[$seps]?(through|thru|to)[$seps]?(\d{1,4})\b.*/i";
-    if (preg_match($re, $ti, $mat) && $mat[1] + 0 <= $mat[3]) {
+    if (preg_match($re, $ti, $mat) && (int)$mat[1] <= (int)$mat[3]) {
         return [
             'medTyp' => 1,
             'numSeq' => 1,
@@ -310,7 +310,7 @@ function matchTitle3_14($ti, $seps) {
     $mat = [];
     $re = "/\([$seps]?(\d{4})[$seps]?\)[\-$seps]{0,3}(\d{1,4})[\-$seps]{1,3}(\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[1] + 0 <= getdate()['year'] && $mat[1] + 0 > 1895) {
+        if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -325,7 +325,7 @@ function matchTitle3_14($ti, $seps) {
         } else {
             // (####) is probably part of the title
             if (strlen($mat[2]) < strlen($mat[3])) {
-                if ($mat[2] + 0 >= $mat[3] + 0 || substr($mat[3], 0, 1) === "0") {
+                if ((int)$mat[2] >= (int)$mat[3] || substr($mat[3], 0, 1) === "0") {
                     // very probably (####) SS - EEE
                     return [
                         'medTyp' => 1,
@@ -388,7 +388,7 @@ function matchTitle3_15($ti, $seps) {
     $mat = [];
     $re = "/\((\d{4})\)[\-$seps]{0,3}(\d{1,3})[\-$seps]{0,3}\((\d{1,4})\).*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[1] + 0 <= getdate()['year'] && $mat[1] + 0 > 1895) {
+        if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -512,7 +512,7 @@ function matchTitle3_19($ti, $seps) {
     $re = "/\b(\d{1,4})[$seps]?(Episodes|Episode|Epizodes|Epizode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?\b(\d{1,4})[$seps]?\-[$seps]?(\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         if ($mat[3] < $mat[4]) {
-            if ($mat[1] + 0 <= getdate()['year'] && $mat[1] + 0 > 1895) {
+            if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
                 // probably YYYY Ep EE - EE
                 return [
                     'medTyp' => 1,
@@ -563,8 +563,8 @@ function matchTitle3_20($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\-[$seps]?(\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[2] < $mat[3]) {
-            if ($mat[1] + 0 <= getdate()['year'] && $mat[1] + 0 > 1895) {
+        if ((int)$mat[2] < (int)$mat[3]) {
+            if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
                 // probably YYYY EE - EE
                 return [
                     'medTyp' => 1,
@@ -627,8 +627,8 @@ function matchTitle3_21($ti, $seps) {
     $re = "/\b(\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         if (
-                $mat[1] + 1 === $mat[2] + 0 &&
-                $mat[1] + 2 === $mat[3] + 0
+                (int)$mat[1] + 1 === (int)$mat[2] &&
+                (int)$mat[1] + 2 === (int)$mat[3]
         ) {
             // almost certainly sequence of episodes
             return [

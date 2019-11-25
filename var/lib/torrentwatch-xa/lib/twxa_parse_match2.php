@@ -640,7 +640,7 @@ function matchTitle2_31($ti, $seps) {
         if (strlen($mat[3]) == 1) {
             $mat[3] = '0' . $mat[3];
         }
-        if ($mat[3] != '' && checkdate($mat[3] + 0, 1, $mat[2] + 0)) {
+        if ($mat[3] != '' && checkdate((int)$mat[3], 1, (int)$mat[2])) {
             // moon character = month
             return [
                 'medTyp' => 4,
@@ -714,7 +714,7 @@ function matchTitle2_34($ti, $seps, $detVid) {
     $re = "/\b(\d{4})[\-$seps]{1,3}(\d{1,4})\b.*/"; // this blocks #### ## from reaching 2_44
     if (preg_match($re, $ti, $mat)) {
         $thisYear = getdate()['year'];
-        if ($mat[1] + 0 <= $thisYear && $mat[1] + 0 > 1895) {
+        if ((int)$mat[1] <= $thisYear && (int)$mat[1] > 1895) {
             // YYYY-MM or YYYY-EE
             if ($detVid) {
                 // definitely Video, probably YYYY-EE, highly unlikely to be YYYY-MM
@@ -763,10 +763,10 @@ function matchTitle2_34($ti, $seps, $detVid) {
             }
         } else if (
                 strlen($mat[2]) === 4 &&
-                $mat[2] + 0 > $mat[1] + 0 &&
-                $mat[2] + 0 <= $thisYear &&
-                $mat[1] + 0 > 1895 &&
-                $mat[2] + 0 < $mat[1] + 20
+                (int)$mat[2] > (int)$mat[1] &&
+                (int)$mat[2] <= $thisYear &&
+                (int)$mat[1] > 1895 &&
+                (int)$mat[2] < (int)$mat[1] + 20
         ) {
             // YYYY - YYYY
             return [
@@ -840,7 +840,7 @@ function matchTitle2_36($ti, $seps) {
     $mat = [];
     $re = "/\((\d{4})\)[\-$seps]{0,3}(\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[1] + 0 <= getdate()['year'] && $mat[1] + 0 > 1895) {
+        if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
             // (YYYY) - EE
             return [
                 'medTyp' => 1,
@@ -875,7 +875,7 @@ function matchTitle2_37($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{1,3})[-$seps]{0,3}\((\d{4})\).*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[2] + 0 <= getdate()['year'] && $mat[2] + 0 > 1895) {
+        if ((int)$mat[2] <= getdate()['year'] && (int)$mat[2] > 1895) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -1001,7 +1001,7 @@ function matchTitle2_42($ti, $seps) {
                 'matFnd' => "2_42-2"
             ];
         } else if (
-                $mat[1] + 0 > 0 && // no Season 0
+                (int)$mat[1] > 0 && // no Season 0
                 strlen($mat[1]) < strlen($mat[2]) &&
                 substr($mat[2], 0, 1) == '0'
         ) {
@@ -1022,7 +1022,7 @@ function matchTitle2_42($ti, $seps) {
                 (substr($mat[1], 0, 1) == '0' || // leading digit of first ## is 0
                 (
                 strlen($mat[2]) - strlen($mat[1]) < 2 && // second ## is no more than 1 digit longer
-                $mat[1] + 0 < $mat[2] + 0 // second ## is greater than first ##
+                (int)$mat[1] < (int)$mat[2] // second ## is greater than first ##
                 )
                 )
         ) {
@@ -1087,7 +1087,7 @@ function matchTitle2_43($ti, $seps) {
                 $mat[2] == '480'
                 ) &&
                 (
-                $mat[1] + 0 > 1 ||
+                (int)$mat[1] > 1 ||
                 substr($mat[1], 0, 1) == '0' // leading digit of first ## is 0
                 )
         ) {
@@ -1103,7 +1103,7 @@ function matchTitle2_43($ti, $seps) {
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "2_43-1"
             ];
-        } else if ($mat[2] + 0 > 0) {
+        } else if ((int)$mat[2] > 0) {
             // S (EEE)
             return [
                 'medTyp' => 1,
@@ -1145,7 +1145,7 @@ function matchTitle2_44($ti, $seps) {
                 $mat[2] == '480'
                 ) &&
                 (
-                $mat[1] + 0 > 1 ||
+                (int)$mat[1] > 1 ||
                 substr($mat[1], 0, 1) == '0' // leading digit of first ## is 0
                 )
         ) {
@@ -1163,7 +1163,7 @@ function matchTitle2_44($ti, $seps) {
             ];
         } else if (
                 (strlen($mat[1]) < strlen($mat[2])) || // SS EEE or S EE
-                ($mat[1] + 0 >= $mat[2] + 0) // EE EE usually has lower episodes first
+                ((int)$mat[1] >= (int)$mat[2]) // EE EE usually has lower episodes first
         ) {
             // isolated SS EE
             return [
@@ -1178,10 +1178,10 @@ function matchTitle2_44($ti, $seps) {
                 'matFnd' => "2_44-2"
             ];
         } else if (
-                $mat[1] + 0 < $mat[2] + 0 &&
-                $mat[1] + 0 < 6 && // most cours never pass 5
-                $mat[1] + 1 != $mat[2] + 0 && // seq. numbers likely EE EE
-                $mat[2] + 0 < $mat[1] + 14 // seasons usually have less than 14 episodes
+                (int)$mat[1] < (int)$mat[2] &&
+                (int)$mat[1] < 6 && // most cours never pass 5
+                (int)$mat[1] + 1 != (int)$mat[2] && // seq. numbers likely EE EE
+                (int)$mat[2] < (int)$mat[1] + 14 // seasons usually have less than 14 episodes
         ) {
             // isolated SS EE
             return [

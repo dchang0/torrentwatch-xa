@@ -74,11 +74,11 @@ function matchTitle6_3($ti, $seps) {
     $re = "/\b(\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         if (
-                $mat[1] + 1 === $mat[2] + 0 &&
-                $mat[1] + 2 === $mat[3] + 0 &&
-                $mat[1] + 3 === $mat[4] + 0 &&
-                $mat[1] + 4 === $mat[5] + 0 &&
-                $mat[1] + 5 === $mat[6] + 0
+                (int)$mat[1] + 1 === (int)$mat[2] &&
+                (int)$mat[1] + 2 === (int)$mat[3] &&
+                (int)$mat[1] + 3 === (int)$mat[4] &&
+                (int)$mat[1] + 4 === (int)$mat[5] &&
+                (int)$mat[1] + 5 === (int)$mat[6]
         ) {
             // almost certainly sequence of episodes
             return [

@@ -679,27 +679,27 @@ function checkVersion($twxa_version) {
         $latestVersion = explode(".", $latestFromWebsite);
 
         // Assume there are 3 numeric parts to the version number; compare them part by part
-        if ($thisVersion[0] + 0 > $latestVersion[0] + 0) {
+        if ((int)$thisVersion[0] > (int)$latestVersion[0]) {
             //$isLatestHigher = false;
-        } else if ($thisVersion[0] + 0 === $latestVersion[0] + 0) {
+        } else if ((int)$thisVersion[0] === (int)$latestVersion[0]) {
             // first parts are the same, compare the second parts
-            if ($thisVersion[1] + 0 > $latestVersion[1] + 0) {
+            if ((int)$thisVersion[1] > (int)$latestVersion[1]) {
                 //$isLatestHigher = false;
-            } else if ($thisVersion[1] + 0 === $latestVersion[1] + 0) {
+            } else if ((int)$thisVersion[1] === (int)$latestVersion[1]) {
                 // second parts are the same, compare the third parts
-                if ($thisVersion[2] + 0 >= $latestVersion[2] + 0) {
+                if ((int)$thisVersion[2] >= (int)$latestVersion[2]) {
                     //$isLatestHigher = false;
-                } else if ($thisVersion[2] + 0 < $latestVersion[2] + 0) {
+                } else if ((int)$thisVersion[2] < (int)$latestVersion[2]) {
                     $isLatestHigher = true;
                 } else {
                     // one of the values is non-numeric
                 }
-            } else if ($thisVersion[1] + 0 < $latestVersion[1] + 0) {
+            } else if ((int)$thisVersion[1] < (int)$latestVersion[1]) {
                 $isLatestHigher = true;
             } else {
                 // one of the values is non-numeric
             }
-        } else if ($thisVersion[0] + 0 < $latestVersion[0] + 0) {
+        } else if ((int)$thisVersion[0] < (int)$latestVersion[0]) {
             $isLatestHigher = true;
         } else {
             // one of the values is non-numeric

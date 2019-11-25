@@ -135,7 +135,7 @@ function writeToLog($string, $lvl = -1) {
         default:
             $errLabel = "DBG:";
     }
-    if (!isset($config_values['Settings']['Log Level']) || $config_values['Settings']['Log Level'] + 0 >= $lvl) {
+    if (!isset($config_values['Settings']['Log Level']) || (int)$config_values['Settings']['Log Level'] >= $lvl) {
         /* if ($lvl === -1 && isset($config_values['Global']['HTMLOutput'])) {
           $string = trim(strtr($string, array("'" => "\\'")));
           $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once

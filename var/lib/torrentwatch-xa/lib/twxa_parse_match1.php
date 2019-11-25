@@ -418,9 +418,9 @@ function matchTitle1_1_20($ti, $seps) {
     $re = "/'(\d\d)\b.*/";
     if (preg_match($re, $ti, $mat)) {
         $thisYear = getdate()['year'];
-        $guessedYearCurrentCentury = substr($thisYear, 0, 2) . $mat[1];
-        $guessedYearPriorCentury = substr($thisYear - 100, 0, 2) . $mat[1];
-        if ($guessedYearCurrentCentury + 0 <= $thisYear && $guessedYearCurrentCentury + 0 > 1895) {
+        $guessedYearCurrentCentury = (int)(substr($thisYear, 0, 2) . $mat[1]);
+        $guessedYearPriorCentury = (int)(substr($thisYear - 100, 0, 2) . $mat[1]);
+        if ($guessedYearCurrentCentury <= $thisYear && $guessedYearCurrentCentury > 1895) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 2,
@@ -432,7 +432,7 @@ function matchTitle1_1_20($ti, $seps) {
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "1_1_20-1"
             ];
-        } else if ($guessedYearPriorCentury + 0 <= $thisYear && $guessedYearPriorCentury + 0 > 1895) {
+        } else if ($guessedYearPriorCentury <= $thisYear && $guessedYearPriorCentury > 1895) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 2,
@@ -598,7 +598,7 @@ function matchTitle1_1_30_6($ti, $seps) {
     $mat = [];
     $re = "/([$seps])(\d+)([$seps]|$).*/";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[2] + 0 > 0) {
+        if ((int)$mat[2] > 0) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -632,7 +632,7 @@ function matchTitle1_1_30_7($ti, $seps) {
     $mat = [];
     $re = "/([$seps\+\-\(\)#\x{3010}\x{3011}\x{7B2C}])(\d+)([$seps\+\-\(\)\x{3010}\x{3011}]|$).*/u";
     if (preg_match($re, $ti, $mat)) {
-        if ($mat[2] + 0 > 0) {
+        if ((int)$mat[2] > 0) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
