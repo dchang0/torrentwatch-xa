@@ -79,9 +79,14 @@ if (is_readable($argv[1])) {
         if (writejSONConfigFile()) {
             // IMPORTANT: must change ownership on new config file to the user Apache2 is running as
             if (chown($configFile, $configOwner)) {
-                //TODO maybe chmod here, but chown would have failed if insufficient permissions
+                // try chmod here, but chown would have failed if insufficient permissions
+                if (chmodPath($configFile, 0775)) {
+                    // success
+                } else {
+                    print("Failed to chmod config file $configFile to 0775\n");
+                    writeToLog("Failed to chown config file $configFile to 0775\n", -1);
+                }
             } else {
-                // failed to chown config file
                 print("Failed to chown config file $configFile with UID $configOwner\n");
                 writeToLog("Failed to chown config file $configFile with UID $configOwner\n", -1);
             }

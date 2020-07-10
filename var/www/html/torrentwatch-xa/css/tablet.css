@@ -1,6 +1,8 @@
 #topmenu {
 height:55px;
-zoom:120%
+/*zoom:120%;*/
+transform: scale(1.2);
+transform-origin: 0 0;
 }
 
 #torrentlist_container {
@@ -56,7 +58,9 @@ right:5px
 }
 
 #clientButtons li {
-zoom:130%
+/*zoom:130%;*/
+transform: scale(1.3);
+transform-origin: 0 0;
 }
 
 #clientButtons li.move_data input {
@@ -78,7 +82,9 @@ top:30px
 }
 
 #torrentlist_container {
-zoom:120%
+/*zoom:120%;*/
+transform: scale(1.2);
+transform-origin: 0 0;
 }
 
 .torInfo {
@@ -98,7 +104,9 @@ width:600px
 }
 
 #trash_tor_data div {
-zoom:200%
+/*zoom:200%;*/
+transform: scale(2);
+transform-origin: 0 0;
 }
 
 @media only screen and (orientation:portrait) {

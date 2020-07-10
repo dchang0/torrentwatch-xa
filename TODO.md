@@ -39,11 +39,12 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Bugfixes
 
+- if torrent item is removed from another browser session, this browser doesn't figure it out
 - _Save torrent in folder_ client works but progress bar goes into st_downloading when it should not
 - widen Seed Ratio textbox in Favorite to handle three-digit ratios like 0.15
 - with the episode filter it also ignores all the batches regardless of the setting to ignore batches
 - fix debug console in web UI
-- when using Add to Favorites on multiple different titles, added items correctly turn orange for Favorite Ready, but Refresh button does not cause complete browser reload, which means the items stay orange instead of turning yellow for Waiting and then gaining progress bars
+- when using Add to Favorites on many different titles, added items correctly turn orange for Favorite Ready, but Refresh button does not cause complete browser reload, which means the items stay orange instead of turning yellow for Waiting and then gaining progress bars. This does not seem to happen when just one to a few titles are added to favorites--it might be a timeout issue on the refresh.
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - improve handling of "Feed inaccessible" (usually 403 or 404 errors on the feed URL)
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
@@ -52,6 +53,9 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- use 'use strict'; to clean up blocks of code in torrentwatch-xa.js starting from smaller blocks to larger
+- consolidate/simplify code in displayFilter's switch-case block
+- possibly allow user to un-Favorite or un-Hide items via contextual menu
 - implement Ignore Batches feature per Favorite as well as globally
 - Clear Cache dialog closes automatically after any button is pressed; change this to Javascript with AJAX
 - remove uninitialized variables in twxa_atomparser.php
@@ -78,7 +82,6 @@ All other files have functions that need improvement or rewrites or validation.
 - allow user to create Favorites from items in the History list
 - convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
 - add error handling to the Transmission functions
-- upgrade jquery.cookie.js to js-cookie at https://github.com/js-cookie/js-cookie
 - add config option "Videos Only" beneath "Require Episode Info" to only show items with at least one video quality
 - add auto-refresh of entire list at regular intervals to show new feed items
 - make the Favorites panel's Update button not close the panel after updating (same behavior as the Delete button)
@@ -87,8 +90,7 @@ All other files have functions that need improvement or rewrites or validation.
   - check to make sure that new decimal PV numbering system works throughout entire app
 
 - reduce use of global variables 
-  - $config_values['Global'] appears to be a crappy way of globally passing some data
-  - convert $config_values['Settings'] to a class
+  - $config_values['Global'] appears to be a crappy way of globally passing some data, maybe convert to $GLOBALS
   - $itemState  <--- IMPORTANT, as the use of global $itemState makes most of twxa_feed.php's functions hard to maintain
   - $html_out (can't use passing by value because performance suffers badly as $html_out gets very large, so use passing by reference)
   - $twxa_version
@@ -108,4 +110,4 @@ All other files have functions that need improvement or rewrites or validation.
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
 - sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version
-- switch from JQuery to ES6 (unlikely to happen for quite a while)
+- switch from JQuery to ES5 per youmightnotneedjquery.com

@@ -7,7 +7,9 @@ overflow:scroll
 }
 
 #topmenu {
-zoom:130%;
+/*zoom:130%;*/
+transform: scale(1.3);
+transform-origin: 0 0;
 height:29px
 }
 
@@ -82,7 +84,9 @@ margin-top:38px
 #torrentlist_container div.header,#torrentlist_container div.header td.feed_title span.matches {
 overflow:hidden;
 font-size:10px;
-zoom:120%
+/*zoom:120%;*/
+transform: scale(1.2);
+transform-origin: 0 0;
 }
 
 ul#torrentlist li.torrent {
@@ -120,7 +124,9 @@ padding:0 0 0 5px
 }
 
 #clientButtons li {
-zoom:120%
+/*zoom:120%;*/
+transform: scale(1.2);
+transform-origin: 0 0;
 }
 
 #clientButtons li.move_data input {
@@ -191,7 +197,9 @@ z-index:100
 #torrentlist_container div.header,#torrentlist_container div.header td.feed_title span.matches {
 height:16px;
 font-size:10px;
-zoom:120%
+/*zoom:120%;*/
+transform: scale(1.2);
+transform-origin: 0 0;
 }
 
 #clientButtons li.move_data input {

@@ -436,7 +436,7 @@ function process_all_feeds($feeds) {
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
         show_feed_list(0);
     }
-    setupCache();
+    setupDownloadCacheDir();
     foreach ($feeds as $key => $feed) {
         switch ($feed['Type']) {
             case 'RSS':

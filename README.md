@@ -28,11 +28,9 @@ Common setups:
 Status
 ===============
 
-I've posted 1.4.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-1.4.0 completely revamps the Configure > Feeds tab UI to make it much easier to add and update feeds.
-
-It also has new, optional From: Name and HELO Override settings on the Configure > Trigger tab. HELO Override can be used to fix HELO rejections on some SMTP servers.
+1.4.1 switches from the obsolete jQuery cookies plugin to js-cookie in order to set the sameSite property of the cookies to 'lax'. Without this change, future versions of Firefox browsers will reject the cookies, breaking parts of torrentwatch-xa's web UI.
 
 #### Still in Alpha
 

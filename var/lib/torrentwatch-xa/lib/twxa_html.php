@@ -29,7 +29,7 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
     if ($config_values['Settings']['Client'] !== "folder") {
         switch ($itemState) {
             case "st_inCache":
-            case "st_downloaded": // remove this if PHP side is capable of verifying completed downloads
+            case "st_downloaded": //TODO remove this if PHP side is capable of verifying completed downloads
             case "st_downloading":
             case "st_favReady":
                 $itemState = 'st_waitTorCheck';

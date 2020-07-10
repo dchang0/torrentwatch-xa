@@ -384,7 +384,7 @@ function detectpROPERrEPACK($ti) {
 }
 
 function detectMatch($ti) {
-    global $config_values; //TODO avoid using global
+    global $config_values; //TODO remove use of global
 
     $episGuess = "";
 

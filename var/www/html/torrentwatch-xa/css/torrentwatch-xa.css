@@ -858,7 +858,9 @@ div.dialog {
     top: 29px;
     bottom: 0;
     background: transparent;
-    zoom: 1;
+    /*zoom: 1;*/
+    transform: scale(1);
+    transform-origin: 0 0;
     background-color: #bbb;
     background-color: rgba(0, 0, 0, 0.7);
     cursor: wait;
@@ -1105,7 +1107,9 @@ div.legend input {
 
 .progress_full {
     background:transparent;
-    zoom: 1;
+    /*zoom: 1;*/
+    transform: scale(1);
+    transform-origin: 0 0;
     background-color: #000;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 99;
@@ -1424,7 +1428,7 @@ ul.favorite li {
     padding-left: 6px;
     padding-right: 3px;
     padding-bottom: 4px;
-    word-break: break-all; /* requires CSS3, otherwise breaks at space */
+    word-break: break-all;
     overflow: hidden;
     cursor: pointer;
     height: 20px;

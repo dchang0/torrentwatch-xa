@@ -735,6 +735,29 @@ Code Changes
 - removed commented-out code
 - replaced remaining "+ 0" with explicit (int) casts
 
+1.4.1
+
+Code Changes
+
+- removed commented-out code
+- upgraded jQuery from 3.3.1 to 3.5.1
+- upgraded jquery.cookie.js to js-cookie at https://github.com/js-cookie/js-cookie
+- changed sameSite from default of 'none' to 'lax' so cookies comply with Firefox browser security requirements
+- changed non-standard CSS zoom property to standard CSS transform and transform-origin properties
+- simplified selector in $.checkHiddenFeeds
+- renamed setupCache() to setupDownloadCacheDir() and improved it
+- renamed createConfigDir() to setupConfigCacheDir() and improved it
+- added chmod of config file to twxa_fav_import.php
+- commented out window.getFail logic
+- changed window.gotAllData from 0 or 1 to false or true
+- issued unique DOM ids to the hidden inputs named "idx" on the favinfo forms
+- started replacing jQuery with ES5
+  - .val()
+  - .hide()
+  - .show()
+- started using 'use strict'; in blocks of torrentwatch-xa.js
+- split torrentwatch-xa.js into smaller files and started moving functions into them
+
 Next Version
 
 Functional Changes
@@ -763,3 +786,4 @@ IN PROGRESS
 - continue validating and commenting torrentwatch-xa.js
 - continue cleaning up CSS with csslint.net
 - fix Quality filtering in check_for_torrent() before checking the download cache
+- adding a favorite from Nyaa feed (second in the feed list at the time) seems to end up with Feed = Nyaa rather than Feed = All

@@ -23,23 +23,33 @@ function add_history($ti) {
     }
 }
 
-function setupCache() {
+function setupDownloadCacheDir() {
     $downloadCacheDir = getDownloadCacheDir();
-    writeToLog("Enabling cache in: $downloadCacheDir\n", 2);
-    if (file_exists($downloadCacheDir)) { //TODO this might trigger even if file exists but permissions aren't right
+    writeToLog("Setting up Download Cache in: $downloadCacheDir\n", 2);
+    if (file_exists($downloadCacheDir)) {
         if (is_dir($downloadCacheDir)) {
             if (is_writeable($downloadCacheDir)) {
-                // cache is already set up
+                // Download Cache Dir is already set up
+                writeToLog("Config Cache Dir is already set up: $downloadCacheDir\n", 2);
+                return true;
             } else {
-                writeToLog("Download Cache Dir not writeable: $downloadCacheDir\n", -1);
+                writeToLog("Download Cache Dir exists but is not writeable, attempting to chmod it: $downloadCacheDir\n", -1);
+                return chmodPath($downloadCacheDir, 0775);
             }
         } else {
-            writeToLog("Download Cache Dir not a directory: $downloadCacheDir\n", -1);
+            writeToLog("Download Cache Dir exists but is not a directory: $downloadCacheDir\n", -1);
+            return false;
         }
     } else {
-        writeToLog("Download Cache Dir does not exist, creating: $downloadCacheDir\n", 2);
+        writeToLog("Download Cache Dir does not exist or does not have correct permissions, creating: $downloadCacheDir\n", 1);
         //TODO make sure $downloadCacheDir looks like a path
-        mkdir($downloadCacheDir, 0775, true);
+        if(mkdir($downloadCacheDir, 0775, true)) {
+            writeToLog("Successfully set up Download Cache Dir: $downloadCacheDir\n", 2);
+            return true;
+        } else {
+            writeToLog("Unable to create Download Cache Dir: $downloadCacheDir\n", -1);
+            return false;
+        }
     }
 }
 

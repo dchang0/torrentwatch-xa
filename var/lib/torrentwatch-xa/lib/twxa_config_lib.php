@@ -162,7 +162,6 @@ function readjSONConfigFile() {
     global $config_values;
 
     $configFile = getConfigFile();
-//    $configTempFile = $configFile . "_tmp";
     $configCacheFile = getConfigCacheFile();
 
     //writeToLog("Reading config file: $configFile\n", 2); // this line will fill the log file due to getClientData calls
@@ -178,16 +177,7 @@ function readjSONConfigFile() {
         $configFileExists = false;
         $configFileAge = -1;
     }
-//    // check for _tmp file
-//    if (file_exists($configTempFile)) {
-//        // config temp file exists, assume it is in the midst of a rename
-//        $configTempFileExists = true;
-//        $configTempFileAge = time() - filemtime($configTempFile);
-//    } else {
-//        // config temp file does not exist
-//        $configTempFileExists = false;
-//        $configTempFileAge = -1;
-//    }
+
     // check for config cache file
     if (file_exists($configCacheFile)) {
         // check whether config temp file or config cache file is newer and read that
@@ -212,13 +202,7 @@ function readjSONConfigFile() {
             $useWhich = "config";
         }
     } else {
-        /* if ($configTempFileExists) {
-          if ($configCacheFileExists && $configCacheFileAge <= $configTempFileAge) {
-          $useWhich = "cache";
-          } else {
-          $useWhich = "temp";
-          }
-          } else */ if ($configCacheFileExists) {
+        if ($configCacheFileExists) {
             $useWhich = "cacheToConfig";
         } else {
             // create new default config file
@@ -230,15 +214,6 @@ function readjSONConfigFile() {
     // get the config
     $return = false;
     switch ($useWhich) {
-//        case "temp":
-//            $config_values = json_decode(file_get_contents($configTempFile), true);
-//            //TODO handle errors--what if temp file doesn't contain useful settings?
-//            if (isset($config_values)) {
-//                $return = writejSONConfigFile() && writeConfigCacheFile($configCacheFile, $config_values);
-//            } else {
-//                writeToLog("Unable to read JSON config temp file: $configTempFile\n", -1);
-//            }
-//            break;
         case "cache":
             $config_values = unserialize(file_get_contents($configCacheFile));
             if ($config_values === false) {
@@ -305,7 +280,7 @@ function setpHPTimeZone($timezone) {
 }
 
 function get_client_passwd() {
-    global $config_values;
+    global $config_values; //TODO remove use of global
     return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['Transmission Password']));
 }
 
@@ -335,22 +310,52 @@ function set_smtp_passwd() {
     }
 }
 
-function createConfigDir() {
-    $dir = getConfigCacheDir();
-    if (!is_dir($dir)) {
-        writeToLog("Creating configuration directory: $dir\n", 1);
-        if (file_exists($dir)) {
-            unlink($dir);
-        }
-        if (mkdir($dir)) { //TODO cannot create dir without proper permissions of parent directory! Check it first with fileperms(parent directory)
-            if (chmod($dir, 0755)) {
+//function setupConfigCacheDir() {
+//    $dir = getConfigCacheDir();
+//    if (!is_dir($dir)) {
+//        writeToLog("Creating configuration directory: $dir\n", 1);
+//        if (file_exists($dir)) {
+//            unlink($dir);
+//        }
+//        if (mkdir($dir)) {
+//            if (chmod($dir, 0755)) {
+//                return true;
+//            } else {
+//                writeToLog("Unable to chmod config directory: $dir\n", -1);
+//                return false;
+//            }
+//        } else {
+//            writeToLog("Unable to create config directory: $dir\n", -1);
+//            return false;
+//        }
+//    }
+//}
+
+function setupConfigCacheDir() {
+    $configCacheDir = getConfigCacheDir();
+    writeToLog("Setting up Config Cache in: $configCacheDir\n", 2);
+    if (file_exists($configCacheDir)) {
+        if (is_dir($configCacheDir)) {
+            if (is_writeable($configCacheDir)) {
+                // Config Cache Dir is already set up
+                writeToLog("Config Cache Dir is already set up: $configCacheDir\n", 2);
                 return true;
             } else {
-                writeToLog("Unable to chmod config directory: $dir\n", -1);
-                return false;
+                writeToLog("Config Cache Dir exists but is not writeable, attempting to chmod it: $configCacheDir\n", -1);
+                return chmodPath($configCacheDir, 0775);
             }
         } else {
-            writeToLog("Unable to create config directory: $dir\n", -1);
+            writeToLog("Config Cache Dir exists but is not a directory: $configCacheDir\n", -1);
+            return false;
+        }
+    } else {
+        writeToLog("Config Cache Dir does not exist or does not have correct permissions, attempting to create: $configCacheDir\n", 1);
+        //TODO make sure $configCacheDir looks like a path
+        if (mkdir($configCacheDir, 0775, true)) {
+            writeToLog("Successfully set up Config Cache Dir: $configCacheDir\n", 2);
+            return true;
+        } else {
+            writeToLog("Unable to create Config Cache Dir: $configCacheDir\n", -1);
             return false;
         }
     }
@@ -358,7 +363,6 @@ function createConfigDir() {
 
 function writejSONConfigFile() {
     global $config_values; //TODO remove use of global
-    // replacement for old write_config_file() that avoids array_walk callbacks and recursion and uses PHP's JSON format
 
     $configFile = getConfigFile();
     $configTempFile = $configFile . "_tmp";
@@ -372,7 +376,7 @@ function writejSONConfigFile() {
     $configOut = $config_values;
     unset($configOut['Global']);
 
-    createConfigDir();
+    setupConfigCacheDir();
 
     $configjSON = json_encode($configOut, JSON_PRETTY_PRINT);
     if ($configjSON !== false) {
@@ -483,9 +487,7 @@ function update_favorite() { //TODO seems to break Add to Favorites javascript i
     }
     if (isset($response)) {
         return $response;
-    } /* else {
-      return;
-      } */
+    }
 }
 
 function addHidden($name) {
@@ -563,7 +565,6 @@ function add_favorite() {
     foreach ($list as $key => $data) {
         if (isset($_GET[$key])) {
             $config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
-            //TODO if still occurring, prevent problematic data from corrupting Favorites stanzas
         } else {
             $config_values['Favorites'][$idx][$data] = "";
         }

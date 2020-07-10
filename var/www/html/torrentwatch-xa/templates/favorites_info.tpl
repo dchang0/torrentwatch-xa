@@ -2,9 +2,9 @@
       <?php print("class=\"favinfo\" id=\"favorite_" . $key . "\" ");
       if(isset($style)) {
       echo $style;
-      }
-      echo ">"; ?>
-      <input type="hidden" name="idx" id="idx" value="<?php echo $key; ?>">
+      }?>>
+    <!--<input type="hidden" name="idx" id="idx" value="<?php echo $key; ?>">-->
+    <input type="hidden" name="idx" id="<?php echo 'idx_' . $key; ?>" value="<?php echo $key; ?>">
     <div class="favorite_name">
         <div class="left">
             <label class="item" title="Name of the Favorite">Name:</label>
@@ -74,11 +74,11 @@
     </div>
     <div class="favorite_seed_and_episode">
         <div class="left" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="display: none"'; } ?>>
-             <label class="seedratio item" title="Set maximum seed ratio till automatic pause (-1 = unlimited seeding till manually stopped)">Seed Ratio:</label>
+            <label class="seedratio item" title="Set maximum seed ratio till automatic pause (-1 = unlimited seeding till manually stopped)">Seed Ratio:</label>
         </div>
         <div class="right">
             <input type="text" class="seedratio text" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="display: none"'; } ?> name="seedratio" value="<?php echo getArrayValueByKey($item, 'seedRatio'); ?>">
-                   <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="padding-left: 137px"'; } ?>>Last Downloaded:</label>
+            <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="padding-left: 137px"'; } ?>>Last Downloaded:</label>
             <?php if(isset($item['Episode']) && $item['Season'] !== 0 && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
             <input class='lastSeason text' type="text" name="season" value="<?php echo $item['Season']; ?>">
             <label class="lastEpisode item">x</label>

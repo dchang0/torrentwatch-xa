@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.4.0";
+$twxa_version[0] = "1.4.1";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -505,14 +505,7 @@ function checkFilesAndDirs() {
     $saveTorrentsDir = $config_values['Settings']['Save Torrents Dir'];
 
     // only check DownloadDir if it is local and client is folder
-    if (
-            $config_values['Settings']['Client'] === "folder" /* ||
-      (
-      $config_values['Settings']['Client'] === "Transmission" &&
-      preg_match('/(localhost|127\.0\.0\.1)/', $config_values['Settings']['Transmission Host']
-      )
-      ) */
-    ) {
+    if ($config_values['Settings']['Client'] === "folder") {
         $checkLocalDownloadDir = true;
     } else {
         $checkLocalDownloadDir = false;
