@@ -44,7 +44,6 @@ All other files have functions that need improvement or rewrites or validation.
 - widen Seed Ratio textbox in Favorite to handle three-digit ratios like 0.15
 - with the episode filter it also ignores all the batches regardless of the setting to ignore batches
 - fix debug console in web UI
-- when using Add to Favorites on many different titles, added items correctly turn orange for Favorite Ready, but Refresh button does not cause complete browser reload, which means the items stay orange instead of turning yellow for Waiting and then gaining progress bars. This does not seem to happen when just one to a few titles are added to favorites--it might be a timeout issue on the refresh.
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - improve handling of "Feed inaccessible" (usually 403 or 404 errors on the feed URL)
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
@@ -53,6 +52,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- move checks for DownloadCacheDir and ConfigCacheDir in torrentwatch-xa till after attempt to create them if they are missing so that the error does not show in the web UI
 - use 'use strict'; to clean up blocks of code in torrentwatch-xa.js starting from smaller blocks to larger
 - consolidate/simplify code in displayFilter's switch-case block
 - possibly allow user to un-Favorite or un-Hide items via contextual menu

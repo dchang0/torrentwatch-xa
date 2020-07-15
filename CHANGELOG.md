@@ -781,9 +781,8 @@ IN PROGRESS
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
 - add function that detects errors in $config_values
-- figure out window.gotAllData and window.getFail logic, maybe merge window.gotAllData into window.updatingClientData or remove one
+- figure out window.gotAllData logic, maybe merge window.gotAllData into window.updatingClientData or remove one
   - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
-- continue validating and commenting torrentwatch-xa.js
 - continue cleaning up CSS with csslint.net
 - fix Quality filtering in check_for_torrent() before checking the download cache
 - adding a favorite from Nyaa feed (second in the feed list at the time) seems to end up with Feed = Nyaa rather than Feed = All
