@@ -1143,7 +1143,7 @@ $(document).ready(function () { // first binding to document ready
                         }, false);
                     }
                 });
-                setTimeout(getClientData, 10); //TODO could be this timeout breaking reload after adding many faves, which one calls client_add_torrent()?
+                setTimeout(getClientData, 10);
                 var initGetData = setInterval(function () {
                     if (window.gotAllData) {
                         clearInterval(initGetData);
@@ -1157,12 +1157,12 @@ $(document).ready(function () { // first binding to document ready
                             window.getDataLoop = setInterval(getClientData, 5000); //TODO lowering this value causes getClientData to update the active torrents in the filters other than Transmission faster after a browser refresh
                         }
                     } else {
-                        setTimeout(getClientData, 10); //TODO could be this timeout breaking reload after adding many faves, which one calls client_add_torrent()?
+                        setTimeout(getClientData, 10);
                     }
-                }, 500); //TODO could be this timeout breaking reload after adding many faves, which one calls client_add_torrent()?
+                }, 500);
                 window.client = $('#clientId').html();
                 changeClient(window.client);
-            }, 50); //TODO could be this timeout breaking reload after adding many faves, which one calls client_add_torrent()?
+            }, 50);
             if ($('#torrentlist_container div.header.combined').length === 1) {
                 $('.torrentlist>li').tsort('#unixTime', {order: 'desc'});
             }
@@ -1182,7 +1182,7 @@ $(document).ready(function () { // first binding to document ready
                     });
                 }
             }, 1000);
-        }, 100); //TODO could be this timeout breaking reload after adding many faves, which one calls client_add_torrent()?
+        }, 100);
     };
     $.submitForm = function (button) {
         'use strict';
@@ -1194,7 +1194,7 @@ $(document).ready(function () { // first binding to document ready
         } else {
             form = $(button).closest("form");
         }
-        if (button.id === "Delete") { //TODO for some reason this line is reached when clicking the Paypal donate button, seems to be event bound to Paypal form
+        if (button.id === "Delete") { //TODO for some reason this line is reached when clicking the Paypal donate button, seems to be an event bound to Paypal form
             $.get(form.get(0).action, form.buildDataString(button));
             if (button.href.match(/#favorite/)) {
                 var id = button.href.match(/#favorite_(\d+)/)[1];

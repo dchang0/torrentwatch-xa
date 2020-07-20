@@ -142,6 +142,5 @@ $(document).ready(function () {
         }, 500);
     });
     // set timeout for all Ajax queries
-    //TODO check if this fixes the multiple Add to Favorites = orange
-    $.ajaxSetup({timeout: '60000'}); // was 20000
+    $.ajaxSetup({timeout: '100000'}); // if adding many favorites and clicking the Refresh button times out, increase this value
 });
