@@ -32,7 +32,9 @@ I've posted 1.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 1.4.1 switches from the obsolete jQuery cookies plugin to js-cookie in order to set the sameSite property of the cookies to 'lax'. Without this change, future versions of Firefox browsers will reject the cookies, breaking parts of torrentwatch-xa's web UI.
 
-10/1/2020: Today's a sad day: HorribleSubs has shut down due to COVID-19 cutting into the time they could volunteer. Godspeed HorribleSubs, and thanks for over a decade of awesome anime fansubs! Thus, HorribleSubs has been removed from the default feeds. If they return, they'll be gladly added back.
+10/1/2020: Today's a sad day: HorribleSubs has shut down due to COVID-19 cutting into the time they could volunteer, so they been removed from the default feeds. If they return, they'll be gladly and gratefully added back.
+
+__Godspeed HorribleSubs, and thanks for over a decade of awesome anime fansubs!__
 
 #### Still in Alpha
 
