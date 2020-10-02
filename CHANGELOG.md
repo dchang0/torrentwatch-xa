@@ -757,6 +757,7 @@ Code Changes
   - .show()
 - started using 'use strict'; in blocks of torrentwatch-xa.js
 - split torrentwatch-xa.js into smaller files and started moving functions into them
+- removed HorribleSubs Latest RSS from default feeds
 
 Next Version
 

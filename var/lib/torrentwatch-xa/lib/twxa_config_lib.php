@@ -111,41 +111,34 @@ function writeDefaultConfigFile() {
     // set defaults for the Feeds section
     $config_values['Feeds'] = [
         0 => [
-            'Link' => 'http://horriblesubs.info/rss.php?res=all',
-            'Type' => 'RSS',
-            'seedRatio' => "",
-            'enabled' => 1,
-            'Name' => 'HorribleSubs Latest RSS'
-        ],
-        1 => [
             'Link' => 'https://nyaa.si/?page=rss',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'Nyaa Torrent File RSS'
         ],
-        2 => [
+        1 => [
             'Link' => 'https://eztv.io/ezrss.xml',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'TV Torrents RSS feed - EZTV'
         ],
-        3 => [
+        2 => [
             'Link' => 'http://tokyotosho.info/rss.php?filter=1',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'TokyoTosho.info Anime'
         ],
-        4 => [
+        3 => [
             'Link' => 'https://anidex.info/rss/cat/0',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 0,
             'Name' => 'AniDex'
         ],
-        5 => [
+        4 => [
             'Link' => 'https://www.acgnx.se/rss.xml',
             'Type' => 'RSS',
             'seedRatio' => "",
@@ -309,27 +302,6 @@ function set_smtp_passwd() {
         }
     }
 }
-
-//function setupConfigCacheDir() {
-//    $dir = getConfigCacheDir();
-//    if (!is_dir($dir)) {
-//        writeToLog("Creating configuration directory: $dir\n", 1);
-//        if (file_exists($dir)) {
-//            unlink($dir);
-//        }
-//        if (mkdir($dir)) {
-//            if (chmod($dir, 0755)) {
-//                return true;
-//            } else {
-//                writeToLog("Unable to chmod config directory: $dir\n", -1);
-//                return false;
-//            }
-//        } else {
-//            writeToLog("Unable to create config directory: $dir\n", -1);
-//            return false;
-//        }
-//    }
-//}
 
 function setupConfigCacheDir() {
     $configCacheDir = getConfigCacheDir();
