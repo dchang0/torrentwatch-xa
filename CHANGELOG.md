@@ -776,6 +776,8 @@ IN PROGRESS
 
 Code Changes
 
+- tested Atom feed from AnimeTosho and fixed some minor bugs
+
 IN PROGRESS
 
 - clicking Test button with blank/default SMTP settings failed (clicking Test only worked after the Save, but it should work before the Save)

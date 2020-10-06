@@ -21,6 +21,7 @@ From the official repos:
 - libapache2-mod-php (libapache2-mod-php7.0)
 - php (php7.0)
 - php-curl (php7.0-curl)
+- php-xml
 
 ### Ubuntu 18.04
 
@@ -32,6 +33,7 @@ From the official repos:
 - libapache2-mod-php (libapache2-mod-php7.2)
 - php (php7.2)
 - php-curl (php7.2-curl)
+- php-xml
 
 ### Fedora Server 25 (Not officially supported at this time, but the instructions below do work.)
 
@@ -41,6 +43,7 @@ From the official repos:
 - php
 - php-mbstring
 - php-process
+- php-xml
 
 Security
 ===============
@@ -83,7 +86,7 @@ Manual Installation
   - Start with a Debian 9.x or Ubuntu 16.04/18.04 installation.
   - If your OS is not up to date, update it now.
     - `sudo apt-get update; sudo apt-get upgrade`
-  - `sudo apt-get install apache2 php php-mbstring php-curl libapache2-mod-php transmission-daemon git`
+  - `sudo apt-get install apache2 php php-mbstring php-curl php-xml libapache2-mod-php transmission-daemon git`
 - Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `git clone https://github.com/dchang0/torrentwatch-xa.git`
