@@ -21,7 +21,7 @@ From the official repos:
 - libapache2-mod-php (libapache2-mod-php7.0)
 - php (php7.0)
 - php-curl (php7.0-curl)
-- php-xml
+- php-xml (php7.0-xml)
 
 ### Ubuntu 18.04
 
@@ -33,7 +33,7 @@ From the official repos:
 - libapache2-mod-php (libapache2-mod-php7.2)
 - php (php7.2)
 - php-curl (php7.2-curl)
-- php-xml
+- php-xml (php7.2-xml)
 
 ### Fedora Server 25 (Not officially supported at this time, but the instructions below do work.)
 
