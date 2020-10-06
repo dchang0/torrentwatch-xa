@@ -36,14 +36,12 @@ I've posted 1.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 __Godspeed HorribleSubs, and thanks for over a decade of awesome anime fansubs!__
 
+10/6/2020: I have finally found an Atom torrent feed at AnimeTosho.org and will be fixing the bugs it revealed. AnimeTosho will become one of the new default feeds when I am done.
+
 #### Still in Alpha
 
 - a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 - Fedora Server 25 is being tested and works fine but will not be officially supported for quite a while.
-
-#### Any Torrent Atom Feeds Out There?
-
-I'd like to finally test and bugfix the Atom feed capability of torrentwatch-xa. If anyone knows of a public Atom feed that contains torrents, please message me at dchang0 at Github or open an Issue. If it's got anime torrents, even better, as I can include it as a default feed. Thanks!
 
 Documentation
 ===============

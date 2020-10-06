@@ -778,6 +778,7 @@ Code Changes
 
 IN PROGRESS
 
+- clicking Test button with blank/default SMTP settings failed (clicking Test only worked after the Save, but it should work before the Save)
 - JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
 - move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
