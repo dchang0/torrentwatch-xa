@@ -33,7 +33,6 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
             case "st_downloading":
             case "st_favReady":
                 $itemState = 'st_waitTorCheck';
-                break;
         }
     }
 
