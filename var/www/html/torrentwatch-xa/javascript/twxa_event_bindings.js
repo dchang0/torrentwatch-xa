@@ -31,7 +31,6 @@ $(document).ready(function () {
                     break;
                 case 'filter_transmission':
                     displayFilter('transmission');
-                    break;
             }
         });
     });

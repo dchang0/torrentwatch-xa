@@ -59,7 +59,6 @@ switch ($itemState) {
         $torPause = "torPause hidden";
         $torDelete = "torDelete hidden";
         $torTrash = "torTrash hidden";
-        break;
 }
 
 $showTitle = $guess['favTitle'];

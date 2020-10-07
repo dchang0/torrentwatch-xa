@@ -129,7 +129,6 @@ $(document).ready(function () { // first binding to document ready
                     tor.markAlt().closest(".feed div.feed");
                     updateMatchCounts();
                 }, timeOut);
-                break;
         }
         if (showFilter) {
             // restart the timer window.filterInterval (so that Downloading and Downloaded can dynamically update faster)
@@ -577,7 +576,6 @@ $(document).ready(function () { // first binding to document ready
                             }
                             liClass = "tc_paused";
                             convertedEta = "Paused"; // override "Remaining: unknown"
-                            break;
                     }
                     // replace clientData if there's an error for this one torrent
                     if (item.errorString) {
@@ -657,7 +655,6 @@ $(document).ready(function () { // first binding to document ready
                                 if (!isNaN(downSpeed)) {
                                     downSpeed += item.rateDownload;
                                 }
-                                break;
                         }
                         // change match classes for legend and filtering
                         switch (item.status) {
@@ -888,7 +885,6 @@ $(document).ready(function () { // first binding to document ready
                     break;
                 case 'move':
                     buttons += "#clientButtons .move_button, #clientButtons #Move,";
-                    break;
             }
         }
         buttons = buttons.slice(0, buttons.length - 1);
@@ -1712,7 +1708,6 @@ $(document).ready(function () { // first binding to document ready
                                 clearInterval(hideInterval);
                             }
                         }, 100);
-                        break;
                 }
             }
         });
