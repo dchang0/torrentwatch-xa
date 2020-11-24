@@ -37,7 +37,6 @@ $(document).ready(function () { // first binding to document ready
         }
         // draw the item list based on selected filter/view
         clearInterval(window.filterInterval); // stop the timer window.filterInterval
-        //$.cookie('TWXAFILTER', filter, {expires: 666});
         window.Cookies.remove('TWXAFILTER', {sameSite: 'lax'});
         window.Cookies.set('TWXAFILTER', filter, {expires: 30, sameSite: 'lax', path: ''}); // store the selected filter in cookie to survive browser refresh
         window.activeFilter = filter; // store the selected filter for use in updateMatchCounts
@@ -139,7 +138,6 @@ $(document).ready(function () { // first binding to document ready
         setTimeout(updateClientButtons, timeOut); // update the clientButtons button bar in timeOut ms
         $.checkHiddenFeeds(1); // check the hidden (rolled-up) feeds
         $('#filter_' + filter).addClass('selected').siblings().removeClass("selected"); // this filter is selected, the others are deselected
-        //$('#filter_search_input').val(''); // clear the search input field
         document.querySelector('#filter_search_input').value = ''; // clear the search input field
     };
 //    // binding for Filter Bar buttons
@@ -1094,7 +1092,6 @@ $(document).ready(function () { // first binding to document ready
             dynamic.find("ul.favorite > li").initFavorites().end().find("form").initForm().end().initConfigDialog().appendTo("body");
             setTimeout(function () {
                 var container = $("#torrentlist_container");
-                //var filter = $.cookie('TWXAFILTER');
                 var filter = window.Cookies.get('TWXAFILTER');
                 window.activeFilter = filter;
                 $('li.torrent:not(.st_waitTorCheck) div.progressBarContainer').hide(); // hides progressBarContainer on all items but st_waitTorCheck
@@ -1164,7 +1161,6 @@ $(document).ready(function () { // first binding to document ready
             }
             setTimeout(function () {
                 'use strict';
-                //var versionCheck = $.cookie('VERSION-CHECK');
                 var versionCheck = window.Cookies.get('VERSION-CHECK');
                 if (versionCheck !== '1') {
                     $.get('torrentwatch-xa.php', {checkVersion: 1}, function (data) {
@@ -1172,7 +1168,6 @@ $(document).ready(function () { // first binding to document ready
                         setTimeout(function () {
                             $('#newVersion').slideUp().remove();
                         }, 15000);
-                        //$.cookie('VERSION-CHECK', '1', {expires: 7});
                         window.Cookies.remove('VERSION-CHECK', {sameSite: 'lax'});
                         window.Cookies.set('VERSION-CHECK', '1', {expires: 7, sameSite: 'lax', path: ''});
                     });
@@ -1422,7 +1417,6 @@ $(document).ready(function () { // first binding to document ready
     };
     $.delTorrent = function (torHash, trash, sure, checkCache) {
         'use strict';
-        //if (trash && sure !== true && sure !== 'true' && !$.cookie('TorTrash')) {
         if (trash && sure !== true && sure !== 'true' && window.Cookies.get('TorTrash') !== '1') {
             var dialog = '<div id="confirmTrash" class="dialog confirm" style="display: block; ">' +
                     '<div class="dialog_window" id="trash_tor_data"><div>Are you sure?<br />This will remove the torrent along with its data.</div>' +
@@ -1430,7 +1424,6 @@ $(document).ready(function () { // first binding to document ready
                     'onclick="$(\'#confirmTrash\').remove(); $.delTorrent(\'' + torHash + '\',\'true\', \'true\', \'false\');">Yes</a>' +
                     '<a class="button trash_tor_data wide" ' +
                     'onclick="$(\'#confirmTrash\').remove();' +
-                    //'$.cookie(\'TorTrash\', 1, { expires: 30 });' +
                     'window.Cookies.remove(\'TorTrash\');' +
                     'window.Cookies.set(\'TorTrash\', \'1\', {expires: 30, sameSite: \'lax\', path: \'\'});' +
                     '$.delTorrent(\'' + torHash + '\',\'true\', \'true\', \'false\');">' +
@@ -1554,32 +1547,26 @@ $(document).ready(function () { // first binding to document ready
     $.toggleFeed = function (feed, speed) {
         'use strict';
         if (speed === 1 || speed === '1') {
-            //if ($.cookie('feed_' + feed) === '1') { // was ==
             if (window.Cookies.get('feed_' + feed) === '1') { // was ==
                 $("#feed_" + feed + " ul").removeClass("hiddenFeed").show();
                 $("#feed_" + feed + " .header").removeClass("header_hidden");
-                //$.cookie('feed_' + feed, null, {expires: 666});
                 window.Cookies.remove('feed_' + feed, {sameSite: 'lax'});
                 window.Cookies.set('feed_' + feed, '0', {expires: 30, sameSite: 'lax', path: ''});
             } else {
                 $("#feed_" + feed + " ul").hide().addClass("hiddenFeed");
                 $("#feed_" + feed + " .header").addClass("header_hidden");
-                //$.cookie('feed_' + feed, 1, {expires: 666});
                 window.Cookies.remove('feed_' + feed, {sameSite: 'lax'});
                 window.Cookies.set('feed_' + feed, '1', {expires: 30, sameSite: 'lax', path: ''});
             }
         } else {
-            //if ($.cookie('feed_' + feed) === '1') { // was ==
             if (window.Cookies.get('feed_' + feed) === '1') { // was ==
                 $("#feed_" + feed + " ul").removeClass("hiddenFeed").slideDown();
                 $("#feed_" + feed + " .header").removeClass("header_hidden");
-                //$.cookie('feed_' + feed, null, {expires: 666});
                 window.Cookies.remove('feed_' + feed, {sameSite: 'lax'});
                 window.Cookies.set('feed_' + feed, '0', {expires: 30, sameSite: 'lax', path: ''});
             } else {
                 $("#feed_" + feed + " ul").slideUp().addClass("hiddenFeed");
                 $("#feed_" + feed + " .header").addClass("header_hidden");
-                //$.cookie('feed_' + feed, 1, {expires: 666});
                 window.Cookies.remove('feed_' + feed, {sameSite: 'lax'});
                 window.Cookies.set('feed_' + feed, '1', {expires: 30, sameSite: 'lax', path: ''});
             }
@@ -1588,16 +1575,12 @@ $(document).ready(function () { // first binding to document ready
     $.checkHiddenFeeds = function (speed) {
         'use strict';
         $.each($("#torrentlist_container .feed"), function () {
-            //if ($.cookie(this.id)) {
             if (window.Cookies.get(this.id) === '1') {
                 if (speed === 1) {
-                    //$("#feed_" + this.id.match(/feed_(\d)/)[1] + " ul").hide().addClass("hiddenFeed");
                     $("#" + this.id + " ul").hide().addClass("hiddenFeed");
                 } else {
-                    //$("#feed_" + this.id.match(/feed_(\d)/)[1] + " ul").slideUp().addClass("hiddenFeed");
                     $("#" + this.id + " ul").slideUp().addClass("hiddenFeed");
                 }
-                //$("#feed_" + this.id.match(/feed_(\d)/)[1] + " .header").addClass("header_hidden");
                 $("#" + this.id + " .header").addClass("header_hidden");
             }
         });

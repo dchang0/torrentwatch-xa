@@ -759,13 +759,30 @@ Code Changes
 - split torrentwatch-xa.js into smaller files and started moving functions into them
 - removed HorribleSubs Latest RSS from default feeds
 
+1.5.0
+
+Functional Changes
+
+- added AnimeTosho.org Atom feed to default feeds
+- added Anirena.com RSS feed to default feeds
+- changed EZTV domain in default feeds to EZTV.re
+
+Code Changes
+
+- switched Atom parser to aaronpk/picofeed
+  - replaced twxa_atomparser.php with twxa_feed_parser_wrapper.php
+  - added laminas-xml prerequisite for picofeed
+  - tested Atom feed from AnimeTosho.org for several weeks
+  - fixed bug in picofeed that hashes the event id, but the Atom specification requires this be an IRI
+  - deleted Rules from PicoFeed distribution
+- removed MKV, AVC, MP4, and AVI from Qualities since they are often found as file extensions
+
 Next Version
 
 Functional Changes
 
 IN PROGRESS
 
-- handle gzipped torrent file (using gzuncompress() if file contents are returned directly or gzopen() and gzread() if file is downloaded)
 - add PHP prerequisite check to twxa_cli.php
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
@@ -773,10 +790,9 @@ IN PROGRESS
 - Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
 - show alerts in web UI
+- change reload button so that it doesn't clear the Filter textbox OR add Lock checkbox to the filter
 
 Code Changes
-
-- tested Atom feed from AnimeTosho and fixed some minor bugs
 
 IN PROGRESS
 

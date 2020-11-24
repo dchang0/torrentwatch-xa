@@ -2,11 +2,12 @@
 
 global $config_values;
 
-// PHP JSON, PHP cURL, and PHP mbstring support are assumed to be installed
+// Prerequisite PHP JSON, PHP cURL, PHP XML, and PHP mbstring packages are assumed to be installed.
 
 require_once("twxa_config_lib.php");
 require_once("twxa_lastRSS.php");
-require_once("twxa_atomparser.php");
+//require_once("twxa_atomparser.php");
+require_once("twxa_feed_parser_wrapper.php");
 require_once("class.bdecode.php");
 require_once("class.phpmailer.php");
 require_once("class.smtp.php"); // keep paired with require_once("class.phpmailer.php")
@@ -31,60 +32,6 @@ function multi_str_search($haystack, $needles) {
         }
     }
     return false;
-}
-
-// used to lower case all the keys in an array.
-// From http://us.php.net/manual/en/function.array-change-key-case.php
-define('ARRAY_KEY_FC_LOWERCASE', 25); //FOO => fOO
-define('ARRAY_KEY_FC_UPPERCASE', 20); //foo => Foo
-define('ARRAY_KEY_UPPERCASE', 15); //foo => FOO
-define('ARRAY_KEY_LOWERCASE', 10); //FOO => foo
-define('ARRAY_KEY_USE_MULTIBYTE', true); //use mutlibyte functions
-
-/**
- * change the case of array-keys
- *
- * use: array_change_key_case_ext(array('foo' => 1, 'bar' => 2), ARRAY_KEY_UPPERCASE);
- * result: array('FOO' => 1, 'BAR' => 2)
- *
- * @param    array
- * @param    int
- * @return     array
- */
-function array_change_key_case_ext($array, $case = ARRAY_KEY_LOWERCASE) {
-    $newArray = [];
-    //for more speed define the runtime created functions in the global namespace
-    //get function
-    $function = 'strToUpper'; //default
-    switch ($case) {
-        //first-char-to-lowercase
-        case 25:
-            //maybe lcfirst is not callable
-            if (!function_exists('lcfirst')) {
-                $function = create_function('$input', 'return strToLower($input[0]) . substr($input, 1, (strLen($input) - 1));');
-            } else {
-                $function = 'lcfirst';
-            }
-            break;
-        //first-char-to-uppercase
-        case 20:
-            $function = 'ucfirst';
-            break;
-        //lowercase
-        case 10:
-            $function = 'strToLower';
-    }
-    //loop array
-    foreach ($array as $key => $value) {
-        if (is_array($value)) { //$value is an array, handle keys too
-            $newArray[$function($key)] = array_change_key_case_ext($value, $case);
-        } elseif (is_string($key)) {
-            $newArray[$function($key)] = $value;
-        } else {
-            $newArray[$key] = $value; //$key is not a string
-        }
-    } //end loop
-    return $newArray;
 }
 
 function getcURLDefaults(&$curlOptions) {
@@ -162,7 +109,7 @@ function notifyByEmail($body, $subject) {
     $hELOOverride = $config_values['Settings']['HELO Override'];
 
     $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
-    writeToLog($output['message'], $output['rc'], 2);
+    writeToLog($output['message'], $output['rc'] . "\n", 2);
 }
 
 function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body) {

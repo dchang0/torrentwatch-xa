@@ -5,7 +5,6 @@ TODO List
 
 These files have been completely validated (no functions inside them need improvement):
 
-- twxa_atomparser.php
 - twxa_cache.php
 - twxa_html.php
 - twxa_lastRSS.php
@@ -24,11 +23,10 @@ All other files have functions that need improvement or rewrites or validation.
 ## Testing tasks
 
 - what is the purpose of getClient()'s `clientId`, `clientId_`, and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
-- test the Atom-related functions and conform them to their equivalent RSS functions if necessary
 
 ## Code cleanup tasks
 
-- fix collision between ul#torrentlist and ul.torrentlist in phone.css
+- fix collision between ul#torrentlist and ul.torrentlist in phone.css and twxa_html.php
 - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
 - move $items assignment from inside process_feed() up to process_all_feeds()
 - break client_add_torrent() into smaller functions
@@ -39,6 +37,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Bugfixes
 
+- Apostrophe in Erai-raws King's Raid causes match to not show in the web UI, though it doesn't seem to stop the favorite from matching for downloads
 - if torrent item is removed from another browser session, this browser doesn't figure it out
 - _Save torrent in folder_ client works but progress bar goes into st_downloading when it should not
 - widen Seed Ratio textbox in Favorite to handle three-digit ratios like 0.15
@@ -52,13 +51,13 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- enable PicoFeed HTTP basic authentication functionality
 - move checks for DownloadCacheDir and ConfigCacheDir in torrentwatch-xa till after attempt to create them if they are missing so that the error does not show in the web UI
 - use 'use strict'; to clean up blocks of code in torrentwatch-xa.js starting from smaller blocks to larger
 - consolidate/simplify code in displayFilter's switch-case block
 - possibly allow user to un-Favorite or un-Hide items via contextual menu
 - implement Ignore Batches feature per Favorite as well as globally
 - Clear Cache dialog closes automatically after any button is pressed; change this to Javascript with AJAX
-- remove uninitialized variables in twxa_atomparser.php
 - store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by one or all of the below:
@@ -97,6 +96,8 @@ All other files have functions that need improvement or rewrites or validation.
 
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design
 - add ability to gunzip torrents coming from some feeds (such as ezRSS.it)
+  - handle gzipped torrent file (using gzuncompress() if file contents are returned directly or gzopen() and gzread() if file is downloaded)
+  - probably added to client_add_torrent(), check_for_torrent(), get_torrent_link(), and/or choose_torrent_link()
 - allow user to clear individual items from the cache
 - allow user to easily mark a torrent as the most recent episode downloaded in that season or in every season
 - auto-delete old episodes that are replaced by REPACK or PROPER

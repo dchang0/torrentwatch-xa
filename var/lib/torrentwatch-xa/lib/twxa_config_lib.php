@@ -118,27 +118,41 @@ function writeDefaultConfigFile() {
             'Name' => 'Nyaa Torrent File RSS'
         ],
         1 => [
-            'Link' => 'https://eztv.io/ezrss.xml',
+            'Link' => 'https://eztv.re/ezrss.xml',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'TV Torrents RSS feed - EZTV'
         ],
         2 => [
-            'Link' => 'http://tokyotosho.info/rss.php?filter=1',
+            'Link' => 'https://feed.animetosho.org/atom',
+            'Type' => 'Atom',
+            'seedRatio' => "",
+            'enabled' => 1,
+            'Name' => 'AnimeTosho.org Atom'
+        ],
+        3 => [
+            'Link' => 'https://www.anirena.com/rss.php',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
+            'Name' => 'Anirena'
+        ],
+        4 => [
+            'Link' => 'http://tokyotosho.info/rss.php?filter=1',
+            'Type' => 'RSS',
+            'seedRatio' => "",
+            'enabled' => 0,
             'Name' => 'TokyoTosho.info Anime'
         ],
-        3 => [
+        5 => [
             'Link' => 'https://anidex.info/rss/cat/0',
             'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 0,
             'Name' => 'AniDex'
         ],
-        4 => [
+        6 => [
             'Link' => 'https://www.acgnx.se/rss.xml',
             'Type' => 'RSS',
             'seedRatio' => "",
@@ -455,7 +469,6 @@ function update_favorite() { //TODO seems to break Add to Favorites javascript i
             break;
         case 'Delete':
             deleteFavorite();
-            break;
     }
     if (isset($response)) {
         return $response;

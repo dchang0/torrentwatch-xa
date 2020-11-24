@@ -11,7 +11,7 @@ As a fork of TorrentWatch-X, torrentwatch-xa handles Western live-action show ti
 
 To auto-download Favorite torrents, torrentwatch-xa controls a local __or remote__ Transmission BitTorrent client via Transmission RPC __and/or__ saves .torrent files or magnet links as files locally. The latter allows the use of __any__ BitTorrent client (not just Transmission) that can watch directories for .torrent files or magnet links to automatically start those torrents.
 
-torrentwatch-xa runs on an Apache 2.4.x webserver with PHP 5.6.0alpha3&sup1; or higher and the prerequisite PHP packages listed in the installation instructions. It works out-of-the-box on any up-to-date instance of Debian 8.x, Ubuntu 14.04/16.04/18.04.x on any architecture, and it can be made to work on current versions of RedHat, Fedora, or CentOS LINUX by installing the RPM package equivalents of the prerequisite PHP .deb packages and adjusting the firewall and SELINUX restrictions. RedHat distros are not officially supported at this time.
+torrentwatch-xa runs on an Apache 2.4.x webserver with PHP 5.6.0alpha3&sup1; or higher and the prerequisite PHP packages listed in the installation instructions. It works out-of-the-box on any up-to-date instance of Debian 8.x and up, Ubuntu 14.04 and up on any architecture, and it can be made to work on current versions of RedHat, Fedora, or CentOS LINUX by installing the RPM package equivalents of the prerequisite PHP .deb packages and adjusting the firewall and SELINUX restrictions. RedHat distros are not officially supported at this time.
 
 torrentwatch-xa is extremely lightweight and can run decently on even a $5 Raspberry Pi Zero&sup2;. The web UI works on any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
 
@@ -28,20 +28,22 @@ Common setups:
 Status
 ===============
 
-I've posted 1.4.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.5.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-1.4.1 switches from the obsolete jQuery cookies plugin to js-cookie in order to set the sameSite property of the cookies to 'lax'. Without this change, future versions of Firefox browsers will reject the cookies, breaking parts of torrentwatch-xa's web UI.
+After learning about AnimeTosho.org from a post on HorribleSubs.info's farewell thread, I eagerly tested the first anime Atom feed I have encountered so far. Sadly, I ran into some difficult bugs in the AtomParser class cloned from TorrentWatch-X, and I attempted to rewrite twxa_atomparser.php from scratch. That was too tedious, so I searched for and found a respected RSS and Atom feed parser called PicoFeed inside the abandoned Miniflux V1 reader at https://github.com/miniflux/v1 and incorporated it (and its prerequisite Laminas-XML) into torrentwatch-xa 1.5.0.
 
-10/1/2020: Today's a sad day: HorribleSubs has shut down due to COVID-19 cutting into the time they could volunteer, so they been removed from the default feeds. If they return, they'll be gladly and gratefully added back.
+I fixed a couple of bugs in PicoFeed/Parser/Atom.php to make it work and will be maintaining a fork of picofeed within torrentwatch-xa. It will be worth the effort because the Atom and RSS feed parsing can be unified into a single PicoFeed wrapper.
 
-__Godspeed HorribleSubs, and thanks for over a decade of awesome anime fansubs!__
+twxa_feed_parser_wrapper.php was added in 1.5.0. It currently only supports the Atom feeds; RSS feeds will be rolled into the wrapper in a future version. atomcache_ feed cache files have been renamed to feedcache_ to prepare for this eventual unification.
 
-10/6/2020: I have finally found an Atom torrent feed at AnimeTosho.org and will be fixing the bugs it revealed. AnimeTosho will become one of the new default feeds when I am done.
+There will likely be plenty of bugs due to the switch to PicoFeed. Please report any bugs using Github Issues.
+
+EZTV's domain name has been updated in the default feeds, and AnimeTosho.org and Anirena.com were added as new default feeds.
 
 #### Still in Alpha
 
 - a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
-- Fedora Server 25 is being tested and works fine but will not be officially supported for quite a while.
+- Fedora Server is being tested and works fine but will not be officially supported for quite a while.
 
 Documentation
 ===============
