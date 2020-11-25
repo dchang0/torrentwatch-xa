@@ -23,7 +23,7 @@ Common setups:
 
 &sup1; PHP 5.6.0alpha3 is really only required by PHPMailer's SMTP 5.2.23 library to support TLS 1.1 and 1.2. torrentwatch-xa itself only requires PHP 5.4.0. If you are not using email triggers with TLS 1.1 or 1.2, you should be able to avoid this version requirement by downgrading PHPMailer's SMTP library.
 
-&sup2; It takes around 18 seconds for the web UI to process all six default feeds with 32 favorites, as compared to around 5 seconds on an ODROID C1+.
+&sup2; Using Raspberry Pi OS Lite (no desktop GUI), it takes around 18 seconds for the web UI to process six feeds with 32 favorites, as compared to around 5 seconds on an ODROID C1+.
 
 Status
 ===============

@@ -51,6 +51,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- handle multibyte numerals when detecting season and episode
 - enable PicoFeed HTTP basic authentication functionality
 - move checks for DownloadCacheDir and ConfigCacheDir in torrentwatch-xa till after attempt to create them if they are missing so that the error does not show in the web UI
 - use 'use strict'; to clean up blocks of code in torrentwatch-xa.js starting from smaller blocks to larger
