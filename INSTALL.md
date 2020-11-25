@@ -10,30 +10,19 @@ From the official repos:
 - php5 (PHP 5.6.0alpha3 or higher)
 - php5-json
 - php5-curl
+- php5-xml
 
-### Ubuntu 16.04 and Debian 9.x (stretch)
-
-From the official repos:
-
-- transmission-daemon
-- apache2
-- php-mbstring (php7.0-mbstring)
-- libapache2-mod-php (libapache2-mod-php7.0)
-- php (php7.0)
-- php-curl (php7.0-curl)
-- php-xml (php7.0-xml)
-
-### Ubuntu 18.04
+### Debian 9.x and up, Ubuntu 16.04 and up
 
 From the official repos:
 
 - transmission-daemon
 - apache2
-- php-mbstring (php7.2-mbstring)
-- libapache2-mod-php (libapache2-mod-php7.2)
-- php (php7.2)
-- php-curl (php7.2-curl)
-- php-xml (php7.2-xml)
+- php-mbstring
+- libapache2-mod-php
+- php
+- php-curl
+- php-xml
 
 ### Fedora Server 25 (Not officially supported at this time, but the instructions below do work.)
 
