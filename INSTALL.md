@@ -1,7 +1,7 @@
 Prerequisites
 ===============
 
-### Ubuntu 14.04 and Debian 8.x (jessie) (No longer supported, but they do work and probably will for quite a while.)
+### Ubuntu 14.04 and Debian 8.x (No longer supported, but they do work and probably will for quite a while.)
 
 From the official repos:
 
@@ -42,7 +42,7 @@ torrentwatch-xa handles two passwords: one for Transmission and one for SMTP. If
 Installation Script
 ===============
 
-There is a rudimentary install/upgrade script called `install_twxa.sh` compatible with Debian 8.x/9.x (but not Debian 7.x), Ubuntu 14.04/16.04/18.04, and Fedora Server 25.
+There is a rudimentary install/upgrade script called `install_twxa.sh` compatible with Debian 8.x and up (but not Debian 7.x), Ubuntu 14.04 and up, and Fedora Server 25.
 
 The install/upgrade script will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. It does not install any prerequisite packages for you, nor does it configure or start/restart the Apache2 webserver. See Manual Installation below for those steps.
 
@@ -66,13 +66,11 @@ The script will back up the config file if it sees one even if `--keep-config` i
 Manual Installation
 ===============
 
-### Ubuntu 14.04/16.04/18.04, Debian 8.x/9.x only:
+### Ubuntu and Debian only:
 
 - For Ubuntu 14.04 or Debian 8.x:
-  - Start with a Debian 8.x or Ubuntu 14.04 installation.
   - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon git`
-- For Ubuntu 16.04/18.04 or Debian 9.x:
-  - Start with a Debian 9.x or Ubuntu 16.04/18.04 installation.
+- For Ubuntu 16.04 and up or Debian 9.x and up:
   - If your OS is not up to date, update it now.
     - `sudo apt-get update; sudo apt-get upgrade`
   - `sudo apt-get install apache2 php php-mbstring php-curl php-xml libapache2-mod-php transmission-daemon git`
@@ -139,7 +137,7 @@ __RedHat-derived distros are not officially supported at this time__ though the 
 - Use the Configure > Client panel to set up the Transmission connection.
   - The Configure > Client > Download Dir setting needs to be a path that Transmission can reach and write to. If your Transmission daemon is running on a remote host, be aware that the Download Dir setting refers to a path on the remote host, not on the local host where torrentwatch-xa is running.
   - It may be necessary to restart Transmission to get torrentwatch-xa to connect.
-    - For Ubuntu 14.04/16.04/18.04, or Debian 8.x:
+    - For Ubuntu or Debian:
       - `sudo service transmission-daemon restart`
   - It may also be necessary to reconfigure Transmission (not described here) to get it to work.
   - Fedora may require additional SELINUX configuration to allow httpd to contact Transmission.
@@ -155,4 +153,3 @@ __RedHat-derived distros are not officially supported at this time__ though the 
     - Then, empty all caches and refresh the browser to trigger the match and start the download.
 - Wait for some downloads to happen automatically or start some manually.
 - Enjoy your downloaded torrents!
-
