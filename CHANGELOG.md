@@ -776,6 +776,7 @@ Code Changes
   - fixed bug in picofeed that hashes the event id, but the Atom specification requires this be an IRI
   - deleted Rules from PicoFeed distribution
 - removed MKV, AVC, MP4, and AVI from Qualities since they are often found as file extensions
+- added NVENC, HEVC-265, HEVC 265, and HEVC265 as codecs
 
 Next Version
 
