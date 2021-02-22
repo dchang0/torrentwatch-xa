@@ -1504,7 +1504,7 @@ $(document).ready(function () { // first binding to document ready
     };
     $.moveTorrent = function (torHash) {
         'use strict';
-        path = $('input#moveTo')[0].value;
+        var path = $('#moveTo').val();
         $.getJSON('torrentwatch-xa.php', {
             'moveTo': path,
             'torHash': torHash
