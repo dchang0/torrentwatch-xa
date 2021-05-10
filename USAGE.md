@@ -74,15 +74,15 @@ The Episodes filter currently in each Favorite is still the old TorrentWatch-X f
 
 ### RegExp Matching Style vs. Simple vs. Glob
 
-The Filter, Not, and Qualities fields in each Favorite behave differently in RegExp Matching Style than in Simple or Glob.
+The Filter, Not, and Qualities fields in each Favorite behave differently depending on the matching style: Simple, Glob, or RegExp.
+
+Note that for all string comparisons in any matching style, the strings are converted to all-lowercase using the PHP strtolower() function to make the matches case-insensitive.
 
 Simple: Uses the PHP strpos() function to compare strings. Matches must be exact alphanumeric matches with no wildcards.
 
 Glob: Named after the PHP glob() function. Uses the PHP fnmatch() function to compare strings. Allows simple wildcards allowed in filename comparisons in a LINUX shell such as * and ? and square brackets.
 
-RegExp: Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching. RegExp is the default matching style.
-
-Note that for all string comparisons, the strings are converted to all-lowercase using the PHP strtolower() function to make the matches case-insensitive.
+RegExp: Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching and wildcards. RegExp is the default matching style. You must use RegExp matching style for multibyte strings.
 
 ### Authentication for Private RSS Feeds
 

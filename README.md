@@ -36,13 +36,13 @@ I fixed a couple of bugs in PicoFeed/Parser/Atom.php to make it work and will be
 
 twxa_feed_parser_wrapper.php was added in 1.5.0. It currently only supports the Atom feeds; RSS feeds will be rolled into the wrapper in a future version. atomcache_ feed cache files have been renamed to feedcache_ to prepare for this eventual unification.
 
-There will likely be plenty of bugs due to the switch to PicoFeed. Please report any bugs using Github Issues.
+Please report any bugs using Github Issues.
 
 EZTV's domain name has been updated in the default feeds, and AnimeTosho.org and Anirena.com were added as new default feeds.
 
 #### Still in Alpha
 
-- a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegEx matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+- a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegExp matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 - Fedora Server is being tested and works fine but will not be officially supported for quite a while.
 
 Documentation
