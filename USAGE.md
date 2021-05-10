@@ -72,9 +72,17 @@ The Episodes filter currently in each Favorite is still the old TorrentWatch-X f
 - SxEp = single episode, PROPER or Repack
 - S1xE1-S2xE2 = batch of episodes starting in one season and ending in a later season
 
-### RegEx Matching Style vs. Simple vs. Glob
+### RegExp Matching Style vs. Simple vs. Glob
 
-The Favorites fields behave differently in RegEx Matching Style than in Simple or Glob in that PCRE Unicode regular expressions are used in the Filter, Not, and Qualities fields in RegEx mode.
+The Filter, Not, and Qualities fields in each Favorite behave differently in RegExp Matching Style than in Simple or Glob.
+
+Simple: Uses the PHP strpos() function to compare strings. Matches must be exact alphanumeric matches with no wildcards.
+
+Glob: Named after the PHP glob() function. Uses the PHP fnmatch() function to compare strings. Allows simple wildcards allowed in filename comparisons in a LINUX shell such as * and ? and square brackets.
+
+RegExp: Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching. RegExp is the default matching style.
+
+Note that for all string comparisons, the strings are converted to all-lowercase using the PHP strtolower() function to make the matches case-insensitive.
 
 ### Authentication for Private RSS Feeds
 
