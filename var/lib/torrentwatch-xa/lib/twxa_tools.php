@@ -63,7 +63,8 @@ function getElapsedMicrotime($startTime) {
 
 function sanitizeFilename($filename) {
     // makes a filename filesystem-safe
-    return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
+    #return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
+    return preg_replace("/\:|\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\||\[|\]|\^/", "_", $filename);
 }
 
 function writeToLog($string, $lvl = -1) {
