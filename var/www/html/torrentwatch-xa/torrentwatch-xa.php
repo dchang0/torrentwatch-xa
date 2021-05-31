@@ -1,10 +1,8 @@
 <?php
 
 // disable any kind of caching
-header("Expires: Mon, 20 Dec 2000 01:00:00 GMT");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Cache-Control: no-cache, must-revalidate");
-header("Pragma: no-cache");
 
 //error_reporting(E_ERROR | E_WARNING | E_PARSE);
 error_reporting(E_ALL);
@@ -187,7 +185,9 @@ function parse_options($twxa_version) {
             exit;
         case 'get_autodel':
             global $config_values;
-            echo $config_values['Settings']['Auto-Del Seeded Torrents'];
+            if($config_values['Settings']['Client'] === 'Transmission') {
+                echo $config_values['Settings']['Auto-Del Seeded Torrents'];
+            }
             exit;
         case 'getDisableHideList':
             global $config_values;

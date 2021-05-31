@@ -44,8 +44,12 @@ if (isset($config_values['Feeds'])) {
     load_all_feeds($config_values['Feeds'], 1);
     process_all_feeds($config_values['Feeds']);
 }
-if (isset($config_values['Settings']['Auto-Del Seeded Torrents']) &&
-        $config_values['Settings']['Auto-Del Seeded Torrents'] == 1) {
+if (
+        isset($config_values['Settings']['Client']) &&
+        $config_values['Settings']['Client'] === 'Transmission' &&
+        isset($config_values['Settings']['Auto-Del Seeded Torrents']) &&
+        $config_values['Settings']['Auto-Del Seeded Torrents'] == 1
+) {
     auto_del_seeded_torrents();
 } else {
     writeToLog("Auto-Del Seeded Torrents is disabled\n", 2);
