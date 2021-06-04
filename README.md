@@ -40,7 +40,7 @@ Please report any bugs using Github Issues.
 
 EZTV's domain name has been updated in the default feeds, and AnimeTosho.org and Anirena.com were added as new default feeds.
 
-UPDATE 2021-06-04: RSS feeds have just been rolled into twxa_feed_parser_wrapper.php for 1.6.0, which is now in testing. The changes were drastic, so 1.6.0 will undergo a lengthy testing period before release.
+UPDATE 2021-06-04: RSS feeds have just been rolled into twxa_feed_parser_wrapper.php for 1.6.0. The changes were drastic, so 1.6.0 will undergo a lengthy testing period before release.
 
 #### Still in Alpha
 
