@@ -48,7 +48,7 @@ The install/upgrade script will remove an existing installation of torrentwatch-
 
 Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be best to provide a .deb installation package.
 
-To use the script, make sure you have sudo privileges or are running as root, then:
+IMPORTANT: To use the script, make sure you have sudo privileges or are logged in as root, then:
 
 - `git clone https://github.com/dchang0/torrentwatch-xa.git`
 - `cd torrentwatch-xa`
@@ -65,6 +65,8 @@ The script will back up the config file if it sees one even if `--keep-config` i
 
 Manual Installation
 ===============
+
+IMPORTANT: Make sure you have sudo privileges or are logged in as root.
 
 ### Ubuntu and Debian only:
 
@@ -87,7 +89,7 @@ Manual Installation
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
 - Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
   - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root, or it will not run.
+  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root and has permissions 644, or it will not run.
 - Restart apache2 just in case some PHP modules are not yet loaded.
   - `sudo service apache2 restart`
 - Skip to the section __Continue below for all distros:__ below.
