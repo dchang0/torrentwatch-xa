@@ -183,6 +183,9 @@ Configuring SELINUX In Enforcing Mode
 
 If you wish to keep SELINUX in the default `Enforcing` mode and configure it to allow torrentwatch-xa and transmission-daemon to work properly, generally, these are the permissions you need to grant:
 
+- httpd must be able to read from these folders and all their contents:
+  - /var/www/html/torrentwatch-xa
+  - /var/lib/torrentwatch-xa/
 - httpd must be able to write to these files and folders:
   - `/var/lib/torrentwatch-xa/dl_cache` and all its contents
   - `/var/lib/torrentwatch-xa/config_cache` and all its contents
