@@ -64,7 +64,7 @@ Manual Installation
 
 ### Ubuntu 16.04 and up or Debian 9.x and up:
 
-- Make sure you have sudo privileges or are logged in as root. Do not skip using sudo, or the resulting file permissions will probably be incorrect.
+- Make sure you have sudo privileges or are logged in as root. Do not skip using `sudo`, or the resulting file permissions will probably be incorrect.
 - If your OS is not up to date, update it now.
   - `sudo apt-get update; sudo apt-get upgrade`
 - `sudo apt-get install apache2 php php-mbstring php-curl php-xml libapache2-mod-php git`
@@ -81,15 +81,16 @@ Manual Installation
 - Create the log file:
   - `sudo touch /var/log/twxalog`
   - `sudo chown www-data:www-data /var/log/twxalog`
-  - Make sure it is owned by www-data:www-data and has permissions rw-r--r-- (644)
+  - Make sure it is owned by `www-data:www-data` and has permissions `rw-r--r--` (644)
     - `ls -l /var/log/twxalog`
 - Allow apache2 to write to the cache folders.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
-- Make sure that config_cache and dl_cache are both owned by www-data:www-data and have permissions drwxr-xr-x (755)
+- Make sure that `config_cache` and `dl_cache` are both owned by `www-data:www-data` and have permissions `drwxr-xr-x` (755)
     - `ls -l /var/lib/torrentwatch-xa`
-- Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
+- Set up the cron job by copying the cron job script `torrentwatch-xa-cron` to `/etc/cron.d`.
   - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root and has permissions 644, or it will not run.
+  - Make sure `/etc/cron.d/torrentwatch-xa-cron` is owned by `root:root` and has permissions `rw-r--r--` (644), or it will not run.
+    - `ls -l /etc/cron.d`
 - Skip to the section __Continue below for all distros:__ below.
 
 ### Fedora Server 34:
@@ -131,18 +132,18 @@ The RedHat-derived distributions have extra security features that have to be de
 - Create the log file:
   - `sudo touch /var/log/twxalog`
   - `sudo chown apache:apache /var/log/twxalog`
-  - Make sure it is owned by apache:apache and has permissions rw-r--r-- (644)
+  - Make sure it is owned by `apache:apache` and has permissions `rw-r--r--` (644)
     - `ls -l /var/log/twxalog`
 - Allow httpd to write to the cache folders.
   - `sudo chown -R apache:apache /var/lib/torrentwatch-xa/*_cache`
-  - Make sure that config_cache and dl_cache are both owned by apache:apache and have permissions drwxr-xr-x (755)
+  - Make sure that `config_cache` and `dl_cache` are both owned by `apache:apache` and have permissions `drwxr-xr-x` (755)
     - `ls -l /var/lib/torrentwatch-xa`
-- Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
+- Set up the cron job by copying the cron job script `torrentwatch-xa-cron` to `/etc/cron.d`.
   - `vi ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron`
     - IMPORTANT: change `www-data` to `apache`
     - Save the file with `:wq`
   - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root and the permissions are rw-r--r-- (644), or it will not run.
+  - Make sure `/etc/cron.d/torrentwatch-xa-cron` is owned by `root:root` and the permissions are `rw-r--r--` (644), or it will not run.
     - `ls -l /etc/cron.d`
 - Continue with the section __Continue below for all distros:__ below.
 
@@ -150,10 +151,10 @@ The RedHat-derived distributions have extra security features that have to be de
 
 - Get the IP address of the web server
   - `ip addr`
-  - Look for the IP address of eth0 (your primary NIC might be named something else)
+  - Look for the IP address of `eth0` (your primary NIC might be named something else)
 - Open a web browser and visit `http://[IP of torrentwatch-xa webserver]/torrentwatch-xa`
 - You should at least see the torrentwatch-xa web UI without any errors at this point. If not, go back and make sure you didn't miss any steps. The most common mistakes are:
-  - Permissions problems--for instance, you may see error messages if apache2 is unable to write to the two cache folders.
+  - Permissions problems--for instance, you may see error messages if the web server is unable to write to the two cache folders.
   - For systems with SELINUX installed, Forbidden 403 is probably SELINUX operating in `Enforcing` mode.
   - A blank page is almost certainly a missing PHP module. Be sure to install all the prerequisites and restart the web server for them to take effect.
 - Use the Configure > Client panel to set up the Transmission connection.
