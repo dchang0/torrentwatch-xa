@@ -1,11 +1,6 @@
-$(document).ready(function () { // first binding to document ready
-//    // binding for Menu Bar and other buttons that show/hide a dialog
-//    $(document).on("click", "a.toggleDialog", function () {
-//        'use strict';
-//        $(this).toggleDialog();
-//    });
+//'use strict';
+$(document).ready(function () { // first binding to document ready (while torrentwatch-xa.js is called before other Javascript files)
     displayFilter = function (filter, empty) {
-        'use strict';
         // define hideMe function by browser/userAgent/device
         var timeOut = 400;
         if (empty === true ||
@@ -50,7 +45,6 @@ $(document).ready(function () { // first binding to document ready
                     $('.feed').hideMe();
                 }
                 setTimeout(function () {
-                    'use strict';
                     var tor = $(".feed li.torrent").filter(".st_notAMatch");
                     $(tor).hide();
                     tor = $(".feed li.torrent").not(".st_notAMatch");
@@ -69,7 +63,6 @@ $(document).ready(function () { // first binding to document ready
                     $('.feed').hideMe();
                 }
                 var showFilter = function () {
-                    'use strict';
                     var tor = $(".feed li.torrent").not('.st_downloading');
                     $(tor).hide();
                     tor = $(".feed li.torrent").filter('.st_downloading');
@@ -88,7 +81,6 @@ $(document).ready(function () { // first binding to document ready
                     $('.feed').hideMe();
                 }
                 var showFilter = function () {
-                    'use strict';
                     var tor = $(".feed li.torrent").not('.st_downloaded, .st_inCacheNotActive');
                     $(tor).hide();
                     tor = $(".feed li.torrent").filter('.st_downloaded, .st_inCacheNotActive');
@@ -105,7 +97,6 @@ $(document).ready(function () { // first binding to document ready
                     $('#torrentlist_container li.torrent.selected').removeClass('selected');
                 }
                 setTimeout(function () {
-                    'use strict';
                     $('.transmission').showMe();
                     $("#transmission_list").find("li.torrent").markAlt();
                     updateMatchCounts();
@@ -121,7 +112,6 @@ $(document).ready(function () { // first binding to document ready
                     $('.feed').hideMe();
                 }
                 setTimeout(function () {
-                    'use strict';
                     var tor = $(".feed li.torrent").not(".hiddenFeed");
                     $(tor).show();
                     $('.feed').showMe();
@@ -140,46 +130,11 @@ $(document).ready(function () { // first binding to document ready
         $('#filter_' + filter).addClass('selected').siblings().removeClass("selected"); // this filter is selected, the others are deselected
         document.querySelector('#filter_search_input').value = ''; // clear the search input field
     };
-//    // binding for Filter Bar buttons
-//    $("#filterbar_container li:not(#filter_bytext)").on("click", function () {
-//        if ($(this).is('.selected')) {
-//            return;
-//        }
-//        var filter = this.id;
-//        $("#torrentlist_container").show(function () {
-//            'use strict';
-//            switch (filter) {
-//                case 'refresh':
-//                    $.get('torrentwatch-xa.php', '', $.loadDynamicData, 'html');
-//                    break;
-//                case 'filter_all':
-//                    displayFilter('all');
-//                    $.checkHiddenFeeds(1);
-//                    break;
-//                case 'filter_matching':
-//                    displayFilter('matching');
-//                    break;
-//                case 'filter_downloading':
-//                    displayFilter('downloading');
-//                    break;
-//                case 'filter_downloaded':
-//                    displayFilter('downloaded');
-//                    break;
-//                case 'filter_transmission':
-//                    displayFilter('transmission');
-//                    break;
-//            }
-//        });
-//    });
     processSearchInput = function () {
-        'use strict';
         // process search input including clearing
-        //var filterText = $(this).val().toLowerCase();
         var filterText = this.value.toLowerCase();
         $("li.torrent").hide().each(function () { //TODO replace hide() with style.display = 'none'
-            'use strict';
             if ($(this).find(".torrent_name").text().toLowerCase().match(filterText)) {
-                //$(this).show();
                 this.style.display = '';
             }
         }).markAlt();
@@ -189,7 +144,6 @@ $(document).ready(function () { // first binding to document ready
     // on search binding for Filter Bar search input key and click events
     $("#filter_search_input").on("search", processSearchInput);
     updateMatchCounts = function () {
-        'use strict';
         var feed = $('.feed');
         // update filter and feed headers with total match counts
         var activeTorrents = $('#transmission_list li').length;
@@ -221,14 +175,12 @@ $(document).ready(function () { // first binding to document ready
         switch (window.activeFilter) { //TODO maybe move this block outside the .each loop
             case 'downloaded':
                 $.each(feed, function (i, item) {
-                    'use strict';
                     var itemid = $('#' + item.id);
                     itemid.find('span.matches').html('(' + itemid.find('li.st_downloaded, li.st_inCacheNotActive').length + ')');
                 });
                 break;
             case 'downloading':
                 $.each(feed, function (i, item) {
-                    'use strict';
                     var itemid = $('#' + item.id);
                     itemid.find('span.matches').html('(' + itemid.find('li.st_downloading').length + ')');
                 });
@@ -236,7 +188,6 @@ $(document).ready(function () { // first binding to document ready
             case 'matching':
             default: // All
                 $.each(feed, function (i, item) {
-                    'use strict';
                     var itemid = $('#' + item.id);
                     itemid.find('span.matches').html('(' + itemid.find('li.torrent').not('.st_notAMatch').length + ')');
                 });
@@ -246,7 +197,6 @@ $(document).ready(function () { // first binding to document ready
     };
     // toggle visible web UI elements for different torrent clients
     changeClient = function (client) {
-        'use strict';
         switch (client) {
             case "folder":
                 $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir").css("display", "none");
@@ -266,100 +216,8 @@ $(document).ready(function () { // first binding to document ready
     };
     // perform the first load of the dynamic information
     $.get('torrentwatch-xa.php', '', $.loadDynamicData, 'html');
-//    // binding for Configure form and Favorites form ajax submit
-//    $(document).on("click", "a.submitForm",
-//            function (e) {
-//                window.input_change = 0;
-//                e.stopImmediatePropagation();
-//                $.submitForm(this);
-//                if (this.parentNode.id) {
-//                    $('div#' + this.parentNode.id).hide();
-//                }
-//            });
-//    // binding for Clear History ajax submit
-//    $(document).on("click", "a#clearhistory",
-//            function () {
-//                $.get(this.href, '',
-//                        function (html) {
-//                            $("#history").html($(html).html());
-//                        },
-//                        'html');
-//                return false;
-//            });
-//    // binding for Clear Cache ajax submit
-//    $(document).on("click", "a.clear_cache",
-//            function (e) {
-//                $.get(this.href, '', $.loadDynamicData, 'html');
-//                return false;
-//            });
-//    Math.formatBytes = function (bytes) {
-//        var size;
-//        var unit;
-//        // Terabytes (TB).
-//        if (bytes >= 1099511627776) {
-//            size = bytes / 1099511627776;
-//            unit = ' TB';
-//            // Gigabytes (GB).
-//        } else if (bytes >= 1073741824) {
-//            size = bytes / 1073741824;
-//            unit = ' GB';
-//            // Megabytes (MB).
-//        } else if (bytes >= 1048576) {
-//            size = bytes / 1048576;
-//            unit = ' MB';
-//            // Kilobytes (KB).
-//        } else if (bytes >= 1024) {
-//            size = bytes / 1024;
-//            unit = ' KB';
-//            // the file is less than one KB
-//        } else {
-//            size = bytes;
-//            unit = ' B';
-//        }
-//
-//        // single-digit numbers have greater precision
-//        var precision = 2;
-//        size = Math.roundWithPrecision(size, precision);
-//        return size + unit;
-//    };
-//    Math.roundWithPrecision = function (floatnum, precision) {
-//        return Math.round(floatnum * Math.pow(10, precision)) / Math.pow(10, precision);
-//    };
-//    convertEta = function (eta) {
-//        // convert numeric eta in seconds to human-friendly string
-//        var etaString = '';
-//        if (isNaN(eta) || eta >= 86400) {
-//            var days = Math.floor(eta / 86400);
-//            var hours = Math.floor((eta / 3600) - (days * 24));
-//            var minutes = Math.round((eta / 60) - (days * 1440) - (hours * 60));
-//            if (minutes <= 9) {
-//                minutes = '0' + minutes;
-//            }
-//            etaString = 'Remaining: ' + days + ' days ' + hours + ' hr ' + minutes + ' min';
-//        } else if (eta >= 3600) {
-//            var hours = Math.floor(eta / 60 / 60);
-//            var minutes = Math.round((eta / 60) - (hours * 60));
-//            etaString = 'Remaining: ' + hours + ' hr ' + minutes + ' min';
-//        } else if (eta > 0) {
-//            var minutes = Math.round(eta / 60);
-//            var seconds = eta - (minutes * 60);
-//            if (seconds < 0) {
-//                minutes--;
-//                seconds = seconds + 60;
-//            }
-//            if (eta < 60) {
-//                etaString = 'Remaining: ' + eta + ' sec';
-//            } else {
-//                etaString = 'Remaining: ' + minutes + ' min ' + seconds + ' sec';
-//            }
-//        } else {
-//            etaString = 'Remaining: unknown';
-//        }
-//        return etaString;
-//    };
     // toggle between Resume or Pause in context menu based on current state
     toggleTorResumePause = function (torHash) {
-        //'use strict';
         var curObject = $('li.item_' + torHash + ' div.torResume');
         if (curObject.css('display') === 'block') {
             curObject.hide();
@@ -376,7 +234,6 @@ $(document).ready(function () { // first binding to document ready
     };
     // hides or shows Move button in button bar
     toggleTorMove = function (torHash) {
-        'use strict';
         var curObject = $('#clientButtons li.move_data, #clientButtons li#Move');
         if (curObject.is(":visible")) {
             curObject.fadeOut('normal', updateClientButtons); // fadeOut() doesn't set width and height to 0 like hide() does
@@ -387,7 +244,6 @@ $(document).ready(function () { // first binding to document ready
     };
     // assemble html for item in only the Transmission filter list
     getClientItem = function (item, clientData, liClass, percentage, eta) {
-        'use strict';
         var transmissionItem =
                 '<li id="clientId_' + item.id + '" class="torrent item_' + item.hashString + ' clientId_' + item.id + ' st_transmission ' + liClass + '">' +
                 '<table width="100%" cellspacing="0"><tr><td class="tr_identifier"></td>' +
@@ -404,14 +260,12 @@ $(document).ready(function () { // first binding to document ready
     };
     // show error div
     showClientError = function (error) {
-        'use strict';
         $('#clientError p').html(error);
         $('#clientError').slideDown();
     };
     // register handler for ajax error; for Transmission connection errors
     window.clientErrorCount = 0;
     $(document).ajaxError(function (event, request, settings) {
-        'use strict';
         if (settings.url.match(/getClientData/)) {
             //window.getfail = true; // set getFail to true when error occurred getting client data
             var error = "Error connecting to " + window.client;
@@ -425,7 +279,6 @@ $(document).ready(function () { // first binding to document ready
         }
     });
     getClientData = function () {
-        'use strict';
         if (window.ajaxActive) {
             return; // quit if ajax request is active
         }
@@ -498,7 +351,6 @@ $(document).ready(function () { // first binding to document ready
         } // end window.client === "Transmission"
     };
     processTransmissionData = function (json) {
-        'use strict';
         var upSpeed = 0;
         var downSpeed = 0;
         var transmissionItemIds = []; // for later removal of items not in the array
@@ -722,7 +574,6 @@ $(document).ready(function () { // first binding to document ready
         ///// remove torrents in #transmission_list that are not in the transmission-daemon
         $.each($("#transmission_list").find("li"),
                 function (i, item) {
-                    'use strict';
                     // search through transmissionItemIds array
                     if (jQuery.inArray(item.id, transmissionItemIds) === -1) { // relies on id="clientId_" instead of class="clientId_"
                         // item in Transmission filter is not found in transmission-daemon
@@ -737,7 +588,6 @@ $(document).ready(function () { // first binding to document ready
         // loop through in #torrentlist_container that have st_waitTorCheck
         // NOTE: #torrentlist_container is parent of #transmission_list
         $.each($("#torrentlist_container").find(".st_waitTorCheck, .tc_downloading"), function () { //TODO test .tc_downloading; might need to separate from .st_waitTorCheck
-            'use strict';
             // check if it does not have a class starting with "clientId_"
             var classList = $(this).prop("className").split(/\s+/);
             var clientIdClass = "";
@@ -777,14 +627,10 @@ $(document).ready(function () { // first binding to document ready
         setTimeout(updateMatchCounts(), 100); // update match counts in UI
         $("#transmission_list>li").tsort("span.dateAdded", {order: "desc"}); // sort the items in the Transmission filter
         $("#transmission_list").find("li.torrent").markAlt();
-//        if (window.getfail) {
-//            window.getfail = false;
-//        }
         window.gotAllData = true;
     }; // end processTransmissionData
 
     listSelector = function () {
-        'use strict';
         // handles event bindings for selecting/highlighting items in the list
         var torrentlistcontainer = $('#torrentlist_container').find('li.torrent').not('.selActive');
         torrentlistcontainer.addClass('selActive');
@@ -796,7 +642,6 @@ $(document).ready(function () { // first binding to document ready
         litorrent.find('div.contextItem').off("mousedown");
     };
     toggleSelect = function (item) {
-        'use strict';
         if ($(item).hasClass('selected')) {
             $(item).removeClass('selected');
         } else {
@@ -813,7 +658,6 @@ $(document).ready(function () { // first binding to document ready
         }
     };
     updateClientButtons = function (fast) {
-        'use strict';
         var obj;
         var tor = [];
         if ($('#transmission_data').is(":visible")) {
@@ -891,7 +735,6 @@ $(document).ready(function () { // first binding to document ready
         toggleClientButtons(fast);
     };
     toggleClientButtons = function (fast) {
-        'use strict';
         if (navigator.userAgent.toLowerCase().search('(iphone|ipod|ipad|android)') > -1) {
             fast = 1;
         }
@@ -933,155 +776,24 @@ $(document).ready(function () { // first binding to document ready
             $('#clientButtons .move_data').hide();
         }
     };
-//    function adjustWebUIButton() {
-//        'use strict';
-//        switch (window.client) {
-//            case "Transmission" :
-//                // shrink/expand/hide/show Web UI button to fit window
-//                if ($(window).width() < 545) {
-//                    $("#webui").hide();
-//                    $("#webuiLabel").hide();
-//                } else if ($(window).width() < 620) {
-//                    $("#webui").show();
-//                    $("#webuiLabel").hide();
-//                } else {
-//                    $("#webui").show();
-//                    $("#webuiLabel").show();
-//                }
-//                break;
-//            case "folder" :
-//            default :
-//                $("li#webui").hide();
-//        }
-//    }
-//    function adjustUIElements() {
-//        'use strict';
-//        // NOTE: No need to overdo handling below 640px wide due to phone.css
-//        // shrink/expand Downloading
-//        if ($(window).width() < 650) {
-//            $("#filterbar_container li#filter_downloading.tab").hide();
-//        } else {
-//            $("#filterbar_container li#filter_downloading.tab").show();
-//        }
-//        // shrink/expand Downloaded
-//        if ($(window).width() < 650) {
-//            $("#filterbar_container li#filter_downloaded.tab").hide();
-//        } else {
-//            $("#filterbar_container li#filter_downloaded.tab").show();
-//        }
-//        adjustWebUIButton();
-//        // hide/show Filter field
-//        if ($(window).width() < 870) {
-//            $("li#filter_bytext").hide();
-//        } else {
-//            $("li#filter_bytext").show();
-//        }
-//    }
-    //$(document).ready(function () { // second, nested binding to document ready, keep these tags for future rewrite of .ready()
     adjustUIElements();
     var supportsOrientationChange = "onorientationchange" in window,
             orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
     window.addEventListener(orientationEvent, toggleClientButtons, false);
-    //window.onresize = function (event) {
-    window.onresize = function () {
-        adjustUIElements();
-    };
+//    window.onresize = function () {
+//        adjustUIElements();
+//    };
     var waitForDynData = setInterval(function () {
-        'use strict';
         if ($('#dynamicdata').length) {
             listSelector();
             clearInterval(waitForDynData);
         }
     }, 500);
-    //});
-
-//    $(window).on("focus", function (e) {
-//        // if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
-//        window.ctrlKey = 0;
-//    });
-//    $(window).on("focusout", function (e) {
-//        // if browser loses focus, reset Mac Cmd key toggle to partially block Cmd-Tab
-//        window.ctrlKey = 0;
-//    });
-//    $(document).on("keyup", function (e) {
-//        if (e.keyCode === 27) {
-//            if ($('.dialog').length) {
-//                $('.dialog .close').trigger("click");
-//                $('div.contextMenu').hide();
-//            } else if ($('#clientButtons .move_data').is(":visible")) {
-//                $('#clientButtons .close').trigger("click");
-//            } else if ($('#torrentlist_container li.torrent.selected').length) {
-//                $('#torrentlist_container li.torrent.selected').removeClass('selected');
-//                updateClientButtons();
-//            }
-//        }
-//        if (e.keyCode === 13) {
-//            if ($('.dialog .confirm').length) {
-//                $('.dialog .confirm').trigger("click");
-//            } else if ($('#clientButtons .move_data').is(":visible")) {
-//                $('#clientButtons #Move').trigger("click");
-//            }
-//        }
-//        if (e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93 || e.keyCode === 224) { // Mac Cmd key
-//            window.ctrlKey = 0;
-//        }
-//    });
-//    $(document).on("keydown", function (e) {
-//        if (e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93 || e.keyCode === 224) { // Mac Cmd key
-//            window.ctrlKey = 1;
-//        }
-//        if (window.ctrlKey && e.keyCode === 65) {
-//            if ($('#torrentlist_container li.torrent.selected').length === $('#torrentlist_container li.torrent').length) {
-//                $('#torrentlist_container li.torrent').removeClass('selected');
-//            } else {
-//                $('#torrentlist_container li.torrent').addClass('selected');
-//            }
-//            updateClientButtons();
-//            return false;
-//        }
-//    });
-//    // Ajax progress bar
-//    $(document).ajaxStart(function () {
-//        'use strict';
-//        window.ajaxActive = 1;
-//        if (!(window.hideProgressBar)) {
-//            $('#refresh a').html('<img src="images/ajax-loader-small.gif" alt="Working...">');
-//            if ($('div.dialog').is(":visible")) {
-//                $('#progress').removeClass('progress_full').fadeIn();
-//            }
-//            if ($('#clientButtons').is(":visible")) {
-//                window.visibleButtons = $('#clientButtonsHolder li.button').not('.hidden');
-//                window.hideButtonHolder = setTimeout(function () {
-//                    $(window.visibleButtons).hide();
-//                    $('#clientButtons').append('<div id="clientButtonsBusy"><img src="images/ajax-loader-small.gif" alt="Working...">Working...</div>');
-//                }, 500);
-//            }
-//        }
-//    }).ajaxStop(function () {
-//        'use strict';
-//        window.ajaxActive = 0;
-//        $('#refresh a').html('<img src="images/refresh_32x32.png" alt="Refresh" width="16" height="16">');
-//        $('#progress').fadeOut();
-//        $('#clientButtonsBusy').remove();
-//        if (window.hideButtonHolder) {
-//            clearTimeout(hideButtonHolder);
-//        }
-//        if (window.visibleButtons) {
-//            $(window.visibleButtons).show();
-//        }
-//        updateClientButtons();
-//        setTimeout(function () {
-//            $('#transmission_list li.torrent').markAlt();
-//        }, 500);
-//    });
-//    // set timeout for all ajax queries to 20 seconds.
-//    $.ajaxSetup({timeout: '20000'});
 });
 (function ($) {
     var current_favorite, current_dialog;
     // Remove old dynamic content, replace it with passed html(ajax success function)
     $.loadDynamicData = function (html) {
-        'use strict';
         window.gotAllData = false;
         $("#dynamicdata").remove();
         $('#mainoptions li a').removeClass('selected');
@@ -1157,10 +869,9 @@ $(document).ready(function () { // first binding to document ready
                 changeClient(window.client);
             }, 50);
             if ($('#torrentlist_container div.header.combined').length === 1) {
-                $('.torrentlist>li').tsort('#unixTime', {order: 'desc'});
+                $('.torrentlist>li').tsort('.unixTime', {order: 'desc'});
             }
             setTimeout(function () {
-                'use strict';
                 var versionCheck = window.Cookies.get('VERSION-CHECK');
                 if (versionCheck !== '1') {
                     $.get('torrentwatch-xa.php', {checkVersion: 1}, function (data) {
@@ -1176,7 +887,6 @@ $(document).ready(function () { // first binding to document ready
         }, 100);
     };
     $.submitForm = function (button) {
-        'use strict';
         var form;
         if ($(button).is('form')) {
             // User pressed enter
@@ -1203,7 +913,6 @@ $(document).ready(function () { // first binding to document ready
         }
     };
     $.fn.toggleDialog = function () {
-        'use strict';
         this.each(function () {
             if (window.input_change && this.text !== 'Next') {
                 var answer = confirm('You have unsaved changes.\nAre you sure you want to continue?');
@@ -1260,7 +969,6 @@ $(document).ready(function () { // first binding to document ready
         return this;
     };
     $.fn.initFavorites = function () {
-        'use strict';
         setTimeout(function () {
             $("ul.favorite").find(":first a").toggleFavorite();
             $('#favorite_new a#Update').addClass('disabled').removeClass('submitForm');
@@ -1271,7 +979,6 @@ $(document).ready(function () { // first binding to document ready
         });
     };
     $.fn.initForm = function () {
-        'use strict';
         this.on("submit", function (e) {
             e.stopImmediatePropagation();
             $.submitForm(this);
@@ -1280,7 +987,6 @@ $(document).ready(function () { // first binding to document ready
         return this;
     };
     $.fn.toggleFavorite = function () {
-        'use strict';
         this.each(function () {
             if (window.input_change) {
                 var answer = confirm('You have unsaved changes.\nAre you sure you want to continue?');
@@ -1312,12 +1018,10 @@ $(document).ready(function () { // first binding to document ready
         return this;
     };
     $.fn.initConfigDialog = function () {
-        'use strict';
         $('select#client').trigger("change");
         return this;
     };
     $.fn.buildDataString = function (buttonElement) {
-        'use strict';
         var dataString = $(this).filter('form').serialize();
         if (buttonElement) {
             dataString += (dataString.length === 0 ? '' : '&') + 'button=' + buttonElement.id;
@@ -1325,20 +1029,17 @@ $(document).ready(function () { // first binding to document ready
         return dataString;
     };
     $.fn.markAlt = function () {
-        'use strict';
         return this.filter(":visible").removeClass('alt').filter(":visible:even").addClass('alt');
     };
     $.urlencode = function (str) {
-        'use strict';
         return escape(str).replace(/\+/g, '%2B').replace(/%20/g, '+').replace(/\*/g, '%2A').replace(/\//g, '%2F').replace(/@/g, '%40');
     };
     $.addFavorite = function (feed, title) {
-        'use strict';
         window.favving = 1;
         $.get('torrentwatch-xa.php', {
             addFavorite: 1,
             title: title,
-            rss: feed
+            feed: feed
         }, function (response) {
             if (response.match(/^Error:/)) {
                 var errorID = new Date().getTime();
@@ -1364,7 +1065,6 @@ $(document).ready(function () { // first binding to document ready
         }, 'html');
     };
     $.dlTorrent = function (title, link, feed, id) {
-        'use strict';
         $.get("torrentwatch-xa.php", {
             dlTorrent: 1,
             title: title,
@@ -1416,7 +1116,6 @@ $(document).ready(function () { // first binding to document ready
                 });
     };
     $.delTorrent = function (torHash, trash, sure, checkCache) {
-        'use strict';
         if (trash && sure !== true && sure !== 'true' && window.Cookies.get('TorTrash') !== '1') {
             var dialog = '<div id="confirmTrash" class="dialog confirm" style="display: block; ">' +
                     '<div class="dialog_window" id="trash_tor_data"><div>Are you sure?<br />This will remove the torrent along with its data.</div>' +
@@ -1483,7 +1182,6 @@ $(document).ready(function () { // first binding to document ready
         }
     };
     $.stopStartTorrent = function (stopStart, torHash) {
-        'use strict';
         var param;
         if (stopStart === 'stop') {
             param = {stopTorrent: torHash};
@@ -1503,7 +1201,6 @@ $(document).ready(function () { // first binding to document ready
                 });
     };
     $.moveTorrent = function (torHash) {
-        'use strict';
         var path = $('#moveTo').val();
         $.getJSON('torrentwatch-xa.php', {
             'moveTo': path,
@@ -1515,13 +1212,11 @@ $(document).ready(function () { // first binding to document ready
                 });
     };
     $.toggleFeedNameUrl = function (idx) {
-        'use strict';
         $('div.feeditem .feed_name').toggle();
         $('div.feeditem .feed_url').toggle();
         $('#feedNameUrl .item').toggle();
     };
     $.hideItem = function (title, id) {
-        'use strict';
         window.hiding = 1;
         $.get('torrentwatch-xa.php', {hide: title}, function (response) {
             if (response.match(/^twxa-ERROR:/)) {
@@ -1535,8 +1230,7 @@ $(document).ready(function () { // first binding to document ready
                 }, 5000);
             } else {
                 $.each($('#torrentlist_container li'), function () {
-                    //if ($('#' + this.id + ' input.show_title').val() === response) {
-                    if (this.querySelector('input.show_title').value === response) { //TODO test the switch from .val() to .value
+                    if (this.querySelector('input.show_title').value === response) {
                         $(this).removeClass('selected').remove();
                     }
                 });
@@ -1545,7 +1239,6 @@ $(document).ready(function () { // first binding to document ready
         });
     };
     $.toggleFeed = function (feed, speed) {
-        'use strict';
         if (speed === 1 || speed === '1') {
             if (window.Cookies.get('feed_' + feed) === '1') { // was ==
                 $("#feed_" + feed + " ul").removeClass("hiddenFeed").show();
@@ -1573,7 +1266,6 @@ $(document).ready(function () { // first binding to document ready
         }
     };
     $.checkHiddenFeeds = function (speed) {
-        'use strict';
         $.each($("#torrentlist_container .feed"), function () {
             if (window.Cookies.get(this.id) === '1') {
                 if (speed === 1) {
@@ -1586,7 +1278,6 @@ $(document).ready(function () { // first binding to document ready
         });
     };
     $.toggleConfigTab = function (tab, button) {
-        'use strict';
         $(".toggleConfigTab").removeClass("selTab");
         $(button).addClass("selTab");
         $(".configTab").hide();
@@ -1601,7 +1292,6 @@ $(document).ready(function () { // first binding to document ready
         $(tab).animate({opacity: "toggle"}, 500);
     };
     $.toggleContextMenu = function (item_id, id) {
-        'use strict';
         // do NOT use slideUp() or slideDown() in this function as they are too slow and get interrupted
         if ($("div.contextMenu").not(item_id).is(":visible")) {
             $("div.contextMenu").hide();
@@ -1624,14 +1314,12 @@ $(document).ready(function () { // first binding to document ready
                     });
                 });
                 $(item_id).on("click", function () {
-                    //$(this).hide();
                     this.style.display = 'none';
                 });
             });
         }
     };
     $.processSelected = function (action) {
-        'use strict';
         if (!$('#torrentlist_container .torrent.selected').length) {
             return;
         }
@@ -1663,13 +1351,9 @@ $(document).ready(function () { // first binding to document ready
                 $.moveTorrent(list);
         }
         $.each($('#torrentlist_container .feed li.selected'), function () {
-            //var title = $('li#' + this.id + ' input.title').val();
             var title = this.querySelector('input.title').value;
-            //var link = $('li#' + this.id + ' input.link').val();
             var link = this.querySelector('input.link').value;
-            //var feedLink = $('li#' + this.id + ' input.feed_link').val();
             var feedLink = this.querySelector('input.feed_link').value;
-            //var id = $('li#' + this.id + ' input.client_id').val();
             var id = this.querySelector('input.client_id').value;
             if (action === 'addFavorite') {
                 var favInterval = setInterval(function () {
@@ -1695,12 +1379,4 @@ $(document).ready(function () { // first binding to document ready
             }
         });
     };
-//    $.noEnter = function (evt) {
-//        var evt = (evt) ? evt : ((event) ? event : null);
-//        var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
-//        if ((evt.keyCode === 13) && (node.type === "text")) {
-//            return false;
-//        }
-//    };
-//    document.onkeypress = $.noEnter;
 })(jQuery);

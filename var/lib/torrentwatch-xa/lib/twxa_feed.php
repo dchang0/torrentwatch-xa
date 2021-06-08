@@ -2,26 +2,16 @@
 
 require_once('twxa_parse.php');
 
-/* function guess_atom_torrent($summary) {
-  $wc = '[\/\:\w\.\+\?\&\=\%\;]+';
-  // Detects: A HREF=\"http://someplace/with/torrent/in/the/name\"
-  $regs = [];
-  if (preg_match('/A HREF=\\\"(http' . $wc . 'torrent' . $wc . ')\\\"/', $summary, $regs)) {
-  writeToLog("guess_atom_torrent: $regs[1]\n", 2);
-  return $regs[1];
-  } else {
-  writeToLog("guess_atom_torrent: failed\n", 2); //TODO return and fix this function
-  }
-  return false;
-  } */
-
 function get_torrent_link($rs) {
+    //TODO validate URLs using filter_var($url, FILTER_VALIDATE_URL);
     $links = [];
     if (
-            isset($rs['enclosure']) &&
+            isset($rs['enclosure']['url']) &&
             (
             $rs['enclosure']['type'] == 'application/x-bittorrent' ||
-            $rs['enclosure']['type'] == 'application/gzip'
+            $rs['enclosure']['type'] == 'application/gzip' ||
+            stristr($rs['enclosure']['url'], '.torrent') === '.torrent' ||
+            stristr($rs['enclosure']['url'], '.torrent.gz') === '.torrent.gz'
             )
     ) {
         $links[] = $rs['enclosure']['url'];
@@ -29,11 +19,17 @@ function get_torrent_link($rs) {
         if (isset($rs['link'])) {
             $links[] = $rs['link'];
         }
+        if (
+                isset($rs['URL']) &&
+                (
+                stristr($rs['URL'], '.torrent') === '.torrent' ||
+                stristr($rs['URL'], '.torrent.gz') === '.torrent.gz'
+                )
+        ) {
+            $links[] = $rs['URL'];
+        }
         if (isset($rs['id']) && stristr($rs['id'], 'http://')) { // Atom
             $links[] = $rs['id'];
-        }
-        if (isset($rs['enclosure'])) { // RSS enclosure
-            $links[] = $rs['enclosure']['url'];
         }
     }
     $link = str_replace(" ", "%20", choose_torrent_link($links));
@@ -270,7 +266,7 @@ function check_for_torrent(&$item, $key, $opts) {
                         //TODO possibly remove st_downloading and st_downloaded states unless they make sense for client === folder
                     }
                 } else {
-                    writeToLog("Unable to find URL for " . $rs['title'] . "\n", -1);
+                    writeToLog("Unable to find URL for " . $rs['title'] . " from feed: " . $item['Feed'] . "\n", -1);
                     $itemState = "st_noURL"; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic
                     //TODO probably add application/gzip capability here using gzdecode()
                 }
@@ -281,59 +277,90 @@ function check_for_torrent(&$item, $key, $opts) {
     }
 }
 
-function parse_one_rss($feed, $update = null) {
+//function parse_one_rss($feed, $update = null) {
+//    global $config_values;
+//    $rss = new lastRSS;
+//    $rss->stripHTML = true;
+//    $rss->CDATA = 'content';
+//    if ((isset($config_values['Settings']['Cache Time'])) && ((int) $config_values['Settings']['Cache Time'])) {
+//        $rss->cache_time = (int) $config_values['Settings']['Cache Time'];
+//    } else if (!isset($update)) {
+//        $rss->cache_time = 86400;
+//    } else {
+//        $rss->cache_time = (15 * 60) - 20;
+//    }
+//    $rss->date_format = 'M d, H:i';
+//    $rss->cache_dir = getDownloadCacheDir();
+//    if (!$config_values['Global']['Feeds'][$feed['Link']] = $rss->get($feed['Link'])) {
+//        writeToLog("Error creating rss parser for " . $feed['Link'] . "\n", -1);
+//    } else {
+//        if ($config_values['Global']['Feeds'][$feed['Link']]['items_count'] == 0) {
+//            unset($config_values['Global']['Feeds'][$feed['Link']]);
+//            return false;
+//        }
+//        $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
+//        $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'RSS';
+//    }
+//}
+
+function parse_one_feed($feed, $update = null) {
     global $config_values;
-    $rss = new lastRSS;
-    $rss->stripHTML = true;
-    $rss->CDATA = 'content';
-    if ((isset($config_values['Settings']['Cache Time'])) && ((int) $config_values['Settings']['Cache Time'])) {
-        $rss->cache_time = (int) $config_values['Settings']['Cache Time'];
-    } else if (!isset($update)) {
-        $rss->cache_time = 86400;
+    // get Cron Interval and calculate cronCacheExpires
+    if (isset($config_values['Settings']['Cron Interval']) && (int) $config_values['Settings']['Cron Interval']) {
+        $cronInterval = (int) $config_values['Settings']['Cron Interval'];
     } else {
-        $rss->cache_time = (15 * 60) - 20;
+        $cronInterval = 15;
     }
-    $rss->date_format = 'M d, H:i';
-    $rss->cache_dir = getDownloadCacheDir();
-    if (!$config_values['Global']['Feeds'][$feed['Link']] = $rss->get($feed['Link'])) {
-        writeToLog("Error creating rss parser for " . $feed['Link'] . "\n", -1);
+    // update or not
+    if (isset($update)) {
+        $cacheExpires = ($cronInterval * 60) - 20;
     } else {
-        if ($config_values['Global']['Feeds'][$feed['Link']]['items_count'] == 0) {
-            unset($config_values['Global']['Feeds'][$feed['Link']]);
-            return false;
-        }
+        $cacheExpires = ($cronInterval * 120) - 20;
+    }
+    // enforce maximum cache age
+    $maxCacheAge = 3580;
+    if ($cacheExpires > $maxCacheAge) {
+        $cacheExpires = $maxCacheAge;
+    }
+    if ($cacheExpires < 0) {
+        $cacheExpires = 0;
+    }
+    $feed_parser = new FeedParserWrapper($feed['Link'], getDownloadCacheDir(), 'M d, H:i', $config_values['Settings']['Time Zone'], $cacheExpires);
+    if (!$config_values['Global']['Feeds'][$feed['Link']] = $feed_parser->getParsedData()) {
+        writeToLog("Error creating feed parser for " . $feed['Link'] . "\n", -1);
+    } else {
         $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
-        $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'RSS';
     }
 }
 
-function parse_one_atom($feed) {
-    global $config_values;
-    //$atom_parser = new AtomParser($feed['Link'], getDownloadCacheDir(), 'M d, H:i');
-    $atom_parser = new FeedParserWrapper($feed['Link'], getDownloadCacheDir(), 'M d, H:i', $config_values['Settings']['Time Zone']);
-    if (!$config_values['Global']['Feeds'][$feed['Link']] = $atom_parser->getParsedData()) {
-        writeToLog("Error creating atom parser for " . $feed['Link'] . "\n", -1);
-    } else {
-        $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
-        $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'Atom';
-    }
-}
+//function parse_one_atom($feed) {
+//    global $config_values;
+//    $atom_parser = new FeedParserWrapper($feed['Link'], getDownloadCacheDir(), 'M d, H:i', $config_values['Settings']['Time Zone']);
+//    if (!$config_values['Global']['Feeds'][$feed['Link']] = $atom_parser->getParsedData()) {
+//        writeToLog("Error creating atom parser for " . $feed['Link'] . "\n", -1);
+//    } else {
+//        $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
+//        $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'Atom';
+//    }
+//}
 
-function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
+function process_feed($feed, $idx, $feedName, $feedLink) {
+//function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
     // this is second-most function for feed processing, run by process_all_feeds()
     global $config_values, $itemState, $html_out; // $itemState is not used above this level
-    writeToLog("Started processing $feedType feed: $feedName\n", 2);
-    switch ($feedType) {
-        case "RSS":
-            $itemCount = count($feed['items']);
-            break;
-        case "Atom":
-            if (isset($feed['feed']) && isset($feed['feed']['entry'])) {
-                $itemCount = count($feed['feed']['entry']);
-            } else {
-                $itemCount = 0;
-            }
+    writeToLog("Started processing feed: $feedName\n", 2);
+//    writeToLog("Started processing $feedType feed: $feedName\n", 2);
+//    switch ($feedType) {
+//        case "RSS":
+//            $itemCount = count($feed['items']);
+//            break;
+//        case "Atom":
+    if (isset($feed['feed']) && isset($feed['feed']['entry'])) {
+        $itemCount = count($feed['feed']['entry']);
+    } else {
+        $itemCount = 0;
     }
+//    }
     if ($itemCount === 0) {
         writeToLog("Empty feed: $feedName\n", 0);
         show_feed_down_header($idx);
@@ -343,13 +370,13 @@ function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
         show_feed_list($idx);
     }
     $alt = 'alt';
-    switch ($feedType) {
-        case "RSS":
-            $items = array_reverse($feed['items']);
-            break;
-        case "Atom";
-            $items = array_reverse($feed['feed']['entry']);
-    }
+//    switch ($feedType) {
+//        case "RSS":
+//            $items = array_reverse($feed['items']);
+//            break;
+//        case "Atom";
+    $items = array_reverse($feed['feed']['entry']);
+//    }
     $htmlList = [];
     foreach ($items as $item) {
         if (!isset($item['title'])) {
@@ -422,7 +449,8 @@ function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
         close_feed_list();
     }
     unset($item);
-    writeToLog("Processed $feedType feed: $feedName\n", 1);
+    //writeToLog("Processed $feedType feed: $feedName\n", 1);
+    writeToLog("Processed feed: $feedName\n", 1);
 }
 
 function process_all_feeds($feeds) {
@@ -437,20 +465,21 @@ function process_all_feeds($feeds) {
     }
     setupDownloadCacheDir();
     foreach ($feeds as $key => $feed) {
-        switch ($feed['Type']) {
-            case 'RSS':
-            case 'Atom':
-                if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == 1) {
-                    process_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link'], $feed['Type']);
-                } else if ($feed['enabled'] != 1) {
-                    writeToLog("Feed disabled, not processed: " . $feed['Name'] . "\n", 1);
-                } else {
-                    writeToLog("Feed inaccessible, not processed: " . $feed['Name'] . "\n", 1);
-                }
-                break;
-            default:
-                writeToLog("Unknown " . $feed['Type'] . " feed, not processed: " . $feed['Link'] . "\n", -1);
+//        switch ($feed['Type']) {
+//            case 'RSS':
+//            case 'Atom':
+        if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == 1) {
+            //process_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link'], $feed['Type']);
+            process_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+        } else if ($feed['enabled'] != 1) {
+            writeToLog("Feed disabled, not processed: " . $feed['Name'] . "\n", 1);
+        } else {
+            writeToLog("Feed inaccessible, not processed: " . $feed['Name'] . "\n", 1);
         }
+//                break;
+//            default:
+//                writeToLog("Unknown " . $feed['Type'] . " feed, not processed: " . $feed['Link'] . "\n", -1);
+//        }
     }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
         close_feed_list();
@@ -463,26 +492,36 @@ function process_all_feeds($feeds) {
     }
 }
 
-function load_all_feeds($feeds, $update = null, $enabled = false) {
+//function load_all_feeds($feeds, $update = null, $enabled = false) {
+//    foreach ($feeds as $feed) {
+//        switch ($feed['Type']) {
+//            case 'RSS':
+//                if ($enabled === true || $feed['enabled'] == 1) {
+//                    parse_one_rss($feed, $update);
+//                } else {
+//                    writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
+//                }
+//                break;
+//            case 'Atom':
+//                if ($enabled === true || $feed['enabled'] == 1) {
+//                    parse_one_atom($feed);
+//                } else {
+//                    writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
+//                }
+//                break;
+//            case 'Unknown':
+//            default:
+//                writeToLog("Unknown feed type, not loaded: " . $feed['Link'] . "\n", -1);
+//        }
+//    }
+//}
+
+function load_all_feeds($feeds, $update = null, $allEnabled = false) {
     foreach ($feeds as $feed) {
-        switch ($feed['Type']) {
-            case 'RSS':
-                if ($enabled === true || $feed['enabled'] == 1) {
-                    parse_one_rss($feed, $update);
-                } else {
-                    writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
-                }
-                break;
-            case 'Atom':
-                if ($enabled === true || $feed['enabled'] == 1) {
-                    parse_one_atom($feed);
-                } else {
-                    writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
-                }
-                break;
-            case 'Unknown':
-            default:
-                writeToLog("Unknown feed type, not loaded: " . $feed['Link'] . "\n", -1);
+        if ($allEnabled === true || $feed['enabled'] == 1) {
+            parse_one_feed($feed, $update);
+        } else {
+            writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
         }
     }
 }

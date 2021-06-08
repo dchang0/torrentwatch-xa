@@ -11,7 +11,6 @@ $(document).ready(function () {
         }
         var filter = this.id;
         $("#torrentlist_container").show(function () {
-            'use strict';
             switch (filter) {
                 case 'refresh':
                     $.get('torrentwatch-xa.php', '', $.loadDynamicData, 'html');
@@ -56,6 +55,9 @@ $(document).ready(function () {
         $.get(this.href, '', $.loadDynamicData, 'html');
         return false;
     });
+    window.onresize = function () {
+        adjustUIElements();
+    };
     $(window).on("focus", function (e) {
         // if browser gains focus, reset Mac Cmd key toggle to partially block Cmd-Tab
         window.ctrlKey = 0;

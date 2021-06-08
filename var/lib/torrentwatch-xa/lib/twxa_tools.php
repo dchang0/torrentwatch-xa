@@ -5,8 +5,7 @@ global $config_values;
 // Prerequisite PHP JSON, PHP cURL, PHP XML, and PHP mbstring packages are assumed to be installed.
 
 require_once("twxa_config_lib.php");
-require_once("twxa_lastRSS.php");
-//require_once("twxa_atomparser.php");
+//require_once("twxa_lastRSS.php");
 require_once("twxa_feed_parser_wrapper.php");
 require_once("class.bdecode.php");
 require_once("class.phpmailer.php");

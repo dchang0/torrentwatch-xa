@@ -432,8 +432,8 @@ ul.show_legend li {
     font-size: 14px;
     text-align: center;
     padding-bottom: 3px;
-    background: #C1E0C1;
-    color: #D6001A;
+    background: #fdd; /* was #C1E0C1 */
+    /*color: #D6001A;*/
     border-bottom: 1px solid #ddd;
 }
 
@@ -1278,25 +1278,25 @@ div.legend input {
     width: 30px;
     display: table-cell;
     text-align: center;
-    vertical-align: middle;
+    vertical-align: text-top;
 }
 
 #config_feeds div.seedRatio {
     width: 40px;
     display: table-cell;
     text-align: center;
-    vertical-align: middle;
+    vertical-align: text-top;
 }
 
 #config_feeds div.feedDelete {
     width: 40px;
     display: table-cell;
     text-align: center;
-    vertical-align: middle;
+    vertical-align: text-top;
 }
 
 #config_feeds div.feeditem {
-    height: 50px;
+    height: 74px;
     display: table-row;
 }
 
@@ -1305,7 +1305,8 @@ div.legend input {
 }
 
 #config_feeds div.feeditem input.feed_url[type=text],
-#config_feeds div.feeditem input.feed_name[type=text] {
+#config_feeds div.feeditem input.feed_name[type=text],
+#config_feeds div.feeditem input.feed_website[type=text] {
     width: 308px;
     margin: 4px 5px 0 5px;
 }

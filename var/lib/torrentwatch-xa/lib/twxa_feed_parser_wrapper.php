@@ -11,8 +11,16 @@ require_once 'PicoFeed/Config/Config.php';
 require_once 'PicoFeed/Logging/Logger.php';
 require_once 'PicoFeed/Base.php';
 require_once 'PicoFeed/PicoFeedException.php';
+require_once 'PicoFeed/Client/ClientException.php';
 require_once 'PicoFeed/Client/Client.php';
 require_once 'PicoFeed/Client/HttpHeaders.php';
+require_once 'PicoFeed/Client/InvalidCertificateException.php';
+require_once 'PicoFeed/Client/InvalidUrlException.php';
+require_once 'PicoFeed/Client/UnauthorizedException.php';
+require_once 'PicoFeed/Client/MaxSizeException.php';
+require_once 'PicoFeed/Client/MaxRedirectException.php';
+require_once 'PicoFeed/Client/ForbiddenException.php';
+require_once 'PicoFeed/Client/TimeoutException.php';
 require_once 'PicoFeed/Client/Curl.php';
 require_once 'PicoFeed/Client/Url.php';
 require_once 'PicoFeed/Encoding/Encoding.php';
@@ -53,7 +61,7 @@ class FeedParserWrapper {
     var $dateFormat = '';
     var $timeZone = '';
 
-    function __construct($file, $cacheDir = '', $dateFormat = '', $timeZone = '', $cacheExpires = 3000) {
+    function __construct($file, $cacheDir = '', $dateFormat = '', $timeZone = '', $cacheExpires = 3580) {
         if ($dateFormat !== '') {
             $this->dateFormat = $dateFormat;
         }
@@ -65,6 +73,8 @@ class FeedParserWrapper {
         if ($cacheDir !== '') {
             $cacheFile = $cacheDir . '/feedcache_' . md5($file);
             if (file_exists($cacheFile) && time() < filemtime($cacheFile) + $cacheExpires) {
+                $timeTillExpiry = filemtime($cacheFile) + $cacheExpires - time();
+                writeToLog("Feed cache expires in $timeTillExpiry seconds, skipping refresh for: $file\n", 2);
                 // cache file is new enough
                 $this->feedData = unserialize(join('', file($cacheFile)));
                 // set 'cached' to 1 only if cached file is correct
@@ -73,6 +83,7 @@ class FeedParserWrapper {
                 }
             } else {
                 // cache file does not exist or is too old--create a new one
+                writeToLog("Refreshing feed cache for: $file\n", 1);
                 $this->parse($file);
                 $serialized = serialize($this->feedData);
                 if ($f = fopen($cacheFile, 'w')) {
@@ -99,6 +110,13 @@ class FeedParserWrapper {
             // get a resource
             $resource = $reader->download($file);
 
+//            // detect feed format
+//            $format = $reader->detectFormat($content);
+//
+//            if (empty($format)) {
+//                throw new UnsupportedFeedFormatException('Unable to detect feed format');
+//            }
+
             // get the right parser instance according to the feed format
             $parser = $reader->getParser(
                     $resource->getUrl(),
@@ -111,7 +129,6 @@ class FeedParserWrapper {
 
             // print the feed properties with the magic method __toString()
             //echo $feed;
-            //TODO figure out feed type and call appropriate object-to-array converter
             $this->feedData = $this->convertFeedObjectToArray($feed);
         } catch (PicoFeedException $e) {
             //TODO handle error
@@ -121,9 +138,11 @@ class FeedParserWrapper {
     private function convertFeedObjectToArray($feedObject) {
         $feedArray = [];
         // Feed object
+         //TODO get rid of ['feed']
         $feedArray['feed']['id'] = $feedObject->getId(); // Unique feed id
         $feedArray['feed']['title'] = $feedObject->getTitle(); // Feed title
-        $feedArray['feed']['link'] = $feedObject->getFeedUrl(); // Feed url
+        $feedArray['feed']['link'] = $feedObject->getFeedUrl(); // Feed URL
+        $feedArray['feed']['website'] = $feedObject->getSiteUrl(); // Website URL
         $feedArray['feed']['updated'] = $this->convertDateTimeToString($feedObject->getDate(), 'c'); // Feed last updated date (DateTime object)
         $feedArray['feed']['subtitle'] = $feedObject->getDescription(); // Feed description
         for ($i = 0; $i < count($feedObject->items); $i++) {

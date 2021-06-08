@@ -413,7 +413,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
     //TODO this function needs major cleanup! Be aware that return value should be an array but Javascript .dlTorrent expects a string
     global $config_values;
-    if (strtolower($fav['Filter']) === "any") {
+    if (isset($fav) && isset($fav['Filter']) && strtolower($fav['Filter']) === "any") {
         $any = 1;
     }
     if (strpos($filename, 'magnet:') === 0) {
@@ -527,7 +527,7 @@ function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $
             $idx = $key;
         }
     }
-    if (is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
+    if (isset($fav) && isset($fav['seedRatio']) && is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
         $seedRatio = $fav['seedRatio'];
     } else if (is_numeric($config_values['Feeds'][$idx]['seedRatio']) && $config_values['Feeds'][$idx]['seedRatio'] >= 0) {
         $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];

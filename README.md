@@ -28,19 +28,20 @@ Common setups:
 Status
 ===============
 
-I've posted 1.5.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.6.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-After learning about AnimeTosho.org from a post on HorribleSubs.info's farewell thread, I eagerly tested the first anime Atom feed I have encountered so far. Sadly, I ran into some difficult bugs in the AtomParser class cloned from TorrentWatch-X, and I attempted to rewrite twxa_atomparser.php from scratch. That was too tedious, so I searched for and found a respected RSS and Atom feed parser called PicoFeed inside the abandoned Miniflux V1 reader at https://github.com/miniflux/v1 and incorporated it (and its prerequisite Laminas-XML) into torrentwatch-xa 1.5.0.
+_IMPORTANT: Due to changes to the config file, it is recommended that you start with a fresh config file if upgrading from an older version. There will not be a config file converter this time due to the addition of a new setting for each feed. This setting will end up being blank if converted from an older config file._
 
-I fixed a couple of bugs in PicoFeed/Parser/Atom.php to make it work and will be maintaining a fork of picofeed within torrentwatch-xa. It will be worth the effort because the Atom and RSS feed parsing can be unified into a single PicoFeed wrapper.
+1.6.0 has these new features:
 
-twxa_feed_parser_wrapper.php was added in 1.5.0. It currently only supports the Atom feeds; RSS feeds will be rolled into the wrapper in a future version. atomcache_ feed cache files have been renamed to feedcache_ to prepare for this eventual unification.
+- Both Atom and RSS feeds are now being parsed by PicoFeed, and the feed settings no longer distinguish between the two feed types.
+- rsscache_ files are now obsolete; all feeds are now cached in feedcache_ files.
+- The feed cache expiration logic has been revamped and there is now a new global setting, Cron Interval, measured in minutes and only accessible by editing the config file directly. Cron Interval should always match the cron interval in torrentwatch-xa-cron. 
+- Feed titles in the web UI now link to the feed sources' websites. If not specified, torrentwatch-xa attempts to auto-detect the feed's website URL when it is first added via Configure > Feeds.
+
+Anidex.info has been removed from the default feeds because their DDOS-GUARD blocks torrentwatch-xa. Note that default feed AnimeTosho.org aggregates Anidex.info.
 
 Please report any bugs using Github Issues.
-
-EZTV's domain name has been updated in the default feeds, and AnimeTosho.org and Anirena.com were added as new default feeds.
-
-UPDATE 2021-06-04: RSS feeds have just been rolled into twxa_feed_parser_wrapper.php for 1.6.0. The changes were drastic, so 1.6.0 will undergo a lengthy testing period before release.
 
 #### Still in Alpha
 

@@ -62,10 +62,13 @@ function show_feed_list($idx) {
         $html_out .= "<span class=\"hide_feed_left\">\n";
         $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . $idx . ", 0)\">\n";
         $html_out .= "<img height='14' src=\"images/blank.gif\"></a></span></td>\n";
-        if (!$config_values['Feeds'][$idx]['Name']) {
-            $ti = $config_values['Feeds'][$idx]['Link'];
-        } else {
+        if (isset($config_values['Feeds'][$idx]['Name']) && $config_values['Feeds'][$idx]['Name'] !== '') {
             $ti = $config_values['Feeds'][$idx]['Name'];
+        } else {
+            $ti = $config_values['Feeds'][$idx]['Link'];
+        }
+        if (isset($config_values['Feeds'][$idx]['Website']) && $config_values['Feeds'][$idx]['Website'] !== '') {
+            $ti = '<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank">' . $ti . '</a>';
         }
         $html_out .= "<td class='feed_title'><span>$ti</span><span class='matches'></span></td>\n";
         $html_out .= "<td class='hide_feed'>\n";
@@ -83,6 +86,9 @@ function show_feed_down_header($idx) {
         $ti = $config_values['Feeds'][$idx]['Link'];
     } else {
         $ti = $config_values['Feeds'][$idx]['Name'];
+    }
+    if (isset($config_values['Feeds'][$idx]['Website']) && $config_values['Feeds'][$idx]['Website'] !== '') {
+        $ti = '<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank">' . $ti . '</a>';
     }
     $html_out .= "<div class=\"errorHeader\">$ti is not available.</div>\n";
 }

@@ -48,7 +48,7 @@ class Atom extends Parser {
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
     public function findSiteUrl(SimpleXMLElement $xml, Feed $feed) {
-        $feed->setSiteUrl($this->getUrl($xml, 'alternate', true));
+        $feed->setSiteUrl($this->getUrl($xml, 'alternate', true, "text/html"));
     }
 
     /**
@@ -285,17 +285,19 @@ class Atom extends Parser {
      *
      * @param SimpleXMLElement $xml XML tag
      * @param string           $rel Link relationship: alternate, enclosure, related, self, via
+     * @param bool             $fallback
+     * @param string           $type Link type: text/html, application/atom+xml, application/rss+xml
      * @return string
      */
-    private function getUrl(SimpleXMLElement $xml, $rel, $fallback = false) {
-        $link = $this->findLink($xml, $rel);
+    private function getUrl(SimpleXMLElement $xml, $rel, $fallback = false, $type = null) {
+        $link = $this->findLink($xml, $rel, $type);
 
         if ($link) {
             return (string) $link['href'];
         }
 
         if ($fallback) {
-            $link = $this->findLink($xml, '');
+            $link = $this->findLink($xml, '', $type);
             return $link ? (string) $link['href'] : '';
         }
 
@@ -307,14 +309,17 @@ class Atom extends Parser {
      *
      * @param SimpleXMLElement $xml XML tag
      * @param string           $rel Link relationship: alternate, enclosure, related, self, via
+     * @param string           $type Link type: text/html, application/atom+xml, application/rss+xml
      * @return SimpleXMLElement|null
      */
-    private function findLink(SimpleXMLElement $xml, $rel) {
+    private function findLink(SimpleXMLElement $xml, $rel, $type = null) {
         $links = XmlParser::getXPathResult($xml, 'atom:link', $this->namespaces) ?: XmlParser::getXPathResult($xml, 'link');
 
         foreach ($links as $link) {
             if ($rel === (string) $link['rel']) {
-                return $link;
+                if (!isset($type) || $type === (string) $link['type']) {
+                    return $link;
+                }
             }
         }
 

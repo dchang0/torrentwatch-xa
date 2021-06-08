@@ -442,8 +442,9 @@
                         <?php foreach($config_values['Feeds'] as $key => $feed): ?>
                         <?php print("<div id=\"feedItem_" . $key . "\" class=\"feeditem\">"); ?>
                         <div class="feedURLName">
-                            <input class="feed_url" type="text" name="feed_link_<?php echo $key; ?>" title="<?php echo $feed['Name']; ?>" value="<?php echo $feed['Link']; ?>" placeholder="Feed URL (required)"></input>
-                            <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="<?php echo $feed['Link']; ?>" value="<?php echo $feed['Name']; ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
+                            <input class="feed_url" type="text" name="feed_url_<?php echo $key; ?>" title="Feed URL" value="<?php echo $feed['Link']; ?>" placeholder="Feed URL (required)"></input>
+                            <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="Feed Name (optional)" value="<?php echo $feed['Name']; ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
+                            <input class="feed_website" type="text" name="feed_website_<?php echo $key; ?>" title="Feed Website URL (optional)" value="<?php echo $feed['Website']; ?>" placeholder="Feed Website URL (leave blank for official feed website)"></input>
                         </div>
                         <div class="feedOn">
                             <?php if($feed['enabled'] == 1): ?>
@@ -463,8 +464,9 @@
                         <?php endif; ?>
                         <div id="feedItem_new" class="feeditem">
                             <div class="feedURLName">
-                                <input class="feed_url" type="text" name="feed_link_new" title="Add new feed URL..." placeholder="New Feed URL (required to add feed)"></input>
+                                <input class="feed_url" type="text" name="feed_url_new" title="Add new feed URL..." placeholder="New Feed URL (required to add feed)"></input>
                                 <input class="feed_name" type="text" name="feed_name_new" title="Override new feed name or leave blank for official feed name..." placeholder="New Feed Name (optional)"></input>
+                                <input class="feed_website" type="text" name="feed_website_new" title="Override new feed website or leave blank for official feed website..." placeholder="New Feed Website URL (optional)"></input>
                             </div>
                             <div class="feedOn">
                                 <input class="feed_on_off" type="checkbox" name="feed_on_new" value="feed_on" checked></input>

@@ -9,7 +9,7 @@ The small colored bars on the left edge of some items indicate the states of the
 
 ### Check for Updates
 
-Check for Updates checks once every 7 days for new versions. If you turn it off, then turn it back on, it will take up to 7 days to check again.
+Check for Updates checks once every 7 days for new versions of torrentwatch-xa. If you turn it off, then turn it back on, it will take up to 7 days to check again.
 
 ### Seed Ratio Settings
 
@@ -100,6 +100,14 @@ If Also Save Torrent Files is enabled and torrentwatch-xa retrieves a magnet lin
 
 The ability to save magnet links was added to deal with the increasingly-common feeds that have only magnet links and no links to torrent files.
 
+### How the Feed Caches and the Cron Interval Setting Work
+
+If caching is enabled, the feeds' caches expire after a certain number of seconds, forcing a refresh of the cache from the feeds' sources. While the feed cache has not expired, reloading the web UI will not trigger a refresh of the feeds. This allows the web UI to be more responsive and reduces the burden on the feed sources.
+
+When the cron job runs, it sets the feed cache to expire at just under the Cron Interval value to effectively force the feeds to be refreshed once each time the cron job runs. If you wish to change the interval between cron job runs by editing torrentwatch-xa-cron, you should change the Cron Interval setting to the same interval in minutes.
+
+The Cron Interval setting is not exposed through the web UI; to change it, you must edit the config file directly.
+
 ### Bulk Favorites Importer twxa_fav_import.php
 
 _WARNING!! The bulk importer is experimental; use it at your own risk! Be sure to back up your config file before any bulk import!_
@@ -132,6 +140,10 @@ If the TSV file confuses PHP's fgetcsv() function, there is a good possibility y
 Close the browser if you have torrentwatch-xa's web UI open.
 
 `sudo cp <path to put the backup> /var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config`
+
+### Clear All Caches if Switching Configure > Client > Client
+
+If changing the setting Configure > Client > Client, be sure to clear all the caches. Otherwise benign errors could show up in the log due to leftover download cache files.
 
 Design Decisions Explained
 ===============

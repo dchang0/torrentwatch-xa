@@ -766,6 +766,8 @@ Functional Changes
 - added AnimeTosho.org Atom feed to default feeds
 - added Anirena.com RSS feed to default feeds
 - changed EZTV domain in default feeds to EZTV.re
+- added a few more illegal characters to sanitizeFilename()
+- disable Auto-del seeded torrents if Transmission is disabled
 
 Code Changes
 
@@ -777,6 +779,34 @@ Code Changes
   - deleted Rules from PicoFeed distribution
 - removed MKV, AVC, MP4, and AVI from Qualities since they are often found as file extensions
 - added NVENC, HEVC-265, HEVC 265, and HEVC265 as codecs
+- changed all is_string() to isset() in twxa_parse_match.php due to PHP 7.4 Notices
+
+1.6.0
+
+Functional Changes
+
+- switched RSS parser to aaronpk/picofeed
+- combined RSS and Atom-specific code where possible
+- removed Anidex.info from default feeds due to DDoS-GUARD blocking access
+- revamped feed cache expiration logic
+  - removed secret configuration setting 'Cache Time'
+  - added secret configuration setting 'Cron Interval' to the config file
+  - changed maximum cache expiry for all feeds from 3000 seconds to 3580 seconds (just under 1 hour)
+- added link to feed website to feed title in feed header bar
+- changed feed error header colors
+
+Code Changes
+
+- removed most 'use strict'; from torrentwatch-xa.js to eventually place just one at the top of the file
+- deleted commented-out lines in torrentwatch-xa.js
+- changed debugMatch and unixTime from ids to classes
+- removed deprecated Pragma and Expires headers
+- changed viewport meta tag
+- renamed 'rss' key in addFavorite in torrentwatch-xa.js to 'feed'
+- merged parse_one_rss() and parse_one_atom() into single function
+- commented out all variables that store the feed type
+- changed cron job minutes field to older notation style
+- modified PicoFeed/Parser/Atom to correctly detect only the text/html alternate link for the feed's siteURL
 
 Next Version
 
@@ -797,6 +827,7 @@ Code Changes
 
 IN PROGRESS
 
+- rewrite addFeed() and updateFeed() to no longer need guess_feed_type() and remove guess_feed_type()
 - clicking Test button with blank/default SMTP settings failed (clicking Test only worked after the Save, but it should work before the Save)
 - JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER

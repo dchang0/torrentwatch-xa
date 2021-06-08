@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.5.0";
+$twxa_version[0] = "1.6.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -87,7 +87,8 @@ function parse_options($twxa_version) {
             updateGlobalConfig();
             break;
         case 'addFavorite':
-            $feedLink = $_GET['rss'];
+            //$feedLink = $_GET['rss'];
+            $feedLink = $_GET['feed'];
             foreach ($config_values['Feeds'] as $key => $feed) {
                 if ($feed['Link'] == "$feedLink") {
                     $idx = $key;
@@ -109,7 +110,7 @@ function parse_options($twxa_version) {
                         $_GET['filter'] = trim($tmp['favTitle']);
                         $_GET['quality'] = $tmp['qualitiesRegEx']; // Add to Favorites uses the detected qualities as a regex or .* if no qualities detected
                 }
-                $_GET['feed'] = $_GET['rss'];
+                //$_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['downloaddir'] = '';
                 $_GET['alsosavedir'] = '';
@@ -118,7 +119,7 @@ function parse_options($twxa_version) {
                 $_GET['name'] = $_GET['title'];
                 $_GET['filter'] = $_GET['title'];
                 $_GET['quality'] = 'All';
-                $_GET['feed'] = $_GET['rss'];
+                //$_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['downloaddir'] = '';
                 $_GET['alsosavedir'] = '';

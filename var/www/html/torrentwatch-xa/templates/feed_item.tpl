@@ -105,8 +105,8 @@ $hideItem
 $epiDiv
 </div>
 $progressBar
-<span class='hidden' id='debugMatch'>$debugMatch</span>
-<span class='hidden' id='unixTime'>$unixTime</span>
+<span class='debugMatch hidden' id='debugMatch_$id'>$debugMatch</span>
+<span class='unixTime hidden' id='unixTime_$id'>$unixTime</span>
 </td>
 </tr>
 </table>

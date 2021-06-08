@@ -71,8 +71,7 @@ function clear_cache_by_feed_type($file) {
 function clear_cache_by_cache_type() {
     switch (filter_input(INPUT_GET, 'type')) {
         case 'feeds':
-            clear_cache_by_feed_type("rsscache_*");
-            clear_cache_by_feed_type("atomcache_*");
+            clear_cache_by_feed_type("rsscache_*"); //TODO comment this out by version 1.7.0
             clear_cache_by_feed_type("feedcache_*");
             break;
         case 'torrents':
@@ -80,8 +79,7 @@ function clear_cache_by_cache_type() {
             break;
         case 'all':
             clear_cache_by_feed_type("dl_*");
-            clear_cache_by_feed_type("rsscache_*");
-            clear_cache_by_feed_type("atomcache_*");
+            clear_cache_by_feed_type("rsscache_*"); //TODO comment this out by version 1.7.0
             clear_cache_by_feed_type("feedcache_*");
     }
 }
