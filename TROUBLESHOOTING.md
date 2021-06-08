@@ -121,7 +121,7 @@ Watch the syslog to see CRON attempt to run /etc/cron.d/torrentwatch-xa-cron:
 
 You should see entries like these:
 
-`Dec 20 10:00:01 hostname CRON[4493]: (www-data) CMD (/usr/bin/php -q /var/lib/torrentwatch-xa/rss_dl.php -D >/dev/null 2>&1)`
+`Dec 20 10:00:01 hostname CRON[4493]: (www-data) CMD (/usr/bin/php -q /var/www/html/torrentwatch-xa/twxa_cli.php -D >/dev/null 2>&1)`
 
 Otherwise you will likely see errors with short instructions on how to fix the problem(s).
 
