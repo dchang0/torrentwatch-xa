@@ -120,7 +120,7 @@ fi
 # RedHat/Fedora/CentOS warning
 if [ -e /etc/redhat-release ]
 then
-    echo "SELINUX and firewalld changes must be made manually as RedHat-derived distros are not officially supported yet."
+    echo "SELINUX and firewalld changes must be made manually for Fedora Server and other RedHat-derived distributions. Refer to the Manual Install instructions for those steps."
 fi
 
 # DEFAULT CONFIG IS AUTOMATICALLY GENERATED ON FIRST RUN OF NEW INSTALL IF CONFIG FILE NOT FOUND

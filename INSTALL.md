@@ -1,20 +1,18 @@
+Officially-supported OSes
+===============
+
+- Debian 9.x and up
+- Ubuntu 16.04 and up
+- Fedora Server 34 with SELINUX in Permissive mode (see below for more details on SELINUX)
+
+Other LINUX distributions and other operating systems will work as long as they provide a web server with PHP 5.6.0alpha3 and up with mbstring, xml, curl, and posix_getuid() support. PHP 5.6.0alpha3 is really only required by PHPMailer's SMTP 5.2.23 library to support TLS 1.1 and 1.2. torrentwatch-xa itself only requires PHP 5.4.0. If you are not using email triggers with TLS 1.1 or 1.2, you should be able to avoid this version requirement by downgrading PHPMailer's SMTP library.
+
 Prerequisites
 ===============
 
-### Ubuntu 14.04 and Debian 8.x (No longer supported, but they do work and probably will for quite a while.)
-
-From the official repos:
-
-- transmission-daemon
-- apache2 (Apache httpd 2.4.x)
-- php5 (PHP 5.6.0alpha3 or higher)
-- php5-json
-- php5-curl
-- php5-xml
-
 ### Debian 9.x and up, Ubuntu 16.04 and up
 
-From the official repos:
+From the official repositories:
 
 - transmission-daemon
 - apache2
@@ -24,40 +22,38 @@ From the official repos:
 - php-curl
 - php-xml
 
-### Fedora Server 25 (Not officially supported at this time, but the instructions below do work.)
+### Fedora Server
 
-From the official repos:
+From the official repositories:
 
 - httpd
 - php
 - php-mbstring
-- php-process
+- php-process (provides posix_getuid() function)
 - php-xml
 
-Security
+Password Security
 ===============
 
-torrentwatch-xa handles two passwords: one for Transmission and one for SMTP. If security is a concern, be sure to configure your web server with SSL and harden the OS.
+torrentwatch-xa stores and uses two passwords: one for Transmission and one for SMTP. If security is a concern, be sure to configure your web server with SSL and harden the OS.
 
 Installation Script
 ===============
 
-There is a rudimentary install/upgrade script called `install_twxa.sh` compatible with Debian 8.x and up (but not Debian 7.x), Ubuntu 14.04 and up, and Fedora Server 25.
+The provided install/upgrade script called `install_twxa.sh` will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. It does not install any prerequisite packages for you, nor does it configure or start/restart the Apache2 webserver. It also does not configure firewalld nor SELINUX for Fedora Server and other RedHat-derived distributions. See Manual Installation below for those steps.
 
-The install/upgrade script will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. It does not install any prerequisite packages for you, nor does it configure or start/restart the Apache2 webserver. See Manual Installation below for those steps.
+Be aware that the script contains potentially-dangerous `rm -fr` commands. **Use install_twxa.sh at your own risk!**
 
-Be aware that the script contains `rm -fr` commands, which are potentially dangerous. **Use install_twxa.sh at your own risk!** I will gradually improve the script over time until it essentially does every installation step, at which point it would probably be best to provide a .deb installation package.
-
-IMPORTANT: To use the script, make sure you have sudo privileges or are logged in as root, then:
+To use the script, make sure you have sudo privileges or are logged in as root, then:
 
 - `git clone https://github.com/dchang0/torrentwatch-xa.git`
 - `cd torrentwatch-xa`
 
-Then, if you are upgrading and want to keep your previous config:
+If you are upgrading and want to keep your previous config:
 
 - `./install_twxa.sh --keep-config`
 
-For fresh installs or when you want to discard your config:
+For fresh installs or if you want to discard your config:
 
 - `./install_twxa.sh`
 
@@ -66,17 +62,17 @@ The script will back up the config file if it sees one even if `--keep-config` i
 Manual Installation
 ===============
 
-IMPORTANT: Make sure you have sudo privileges or are logged in as root.
+### Ubuntu 16.04 and up or Debian 9.x and up:
 
-### Ubuntu and Debian only:
-
-- For Ubuntu 14.04 or Debian 8.x:
-  - `sudo apt-get install apache2 php5 php5-json php5-curl transmission-daemon git`
-- For Ubuntu 16.04 and up or Debian 9.x and up:
-  - If your OS is not up to date, update it now.
-    - `sudo apt-get update; sudo apt-get upgrade`
-  - `sudo apt-get install apache2 php php-mbstring php-curl php-xml libapache2-mod-php transmission-daemon git`
-- Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
+- Make sure you have sudo privileges or are logged in as root. Do not skip using sudo, or the resulting file permissions will probably be incorrect.
+- If your OS is not up to date, update it now.
+  - `sudo apt-get update; sudo apt-get upgrade`
+- `sudo apt-get install apache2 php php-mbstring php-curl php-xml libapache2-mod-php git`
+- Install transmission-daemon
+  - `sudo apt-get install transmission-daemon`
+- Optional: configure transmission-daemon
+  - Note that transmission-daemon must be stopped while you make changes to the configuration file.
+  - `sudo vi /etc/transmission-daemon/settings.json`
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
   - `git clone https://github.com/dchang0/torrentwatch-xa.git`
 - Copy/move the folders and their contents to their intended locations:
@@ -85,65 +81,90 @@ IMPORTANT: Make sure you have sudo privileges or are logged in as root.
 - Create the log file:
   - `sudo touch /var/log/twxalog`
   - `sudo chown www-data:www-data /var/log/twxalog`
+  - Make sure it is owned by www-data:www-data and has permissions rw-r--r-- (644)
+    - `ls -l /var/log/twxalog`
 - Allow apache2 to write to the cache folders.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
+- Make sure that config_cache and dl_cache are both owned by www-data:www-data and have permissions drwxr-xr-x (755)
+    - `ls -l /var/lib/torrentwatch-xa`
 - Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
   - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
   - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root and has permissions 644, or it will not run.
-- Restart apache2 just in case some PHP modules are not yet loaded.
-  - `sudo service apache2 restart`
 - Skip to the section __Continue below for all distros:__ below.
 
-### Fedora Server 25 only:
+### Fedora Server 34:
 
-__RedHat-derived distros are not officially supported at this time__ though the below instructions do work on Fedora Server 25. See the Prerequisites section above or the Status section on the README.md page for further details and updates on Fedora Server support.
+Note that these instructions will work for versions of Fedora Server going pretty far back--at least as far back as Fedora Server 25, but probably further back than that.
 
-- Start with a Fedora Server installation and log in as root.
+The RedHat-derived distributions have extra security features that have to be dealt with: a built-in firewall and SELINUX. The firewall isn't too difficult to configure properly, but SELINUX is very complex and difficult. My recommendation, even though it is frowned upon by security experts, is to switch SELINUX to `Permissive` mode. If you wish to configure SELINUX properly in `Enforcing` mode, see the notes at the bottom of this file.
+
+- Start with a Fedora Server installation and log in as root. You must have root privileges to run these commands and install the files with the proper permissions.
 - If your OS is not up to date, update it now.
-  - `dnf update`
-- `dnf install httpd php php-mbstring php-process git`
-- Add the firewall rule to allow access to httpd. (For CentOS 7, change the zone FedoraServer to public.)
-  - `firewall-cmd --zone=FedoraServer --add-service=http --permanent`
-  - `firewall-cmd --reload`
-- Configure SELINUX to allow httpd to contact Transmission RPC (instructions not included here, but the following commands may work as-is).
-  - `dnf install setroubleshoot setools`
-  - `ausearch -c 'httpd' --raw | audit2allow -M my-httpd`
-  - `semodule -i my-httpd.pp`
-- Configure SELINUX to allow httpd to write files to the local filesystem to save .torrent and magnet link files (instructions not included here).
+  - `sudo dnf update`
+- `sudo dnf install httpd php php-mbstring php-process git`
+- Add the firewall rule to allow access to httpd. (In CentOS 7, the zone is named `public` instead of `FedoraServer`.)
+  - `sudo firewall-cmd --zone=FedoraServer --add-service=http --permanent`
+  - `sudo firewall-cmd --reload`
+  - `sudo firewall-cmd --list-all-zones | more`
+- Set SELINUX from `Enforcing` mode to `Permissive` mode
+  - `sudo sestatus`
+  - `sudo setenforce permissive`
+  - Change the line `SELINUX=enforcing` to `SELINUX=permissive` and save the file with `:wq`
+    - `sudo vi /etc/selinux/config`
 - Set httpd to start at boot and start it now.
-  - `systemctl enable httpd.service`
-  - `systemctl start httpd.service`
-- Set up the transmission-daemon (instructions not included here) and test it so that you know it works and know what the username and password are. You may alternately use a Transmission instance on another server like a NAS.
+  - `sudo systemctl enable httpd.service`
+  - `sudo systemctl start httpd.service`
+- Install transmission-daemon
+  - `sudo dnf install transmission-daemon`
+  - `sudo systemctl enable transmission-daemon.service`
+- Optional: configure transmission-daemon
+  - Note that transmission-daemon must be stopped while you make changes to the configuration file.
+  - `sudo vi /var/lib/transmission/.config/transmission-daemon/settings.json`
+- Start transmission-daemon
+  - `sudo systemctl start transmission-daemon.service`
 - Use git to obtain torrentwatch-xa (or download and unzip the zip file instead)
+  - `cd ~`
   - `git clone https://github.com/dchang0/torrentwatch-xa.git`
 - Copy/move the folders and their contents to their intended locations:
-  - `mv ./torrentwatch-xa/var/www/html/torrentwatch-xa /var/www/html`
-  - `mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
+  - `sudo mv ./torrentwatch-xa/var/www/html/torrentwatch-xa /var/www/html`
+  - `sudo mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
 - Create the log file:
   - `sudo touch /var/log/twxalog`
   - `sudo chown apache:apache /var/log/twxalog`
+  - Make sure it is owned by apache:apache and has permissions rw-r--r-- (644)
+    - `ls -l /var/log/twxalog`
 - Allow httpd to write to the cache folders.
   - `sudo chown -R apache:apache /var/lib/torrentwatch-xa/*_cache`
+  - Make sure that config_cache and dl_cache are both owned by apache:apache and have permissions drwxr-xr-x (755)
+    - `ls -l /var/lib/torrentwatch-xa`
 - Set up the cron job by copying the cron job script torrentwatch-xa-cron to /etc/cron.d with proper permissions for it to run.
-  - `cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root, or it will not run.
-  - Edit /etc/cron.d/torrentwatch-xa-cron and change `www-data` to `apache`
-- Restart httpd just in case some PHP modules are not yet loaded.
-  - `systemctl restart httpd.service`
+  - `vi ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron`
+    - IMPORTANT: change `www-data` to `apache`
+    - Save the file with `:wq`
+  - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
+  - Make sure /etc/cron.d/torrentwatch-xa-cron is owned by root:root and the permissions are rw-r--r-- (644), or it will not run.
+    - `ls -l /etc/cron.d`
 - Continue with the section __Continue below for all distros:__ below.
 
 ### Continue below for all distros:
 
-- Open a web browser and visit `http://[hostname or IP of torrentwatch-xa webserver]/torrentwatch-xa`
-- You may see error messages if apache2 is unable to write to the two cache folders. Correct any such errors.
+- Get the IP address of the web server
+  - `ip addr`
+  - Look for the IP address of eth0 (your primary NIC might be named something else)
+- Open a web browser and visit `http://[IP of torrentwatch-xa webserver]/torrentwatch-xa`
+- You should at least see the torrentwatch-xa web UI without any errors at this point. If not, go back and make sure you didn't miss any steps. The most common mistakes are:
+  - Permissions problems--for instance, you may see error messages if apache2 is unable to write to the two cache folders.
+  - For systems with SELINUX installed, Forbidden 403 is probably SELINUX operating in `Enforcing` mode.
+  - A blank page is almost certainly a missing PHP module. Be sure to install all the prerequisites and restart the web server for them to take effect.
 - Use the Configure > Client panel to set up the Transmission connection.
-  - The Configure > Client > Download Dir setting needs to be a path that Transmission can reach and write to. If your Transmission daemon is running on a remote host, be aware that the Download Dir setting refers to a path on the remote host, not on the local host where torrentwatch-xa is running.
-  - It may be necessary to restart Transmission to get torrentwatch-xa to connect.
-    - For Ubuntu or Debian:
-      - `sudo service transmission-daemon restart`
-  - It may also be necessary to reconfigure Transmission (not described here) to get it to work.
-  - Fedora may require additional SELINUX configuration to allow httpd to contact Transmission.
-- You should already see some items from the default RSS feeds. Use the Configure panel to set up the RSS or Atom torrent feeds to your liking.
+  - If you're using a remote instance of Transmission, provide the appropriate settings.
+    - The Configure > Client > Download Dir setting must be a path that Transmission can read from and write to. Be aware that the Download Dir setting refers to a path on the remote host, not on the local host where torrentwatch-xa is running.
+  - If you're using the local instance of transmission-daemon:
+    - torrentwatch-xa should be configured with the default username and password set by the transmission-daemon package installation.
+    - Change Configure > Client > Download Dir to the appropriate path:
+      - For Debian/Ubuntu use `/var/lib/transmission-daemon/downloads` This is the default setting for torrentwatch-xa.
+      - IMPORTANT: for Fedora Server use `/var/lib/transmission`. You will have to change Download Dir to match this before you start downloading any torrents.
+- You should already see some items from the default feeds. Use the Configure > Feeds panel to set up the RSS or Atom torrent feeds to your liking.
 - Use the Favorites panel to set up your automatic downloads.
   - Be aware that your favorites may appear to not work if they are configured to be too stringent a match.
   - For instance, when using the "heart" button in the button bar to add a favorite, it MAY not get the title exactly correct in the newly-created favorite's Filter field, making it fail to match the very item used to create the favorite! Edit the favorite to cast a wider net:
@@ -155,3 +176,17 @@ __RedHat-derived distros are not officially supported at this time__ though the 
     - Then, empty all caches and refresh the browser to trigger the match and start the download.
 - Wait for some downloads to happen automatically or start some manually.
 - Enjoy your downloaded torrents!
+
+Configuring SELINUX In Enforcing Mode
+===============
+
+If you wish to keep SELINUX in the default `Enforcing` mode and configure it to allow torrentwatch-xa and transmission-daemon to work properly, generally, these are the permissions you need to grant:
+
+- httpd must be able to write to these files and folders:
+  - `/var/lib/torrentwatch-xa/dl_cache` and all its contents
+  - `/var/lib/torrentwatch-xa/config_cache` and all its contents
+  - `/var/log/twxalog`
+  - the watch directory where torrentwatch-xa will drop .torrent and .magnet files for transmission-daemon or some other BitTorrent client to pick up
+- httpd must be able to contact either the local or remote transmission-daemon via RPC if you have Configure > Client > Client = Transmission
+
+Since SELINUX is so complex and evolves quickly, I cannot include instructions here. Check out various forums and videos for help configuring SELINUX to allow the above.
