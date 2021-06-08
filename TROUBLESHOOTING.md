@@ -103,9 +103,9 @@ The detection engine is good but not perfect. There are some cases where it misr
 
 Copy and paste that into the bug report.
 
-- Look for the **debugMatch** value for the item in the page source. Usually you will have to look just a few lines below the one(s) that were initially highlighted. You may have to expand some collapsed groups of lines by clicking the arrow buttons next to groups of lines. When you find the **debugMatch** value, it will look like this:
+- Look for the **debugMatch** value for the item in the source code. Usually you will have to look just a few lines below the one(s) that were initially highlighted. You may have to expand some collapsed groups of lines by clicking the arrow buttons next to groups of lines. When you find the **debugMatch** value, it will look like this:
 
-`<span class="hidden" id="debugMatch">1_1_30_1-1</span>`
+`<span class="debugMatch hidden" id="debugMatch">1_1_30_1-1</span>`
 
 Copy and paste that into the bug report.
 - (optional) Cut and paste the favorite's Filter setting into the bug report.
