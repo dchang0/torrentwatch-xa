@@ -28,13 +28,7 @@ Some feeds can't be added for various reasons including:
 
 - rejection of SSL certificate chain
 - feed format is not recognized as Atom or RSS
-- can't handle HTTP redirects or DDoS blockers like CloudFlare
-
-Please note that I have not been able to personally test torrentwatch-xa's handling of Atom feeds due to their extreme rarity.
-
-#### Feed is totally missing; "Feed inaccessible" in log
-
-From the NyaaTorrents shutdown cascading to Feedburner's Anime (Aggregated) feed, I learned the hard way that if the feed URL is not valid (usually returning a 404 or 403 HTTP status code), the UI will never get the chance to show the section header that says "Feed is not available" in red. I will have to rewrite certain functions to handle this, but for now, if a feed is totally missing from the list, first, wait for the cron job to force a reload of the feed cache, then refresh the browser, which should then show the missing feed. If not, check the log file, which might say "Feed inaccessible: " instead of "Feed down: ". If it says "Feed inaccessible," the feed URL is likely not valid or experiencing serious server problems or traffic congestion.
+- can't handle HTTP redirects or DDoS blockers like CloudFlare or DDoS-GUARD
 
 #### Can't handle compressed torrent files
 

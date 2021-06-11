@@ -82,7 +82,7 @@ Simple: Uses the PHP strpos() function to compare strings. Matches must be exact
 
 Glob: Named after the PHP glob() function. Uses the PHP fnmatch() function to compare strings. Allows simple wildcards allowed in filename comparisons in a LINUX shell such as * and ? and square brackets.
 
-RegExp: Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching and wildcards. RegExp is the default matching style. You must use RegExp matching style for multibyte strings.
+RegExp: Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching and wildcards. RegExp is the default matching style. Only RegExp matching style supports multibyte strings (Japanese/Chinese/Korean). Multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
 
 ### Authentication for Private RSS Feeds
 

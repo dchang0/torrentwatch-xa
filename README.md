@@ -40,10 +40,6 @@ Fedora Server is now officially-supported, but only with SELINUX in Permissive m
 
 Please report any bugs using Github Issues.
 
-#### Still in Alpha
-
-- a Favorite Filter can now match multibyte strings (Japanese/Chinese/Korean) in RegExp matching mode only (not Simple, nor Glob), but multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
-
 Documentation
 ===============
 
