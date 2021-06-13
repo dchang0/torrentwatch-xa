@@ -50,6 +50,9 @@ require_once 'PicoFeed/Parser/Rss10.php';
 require_once 'PicoFeed/Parser/Rss20.php';
 require_once 'PicoFeed/Parser/Rss91.php';
 require_once 'PicoFeed/Parser/Rss92.php';
+require_once 'PicoFeed/Reader/ReaderException.php';
+require_once 'PicoFeed/Reader/UnsupportedFeedFormatException.php';
+require_once 'PicoFeed/Reader/SubscriptionNotFoundException.php';
 require_once 'PicoFeed/Reader/Reader.php';
 
 use PicoFeed\Reader\Reader;
