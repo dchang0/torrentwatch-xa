@@ -82,18 +82,21 @@ Note that for all string comparisons in any matching style, the strings are conv
 
 Uses the PHP strpos() function to compare strings. strpos() finds a substring (the Filter) in a another string (the title). Matches must be exact alphanumeric matches with no wildcards.
 
-Example 1: The Simple Filter "zombie" will match all of these titles:
+Example 1: The Simple Filter "__zombie__" will match all of these titles:
 
-*Zombie* Land Saga
-Kore Wa *Zombie* Desu Ka?
-Kore Wa *Zombie* Desu Ka? Of the Dead
-*Zombie*-Loan
+__Zombie__ Land Saga
+
+Kore Wa __Zombie__ Desu Ka?
+
+Kore Wa __Zombie__ Desu Ka? Of the Dead
+
+__Zombie__-Loan
 
 Note that it is not case-sensitive and that the position of the substring "zombie" in the title does not matter. You will match all four of these titles.
 
-Example 2: The Simple Filter "zombieland" will match:
+Example 2: The Simple Filter "__zombieland__" will match:
 
-*Zombieland* Saga
+__Zombieland__ Saga
 
 but will not match:
 
@@ -105,27 +108,30 @@ Why? The space in the middle of "Zombie Land" doesn't match.
 
 Named after the PHP glob() function. Uses the PHP fnmatch() function to compare strings. Allows simple wildcards allowed in filename comparisons in a LINUX shell such as * and ? and square brackets.
 
-Example 1: The Glob Filter "zombie*land" will match:
+Example 1: The Glob Filter "__zombie*land__" will match:
 
-Zombieland Saga
-Zombie Land Saga
+__Zombieland__ Saga
 
-Example 2: The Glob Filter "zombie*dead" will match:
+__Zombie Land__ Saga
 
-Kore Wa *Zombie Desu Ka? Of The Dead*
+Example 2: The Glob Filter "__zombie*dead__" will match:
+
+Kore Wa __Zombie Desu Ka? Of The Dead__
 
 but will not match:
 
 Kore Wa Zombie Desu Ka?
 
-Example 3: The Glob Filter "gr[ae]yman" will match:
+Example 3: The Glob Filter "__gr[ae]yman__" will match:
 
-D.*Grayman*
-D.*Greyman*
+D.__Grayman__
+
+D.__Greyman__
 
 but will not match:
 
 D.Gray-man
+
 D.Gray Man
 
 #### RegExp
@@ -138,34 +144,43 @@ Example 1: Let's say you want to match the title "Oregairu" but only want to mat
 
 The RegExp filter:
 
-(Erai-raws|Subsplease|SSA) Oregairu
+__(Erai-raws|Subsplease|SSA) Oregairu__
 
 would match all of:
 
-*Erai-raws Oregairu*
-*Erai-raws Oregairu* Zoku
-*Erai-raws Oregairu* Kan
-*Subsplease Oregairu*
-*Subsplease Oregairu* Zoku
-*Subsplease Oregairu* Kan
-*SSA Oregairu*
-*SSA Oregairu* Zoku
-*SSA Oregairu* Kan
+__Erai-raws Oregairu__
 
-Example 2: Let's say you only want Oregairu but not Oregairu Zoku nor Oregairu Kan. Use this filter:
+__Erai-raws Oregairu__ Zoku
 
-(Erai-raws|Subsplease|SSA) Oregairu [^ZK]
+__Erai-raws Oregairu__ Kan
 
-This essentially means: "I don't want the next letter after the space after Oregairu to be a Z or a K."
+__Subsplease Oregairu__
 
-Of course, if you just use simple literal strings, RegExp essentially acts like Simple. For instance, the RegExp Filter "girls und panzer" will match:
+__Subsplease Oregairu__ Zoku
 
-Erai-raws *Girls Und Panzer*
-Subsplease *Girls Und Panzer* Das Finale
+__Subsplease Oregairu__ Kan
 
-Example 3: Let's say you like 720p and 480p but don't like 1080p. In the Qualities input, you can put this RegExp: "(720p|480p)"
+__SSA Oregairu__
 
-This will match 720p or 480p but not 1080p nor 540p or any other resolution.
+__SSA Oregairu__ Zoku
+
+__SSA Oregairu__ Kan
+
+Example 2: Let's say you only want Oregairu from one of those three fansubbing crews but not Oregairu Zoku nor Oregairu Kan. Use this filter:
+
+__(Erai-raws|Subsplease|SSA) Oregairu [^ZK]__
+
+The "__Oregairu [^ZK]__" essentially means: "I don't want the next letter after the space after Oregairu to be a Z or a K."
+
+Of course, if you just use simple literal strings, RegExp essentially acts like Simple. For instance, the RegExp Filter "__girls und panzer__" will match:
+
+Erai-raws __Girls Und Panzer__
+
+Subsplease __Girls Und Panzer__ Das Finale
+
+Example 3: Let's say you like 720p and 480p but don't like 1080p. In the Qualities input, you can put this RegExp: "__(720p|480p)__"
+
+This will match 720p or 480p but not 1080p nor 540p nor any other resolution.
 Note that for a single Favorite offered in multiple resolutions, with the above filter, whichever of 720p or 480p comes first in the feed matches and downloads. The other would be considered a duplicate and would match but not download.
 
 ### Authentication for Private RSS Feeds
