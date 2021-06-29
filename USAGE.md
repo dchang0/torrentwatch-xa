@@ -78,11 +78,95 @@ The Filter, Not, and Qualities fields in each Favorite behave differently depend
 
 Note that for all string comparisons in any matching style, the strings are converted to all-lowercase using the PHP strtolower() function to make the matches case-insensitive.
 
-Simple: Uses the PHP strpos() function to compare strings. Matches must be exact alphanumeric matches with no wildcards.
+#### Simple
 
-Glob: Named after the PHP glob() function. Uses the PHP fnmatch() function to compare strings. Allows simple wildcards allowed in filename comparisons in a LINUX shell such as * and ? and square brackets.
+Uses the PHP strpos() function to compare strings. strpos() finds a substring (the Filter) in a another string (the title). Matches must be exact alphanumeric matches with no wildcards.
 
-RegExp: Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching and wildcards. RegExp is the default matching style. Only RegExp matching style supports multibyte strings (Japanese/Chinese/Korean). Multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+Example 1: The Simple Filter "zombie" will match all of these titles:
+
+*Zombie* Land Saga
+Kore Wa *Zombie* Desu Ka?
+Kore Wa *Zombie* Desu Ka? Of the Dead
+*Zombie*-Loan
+
+Note that it is not case-sensitive and that the position of the substring "zombie" in the title does not matter. You will match all four of these titles.
+
+Example 2: The Simple Filter "zombieland" will match:
+
+*Zombieland* Saga
+
+but will not match:
+
+Zombie Land Saga
+
+Why? The space in the middle of "Zombie Land" doesn't match.
+
+#### Glob
+
+Named after the PHP glob() function. Uses the PHP fnmatch() function to compare strings. Allows simple wildcards allowed in filename comparisons in a LINUX shell such as * and ? and square brackets.
+
+Example 1: The Glob Filter "zombie*land" will match:
+
+Zombieland Saga
+Zombie Land Saga
+
+Example 2: The Glob Filter "zombie*dead" will match:
+
+Kore Wa *Zombie Desu Ka? Of The Dead*
+
+but will not match:
+
+Kore Wa Zombie Desu Ka?
+
+Example 3: The Glob Filter "gr[ae]yman" will match:
+
+D.*Grayman*
+D.*Greyman*
+
+but will not match:
+
+D.Gray-man
+D.Gray Man
+
+#### RegExp
+
+Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching and wildcards. RegExp is the default matching style. Only RegExp matching style supports multibyte strings (Japanese/Chinese/Korean). Multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
+
+PCRE is such a powerful and complex expression language that I won't cover how it works here. Suffice it to say that you can do some very complex matching and simple to moderate logic.
+
+Example 1: Let's say you want to match the title "Oregairu" but only want to match one of three fansubbing crews: Erai-raws, Subsplease, or SSA.
+
+The RegExp filter:
+
+(Erai-raws|Subsplease|SSA) Oregairu
+
+would match all of:
+
+*Erai-raws Oregairu*
+*Erai-raws Oregairu* Zoku
+*Erai-raws Oregairu* Kan
+*Subsplease Oregairu*
+*Subsplease Oregairu* Zoku
+*Subsplease Oregairu* Kan
+*SSA Oregairu*
+*SSA Oregairu* Zoku
+*SSA Oregairu* Kan
+
+Example 2: Let's say you only want Oregairu but not Oregairu Zoku nor Oregairu Kan. Use this filter:
+
+(Erai-raws|Subsplease|SSA) Oregairu [^ZK]
+
+This essentially means: "I don't want the next letter after the space after Oregairu to be a Z or a K."
+
+Of course, if you just use simple literal strings, RegExp essentially acts like Simple. For instance, the RegExp Filter "girls und panzer" will match:
+
+Erai-raws *Girls Und Panzer*
+Subsplease *Girls Und Panzer* Das Finale
+
+Example 3: Let's say you like 720p and 480p but don't like 1080p. In the Qualities input, you can put this RegExp: "(720p|480p)"
+
+This will match 720p or 480p but not 1080p nor 540p or any other resolution.
+Note that for a single Favorite offered in multiple resolutions, with the above filter, whichever of 720p or 480p comes first in the feed matches and downloads. The other would be considered a duplicate and would match but not download.
 
 ### Authentication for Private RSS Feeds
 
