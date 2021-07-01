@@ -146,11 +146,13 @@ D.Grayman Erai-raws (because the "D." at the beginning is not in the pattern)
 
 Grayman SSAM (because the "M" at the end is not in the pattern)
 
-This Glob pattern "__*Grayman*[Erai-raws||SSA]__" will match:
+This Glob pattern "__\*Grayman\*[Erai-raws||SSA]__" will match:
 
 __D.Grayman Dual Audio Erai-raws__
 
 because the first asterisk picks up the "D." at the beginning and the second asterisk picks up the " Dual Audio " in the middle.
+
+Note: The Simple pattern "word" is the equivalent of the Glob pattern "\*word\*"
 
 #### RegExp
 
