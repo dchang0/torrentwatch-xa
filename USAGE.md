@@ -134,6 +134,24 @@ D.Gray-man
 
 D.Gray Man
 
+Example 4 (contributed by JohnDarkhorse): The Glob filter "__Grayman*[Erai-raws||SSA]__" will match:
+
+__Grayman Erai-raws__
+
+__Grayman SSA__
+
+but will not match:
+
+D.Grayman Erai-raws (because the "D." at the beginning is not in the pattern)
+
+Grayman SSAM (because the "M" at the end is not in the pattern)
+
+This Glob pattern "__*Grayman*[Erai-raws||SSA]__" will match:
+
+__D.Grayman Dual Audio Erai-raws__
+
+because the first asterisk picks up the "D." at the beginning and the second asterisk picks up the " Dual Audio " in the middle.
+
 #### RegExp
 
 Uses the PHP preg_match() function to compare strings. Allows PCRE Unicode regular expressions for the most powerful matching and wildcards. RegExp is the default matching style. Only RegExp matching style supports multibyte strings (Japanese/Chinese/Korean). Multibyte characters must be individually specified in PCRE Unicode hexadecimal notation like `0x{3010}` to satisfy PHP's preg_ functions.
