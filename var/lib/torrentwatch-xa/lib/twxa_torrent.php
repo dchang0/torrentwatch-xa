@@ -413,194 +413,200 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
 function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
     //TODO this function needs major cleanup! Be aware that return value should be an array but Javascript .dlTorrent expects a string
     global $config_values;
-    if (isset($fav) && isset($fav['Filter']) && strtolower($fav['Filter']) === "any") {
-        $any = 1;
-    }
-    if (strpos($filename, 'magnet:') === 0) {
-        $tor = $filename;
-        $magnet = true;
-    } else {
-        $magnet = false;
-        $filename = htmlspecialchars_decode($filename);
-
-        // Detect and append cookies from the feed url
-        $url = $filename;
-        if ($feed && strpos($feed, ':COOKIE:') !== false && strpos($url, ':COOKIE:') === false) {
-            $url .= stristr($feed, ':COOKIE:');
+    if (isset($filename) && $filename !== '') {
+        if (isset($fav) && isset($fav['Filter']) && strtolower($fav['Filter']) === "any") {
+            $any = 1;
         }
-
-        $get = curl_init();
-        $response = parseURLForCookies($url);
-        if ($response) {
-            $url = $response['url'];
-            $cookies = $response['cookies'];
-        }
-        $curlOptions[CURLOPT_URL] = $url;
-        if (isset($cookies)) {
-            $curlOptions[CURLOPT_COOKIE] = $cookies;
-        }
-        getcURLDefaults($curlOptions);
-        curl_setopt_array($get, $curlOptions);
-        $tor = curl_exec($get);
-        curl_close($get);
-
-        if (strncasecmp($tor, 'd8:announce', 11) != 0) { // Check for torrent magic-entry
-            // not a torrent file, so it's probably XML / HTML content or possibly a gzipped torrent file
-            // first, check the URL for a torrent hash and use that
-            $mat = [];
-            if (preg_match('/([a-fA-F0-9]{40})/', $filename, $mat) === 1) {
-                writeToLog("Using torrent hash found in the URL: " . $mat[1] . "\n", 1);
-                $tor = "magnet:?xt=urn:btih:$mat[1]";
-                $magnet = true;
-            } else {
-                if (!$retried) {
-                    // try to retrieve a .torrent link from the content.
-                    $link = find_torrent_link($url, $tor);
-                    //TODO test the link before recursively calling client_add_torrent
-                    return client_add_torrent($link, $dest, $ti, $feed, $fav, $url); // $url is used as boolean in $retried here but also as value in else below
-                } else {
-                    if (isset($retried)) {
-                        $url = $retried;
-                    }
-                    $errMsg = "No torrent file link found in $url. Might be a gzipped torrent.";
-                    writeToLog("$errMsg\n", -1);
-                    //TODO remove this later
-                    writeToLog("HTTP response: $tor\n", 2);
-                    return $errMsg;
-                }
-            }
-        } // do not add else with return here as it will break adding torrent files
-
-        if (!$tor) {
-            $errMsg = "Couldn't open torrent: $filename";
-            writeToLog("$errMsg\n", -1);
-            return $errMsg;
-        }
-    }
-
-    $tor_info = new BDecode("", $tor);
-    if (!($tor_name = $tor_info->{'result'}['info']['name'])) {
-        $tor_name = $ti; //TODO do we really need $tor_name in place of $ti?
-    }
-
-    if (!isset($dest)) {
-        $dest = $config_values['Settings']['Download Dir'];
-    }
-    if (isset($fav) && !empty($fav['Download Dir'])) {
-        if (
-                ($config_values['Settings']['Client'] === "folder" &&
-                is_dir($fav['Download Dir']) &&
-                is_writeable($fav['Download Dir'])) ||
-                $config_values['Settings']['Client'] !== "folder"
-        ) {
-            $dest = $fav['Download Dir'];
+        if (strpos($filename, 'magnet:') === 0) {
+            $tor = $filename;
+            $magnet = true;
         } else {
+            $magnet = false;
+            $filename = htmlspecialchars_decode($filename);
+
+            // Detect and append cookies from the feed url
+            $url = $filename;
+            if ($feed && strpos($feed, ':COOKIE:') !== false && strpos($url, ':COOKIE:') === false) {
+                $url .= stristr($feed, ':COOKIE:');
+            }
+
+            $get = curl_init();
+            $response = parseURLForCookies($url);
+            if ($response) {
+                $url = $response['url'];
+                $cookies = $response['cookies'];
+            }
+            $curlOptions[CURLOPT_URL] = $url;
+            if (isset($cookies)) {
+                $curlOptions[CURLOPT_COOKIE] = $cookies;
+            }
+            getcURLDefaults($curlOptions);
+            curl_setopt_array($get, $curlOptions);
+            $tor = curl_exec($get);
+            curl_close($get);
+
+            if (strncasecmp($tor, 'd8:announce', 11) != 0) { // Check for torrent magic-entry
+                // not a torrent file, so it's probably XML / HTML content or possibly a gzipped torrent file
+                // first, check the URL for a torrent hash and use that
+                $mat = [];
+                if (preg_match('/([a-fA-F0-9]{40})/', $filename, $mat) === 1) {
+                    writeToLog("Using torrent hash found in the URL: " . $mat[1] . "\n", 1);
+                    $tor = "magnet:?xt=urn:btih:$mat[1]";
+                    $magnet = true;
+                } else {
+                    if (!$retried) {
+                        // try to retrieve a .torrent link from the content.
+                        $link = find_torrent_link($url, $tor);
+                        //TODO test the link before recursively calling client_add_torrent
+                        return client_add_torrent($link, $dest, $ti, $feed, $fav, $url); // $url is used as boolean in $retried here but also as value in else below
+                    } else {
+                        if (isset($retried)) {
+                            $url = $retried;
+                        }
+                        $errMsg = "No torrent file link found in $url. Might be a gzipped torrent.";
+                        writeToLog("$errMsg\n", -1);
+                        //TODO remove this later
+                        writeToLog("HTTP response: $tor\n", 2);
+                        return $errMsg;
+                    }
+                }
+            } // do not add else with return here as it will break adding torrent files
+
+            if (!$tor) {
+                $errMsg = "Couldn't open torrent: $filename";
+                writeToLog("$errMsg\n", -1);
+                return $errMsg;
+            }
+        }
+
+        $tor_info = new BDecode("", $tor);
+        if (!($tor_name = $tor_info->{'result'}['info']['name'])) {
+            $tor_name = $ti; //TODO do we really need $tor_name in place of $ti?
+        }
+
+        if (!isset($dest)) {
             $dest = $config_values['Settings']['Download Dir'];
         }
-    }
+        if (isset($fav) && !empty($fav['Download Dir'])) {
+            if (
+                    ($config_values['Settings']['Client'] === "folder" &&
+                    is_dir($fav['Download Dir']) &&
+                    is_writeable($fav['Download Dir'])) ||
+                    $config_values['Settings']['Client'] !== "folder"
+            ) {
+                $dest = $fav['Download Dir'];
+            } else {
+                $dest = $config_values['Settings']['Download Dir'];
+            }
+        }
 
-    $dest = get_deep_dir(preg_replace('/\/$/', '', $dest), $tor_name);
+        $dest = get_deep_dir(preg_replace('/\/$/', '', $dest), $tor_name);
 
-    $transmissionHost = $config_values['Settings']['Transmission Host'];
-    if ($transmissionHost === '127.0.0.1' || $transmissionHost === 'localhost') {
-        if (file_exists($dest)) {
-            // path exists, is it a file or directory?
-            if (!is_dir($dest)) {
-                // it's a file--destroy and recreate it as a directory
+        $transmissionHost = $config_values['Settings']['Transmission Host'];
+        if ($transmissionHost === '127.0.0.1' || $transmissionHost === 'localhost') {
+            if (file_exists($dest)) {
+                // path exists, is it a file or directory?
+                if (!is_dir($dest)) {
+                    // it's a file--destroy and recreate it as a directory
+                    $old_umask = umask(0);
+                    writeToLog("Attempting to destroy file and recreate as directory: $dest\n", 2);
+                    unlink($dest);
+                    mkdir($dest, 0775, true);
+                    umask($old_umask);
+                }
+            } else {
+                // path doesn't exist, create it as a directory
                 $old_umask = umask(0);
-                writeToLog("Attempting to destroy file and recreate as directory: $dest\n", 2);
-                unlink($dest);
+                writeToLog("Attempting to create directory: $dest\n", 2);
                 mkdir($dest, 0775, true);
                 umask($old_umask);
             }
+        }
+
+        foreach ($config_values['Feeds'] as $key => $feedLink) {
+            if ($feedLink['Link'] == "$feed") {
+                $idx = $key;
+            }
+        }
+        if (isset($fav) && isset($fav['seedRatio']) && is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
+            $seedRatio = $fav['seedRatio'];
+        } else if (is_numeric($config_values['Feeds'][$idx]['seedRatio']) && $config_values['Feeds'][$idx]['seedRatio'] >= 0) {
+            $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];
+        } else if (is_numeric($config_values['Settings']['Default Seed Ratio'])) {
+            $seedRatio = $config_values['Settings']['Default Seed Ratio'];
         } else {
-            // path doesn't exist, create it as a directory
-            $old_umask = umask(0);
-            writeToLog("Attempting to create directory: $dest\n", 2);
-            mkdir($dest, 0775, true);
-            umask($old_umask);
+            $seedRatio = -1;
         }
-    }
 
-    foreach ($config_values['Feeds'] as $key => $feedLink) {
-        if ($feedLink['Link'] == "$feed") {
-            $idx = $key;
+        switch ($config_values['Settings']['Client']) {
+            case "Transmission":
+                $return1 = transmission_add_torrent($tor, $dest, $ti, getArrayValueByKey($fav, '$seedRatio', $seedRatio));
+                break;
+            case "folder":
+                $return1 = folder_add_torrent($tor, $dest, $tor_name, $magnet);
+                break;
+            default:
+                writeToLog("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
+                exit(1); //TODO deal with this in revamping return of this function
         }
-    }
-    if (isset($fav) && isset($fav['seedRatio']) && is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
-        $seedRatio = $fav['seedRatio'];
-    } else if (is_numeric($config_values['Feeds'][$idx]['seedRatio']) && $config_values['Feeds'][$idx]['seedRatio'] >= 0) {
-        $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];
-    } else if (is_numeric($config_values['Settings']['Default Seed Ratio'])) {
-        $seedRatio = $config_values['Settings']['Default Seed Ratio'];
-    } else {
-        $seedRatio = -1;
-    }
-
-    switch ($config_values['Settings']['Client']) {
-        case "Transmission":
-            $return1 = transmission_add_torrent($tor, $dest, $ti, getArrayValueByKey($fav, '$seedRatio', $seedRatio));
-            break;
-        case "folder":
-            $return1 = folder_add_torrent($tor, $dest, $tor_name, $magnet);
-            break;
-        default:
-            writeToLog("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
-            exit(1); //TODO deal with this in revamping return of this function
-    }
-    if ($return1['errorCode'] === 0) {
-        add_history($tor_name);
-        writeToLog("Started: $tor_name in $dest\n", 1);
-        if (isset($fav)) {
+        if ($return1['errorCode'] === 0) {
+            add_history($tor_name);
+            writeToLog("Started: $tor_name in $dest\n", 1);
+            if (isset($fav)) {
+                if ($config_values['Settings']['SMTP Notifications']) {
+                    $subject = "\"$tor_name\" started downloading";
+                    $msg = "torrentwatch-xa started downloading \"$tor_name\"";
+                    notifyByEmail($msg, $subject);
+                }
+                if ($config_values['Settings']['Enable Script']) {
+                    runScript('favstart', $ti);
+                }
+                if (!isset($any) || !$any) {
+                    if (updateFavoriteEpisode($fav, $ti)) {
+                        writeToLog("Updated Favorite: $ti\n", 2);
+                    } else {
+                        writeToLog("Failed to update Favorite: $ti\n", 2);
+                    }
+                }
+            } else if ($config_values['Settings']['Enable Script']) {
+                runScript('nonfavstart', $ti);
+            }
+            if ($config_values['Settings']['Client'] !== "folder" &&
+                    $config_values['Settings']['Save Torrents']) {
+                if (
+                        isset($fav) &&
+                        !empty($fav['Also Save Dir']) &&
+                        is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
+                        is_writeable($fav['Also Save Dir'])
+                ) {
+                    $alsodest = $fav['Also Save Dir'];
+                } else {
+                    $alsodest = $config_values['Settings']['Save Torrents Dir'];
+                }
+                writeToLog("Also saving to file: $alsodest/" . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
+                $return2 = folder_add_torrent($tor, $alsodest, $tor_name, $magnet);
+                if ($return2['errorCode'] !== 0) {
+                    return "Error: " . $return2['errorMessage']; //TODO deal with this in revamping return of this function
+                }
+            }
+            return "Success"; //TODO deal with this in revamping return of this function
+        } else {
+            writeToLog("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
+            $msg = "torrentwatch-xa tried to start \"$tor_name\" but failed with the following error:\n\n";
+            $msg .= $return1['errorMessage'] . "\n";
             if ($config_values['Settings']['SMTP Notifications']) {
-                $subject = "\"$tor_name\" started downloading";
-                $msg = "torrentwatch-xa started downloading \"$tor_name\"";
+                $subject = "Failed starting: \"$tor_name\"";
                 notifyByEmail($msg, $subject);
             }
             if ($config_values['Settings']['Enable Script']) {
-                runScript('favstart', $ti);
+                runScript('error', $ti, $msg);
             }
-            if (!isset($any) || !$any) {
-                if (updateFavoriteEpisode($fav, $ti)) {
-                    writeToLog("Updated Favorite: $ti\n", 2);
-                } else {
-                    writeToLog("Failed to update Favorite: $ti\n", 2);
-                }
-            }
-        } else if ($config_values['Settings']['Enable Script']) {
-            runScript('nonfavstart', $ti);
+            return "Error: " . $return1['errorMessage']; //TODO deal with this in revamping return of this function
         }
-        if ($config_values['Settings']['Client'] !== "folder" &&
-                $config_values['Settings']['Save Torrents']) {
-            if (
-                    isset($fav) &&
-                    !empty($fav['Also Save Dir']) &&
-                    is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
-                    is_writeable($fav['Also Save Dir'])
-            ) {
-                $alsodest = $fav['Also Save Dir'];
-            } else {
-                $alsodest = $config_values['Settings']['Save Torrents Dir'];
-            }
-            writeToLog("Also saving to file: $alsodest/" . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
-            $return2 = folder_add_torrent($tor, $alsodest, $tor_name, $magnet);
-            if ($return2['errorCode'] !== 0) {
-                return "Error: " . $return2['errorMessage']; //TODO deal with this in revamping return of this function
-            }
-        }
-        return "Success"; //TODO deal with this in revamping return of this function
     } else {
-        writeToLog("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
-        $msg = "torrentwatch-xa tried to start \"$tor_name\" but failed with the following error:\n\n";
-        $msg .= $return1['errorMessage'] . "\n";
-        if ($config_values['Settings']['SMTP Notifications']) {
-            $subject = "Failed starting: \"$tor_name\"";
-            notifyByEmail($msg, $subject);
-        }
-        if ($config_values['Settings']['Enable Script']) {
-            runScript('error', $ti, $msg);
-        }
-        return "Error: " . $return1['errorMessage']; //TODO deal with this in revamping return of this function
+        $errMsg = "Error: magnet or torrent link cannot be blank. Please check that this feed item conforms to spec.";
+        writeToLog("$errMsg\n", -1);
+        return $errMsg;
     }
 }
 
