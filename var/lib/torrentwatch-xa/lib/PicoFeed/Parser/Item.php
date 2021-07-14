@@ -90,7 +90,7 @@ class Item
     public $enclosureUrl = '';
 
     /**
-     * Item enclusure type.
+     * Item enclosure type.
      *
      * @var string
      */

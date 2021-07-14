@@ -17,9 +17,10 @@ use PicoFeed\Logging\Logger;
  *
  * @package PicoFeed\Parser
  * @author  Frederic Guillot
+ * @author  https://github.com/dchang0
  */
-abstract class Parser implements ParserInterface
-{
+abstract class Parser implements ParserInterface {
+
     /**
      * Config object.
      *
@@ -84,8 +85,7 @@ abstract class Parser implements ParserInterface
      * @param string $http_encoding HTTP encoding (headers)
      * @param string $fallback_url  Fallback url when the feed provide relative or broken url
      */
-    public function __construct($content, $http_encoding = '', $fallback_url = '')
-    {
+    public function __construct($content, $http_encoding = '', $fallback_url = '') {
         $this->fallback_url = $fallback_url;
         $xml_encoding = XmlParser::getEncodingFromXmlTag($content);
 
@@ -93,7 +93,7 @@ abstract class Parser implements ParserInterface
         $this->content = Filter::stripXmlTag($content);
 
         // Encode everything in UTF-8
-        Logger::setMessage(get_called_class().': HTTP Encoding "'.$http_encoding.'" ; XML Encoding "'.$xml_encoding.'"');
+        Logger::setMessage(get_called_class() . ': HTTP Encoding "' . $http_encoding . '" ; XML Encoding "' . $xml_encoding . '"');
         $this->content = Encoding::convert($this->content, $xml_encoding ?: $http_encoding);
 
         $this->itemPostProcessor = new ItemPostProcessor($this->config);
@@ -106,19 +106,18 @@ abstract class Parser implements ParserInterface
      * @return Feed
      * @throws MalformedXmlException
      */
-    public function execute()
-    {
-        Logger::setMessage(get_called_class().': begin parsing');
+    public function execute() {
+        Logger::setMessage(get_called_class() . ': begin parsing');
 
         $xml = XmlParser::getSimpleXml($this->content);
 
         if ($xml === false) {
-            Logger::setMessage(get_called_class().': Applying XML workarounds');
+            Logger::setMessage(get_called_class() . ': Applying XML workarounds');
             $this->content = Filter::normalizeData($this->content);
             $xml = XmlParser::getSimpleXml($this->content);
 
             if ($xml === false) {
-                Logger::setMessage(get_called_class().': XML parsing error');
+                Logger::setMessage(get_called_class() . ': XML parsing error');
                 Logger::setMessage(XmlParser::getErrors());
                 throw new MalformedXmlException('XML parsing error');
             }
@@ -169,7 +168,7 @@ abstract class Parser implements ParserInterface
             $feed->items[] = $item;
         }
 
-        Logger::setMessage(get_called_class().PHP_EOL.$feed);
+        Logger::setMessage(get_called_class() . PHP_EOL . $feed);
 
         return $feed;
     }
@@ -179,8 +178,7 @@ abstract class Parser implements ParserInterface
      *
      * @param Feed $feed Feed object
      */
-    public function checkFeedUrl(Feed $feed)
-    {
+    public function checkFeedUrl(Feed $feed) {
         if ($feed->getFeedUrl() === '') {
             $feed->feedUrl = $this->fallback_url;
         } else {
@@ -193,8 +191,7 @@ abstract class Parser implements ParserInterface
      *
      * @param Feed $feed Feed object
      */
-    public function checkSiteUrl(Feed $feed)
-    {
+    public function checkSiteUrl(Feed $feed) {
         if ($feed->getSiteUrl() === '') {
             $feed->siteUrl = Url::base($feed->getFeedUrl());
         } else {
@@ -208,9 +205,12 @@ abstract class Parser implements ParserInterface
      * @param Feed $feed Feed object
      * @param Item $item Item object
      */
-    public function checkItemUrl(Feed $feed, Item $item)
-    {
-        $item->url = Url::resolve($item->getUrl(), $feed->getSiteUrl());
+    public function checkItemUrl(Feed $feed, Item $item) {
+        if (strpos($item->getUrl(), 'magnet:') === 0) {
+            // do nothing
+        } else {
+            $item->url = Url::resolve($item->getUrl(), $feed->getSiteUrl());
+        }
     }
 
     /**
@@ -220,8 +220,7 @@ abstract class Parser implements ParserInterface
      * @param Item                  $item  Item object
      * @param \PicoFeed\Parser\Feed $feed  Feed object
      */
-    public function findItemDate(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemDate(SimpleXMLElement $entry, Item $item, Feed $feed) {
         $this->findItemPublishedDate($entry, $item, $feed);
         $this->findItemUpdatedDate($entry, $item, $feed);
 
@@ -245,8 +244,7 @@ abstract class Parser implements ParserInterface
      * @access public
      * @return ItemPostProcessor
      */
-    public function getItemPostProcessor()
-    {
+    public function getItemPostProcessor() {
         return $this->itemPostProcessor;
     }
 
@@ -256,8 +254,7 @@ abstract class Parser implements ParserInterface
      * @access public
      * @return DateParser
      */
-    public function getDateParser()
-    {
+    public function getDateParser() {
         if ($this->dateParser === null) {
             $this->dateParser = new DateParser($this->config);
         }
@@ -270,8 +267,7 @@ abstract class Parser implements ParserInterface
      *
      * @return string
      */
-    public function generateId()
-    {
+    public function generateId() {
         return hash($this->hash_algo, implode(func_get_args()));
     }
 
@@ -282,8 +278,7 @@ abstract class Parser implements ParserInterface
      * @param string $language Language: fr-FR, en-US
      * @return bool
      */
-    public static function isLanguageRTL($language)
-    {
+    public static function isLanguageRTL($language) {
         $language = strtolower($language);
 
         $rtl_languages = array(
@@ -312,8 +307,7 @@ abstract class Parser implements ParserInterface
      * @param string $algo Algorithm name
      * @return \PicoFeed\Parser\Parser
      */
-    public function setHashAlgo($algo)
-    {
+    public function setHashAlgo($algo) {
         $this->hash_algo = $algo ?: $this->hash_algo;
         return $this;
     }
@@ -324,8 +318,7 @@ abstract class Parser implements ParserInterface
      * @param \PicoFeed\Config\Config $config Config instance
      * @return \PicoFeed\Parser\Parser
      */
-    public function setConfig($config)
-    {
+    public function setConfig($config) {
         $this->config = $config;
         $this->itemPostProcessor->setConfig($config);
         return $this;
@@ -336,8 +329,7 @@ abstract class Parser implements ParserInterface
      *
      * @return \PicoFeed\Parser\Parser
      */
-    public function disableContentFiltering()
-    {
+    public function disableContentFiltering() {
         $this->itemPostProcessor->unregister('PicoFeed\Processor\ContentFilterProcessor');
         return $this;
     }
@@ -351,8 +343,7 @@ abstract class Parser implements ParserInterface
      *                                       scraper execution
      * @return \PicoFeed\Parser\Parser
      */
-    public function enableContentGrabber($needsRuleFile = false, $scraperCallback = null)
-    {
+    public function enableContentGrabber($needsRuleFile = false, $scraperCallback = null) {
         $processor = new ScraperProcessor($this->config);
 
         if ($needsRuleFile) {
@@ -373,8 +364,7 @@ abstract class Parser implements ParserInterface
      * @param array $urls URLs
      * @return \PicoFeed\Parser\Parser
      */
-    public function setGrabberIgnoreUrls(array $urls)
-    {
+    public function setGrabberIgnoreUrls(array $urls) {
         $this->itemPostProcessor->getProcessor('PicoFeed\Processor\ScraperProcessor')->ignoreUrls($urls);
         return $this;
     }
@@ -385,12 +375,12 @@ abstract class Parser implements ParserInterface
      * @param SimpleXMLElement $xml Feed xml
      * @return SimpleXMLElement
      */
-    public function registerSupportedNamespaces(SimpleXMLElement $xml)
-    {
+    public function registerSupportedNamespaces(SimpleXMLElement $xml) {
         foreach ($this->namespaces as $prefix => $ns) {
             $xml->registerXPathNamespace($prefix, $ns);
         }
 
         return $xml;
     }
+
 }

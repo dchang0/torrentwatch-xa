@@ -11,9 +11,10 @@ use PicoFeed\Client\Url;
  *
  * @package PicoFeed\Parser
  * @author  Frederic Guillot
+ * @author  https://github.com/dchang0
  */
-class Rss20 extends Parser
-{
+class Rss20 extends Parser {
+
     /**
      * Supported namespaces.
      */
@@ -30,8 +31,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement $xml Feed xml
      * @return SimpleXMLElement[]
      */
-    public function getItemsTree(SimpleXMLElement $xml)
-    {
+    public function getItemsTree(SimpleXMLElement $xml) {
         return XmlParser::getXPathResult($xml, 'channel/item');
     }
 
@@ -41,8 +41,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedUrl(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedUrl(SimpleXMLElement $xml, Feed $feed) {
         $feed->setFeedUrl('');
     }
 
@@ -52,8 +51,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findSiteUrl(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findSiteUrl(SimpleXMLElement $xml, Feed $feed) {
         $value = XmlParser::getXPathResult($xml, 'channel/link');
         $feed->setSiteUrl(XmlParser::getValue($value));
     }
@@ -64,8 +62,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedDescription(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedDescription(SimpleXMLElement $xml, Feed $feed) {
         $value = XmlParser::getXPathResult($xml, 'channel/description');
         $feed->setDescription(XmlParser::getValue($value));
     }
@@ -76,8 +73,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedLogo(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedLogo(SimpleXMLElement $xml, Feed $feed) {
         $value = XmlParser::getXPathResult($xml, 'channel/image/url');
         $feed->setLogo(XmlParser::getValue($value));
     }
@@ -88,8 +84,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedIcon(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedIcon(SimpleXMLElement $xml, Feed $feed) {
         $feed->setIcon('');
     }
 
@@ -99,8 +94,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedTitle(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedTitle(SimpleXMLElement $xml, Feed $feed) {
         $title = XmlParser::getXPathResult($xml, 'channel/title');
         $feed->setTitle(Filter::stripWhiteSpace(XmlParser::getValue($title)) ?: $feed->getSiteUrl());
     }
@@ -111,8 +105,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedLanguage(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedLanguage(SimpleXMLElement $xml, Feed $feed) {
         $value = XmlParser::getXPathResult($xml, 'channel/language');
         $feed->setLanguage(XmlParser::getValue($value));
     }
@@ -123,8 +116,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedId(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedId(SimpleXMLElement $xml, Feed $feed) {
         $feed->setId($feed->getFeedUrl() ?: $feed->getSiteUrl());
     }
 
@@ -134,8 +126,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $xml  Feed xml
      * @param \PicoFeed\Parser\Feed $feed Feed object
      */
-    public function findFeedDate(SimpleXMLElement $xml, Feed $feed)
-    {
+    public function findFeedDate(SimpleXMLElement $xml, Feed $feed) {
         $publish_date = XmlParser::getXPathResult($xml, 'channel/pubDate');
         $update_date = XmlParser::getXPathResult($xml, 'channel/lastBuildDate');
 
@@ -158,8 +149,7 @@ class Rss20 extends Parser
      * @param Item                  $item  Item object
      * @param \PicoFeed\Parser\Feed $feed  Feed object
      */
-    public function findItemPublishedDate(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemPublishedDate(SimpleXMLElement $entry, Item $item, Feed $feed) {
         $date = XmlParser::getXPathResult($entry, 'pubDate');
 
         $item->setPublishedDate(!empty($date) ? $this->getDateParser()->getDateTime(XmlParser::getValue($date)) : null);
@@ -172,8 +162,7 @@ class Rss20 extends Parser
      * @param Item                  $item  Item object
      * @param \PicoFeed\Parser\Feed $feed  Feed object
      */
-    public function findItemUpdatedDate(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemUpdatedDate(SimpleXMLElement $entry, Item $item, Feed $feed) {
         if ($item->publishedDate === null) {
             $this->findItemPublishedDate($entry, $item, $feed);
         }
@@ -186,8 +175,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $entry Feed item
      * @param \PicoFeed\Parser\Item $item  Item object
      */
-    public function findItemTitle(SimpleXMLElement $entry, Item $item)
-    {
+    public function findItemTitle(SimpleXMLElement $entry, Item $item) {
         $value = XmlParser::getXPathResult($entry, 'title');
         $item->setTitle(Filter::stripWhiteSpace(XmlParser::getValue($value)) ?: $item->getUrl());
     }
@@ -199,12 +187,8 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $entry Feed item
      * @param \PicoFeed\Parser\Item $item  Item object
      */
-    public function findItemAuthor(SimpleXMLElement $xml, SimpleXMLElement $entry, Item $item)
-    {
-        $value = XmlParser::getXPathResult($entry, 'dc:creator', $this->namespaces)
-                  ?: XmlParser::getXPathResult($entry, 'author')
-                  ?: XmlParser::getXPathResult($xml, 'channel/dc:creator', $this->namespaces)
-                  ?: XmlParser::getXPathResult($xml, 'channel/managingEditor');
+    public function findItemAuthor(SimpleXMLElement $xml, SimpleXMLElement $entry, Item $item) {
+        $value = XmlParser::getXPathResult($entry, 'dc:creator', $this->namespaces) ?: XmlParser::getXPathResult($entry, 'author') ?: XmlParser::getXPathResult($xml, 'channel/dc:creator', $this->namespaces) ?: XmlParser::getXPathResult($xml, 'channel/managingEditor');
 
         $item->setAuthor(XmlParser::getValue($value));
     }
@@ -215,8 +199,7 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $entry Feed item
      * @param \PicoFeed\Parser\Item $item  Item object
      */
-    public function findItemContent(SimpleXMLElement $entry, Item $item)
-    {
+    public function findItemContent(SimpleXMLElement $entry, Item $item) {
         $content = XmlParser::getXPathResult($entry, 'content:encoded', $this->namespaces);
 
         if (XmlParser::getValue($content) === '') {
@@ -232,12 +215,8 @@ class Rss20 extends Parser
      * @param SimpleXMLElement      $entry Feed item
      * @param \PicoFeed\Parser\Item $item  Item object
      */
-    public function findItemUrl(SimpleXMLElement $entry, Item $item)
-    {
-        $link = XmlParser::getXPathResult($entry, 'feedburner:origLink', $this->namespaces)
-                 ?: XmlParser::getXPathResult($entry, 'link')
-                 ?: XmlParser::getXPathResult($entry, 'atom:link/@href', $this->namespaces);
-
+    public function findItemUrl(SimpleXMLElement $entry, Item $item) {
+        $link = XmlParser::getXPathResult($entry, 'feedburner:origLink', $this->namespaces) ?: XmlParser::getXPathResult($entry, 'link') ?: XmlParser::getXPathResult($entry, 'atom:link/@href', $this->namespaces);
         if (!empty($link)) {
             $item->setUrl(XmlParser::getValue($link));
         } else {
@@ -257,15 +236,15 @@ class Rss20 extends Parser
      * @param \PicoFeed\Parser\Item $item  Item object
      * @param \PicoFeed\Parser\Feed $feed  Feed object
      */
-    public function findItemId(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemId(SimpleXMLElement $entry, Item $item, Feed $feed) {
         $id = XmlParser::getValue(XmlParser::getXPathResult($entry, 'guid'));
 
         if ($id) {
-            $item->setId($this->generateId($id));
+            //$item->setId($this->generateId($id));
+            $item->setId($id);
         } else {
             $item->setId($this->generateId(
-                $item->getTitle(), $item->getUrl(), $item->getContent()
+                            $item->getTitle(), $item->getUrl(), $item->getContent()
             ));
         }
     }
@@ -277,14 +256,17 @@ class Rss20 extends Parser
      * @param \PicoFeed\Parser\Item $item  Item object
      * @param \PicoFeed\Parser\Feed $feed  Feed object
      */
-    public function findItemEnclosure(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemEnclosure(SimpleXMLElement $entry, Item $item, Feed $feed) {
         if (isset($entry->enclosure)) {
             $type = XmlParser::getXPathResult($entry, 'enclosure/@type');
-            $url = XmlParser::getXPathResult($entry, 'feedburner:origEnclosureLink', $this->namespaces)
-                ?: XmlParser::getXPathResult($entry, 'enclosure/@url');
-
-            $item->setEnclosureUrl(Url::resolve(XmlParser::getValue($url), $feed->getSiteUrl()));
+            $url = XmlParser::getXPathResult($entry, 'feedburner:origEnclosureLink', $this->namespaces) ?: XmlParser::getXPathResult($entry, 'enclosure/@url');
+            $urlValue = XmlParser::getValue($url);
+            if (strpos($urlValue, 'magnet:') === 0) {
+                $item->setEnclosureUrl($urlValue); //TODO add magnet: link validation
+            } else {
+                //$item->setEnclosureUrl(Url::resolve(XmlParser::getValue($url), $feed->getSiteUrl()));
+                $item->setEnclosureUrl(Url::resolve($urlValue, $feed->getSiteUrl()));
+            }
             $item->setEnclosureType(XmlParser::getValue($type));
         }
     }
@@ -296,8 +278,7 @@ class Rss20 extends Parser
      * @param \PicoFeed\Parser\Item $item  Item object
      * @param \PicoFeed\Parser\Feed $feed  Feed object
      */
-    public function findItemLanguage(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemLanguage(SimpleXMLElement $entry, Item $item, Feed $feed) {
         $language = XmlParser::getXPathResult($entry, 'dc:language', $this->namespaces);
         $item->setLanguage(XmlParser::getValue($language) ?: $feed->getLanguage());
     }
@@ -309,9 +290,9 @@ class Rss20 extends Parser
      * @param Item $item  Item object
      * @param Feed $feed  Feed object
      */
-    public function findItemCategories(SimpleXMLElement $entry, Item $item, Feed $feed)
-    {
+    public function findItemCategories(SimpleXMLElement $entry, Item $item, Feed $feed) {
         $categories = XmlParser::getXPathResult($entry, 'category');
         $item->setCategoriesFromXml($categories);
     }
+
 }

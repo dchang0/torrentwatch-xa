@@ -38,11 +38,6 @@ Anidex.info has been removed from the default feeds because their DDOS-GUARD blo
 
 Fedora Server is now officially-supported, but only with SELINUX in Permissive mode.
 
-#### UPDATE 2021/07/11:
-
-PicoFeed doesn't support magnet: links and discards them in torrentwatch-xa versions 1.5.0 and 1.6.0. I am working on adding and expanding magnet: link functionality to 1.7.0.
-
-
 Please report any bugs using Github Issues.
 
 Documentation

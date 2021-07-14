@@ -11,6 +11,7 @@ use PicoFeed\Client\Url;
  *
  * @package PicoFeed\Parser
  * @author  Frederic Guillot
+ * @author  https://github.com/dchang0
  */
 class Atom extends Parser {
 
@@ -251,7 +252,13 @@ class Atom extends Parser {
         $enclosure = $this->findLink($entry, 'enclosure');
 
         if ($enclosure) {
-            $item->setEnclosureUrl(Url::resolve((string) $enclosure['href'], $feed->getSiteUrl()));
+            $enclosureHref = (string) $enclosure['href'];
+            if (strpos($enclosureHref, 'magnet:') === 0) {
+                $item->setEnclosureUrl($enclosureHref); //TODO add magnet: link validation
+            } else {
+                //$item->setEnclosureUrl(Url::resolve((string) $enclosure['href'], $feed->getSiteUrl()));
+                $item->setEnclosureUrl(Url::resolve($enclosureHref, $feed->getSiteUrl()));
+            }
             $item->setEnclosureType((string) $enclosure['type']);
         }
     }
