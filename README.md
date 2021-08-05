@@ -38,9 +38,7 @@ Most notably:
 
 Please report any bugs using Github Issues.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dchang0)
-
-[CoinDrop](https://coindrop.to/dchang0/)
+Buy me a coffee for late-night programming on torrentwatch-xa at [Ko-Fi](https://ko-fi.com/dchang0) or [CoinDrop](https://coindrop.to/dchang0/).
 
 Documentation
 ===============
