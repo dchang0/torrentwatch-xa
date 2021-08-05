@@ -2,308 +2,546 @@
 
 require_once('twxa_parse.php');
 
-function get_torrent_link($rs) {
-    //TODO validate URLs using filter_var($url, FILTER_VALIDATE_URL);
+/* function detectahrefsInString($string) {
+  // detects <a href=""> tags in a string and returns the contents of the href attributes as an array
+  $hrefs = [];
+  if (isset($string) && is_string($string) && $string !== '') {
+  $aTagMatches = [];
+  preg_match_all("/<[aA]\s+?.+?>/", $string, $aTagMatches, PREG_PATTERN_ORDER);
+  for ($i = 0; $i < count($aTagMatches[0]); $i++) {
+  $aTag = $aTagMatches[0][$i];
+  $hrefMatches = [];
+  preg_match("/href=\"(.*?)\"/i", $aTag, $hrefMatches);
+  $hrefContents = $hrefMatches[1];
+  $hrefs[] = $hrefContents;
+  }
+  }
+  return $hrefs;
+  } */
+
+function detectAllTorrentLinks($item) {
+    // finds every possible magnet link or link to a .torrent file in a feed item
     $links = [];
+
+    // search enclosure for .torrent and magnet:
     if (
-            isset($rs['enclosure']['url']) &&
+            isset($item['enclosure']['url']) &&
+            !empty($item['enclosure']['url']) &&
             (
-            $rs['enclosure']['type'] == 'application/x-bittorrent' ||
-            $rs['enclosure']['type'] == 'application/gzip' ||
-            stristr($rs['enclosure']['url'], '.torrent') === '.torrent' ||
-            stristr($rs['enclosure']['url'], '.torrent.gz') === '.torrent.gz'
+            (isset($item['enclosure']['type']) && $item['enclosure']['type'] === 'application/x-bittorrent') ||
+            strpos($item['enclosure']['url'], '.torrent', -8) !== false ||
+            (isset($item['enclosure']['type']) && $item['enclosure']['type'] === 'x-scheme-handler/magnet') ||
+            strpos($item['enclosure']['url'], 'magnet:') === 0
             )
     ) {
-        $links[] = $rs['enclosure']['url'];
-    } else {
-        if (isset($rs['link'])) {
-            $links[] = $rs['link'];
-        }
-        if (
-                isset($rs['URL']) &&
-                (
-                stristr($rs['URL'], '.torrent') === '.torrent' ||
-                stristr($rs['URL'], '.torrent.gz') === '.torrent.gz'
-                )
-        ) {
-            $links[] = $rs['URL'];
-        }
-        if (isset($rs['id']) && stristr($rs['id'], 'http://')) { // Atom
-            $links[] = $rs['id'];
-        }
+        $links[] = $item['enclosure']['url'];
     }
-    $link = str_replace(" ", "%20", choose_torrent_link($links));
-    return html_entity_decode($link);
+    // search $fi['URL'] for .torrent and magnet:
+    if (
+            isset($item['URL']) &&
+            (
+            strpos($item['URL'], '.torrent', -8) !== false ||
+            strpos($item['URL'], 'magnet:') === 0
+            )
+    ) {
+        $links[] = $item['URL'];
+    }
+    // search enclosure for .torrent.gz
+    if (
+            isset($item['enclosure']['url']) &&
+            !empty($item['enclosure']['url']) &&
+            (
+            (isset($item['enclosure']['type']) && $item['enclosure']['type'] === 'application/gzip') ||
+            strpos($item['enclosure']['url'], '.torrent.gz', -11) !== false
+            )
+    ) {
+        $links[] = $item['enclosure']['url'];
+    }
+    // search $fi['URL'] for .torrent.gz
+    if (isset($item['URL']) && strpos($item['URL'], '.torrent.gz', -11) !== false) {
+        $links[] = $item['URL'];
+    }
+    // accept the enclosure URL as long as it's not the wrong type
+    if (
+            isset($item['enclosure']['url']) &&
+            !empty($item['enclosure']['url']) &&
+            (
+            isset($item['enclosure']['type']) &&
+            (
+            strpos($item['enclosure']['type'], 'text/') === false &&
+            strpos($item['enclosure']['type'], 'image/') === false &&
+            strpos($item['enclosure']['type'], 'audio/') === false &&
+            strpos($item['enclosure']['type'], 'video/') === false &&
+            $item['enclosure']['type'] !== 'application/xml'
+            )
+            )
+    ) {
+        $links[] = $item['enclosure']['url'];
+    }
+    // last resort, trust the feed and accept the URL
+    if (
+            isset($item['URL']) &&
+            !empty($item['URL']) &&
+            stripos($item['URL'], '.html', -5) === false &&
+            stripos($item['URL'], '.htm', -4) === false
+    ) {
+        $links[] = $item['URL'];
+    }
+//    ///// search the feed item's contents (this section slows performance dramatically)
+//    $itemContentsHrefs = detectahrefsInString($fi['content']); // finds all the <a href= values in this item's contents
+//    // search $fi['content'] for .torrent and magnet:
+//    foreach ($itemContentsHrefs as $href) {
+//        if (
+//                isset($href) &&
+//                (
+//                strpos($href, '.torrent', -8) !== false ||
+//                strpos($href, 'magnet:') === 0
+//                )
+//        ) {
+//            $links[] = $href;
+//        }
+//    }
+//    // search $fi['content'] for .torrent.gz
+//    foreach ($itemContentsHrefs as $href) {
+//        if (isset($href) && strpos($href, '.torrent.gz', -11) !== false) {
+//            $links[] = $href;
+//        }
+//    }
+//    //TODO search all for infoHash and convert to magnet link
+    // make links unique in the array
+    $uniqueLinks = array_unique($links, SORT_STRING);
+    //TODO validate URLs in array using filter_var($url, FILTER_VALIDATE_URL);
+    return $uniqueLinks;
 }
 
-function choose_torrent_link($links) {
+function getBestTorrentOrMagnetLinks($item) {
+    // returns the first (assumed to be best) torrent file link in the item
+    // can include gzipped torrent file links
+    // tries to minimize computations and downloads for best performance
+    $bestLink = "";
+    $bestLinkType = "";
+    $bestMagnetLink = "";
+    $links = detectAllTorrentLinks($item);
     $linkCount = count($links);
     if ($linkCount > 1) {
-        $bestLink = "";
-        $torrentLinkCount = 0;
-        // check how many links have ".torrent" in them
+        // categorize the links
+        $endInDotTorrentLinks = [];
+        $otherDotTorrentLinks = [];
+        $unknownLinks = [];
+        $endInDotTorrentGzLinks = [];
+        $validMagnetLinks = [];
+        $invalidMagnetLinks = [];
+
         foreach ($links as $link) {
-            if (stripos($link, ".torrent") !== false) {
-                $bestLink = $link;
-                $torrentLinkCount++;
+            switch (true) {
+                case true: // magnet link; this must be first since magnet links can contain ".torrent"
+                    if (strpos($link, 'magnet:') === 0) {
+                        // check that the magnet link has an xt (Exact Topic) with a valid Bittorrent Info Hash
+                        if (preg_match('/xt=urn:btih:[a-fA-F0-9]{40}/', $links[$i])) {
+                            $validMagnetLinks[] = $link;
+                            break;
+                        } else {
+                            $invalidMagnetLinks[] = $link;
+                        }
+                    }
+                case true: // link ends in .torrent
+                    if (strpos($link, '.torrent', -8) !== false) {
+                        $endInDotTorrentLinks[] = $link;
+                        break;
+                    }
+                case true: // link ends in .torrent.gz
+                    if (strpos($link, '.torrent.gz', -11) !== false) {
+                        $endInDotTorrentGzLinks[] = $link;
+                        break;
+                    }
+                case true: // link contains .torrent
+                    if (strpos($link, '.torrent') !== false) {
+                        $otherDotTorrentLinks[] = $link;
+                        break;
+                    }
+                default:
+                    $unknownLinks[] = $link;
             }
         }
-        // if only one had ".torrent", use that, else check http content-type for each,
-        // and use the first that returns the proper torrent type
-        if ($torrentLinkCount > 1) {
-            foreach ($links as $link) {
-                $opts = array('http' =>
-                    array('timeout' => 10)
-                );
-                stream_context_get_default($opts);
-                $headers = get_headers($link, 1);
-                if ((isset($headers['Content-Disposition']) &&
-                        preg_match('/filename=.+\.torrent/i', $headers['Content-Disposition'])) ||
-                        (isset($headers['Content-Type']) &&
-                        $headers['Content-Type'] == 'application/x-bittorrent' )) {
-                    $bestLink = $link;
+        // select the best link overall
+        switch (true) {
+            case true: // if only one ended in .torrent, use it
+                if (count($endInDotTorrentLinks) === 1) {
+                    $bestLink = $endInDotTorrentLinks[0];
+                    $bestLinkType = "torrent";
                     break;
                 }
-            }
+            case true: // if there's one or more valid magnet links, use the first one
+                if (count($validMagnetLinks) > 0) {
+                    $bestLink = $validMagnetLinks[0];
+                    $bestLinkType = "magnet";
+                    break;
+                }
+            case true: // if at least one ends with .torrent.gz, use the first one
+                if (count($endInDotTorrentGzLinks) > 0) {
+                    $bestLink = $endInDotTorrentGzLinks[0];
+                    $bestLinkType = "torrent.gz";
+                    break;
+                }
+            default: // combine all the non-magnet and non-torrent.gz links, download the Content-Type, and pick the first one that has the right Content-Type
+                $nonMagnetLinks = array_merge($endInDotTorrentLinks, $otherDotTorrentLinks, $unknownLinks);
+                foreach ($nonMagnetLinks as $link) {
+                    $opts = [
+                        'http' => ['timeout' => 10]
+                    ];
+                    stream_context_get_default($opts);
+                    $headers = get_headers($link, 1);
+                    if (
+                            (
+                            isset($headers['Content-Disposition']) &&
+                            preg_match('/filename=.+\.torrent/i', $headers['Content-Disposition'])
+                            ) ||
+                            (
+                            isset($headers['Content-Type']) &&
+                            $headers['Content-Type'] == 'application/x-bittorrent'
+                            )
+                    ) {
+                        $bestLink = $link;
+                        $bestLinkType = "torrent";
+                        break;
+                    }
+                }
         }
-        //TODO probably add application/gzip capability here using gzdecode()
-        // search for .torrent.gz
-        // if still no match has been made, just select the first, and hope the html torrent parser can find it
-        if (empty($bestLink)) {
-            $bestLink = $links[0];
+        // select the best valid magnet link
+        if (count($validMagnetLinks) > 0) {
+            $bestMagnetLink = $validMagnetLinks[0];
         }
-        return $bestLink;
     } else if ($linkCount === 1) {
-        return $links[0];
+        $bestLink = $links[0];
+        if (strpos($bestLink, 'magnet:') === 0) {
+            $bestMagnetLink = $bestLink;
+            $bestLinkType = "magnet";
+        } else if (strpos($bestLink, '.torrent.gz', -11) !== false) {
+            $bestLinkType = "torrent.gz";
+        } else {
+            $bestLinkType = "torrent";
+        }
     } else {
-        return "";
+        // no links
+        writeToLog("Array of links is empty--skipping this item...\n", 2);
     }
+    return [
+        'link' => $bestLink,
+        'type' => $bestLinkType,
+        'magnetLink' => $bestMagnetLink
+    ];
 }
 
-function check_for_torrent(&$item, $key, $opts) {
-    // third-most function, called by process_rss_feed()/process_atom_feed()
-    global $itemState, $config_values;
-    if (!isset($item['Feed']) || !(strtolower($item['Feed']) === 'all' || $item['Feed'] === '' || $item['Feed'] == $opts['URL'])) {
-        return;
-    }
-    $rs = $opts['Obj']; // $rs holds each feed list item, $item holds each Favorite item
-    $ti = strtolower($rs['title']);
-    // apply initial filtering from Favorites settings, prior to detectMatch(); may be why simplifyTitle() is necessary before this
-    switch (getArrayValueByKey($config_values['Settings'], 'Match Style')) {
-        case 'simple':
-            $hit = (($item['Filter'] !== '' && strpos(strtr($ti, " .", "__"), strtr(strtolower($item['Filter']), " .", "__")) === 0) &&
-                    ($item['Not'] === '' OR multi_str_search($ti, strtolower($item['Not'])) === false) &&
-                    (strtolower($item['Quality']) == 'all' OR $item['Quality'] === '' OR multi_str_search($ti, strtolower($item['Quality'])) !== false));
-            break;
-        case 'glob':
-            $hit = (($item['Filter'] !== '' && fnmatch(strtolower($item['Filter']), $ti)) &&
-                    ($item['Not'] === '' OR!fnmatch(strtolower($item['Not']), $ti)) &&
-                    (strtolower($item['Quality']) == 'all' OR $item['Quality'] === '' OR strpos($ti, strtolower($item['Quality'])) !== false));
-            break;
-        case 'regexp':
-        default:
-            if (substr($item['Filter'], -1) === '!') {
-                // last character of regex is an exclamation point, which fails to match when in front of \b
-                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '/u';
+function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) {
+    // checks if this item's title matches this Favorite's title
+    $itemMatchesFave = false;
+    if (isset($fav)) {
+        if (isset($itemTitle) && !empty($itemTitle)) {
+            if (!isset($fav['Feed']) || $fav['Feed'] === '' || strtolower($fav['Feed']) === 'all' || $fav['Feed'] == $feedUrl) {
+                // if Favorite's Feed is unset, blank, all, or matches the item, proceed
+                switch ($matchStyle) {
+                    case 'simple':
+                        $itemMatchesFave = (
+                                (
+                                $fav['Filter'] !== '' &&
+                                strpos(strtr($itemTitle, " .", "__"), strtr(strtolower($fav['Filter']), " .", "__")) === 0
+                                ) &&
+                                (
+                                $fav['Not'] === '' ||
+                                multi_str_search($itemTitle, strtolower($fav['Not'])) === false
+                                ) &&
+                                (
+                                strtolower($fav['Quality']) == 'all' ||
+                                $fav['Quality'] === '' ||
+                                multi_str_search($itemTitle, strtolower($fav['Quality'])) !== false
+                                )
+                                );
+                        break;
+                    case 'glob':
+                        $itemMatchesFave = (
+                                (
+                                $fav['Filter'] !== '' &&
+                                fnmatch(strtolower($fav['Filter']), $itemTitle)) &&
+                                (
+                                $fav['Not'] === '' ||
+                                !fnmatch(strtolower($fav['Not']), $itemTitle)
+                                ) &&
+                                (
+                                strtolower($fav['Quality']) == 'all' ||
+                                $fav['Quality'] === '' ||
+                                strpos($itemTitle, strtolower($fav['Quality'])) !== false
+                                )
+                                );
+                        break;
+                    case 'regexp':
+                    default:
+                        if (substr($fav['Filter'], -1) === '!') {
+                            // last character of regex is an exclamation point, which fails to match when in front of \b
+                            $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $fav['Filter'])) . '/u';
+                        } else {
+                            $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $fav['Filter'])) . '\b/u';
+                        }
+                        //TODO deal with single quote in title like in King's Raid
+                        $itemMatchesFave = (
+                                (
+                                $fav['Filter'] !== '' &&
+                                preg_match($pattern, $itemTitle)) &&
+                                (
+                                $fav['Not'] === '' ||
+                                !preg_match('/' . strtolower($fav['Not']) . '/u', $itemTitle)
+                                ) &&
+                                (
+                                $fav['Quality'] === '' ||
+                                preg_match('/' . strtolower($fav['Quality']) . '/u', $itemTitle)
+                                )
+                                );
+                }
             } else {
-                $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $item['Filter'])) . '\b/u';
+                // item does not match this Favorite's Feed filter
             }
-            $hit = (($item['Filter'] !== '' && preg_match($pattern, $ti)) &&
-                    ($item['Not'] === '' || !preg_match('/' . strtolower($item['Not']) . '/u', $ti)) &&
-                    ($item['Quality'] === '' || preg_match('/' . strtolower($item['Quality']) . '/u', $ti)));
+        } else {
+            // no item to compare
+            writeToLog("No item to compare to the Favorite\n", 0);
+        }
+    } else {
+        // no favorite to compare
+        writeToLog("No Favorite to compare to the item\n", 0);
     }
-    if (isset($item['Filter']) && strtolower($item['Filter']) === "any") {
-        $hit = 1; // $hit is local and not used above this function; it might not be used in check_cache() either
-        $any = 1;
+    return $itemMatchesFave;
+}
+
+function checkItemNumberingMatchesFavorite(&$itemState, $fav, $guessItem, $dloadVersions = 0, $ignBatches = 0) {
+    // checks if this item's numbering matches this Favorite's numbering
+    $itemMatchesFave = false;
+    if (is_numeric($guessItem['seasBatEnd']) && is_numeric($guessItem['seasBatStart'])) {
+        if ($guessItem['seasBatEnd'] === $guessItem['seasBatStart']) {
+            // within one season
+            if (is_numeric($guessItem['episBatEnd'])) {
+                if ($guessItem['episBatEnd'] === $guessItem['episBatStart']) {
+                    // single episode of a single season
+                    if ($fav['Season'] > $guessItem['seasBatEnd']) {
+                        // too old by season
+                        writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur S" . $fav['Season'] . '>S' . $guessItem['seasBatEnd'] . ")\n", 1);
+                        $itemState = "st_favTooOld";
+                    } else if ($fav['Season'] == $guessItem['seasBatEnd']) { // must not use === here
+                        // seasons match, compare episodes
+                        if ($fav['Episode'] > $guessItem['episBatEnd'] || $fav['Episode'] === "FULL") {
+                            // too old by episode within same season
+                            if ($guessItem['itemVersion'] === 1) {
+                                writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . ">" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . ")\n", 1);
+                                $itemState = "st_favTooOld";
+                            } else if ($dloadVersions != 1) {
+                                writeToLog("Ignoring version: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . ">" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . " v" . $guessItem['itemVersion'] . ")\n", 1);
+                                $itemState = "st_favTooOld";
+                            } else {
+                                // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
+                                $itemState = "st_favReady";
+                                $itemMatchesFave = true;
+                            }
+                        } else if ($fav['Episode'] == $guessItem['episBatEnd']) {
+                            // same season and episode, compare itemVersion
+                            if ($guessItem['itemVersion'] === 1) {
+                                writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . "=" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . ")\n", 1);
+                                $itemState = "st_favTooOld";
+                            } else if ($dloadVersions != 1) {
+                                writeToLog("Ignoring version: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . "=" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . " v" . $guessItem['itemVersion'] . ")\n", 1);
+                                $itemState = "st_favTooOld";
+                            } else {
+                                // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
+                                $itemState = "st_favReady";
+                                $itemMatchesFave = true;
+                            }
+                        } else {
+                            // episode is newer than Favorite, do download
+                            $itemState = "st_favReady";
+                            $itemMatchesFave = true;
+                        }
+                    } else {
+                        // season is newer, but might be a jump from 1xEE to 2017xEE notation; use episode_filter() to prevent this
+                        $itemState = "st_favReady";
+                        $itemMatchesFave = true;
+                    }
+                } else if ($guessItem['episBatEnd'] > $guessItem['episBatStart'] || $guessItem['episBatEnd'] === "") {
+                    // batch of episodes in a single season
+                    if ($ignBatches == 0) {
+                        if ($fav['Episode'] >= $guessItem['episBatEnd'] || $fav['Episode'] === "FULL") {
+                            // nothing in the batch is newer than the favorite
+                            writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . ">=" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . ")\n", 1);
+                            $itemState = "st_favTooOld";
+                        } else {
+                            // at least one episode in the batch is newer by episode, do download
+                            // for now, we don't care about itemVersion when dealing with batches
+                            $itemState = "st_favReady";
+                            $itemMatchesFave = true;
+                        }
+                    } else {
+                        // ignore batches
+                        writeToLog("Ignoring batch: " . $guessItem['title'] . "\n", 1);
+                        $itemState = "st_ignoredFavBatch";
+                    }
+                }
+            } else {
+                // probably empty string (FULL season)
+                if ($ignBatches == 0) {
+                    // do download
+                    $itemState = "st_favReady";
+                    $itemMatchesFave = true;
+                } else {
+                    // ignore batches
+                    writeToLog("Ignoring batch: " . $guessItem['title'] . "\n", 1);
+                    $itemState = "st_ignoredFavBatch";
+                }
+            }
+        } else if ($guessItem['seasBatEnd'] > $guessItem['seasBatStart']) {
+            if ($ignBatches == 0) {
+                // batch that spans seasons
+                if ($fav['Season'] > $guessItem['seasBatEnd']) {
+                    // last season in batch is older than favorite season
+                    writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur S" . $fav['Season'] . '>S' . $guessItem['seasBatEnd'] . ")\n", 1);
+                    $itemState = "st_favTooOld";
+                } else if ($fav['Season'] == $guessItem['seasBatEnd']) { // must not use === here
+                    // last season in batch is equal to the favorite season, compare last episode
+                    if ($fav['Episode'] >= $guessItem['episBatEnd'] || $fav['Episode'] === "FULL") {
+                        // nothing in the batch is newer than the favorite
+                        writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . ">=" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . ")\n", 1);
+                        $itemState = "st_favTooOld";
+                    } else {
+                        // at least one episode in the batch is newer, do download
+                        // for now, we don't care about itemVersion when dealing with batches
+                        $itemState = "st_favReady";
+                        $itemMatchesFave = true;
+                    }
+                }
+            } else {
+                // ignore batches
+                writeToLog("Ignoring batch: " . $guessItem['title'] . "\n", 1);
+                $itemState = "st_ignoredFavBatch";
+            }
+        } else {
+            if ($ignBatches == 0) {
+                // $guessedItem['seasBatEnd'] < $guessedItem['seasBatStart']; this should never occur, do download anyway
+                $itemState = "st_favReady";
+                $itemMatchesFave = true;
+            } else {
+                // ignore batches
+                writeToLog("Ignoring batch: " . $guessItem['title'] . "\n", 1);
+                $itemState = "st_ignoredFavBatch";
+            }
+        }
+    } else {
+        writeToLog("Season start or end is not numeric: S" . $guessItem['seasBatStart'] . "-S" . $guessItem['seasBatStart'] . "\n", 2);
+        $itemState = "st_notSerialized";
     }
-    if ($hit) {
-        $guessedItem = detectMatch($ti);
+    return $itemMatchesFave;
+}
+
+function checkItemMatchesFavorite(&$itemState, $fav, $item, $feedUrl, $matchStyle = "regexp", $reqEpisInfo = 1, $onlyNewer = 1, $dloadVersions = 1, $ignBatches = 0) {
+    // checks if this item matches this Favorite
+    $itemMatchesFave = false;
+    $ti = strtolower($item['title']);
+    $isFilterAny = (isset($item['Filter']) && strtolower($item['Filter']) === "any");
+    if ($isFilterAny || checkItemTitleMatchesFavorite($fav, $ti, $feedUrl, $matchStyle)) {
+        $guessItem = detectMatch($ti);
         if (
-                $config_values['Settings']['Require Episode Info'] != 1 ||
+                $reqEpisInfo != 1 ||
                 (
-                $guessedItem['numberSequence'] > 0 &&
-                episode_filter($guessedItem, $item['Episodes']) == true
+                $guessItem['numberSequence'] > 0 &&
+                episode_filter($guessItem, $fav['Episodes']) == true
                 )
         ) {
-            $itemState = "st_favReady"; // this is set as default value here to be overwritten by exceptions below
-            if (check_cache($rs['title'])) { // check_cache() is false if title is or title and episode and version are found in cache
-                if (
-                        (!isset($any) || !$any) &&
-                        $config_values['Settings']['Require Episode Info'] == 1 &&
-                        getArrayValueByKey($config_values['Settings'], 'Only Newer') == 1
-                ) {
-                    if (is_numeric($guessedItem['seasBatEnd']) && is_numeric($guessedItem['seasBatStart'])) {
-                        if ($guessedItem['seasBatEnd'] === $guessedItem['seasBatStart']) {
-                            // within one season
-                            if (is_numeric($guessedItem['episBatEnd'])) {
-                                if ($guessedItem['episBatEnd'] === $guessedItem['episBatStart']) {
-                                    // single episode of a single season
-                                    if ($item['Season'] > $guessedItem['seasBatEnd']) {
-                                        // too old by season
-                                        writeToLog("Ignoring: " . $item['Name'] . " (Fav:Cur S" . $item['Season'] . '>S' . $guessedItem['seasBatEnd'] . ")\n", 1);
-                                        $itemState = "st_favTooOld";
-                                        return false;
-                                    } else if ($item['Season'] == $guessedItem['seasBatEnd']) { // must not use === here
-                                        // seasons match, compare episodes
-                                        if ($item['Episode'] > $guessedItem['episBatEnd'] || $item['Episode'] === "FULL") {
-                                            // too old by episode within same season
-                                            if ($guessedItem['itemVersion'] === 1) {
-                                                writeToLog("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                                $itemState = "st_favTooOld";
-                                                return false;
-                                            } else if ($config_values['Settings']['Download Versions'] != 1) {
-                                                writeToLog("Ignoring version: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . " v" . $guessedItem['itemVersion'] . ")\n", 1);
-                                                $itemState = "st_favTooOld";
-                                                return false;
-                                            } else {
-                                                // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
-                                            }
-                                        } else if ($item['Episode'] == $guessedItem['episBatEnd']) {
-                                            // same season and episode, compare itemVersion
-                                            if ($guessedItem['itemVersion'] === 1) {
-                                                writeToLog("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . "=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                                $itemState = "st_favTooOld";
-                                                return false;
-                                            } else if ($config_values['Settings']['Download Versions'] != 1) {
-                                                writeToLog("Ignoring version: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . "=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . " v" . $guessedItem['itemVersion'] . ")\n", 1);
-                                                $itemState = "st_favTooOld";
-                                                return false;
-                                            } else {
-                                                // automatically download anything with an itemVersion over 1, even older episodes (except cached items)
-                                            }
-                                        } else {
-                                            // episode is newer than Favorite, do download
-                                        }
-                                    } else {
-                                        // season is newer, but might be a jump from 1xEE to 2017xEE notation; use episode_filter() to prevent this
-                                    }
-                                } else if ($guessedItem['episBatEnd'] > $guessedItem['episBatStart'] || $guessedItem['episBatEnd'] === "") {
-                                    // batch of episodes in a single season
-                                    if ($config_values['Settings']['Ignore Batches'] == 0) {
-                                        if ($item['Episode'] >= $guessedItem['episBatEnd'] || $item['Episode'] === "FULL") {
-                                            // nothing in the batch is newer than the favorite
-                                            writeToLog("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                            $itemState = "st_favTooOld";
-                                            return false;
-                                        } else {
-                                            // at least one episode in the batch is newer by episode, do download
-                                            // for now, we don't care about itemVersion when dealing with batches
-                                        }
-                                    } else {
-                                        // ignore batches
-                                        writeToLog("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                        $itemState = "st_ignoredFavBatch";
-                                        return false;
-                                    }
-                                }
-                            } else {
-                                // probably empty string (FULL season)
-                                if ($config_values['Settings']['Ignore Batches'] == 0) {
-                                    // do download
-                                } else {
-                                    // ignore batches
-                                    writeToLog("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                    $itemState = "st_ignoredFavBatch";
-                                    return false;
-                                }
-                            }
-                        } else if ($guessedItem['seasBatEnd'] > $guessedItem['seasBatStart']) {
-                            if ($config_values['Settings']['Ignore Batches'] == 0) {
-                                // batch that spans seasons
-                                if ($item['Season'] > $guessedItem['seasBatEnd']) {
-                                    // last season in batch is older than favorite season
-                                    writeToLog("Ignoring: " . $item['Name'] . " (Fav:Cur S" . $item['Season'] . '>S' . $guessedItem['seasBatEnd'] . ")\n", 1);
-                                    $itemState = "st_favTooOld";
-                                    return false;
-                                } else if ($item['Season'] == $guessedItem['seasBatEnd']) { // must not use === here
-                                    // last season in batch is equal to the favorite season, compare last episode
-                                    if ($item['Episode'] >= $guessedItem['episBatEnd'] || $item['Episode'] === "FULL") {
-                                        // nothing in the batch is newer than the favorite
-                                        writeToLog("Ignoring: " . $item['Name'] . " (Fav:Cur " . $item['Season'] . "x" . $item['Episode'] . ">=" . $guessedItem['seasBatEnd'] . "x" . $guessedItem['episBatEnd'] . ")\n", 1);
-                                        $itemState = "st_favTooOld";
-                                        return false;
-                                    } else {
-                                        // at least one episode in the batch is newer, do download
-                                        // for now, we don't care about itemVersion when dealing with batches
-                                    }
-                                }
-                            } else {
-                                // ignore batches
-                                writeToLog("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                $itemState = "st_ignoredFavBatch";
-                                return false;
-                            }
-                        } else {
-                            if ($config_values['Settings']['Ignore Batches'] == 0) {
-                                // $guessedItem['seasBatEnd'] < $guessedItem['seasBatStart']; this should never occur, do download anyway
-                            } else {
-                                // ignore batches
-                                writeToLog("Ignoring batch: " . $guessedItem['title'] . "\n", 1);
-                                $itemState = "st_ignoredFavBatch";
-                                return false;
-                            }
-                        }
-                    } else {
-                        writeToLog("Season start or end is not numeric: S" . $guessedItem['seasBatStart'] . "-S" . $guessedItem['seasBatStart'] . "\n", 2);
-                        $itemState = "st_notSerialized";
-                        return false;
-                    }
-                }
-                writeToLog("Match found for " . $rs['title'] . "\n", 2);
-                $link = get_torrent_link($rs);
-                if ($link) {
-                    $response = client_add_torrent($link, null, $rs['title'], $opts['URL'], $item);
-                    if (strpos($response, 'Error:') === 0) {
-                        writeToLog("Failed adding torrent $link\n", -1);
-                        return false;
-                    } else {
-                        add_cache($rs['title']);
-                        if ($config_values['Settings']['Client'] === "folder") {
-                            $itemState = "st_downloaded";
-                        } else {
-                            $itemState = "st_downloading";
-                        }
-                        //TODO possibly remove st_downloading and st_downloaded states unless they make sense for client === folder
-                    }
-                } else {
-                    writeToLog("Unable to find URL for " . $rs['title'] . " from feed: " . $item['Feed'] . "\n", -1);
-                    $itemState = "st_noURL"; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic
-                    //TODO probably add application/gzip capability here using gzdecode()
-                }
+            if (
+                    !$isFilterAny &&
+                    $reqEpisInfo == 1 &&
+                    $onlyNewer == 1
+            ) {
+                $itemMatchesFave = checkItemNumberingMatchesFavorite(
+                        $itemState,
+                        $fav,
+                        $guessItem,
+                        $dloadVersions,
+                        $ignBatches
+                );
             } else {
-                $itemState = "st_inCache"; // only found in the cache; this state is transient
+                // match it anyway
+                $itemMatchesFave = true;
+                $itemState = "st_favReady";
             }
+        } else {
+            // match it anyway
+            $itemMatchesFave = true;
+            $itemState = "st_favReady";
         }
+    } else {
+        // no match between Item Title and Favorites, leave $itemState blank
     }
+    if ($itemMatchesFave) {
+        writeToLog("Match found for " . $item['title'] . "\n", 2);
+    }
+    return $itemMatchesFave;
 }
 
-//function parse_one_rss($feed, $update = null) {
-//    global $config_values;
-//    $rss = new lastRSS;
-//    $rss->stripHTML = true;
-//    $rss->CDATA = 'content';
-//    if ((isset($config_values['Settings']['Cache Time'])) && ((int) $config_values['Settings']['Cache Time'])) {
-//        $rss->cache_time = (int) $config_values['Settings']['Cache Time'];
-//    } else if (!isset($update)) {
-//        $rss->cache_time = 86400;
-//    } else {
-//        $rss->cache_time = (15 * 60) - 20;
-//    }
-//    $rss->date_format = 'M d, H:i';
-//    $rss->cache_dir = getDownloadCacheDir();
-//    if (!$config_values['Global']['Feeds'][$feed['Link']] = $rss->get($feed['Link'])) {
-//        writeToLog("Error creating rss parser for " . $feed['Link'] . "\n", -1);
-//    } else {
-//        if ($config_values['Global']['Feeds'][$feed['Link']]['items_count'] == 0) {
-//            unset($config_values['Global']['Feeds'][$feed['Link']]);
-//            return false;
-//        }
-//        $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
-//        $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'RSS';
-//    }
-//}
+//function processMatchedItemDownload(&$itemState, &$fav, $item, $feedUrl, $clientType) {
+function processMatchedItemDownload(
+        &$itemState,
+        &$fav,
+        $item,
+        $feedUrl,
+        $clientType,
+        $globalDownloadDir,
+        $deepDirs,
+        $sMTPNotifications,
+        $enableScript,
+        $alsoSaveTorrentFiles,
+        $alsoSaveDir,
+        $configFeeds,
+        $defaultSeedRatio
+) {
+    // item should be downloaded; figure out if it is already downloaded and start the download using the correct Client if not
+    $startedDownload = false;
+    if (check_cache($item['title'])) { // check_cache() is false if title is or title and episode and version are found in cache
+        $bestLink = getBestTorrentOrMagnetLinks($item);
+        if (isset($bestLink['link'])) {
+            $response = clientAddTorrent(
+                    $bestLink['link'],
+                    $bestLink['type'],
+                    $item['title'],
+                    $clientType,
+                    $globalDownloadDir,
+                    $deepDirs,
+                    $sMTPNotifications,
+                    $enableScript,
+                    $alsoSaveTorrentFiles,
+                    $alsoSaveDir,
+                    $fav,
+                    $feedUrl,
+                    $configFeeds,
+                    $defaultSeedRatio
+            );
+            if ($response['errorCode'] === 0) {
+                $startedDownload = true; // download started successfully
+                add_cache($item['title']); //TODO also tie $startedDownload to successful write to cache
+                if ($clientType === "folder") {
+                    //$itemState = "st_downloaded";
+                    $itemState = "st_inCacheNotActive";
+                } else {
+                    $itemState = "st_downloading";
+                }
+            } else {
+                // leave $itemState alone
+                writeToLog("Failed adding torrent " . $bestLink['link'] . "\n", -1);
+            }
+        } else {
+            writeToLog("Unable to find URL for " . $item['title'] . " from feed: " . $fav['Feed'] . "\n", -1);
+            $itemState = "st_noURL"; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic; use it to disable buttons
+        }
+    } else {
+        writeToLog("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1); // could be exact or equiv. but we say equiv.
+        $itemState = "st_inCache"; // only found in the cache; this state is transient
+    }
+    return $startedDownload;
+}
 
-function parse_one_feed($feed, $update = null) {
+function parseOneFeed($feed, $update = false) {
     global $config_values;
     // get Cron Interval and calculate cronCacheExpires
     if (isset($config_values['Settings']['Cron Interval']) && (int) $config_values['Settings']['Cron Interval']) {
@@ -312,7 +550,7 @@ function parse_one_feed($feed, $update = null) {
         $cronInterval = 15;
     }
     // update or not
-    if (isset($update)) {
+    if (isset($update) && $update !== false) {
         $cacheExpires = ($cronInterval * 60) - 20;
     } else {
         $cacheExpires = ($cronInterval * 120) - 20;
@@ -328,226 +566,174 @@ function parse_one_feed($feed, $update = null) {
     $feed_parser = new FeedParserWrapper($feed['Link'], getDownloadCacheDir(), 'M d, H:i', $config_values['Settings']['Time Zone'], $cacheExpires);
     if (!$config_values['Global']['Feeds'][$feed['Link']] = $feed_parser->getParsedData()) {
         writeToLog("Error creating feed parser for " . $feed['Link'] . "\n", -1);
+        return false;
     } else {
         $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
+        return true;
     }
 }
 
-//function parse_one_atom($feed) {
-//    global $config_values;
-//    $atom_parser = new FeedParserWrapper($feed['Link'], getDownloadCacheDir(), 'M d, H:i', $config_values['Settings']['Time Zone']);
-//    if (!$config_values['Global']['Feeds'][$feed['Link']] = $atom_parser->getParsedData()) {
-//        writeToLog("Error creating atom parser for " . $feed['Link'] . "\n", -1);
-//    } else {
-//        $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
-//        $config_values['Global']['Feeds'][$feed['Link']]['Feed Type'] = 'Atom';
-//    }
-//}
+function processOneFeed($feed, $idx, $feedName, $feedLink) {
+    global $config_values;
+    // store some settings in temp variables
+    $matchStyle = getArrayValueByKey($config_values['Settings'], 'Match Style');
+    $reqEpisInfo = getArrayValueByKey($config_values['Settings'], 'Require Episode Info');
+    $onlyNewer = getArrayValueByKey($config_values['Settings'], 'Only Newer');
+    $dloadVersions = getArrayValueByKey($config_values['Settings'], 'Download Versions');
+    $ignBatches = getArrayValueByKey($config_values['Settings'], 'Ignore Batches');
+    $clientType = getArrayValueByKey($config_values['Settings'], 'Client');
+    $globalDownloadDir = getArrayValueByKey($config_values['Settings'], 'Download Dir');
+    $deepDirs = getArrayValueByKey($config_values['Settings'], 'Deep Directories');
+    $sMTPNotifications = getArrayValueByKey($config_values['Settings'], 'SMTP Notifications');
+    $enableScript = getArrayValueByKey($config_values['Settings'], 'Enable Script');
+    $alsoSaveTorrentFiles = getArrayValueByKey($config_values['Settings'], 'Also Save Torrent Files');
+    $alsoSaveDir = getArrayValueByKey($config_values['Settings'], 'Also Save Dir');
+    $configFeeds = $config_values['Feeds'];
+    $defaultSeedRatio = getArrayValueByKey($config_values['Settings'], 'Default Seed Ratio');
 
-function process_feed($feed, $idx, $feedName, $feedLink) {
-//function process_feed($feed, $idx, $feedName, $feedLink, $feedType) {
-    // this is second-most function for feed processing, run by process_all_feeds()
-    global $config_values, $itemState, $html_out; // $itemState is not used above this level
     writeToLog("Started processing feed: $feedName\n", 2);
-//    writeToLog("Started processing $feedType feed: $feedName\n", 2);
-//    switch ($feedType) {
-//        case "RSS":
-//            $itemCount = count($feed['items']);
-//            break;
-//        case "Atom":
-    if (isset($feed['feed']) && isset($feed['feed']['entry'])) {
-        $itemCount = count($feed['feed']['entry']);
+    if (isset($feed['feed']) && isset($feed['feed']['entry']) && count($feed['feed']['entry']) > 0) {
+        if (isset($config_values['Global']['HTMLOutput'])) {
+            if ($config_values['Settings']['Combine Feeds'] == 0) {
+                show_feed_list($idx);
+            }
+            $htmlList = []; // init item list for HTML output
+            $alt = 'alt'; // alternating row background for HTML output
+        }
+        $items = array_reverse($feed['feed']['entry']);
+        foreach ($items as $item) { // BEGIN loop through every item in this feed
+            if (isset($item['title'])) {
+                $item['title'] = simplifyTitle($item['title']); // simplifyTitle() is somehow needed for accurate favorites matching
+            } else {
+                $item['title'] = "";
+            }
+            $torHash = "";
+            $itemState = "st_notAMatch"; // assign initial state to each item, to be overwritten if a match; $itemState is not used above this function
+            // compare this item to Favorites
+            if (isset($config_values['Favorites'])) {
+                // loop through every Favorite and compare this item to each Favorite
+                foreach ($config_values['Favorites'] as $favKey => $favValue) { // BEGIN loop through Favorites; $favValue is not used
+                    if (checkItemMatchesFavorite(
+                                    $itemState,
+                                    $config_values['Favorites'][$favKey],
+                                    $item,
+                                    $feed['URL'],
+                                    $matchStyle,
+                                    $reqEpisInfo,
+                                    $onlyNewer,
+                                    $dloadVersions,
+                                    $ignBatches
+                            )
+                    ) {
+                        break; // first Favorite to match wins and starts download; $itemState should no longer be st_notAMatch at this point
+                    }
+                } // END loop through Favorites
+                if ($itemState === "st_favReady") {
+                    // item matches a Favorite; start the download, even though it might have been downloaded already
+                    // IMPORTANT: must use $config_values['Favorites'][$favKey] instead of $favValue or updateFavoriteEpisode() call will not work
+                    processMatchedItemDownload(
+                            $itemState,
+                            $config_values['Favorites'][$favKey],
+                            $item,
+                            $feedLink,
+                            $clientType,
+                            $globalDownloadDir,
+                            $deepDirs,
+                            $sMTPNotifications,
+                            $enableScript,
+                            $alsoSaveTorrentFiles,
+                            $alsoSaveDir,
+                            $configFeeds,
+                            $defaultSeedRatio
+                    ); //TODO add error handling for this call
+                }
+            }
+            // check every item, regardless of whether it matches a Favorite
+            // get $torHash after download has started for $htmlList
+            $cache_file = getDownloadCacheDir() . '/dl_' . sanitizeFilename($item['title']);
+            if (file_exists($cache_file)) {
+                if ($clientType !== 'folder') {
+                    $torHash = get_torHash($cache_file);
+                }
+                if ($itemState === 'st_notAMatch') {
+                    $itemState = 'st_inCache'; // not a Favorite but is seen in cache--probably a manual download or a deleted Favorite
+                }
+            }
+            // prepare and add item to item list for HTML output
+            if (isset($config_values['Global']['HTMLOutput'])) {
+                // assemble id using feed index and a sequential number
+                if (!isset($rsnr)) {
+                    $rsnr = 1;
+                } else {
+                    $rsnr++;
+                }
+                if (strlen($rsnr) <= 1) {
+                    $rsnr = 0 . $rsnr;
+                }
+                $id = $idx . $rsnr;
+                // append this item to the item list for HTML output
+                $htmlList[] = [
+                    'item' => $item,
+                    'URL' => $feedLink,
+                    'feedName' => $feedName,
+                    'alt' => $alt,
+                    'torHash' => $torHash,
+                    'itemState' => $itemState,
+                    'id' => $id
+                ];
+                // toggle alternating row background for HTML output
+                if ($alt === 'alt') {
+                    $alt = '';
+                } else {
+                    $alt = 'alt';
+                }
+            }
+        } // END loop through every item in this feed
+        if (isset($config_values['Global']['HTMLOutput'])) {
+            $htmlList = array_reverse($htmlList, true);
+            foreach ($htmlList as $item) {
+                show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['itemState'], $item['id']);
+            }
+            if ($config_values['Settings']['Combine Feeds'] == 0) {
+                close_feed_list();
+            }
+        }
+        unset($item);
+        writeToLog("Processed feed: $feedName\n", 1);
     } else {
-        $itemCount = 0;
-    }
-//    }
-    if ($itemCount === 0) {
         writeToLog("Empty feed: $feedName\n", 0);
         show_feed_down_header($idx);
-        return;
     }
-    if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        show_feed_list($idx);
-    }
-    $alt = 'alt';
-//    switch ($feedType) {
-//        case "RSS":
-//            $items = array_reverse($feed['items']);
-//            break;
-//        case "Atom";
-    $items = array_reverse($feed['feed']['entry']);
-//    }
-    $htmlList = [];
-    foreach ($items as $item) {
-        if (!isset($item['title'])) {
-            $item['title'] = "";
-        } else {
-            $item['title'] = simplifyTitle($item['title']); // first major function call, simplifyTitle() is somehow needed for accurate favorites matching
-        }
-        $torHash = "";
-        $itemState = "st_notAMatch";
-        if (isset($config_values['Favorites'])) {
-            foreach ($config_values['Favorites'] as $favKey => $favValue) {
-                // IMPORTANT: do not use $favValue, use $config_values['Favorites'][$favKey] so that the proper variable is passed by reference
-                check_for_torrent($config_values['Favorites'][$favKey], $favKey, ['Obj' => $item, 'URL' => $feed['URL']]); // second major function call, $itemState of st_notAMatch might be overwritten and/or download might create cache file inside check_for_torrent() above
-            }
-        }
-        $cache_file = getDownloadCacheDir() . '/dl_' . sanitizeFilename($item['title']);
-        if (file_exists($cache_file)) { //TODO why does this not use check_cache() with inCache, rewrite check_cache to return values
-            $torHash = get_torHash($cache_file);
-            switch ($itemState) {
-                /* These states become st_waitTorCheck in show_feed_item() if not saving torrent files to folder:
-                 * st_favReady
-                 * st_inCache
-                 * st_downloading
-                 * st_downloaded (may be removed from this list if PHP side fully-verifies the download succeeded) */
-                case "st_favReady":
-                case "st_favTooOld":
-                case "st_ignoredFavBatch":
-                    break;
-                case "st_inCache":
-                    writeToLog("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1);
-                    break;
-                default:
-                    $itemState = "st_downloading";
-                // no break!
-                case "st_downloaded":
-                    writeToLog("Exact in cache; ignoring: " . $item['title'] . "\n", 1);
-            }
-        }
-        if (isset($config_values['Global']['HTMLOutput'])) {
-            if (!isset($rsnr)) {
-                $rsnr = 1;
-            } else {
-                $rsnr++;
-            }
-            if (strlen($rsnr) <= 1) {
-                $rsnr = 0 . $rsnr;
-            }
-            $id = $idx . $rsnr;
-            $htmlList[] = [
-                'item' => $item,
-                'URL' => $feedLink,
-                'feedName' => $feedName,
-                'alt' => $alt,
-                'torHash' => $torHash,
-                'itemState' => $itemState,
-                'id' => $id
-            ];
-        }
-        if ($alt === 'alt') {
-            $alt = '';
-        } else {
-            $alt = 'alt';
-        }
-    }
-    $htmlList = array_reverse($htmlList, true);
-    foreach ($htmlList as $item) {
-        show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['itemState'], $item['id']);
-    }
-    if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 0) {
-        close_feed_list();
-    }
-    unset($item);
-    //writeToLog("Processed $feedType feed: $feedName\n", 1);
-    writeToLog("Processed feed: $feedName\n", 1);
 }
 
 function process_all_feeds($feeds) {
-    // this is the top-most function for feed processing, happens right after getting list of feeds
+    // processes all enabled feeds after loadAllFeeds()
     global $config_values;
-
-    if (isset($config_values['Global']['HTMLOutput'])) {
-        show_feed_lists_container();
-    }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
         show_feed_list(0);
     }
     setupDownloadCacheDir();
     foreach ($feeds as $key => $feed) {
-//        switch ($feed['Type']) {
-//            case 'RSS':
-//            case 'Atom':
         if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == 1) {
-            //process_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link'], $feed['Type']);
-            process_feed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+            processOneFeed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
         } else if ($feed['enabled'] != 1) {
             writeToLog("Feed disabled, not processed: " . $feed['Name'] . "\n", 1);
         } else {
             writeToLog("Feed inaccessible, not processed: " . $feed['Name'] . "\n", 1);
         }
-//                break;
-//            default:
-//                writeToLog("Unknown " . $feed['Type'] . " feed, not processed: " . $feed['Link'] . "\n", -1);
-//        }
     }
     if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
         close_feed_list();
     }
-    if ($config_values['Settings']['Client'] == "Transmission") {
-        show_transmission_div();
-    }
-    if (isset($config_values['Global']['HTMLOutput'])) {
-        close_feed_lists_container();
-    }
 }
 
-//function load_all_feeds($feeds, $update = null, $enabled = false) {
-//    foreach ($feeds as $feed) {
-//        switch ($feed['Type']) {
-//            case 'RSS':
-//                if ($enabled === true || $feed['enabled'] == 1) {
-//                    parse_one_rss($feed, $update);
-//                } else {
-//                    writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
-//                }
-//                break;
-//            case 'Atom':
-//                if ($enabled === true || $feed['enabled'] == 1) {
-//                    parse_one_atom($feed);
-//                } else {
-//                    writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
-//                }
-//                break;
-//            case 'Unknown':
-//            default:
-//                writeToLog("Unknown feed type, not loaded: " . $feed['Link'] . "\n", -1);
-//        }
-//    }
-//}
-
-function load_all_feeds($feeds, $update = null, $allEnabled = false) {
+function loadAllFeeds($feeds, $update = false) {
+    // loads and parses all enabled feeds
     foreach ($feeds as $feed) {
-        if ($allEnabled === true || $feed['enabled'] == 1) {
-            parse_one_feed($feed, $update);
+        if (isset($feed['enabled']) && $feed['enabled'] == 1) {
+            parseOneFeed($feed, $update);
         } else {
             writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
         }
     }
-}
-
-function guess_feed_type($feedurl) {
-    $response = parseURLForCookies($feedurl);
-    if (isset($response)) {
-        $feedurl = $response['url'];
-    }
-    $get = curl_init();
-    $curlOptions[CURLOPT_URL] = $feedurl;
-    getcURLDefaults($curlOptions);
-    curl_setopt_array($get, $curlOptions);
-    $content = explode("\n", curl_exec($get));
-    curl_close($get);
-    // should be on the second line, but test up to the first 5 in case of doctype, etc.
-    $contentCount = count($content);
-    for ($i = 0; $i < $contentCount && $i < 5; $i++) {
-        if (stripos($content[$i], '<feed xml') !== false) {
-            writeToLog("Feed $feedurl appears to be an Atom feed\n", 2);
-            return "Atom";
-        } else if (stripos($content[$i], '<rss') !== false) {
-            writeToLog("Feed $feedurl appears to be an RSS feed\n", 2);
-            return "RSS";
-        }
-    }
-    writeToLog("Cannot determine feed type: $feedurl\n", 0);
-    return "Unknown"; // was set to "RSS" as default, but this seemed to cause errors in addFeed()
 }

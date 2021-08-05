@@ -775,7 +775,7 @@ Code Changes
   - replaced twxa_atomparser.php with twxa_feed_parser_wrapper.php
   - added laminas-xml prerequisite for picofeed
   - tested Atom feed from AnimeTosho.org for several weeks
-  - fixed bug in picofeed that hashes the event id, but the Atom specification requires this be an IRI
+  - fixed bug in PicoFeed that hashes the event id, but the Atom specification requires this be an IRI
   - deleted Rules from PicoFeed distribution
 - removed MKV, AVC, MP4, and AVI from Qualities since they are often found as file extensions
 - added NVENC, HEVC-265, HEVC 265, and HEVC265 as codecs
@@ -794,6 +794,7 @@ Functional Changes
   - changed maximum cache expiry for all feeds from 3000 seconds to 3580 seconds (just under 1 hour)
 - added link to feed website to feed title in feed header bar
 - changed feed error header colors
+- modified PicoFeed to bypass URL::resolve() to allow magnet: links
 
 Code Changes
 
@@ -807,6 +808,65 @@ Code Changes
 - commented out all variables that store the feed type
 - changed cron job minutes field to older notation style
 - modified PicoFeed/Parser/Atom to correctly detect only the text/html alternate link for the feed's siteURL
+- added check for empty $filename in client_add_torrent() to block infinite recursive loop
+
+1.7.0
+
+Functional Changes
+
+- added icons for feed website and raw feed link to the feed headers
+- when adding or renaming a feed, only the specified feed is loaded and parsed instead of all of them
+- removed hashing of item guid from RSS2.0 feeds when guid already exists
+- improved torrent file and magnet link detection
+  - rewrote get_torrent_link() and choose_torrent_link() functions as detectAllTorrentLinks() and getBestTorrentOrMagnetLinks()
+  - items can now have a magnet link in addition to a torrent file link if both are detected in the raw feed item
+  - turned off PicoFeed item content filtering to allow magnet: links, though magnet: links should already be whitelisted
+  - an item without any torrent link displays its title with strikethrough font in web UI
+  - added support for links to .torrent.gz files using PHP 5.4's gzdecode() function
+- commented out all mentions of Internet Explorer
+- changed "Save Torrent In Folder" to "Save .torrent/magnet: Files In Folder"
+- changed "Also Save Torrent Files" to "Also Save .torrent/magnet: Files"
+- bug fixes for Client == "folder"
+- get_torHash() is no longer called when Client == "folder"
+- removed Downloading filter when Client == "folder"
+- removed "Waiting for client data..." when Client == "folder"
+- switched from Paypal Donate button to Ko-Fi "Buy Me a Coffee" and CoinDrop.to links
+- widened Seed Ratio text input in Favorite to handle three-digit ratios like 0.15
+
+
+IN PROGRESS
+
+- Started downloading item with Download button in web UI, then Trashed it completely, switched to Client = "Save .torrent/magnet: Files In Folder", and item switched from st_inCacheNotActive to st_downloading state; it switches back to st_downloading if Client is changed back to Transmission, even though the item is clearly not being downloaded
+
+- check if st_noURL item state can be used when item is missing any URL
+
+- Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter
+
+Code Changes
+
+- renamed all .tpl files as .php files because they are not actually Smarty templates
+- renamed clear_cache_by_feed_type() to delete_cache_files()
+- refactored clear_cache_by_cache_type() into clear_cache()
+- moved curl code into getCurl()
+  - rewrote getcURLDefaults() as fillCurlOptions()
+- rewrote addFeed() and updateFeed() to no longer need guess_feed_type()
+  - commented out or removed guess_feed_type() usages
+  - changed parse_one_feed() to return boolean
+  - changed $update from 1 or null to boolean in parse_one_feed() and load_all_feeds()
+  - removed 3rd parameter, $allEnabled, from load_all_feeds()
+- removed onchange=changeClient() from SMTP Authentication and SMTP Encryption select inputs
+- renamed clientId hidden input to clientType to reduce confusion with other uses of clientId
+- renamed load_all_feeds() to loadAllFeeds()
+- renamed parse_one_feed() to parseOneFeed()
+- renamed process_feed() to processOneFeed()
+- broke apart check_for_torrent() into smaller functions
+  - stopped using global $itemState and used proper parameter passing instead
+- rewrote client_add_torrent() as clientAddTorrent()
+- replaced find_torrent_link() with getBestTorrentOrMagnetLinks()
+
+IN PROGRESS
+
+  - use PicoFeed's Curl class where appropriate
 
 Next Version
 
@@ -827,7 +887,12 @@ Code Changes
 
 IN PROGRESS
 
-- rewrite addFeed() and updateFeed() to no longer need guess_feed_type() and remove guess_feed_type()
+- rewrite check_cache() and check_cache_episode() so that they are inverted; use check_cache() in processFeed()
+
+- getBestTorrentOrMagnetLinks() only needs to be called once, when the feed is parsed and not in show_feed_item(); major rewrite to refer to feed cache unless cache is disabled
+
+- rename $output to $result when appropriate: $result is typically a boolean result returned by a function; $output is typically a string returned by a function
+- modify PicoFeed to provide getDescription for each RSS feed item description or each Atom feed item summary
 - clicking Test button with blank/default SMTP settings failed (clicking Test only worked after the Save, but it should work before the Save)
 - JQuery.fx.interval is deprecated (might be a benign warning)
 - continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER

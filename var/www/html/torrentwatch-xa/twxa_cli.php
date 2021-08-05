@@ -41,7 +41,8 @@ writeToLog("=====Start twxa_cli.php\n", 2);
 //TODO add PHP prerequisite check
 //TODO add files and directories check
 if (isset($config_values['Feeds'])) {
-    load_all_feeds($config_values['Feeds'], 1);
+    //loadAllFeeds($config_values['Feeds'], 1);
+    loadAllFeeds($config_values['Feeds'], true); // 2nd parameter forces update
     process_all_feeds($config_values['Feeds']);
 }
 if (

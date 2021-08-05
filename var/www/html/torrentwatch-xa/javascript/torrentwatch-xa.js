@@ -4,7 +4,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         // define hideMe function by browser/userAgent/device
         var timeOut = 400;
         if (empty === true ||
-                navigator.appName === 'Microsoft Internet Explorer' ||
+                //navigator.appName === 'Microsoft Internet Explorer' ||
                 navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) {
             $.fn.hideMe = function () {
                 $(this).hide();
@@ -18,7 +18,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         }
         // define showMe function by browser/userAgent/device
         if (empty === true ||
-                navigator.appName === 'Microsoft Internet Explorer' ||
+                //navigator.appName === 'Microsoft Internet Explorer' ||
                 navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) {
             $.fn.showMe = function () {
                 $(this).show();
@@ -199,19 +199,18 @@ $(document).ready(function () { // first binding to document ready (while torren
     changeClient = function (client) {
         switch (client) {
             case "folder":
-                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir").css("display", "none");
+                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_downloading, #filter_transmission, #tabTor, #config_alsosavetorrentfiles, #config_alsosavedir").css("display", "none");
                 $("#filter_transmission").removeClass('filter_right');
                 $("#filter_downloaded").addClass('filter_right');
                 window.client = "folder";
                 adjustWebUIButton();
                 break;
             case 'Transmission':
-                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_transmission, #tabTor, #config_savetorrent, #config_savetorrentsdir").css("display", "block");
+                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_downloading, #filter_transmission, #tabTor, #config_alsosavetorrentfiles, #config_alsosavedir").css("display", "block");
                 $("#filter_downloaded").removeClass('filter_right');
                 $("#filter_transmission").addClass('filter_right');
                 window.client = 'Transmission';
                 adjustWebUIButton();
-                break;
         }
     };
     // perform the first load of the dynamic information
@@ -865,7 +864,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                         setTimeout(getClientData, 10);
                     }
                 }, 500);
-                window.client = $('#clientId').html();
+                window.client = $('#clientType').html();
                 changeClient(window.client);
             }, 50);
             if ($('#torrentlist_container div.header.combined').length === 1) {
@@ -906,7 +905,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
         } else if (button.id === "Update") {
             //TODO finish code to "pin open" Feeds panel when Update button is pressed
-            //TODO finish code to "pin open" Favorites panel when Update button (at favorites_info.tpl:87) is pressed
+            //TODO finish code to "pin open" Favorites panel when Update button (at favorites_info.php:87) is pressed
             $.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
         } else {
             $.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
@@ -936,7 +935,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                     $('#dynamicdata.dyndata').append(data);
                     $('#dynamicdata').find("ul.favorite > li").initFavorites().end().find("form").initForm().end().initConfigDialog();
                     $('#dynamicdata .dialog_last').remove();
-                    if (navigator.appName === 'Microsoft Internet Explorer' || last) {
+                    //if (navigator.appName === 'Microsoft Internet Explorer' || last) {
+                    if (last) {
                         $('.dialog').show();
                     } else {
                         $('.dialog').fadeIn();
@@ -1064,55 +1064,63 @@ $(document).ready(function () { // first binding to document ready (while torren
             window.favving = 0;
         }, 'html');
     };
-    $.dlTorrent = function (title, link, feed, id) {
+    $.dlTorrent = function (title, link, linkType, feed, id) {
         $.get("torrentwatch-xa.php", {
             dlTorrent: 1,
             title: title,
             link: link,
+            linkType: linkType,
             feed: feed,
             id: id
         },
                 function (torHash) {
-                    //TODO clean up and validate this entire function
-                    /*if (link.match(/^magnet:/) && window.client === "folder") {
-                     alert('Can not save magnet links to a folder'); //TODO use error function
-                     return;
-                     }*/
-                    if (torHash.match(/Error:\s\w+/) && window.client !== "folder") {
+                    if (torHash.match(/Error:\s\w+/)) {
                         alert('Something went wrong while adding this torrent. ' + torHash); //TODO use error function
                         return;
                     }
-                    $('li#id_' + id)
-                            .removeClass('tc_paused tc_downloading tc_seeding tc_verifying st_downloaded st_favReady st_waitTorCheck st_inCacheNotActive')
-                            .addClass('st_downloading tc_waiting');
-                    if (!$('li#id_' + id + ' .torInfo').length) {
-                        $('li#id_' + id + ' td.torrent_name')
-                                .append('<div class="infoDiv"><span id=tor_' + id + ' class="torInfo tor_' + torHash.match(/\w+/) + '">' +
-                                        'Waiting for client data...</span><span class="torEta"></span></div>');
-                    }
-
-                    $('li#id_' + id + ' div.hideItem').hide();
-                    $('li#id_' + id + ' div.hideItem').addClass("hidden");
-                    if (window.client !== "folder") {
-                        $('li#id_' + id + ' div.progressBarContainer').show();
-                    }
-                    $('li#id_' + id + ' div.torStart').hide();
-                    $('li#id_' + id + ' div.torStart').addClass("hidden");
-                    $('li#id_' + id + ' div.torResume').hide();
-                    $('li#id_' + id + ' div.torResume').addClass("hidden");
-                    $('li#id_' + id + ' div.torPause').show();
-                    $('li#id_' + id + ' div.torPause').removeClass("hidden");
                     if (window.client === "folder") {
-                        return;
+                        $('li#id_' + id)
+                                .removeClass('tc_paused tc_downloading tc_seeding tc_verifying tc_waiting st_downloading st_favReady st_waitTorCheck st_inCacheNotActive')
+                                .addClass('st_downloaded');
+                        $('li#id_' + id + ' div.hideItem').hide();
+                        $('li#id_' + id + ' div.hideItem').addClass("hidden");
+                        $('li#id_' + id + ' div.torStart').hide();
+                        $('li#id_' + id + ' div.torStart').addClass("hidden");
+//                        $('li#id_' + id + ' div.torResume').hide();
+//                        $('li#id_' + id + ' div.torResume').addClass("hidden");
+//                        $('li#id_' + id + ' div.torPause').hide();
+//                        $('li#id_' + id + ' div.torPause').addClass("hidden");
+//                        $('li#id_' + id + ' div.torTrash').hide();
+//                        $('li#id_' + id + ' div.torTrash').addClass("hidden");
+//                        $('li#id_' + id + ' div.torDelete').hide();
+//                        $('li#id_' + id + ' div.torDelete').addClass("hidden");
+                    } else {
+                        $('li#id_' + id)
+                                .removeClass('tc_paused tc_downloading tc_seeding tc_verifying st_downloaded st_favReady st_waitTorCheck st_inCacheNotActive')
+                                .addClass('st_downloading tc_waiting');
+                        if (!$('li#id_' + id + ' .torInfo').length) {
+                            $('li#id_' + id + ' td.torrent_name')
+                                    .append('<div class="infoDiv"><span id=tor_' + id + ' class="torInfo tor_' + torHash.match(/\w+/) + '">' +
+                                            'Waiting for client data...</span><span class="torEta"></span></div>');
+                        }
+                        $('li#id_' + id + ' div.progressBarContainer').show();
+                        $('li#id_' + id + ' div.hideItem').hide();
+                        $('li#id_' + id + ' div.hideItem').addClass("hidden");
+                        $('li#id_' + id + ' div.torStart').hide();
+                        $('li#id_' + id + ' div.torStart').addClass("hidden");
+                        $('li#id_' + id + ' div.torResume').hide();
+                        $('li#id_' + id + ' div.torResume').addClass("hidden");
+                        $('li#id_' + id + ' div.torPause').show();
+                        $('li#id_' + id + ' div.torPause').removeClass("hidden");
+                        $('li#id_' + id + ' div.torTrash').show();
+                        $('li#id_' + id + ' div.torTrash').removeClass("hidden");
+                        $('li#id_' + id + ' div.torDelete').show();
+                        $('li#id_' + id + ' div.torDelete').removeClass("hidden");
+                        $('li#id_' + id).removeClass('item_###torHash###').addClass('item_' + torHash);
+                        var item = $('li#id_' + id);
+                        item.html(item.html().replace(/###torHash###/g, torHash));
+                        setTimeout(getClientData, 10);
                     }
-                    $('li#id_' + id + ' div.torTrash').show();
-                    $('li#id_' + id + ' div.torTrash').removeClass("hidden");
-                    $('li#id_' + id + ' div.torDelete').show();
-                    $('li#id_' + id + ' div.torDelete').removeClass("hidden");
-                    $('li#id_' + id).removeClass('item_###torHash###').addClass('item_' + torHash);
-                    var item = $('li#id_' + id);
-                    item.html(item.html().replace(/###torHash###/g, torHash));
-                    setTimeout(getClientData, 10);
                 });
     };
     $.delTorrent = function (torHash, trash, sure, checkCache) {
@@ -1353,6 +1361,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         $.each($('#torrentlist_container .feed li.selected'), function () {
             var title = this.querySelector('input.title').value;
             var link = this.querySelector('input.link').value;
+            var linkType = this.querySelector('input.link_type').value;
             var feedLink = this.querySelector('input.feed_link').value;
             var id = this.querySelector('input.client_id').value;
             if (action === 'addFavorite') {
@@ -1366,7 +1375,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             if (!$(this).hasClass('st_downloading') && !$(this).hasClass('st_downloaded')) {
                 switch (action) {
                     case 'dlTorrent':
-                        $.dlTorrent(title, link, feedLink, id);
+                        $.dlTorrent(title, link, linkType, feedLink, id);
                         break;
                     case 'hideItem':
                         var hideInterval = setInterval(function () {

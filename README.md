@@ -23,22 +23,24 @@ Common setups:
 Status
 ===============
 
-I've posted 1.6.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.7.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-_IMPORTANT: Due to changes to the config file, it is recommended that you start with a fresh config file if upgrading from an older version. There will not be a config file converter this time due to the addition of a new setting for each feed. This setting will end up being blank if converted from an older config file._
+1.7.0 has a major rewrite of several of the core functions of torrentwatch-xa. The overall functionality hasn't changed much, but a few minor bugs and improvements triggered the major rewrite that's been in the [TODO.md](TODO.md) list since 0.3.0.
 
-1.6.0 has these new features:
+Most notably:
 
-- Both Atom and RSS feeds are now being parsed by PicoFeed, and the feed settings no longer distinguish between the two feed types.
-- rsscache_ files are now obsolete; all feeds are now cached in feedcache_ files.
-- The feed cache expiration logic has been revamped and there is now a new global setting, Cron Interval, measured in minutes and only accessible by editing the config file directly. Cron Interval should always match the cron interval in torrentwatch-xa-cron. 
-- Feed titles in the web UI now link to the feed sources' websites. If not specified, torrentwatch-xa attempts to auto-detect the feed's website URL when it is first added via Configure > Feeds.
-
-Anidex.info has been removed from the default feeds because their DDOS-GUARD blocks torrentwatch-xa. Note that default feed AnimeTosho.org aggregates Anidex.info.
-
-Fedora Server is now officially-supported, but only with SELINUX in Permissive mode.
+- the detection of .torrent, .torrent.gz, and magnet: links in the feeds has been improved and made more reliable
+- minor bugs in Client = "Save .torrent/magnet: Files In Folder" have finally been fixed
+- magnet: link functionality has finally been fully fleshed out
+- torrentwatch-xa can now handle .torrent.gz files, though this functionality has not been tested since EZTV no longer publishes .torrent.gz files, and I don't know of any other feeds that do
+- each feed header now has icons that link to each feed's website and raw feed to make diagnosis of feed errors easier (especially feed downs caused by DDOS protection)
+- the PayPal Donate button has been changed to an unobtrusive text link to CoinDrop, and the automatically-suggested donation amount is much lower
 
 Please report any bugs using Github Issues.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dchang0)
+
+[CoinDrop](https://coindrop.to/dchang0/)
 
 Documentation
 ===============

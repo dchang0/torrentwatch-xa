@@ -87,14 +87,14 @@
                                 <input type="checkbox" name="showdebug" value="1" <?php echo $showdebug; ?> />
                             </div>
                         </div>
-                        <div id="config_hide_donate">
+                        <!--<div id="config_hide_donate">
                             <div class="left">
                                 <label class="item checkbox">Hide Donate Button:</label>
                             </div>
                             <div class="right">
                                 <input type="checkbox" name="hidedonate" value="1" <?php echo $hidedonate; ?> />
                             </div>
-                        </div>
+                        </div>-->
                         <div id="config_check_updates">
                             <div class="left">
                                 <label class="item checkbox">Check for Updates:</label>
@@ -136,7 +136,7 @@
                             <div class="right">
                                 <select name="client" id="client" onchange="changeClient(this.options[this.selectedIndex].value);">
                                     <option value="Transmission" <?php echo $transmission; ?>>Transmission</option>
-                                    <option value="folder" <?php echo $folderclient; ?>>Save Torrent In Folder</option>
+                                    <option value="folder" <?php echo $folderclient; ?>>Save .torrent/magnet: Files In Folder</option>
                                 </select>
                             </div>
                         </div>
@@ -180,20 +180,20 @@
                                 <input type="password" class="password" name="trpass" value="<?php echo $config_values['Settings']['Transmission Password']; ?>"/>
                             </div>
                         </div>
-                        <div id="config_savetorrent" title="Also save .torrent files to download directory.">
+                        <div id="config_alsosavetorrentfiles" title="Also save .torrent files or magnet: links as files to 'Also Save Dir.'">
                             <div class="left">
-                                <label class="item checkbox">Also Save Torrent Files:</label>
+                                <label class="item checkbox">Also Save .torrent/magnet: Files:</label>
                             </div>
                             <div class="right">
-                                <input type="checkbox" name="savetorrents" value="1" <?php echo $savetorrents; ?> />
+                                <input type="checkbox" name="alsosavetorrentfiles" value="1" <?php echo $alsosavetorrentfiles; ?> />
                             </div>
                         </div>
-                        <div id="config_savetorrentsdir" title="Directory to save .torrent files in; can be overridden by Favorite's Also Save Dir">
+                        <div id="config_alsosavedir" title="Directory to save .torrent files in; can be overridden by Favorite's 'Also Save Dir'">
                             <div class="left">
-                                <label class="item textinput">Also Save Torrent Files Dir:</label>
+                                <label class="item textinput">Also Save Dir:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="savetorrentsdir" value="<?php echo $config_values['Settings']['Save Torrents Dir']; ?>"/>
+                                <input type="text" class="text" name="alsosavedir" value="<?php echo $config_values['Settings']['Also Save Dir']; ?>"/>
                             </div>
                         </div>
                     </div>
@@ -369,7 +369,7 @@
                                 <label class="item">SMTP Authentication:</label>
                             </div>
                             <div class="right">
-                                <select name="smtpAuthentication" id="smtpAuthentication" onchange="changeClient(this.options[this.selectedIndex].value);">
+                                <select name="smtpAuthentication" id="smtpAuthentication">
                                     <option value="None" <?php echo $smtpAuthNone; ?>>None</option>
                                     <option value="PLAIN" <?php echo $smtpAuthPLAIN; ?>>PLAIN</option>
                                     <option value="LOGIN" <?php echo $smtpAuthLOGIN; ?>>LOGIN</option>
@@ -381,7 +381,7 @@
                                 <label class="item">SMTP Encryption:</label>
                             </div>
                             <div class="right">
-                                <select name="smtpEncryption" id="smtpEncryption" onchange="changeClient(this.options[this.selectedIndex].value);">
+                                <select name="smtpEncryption" id="smtpEncryption">
                                     <option value="None" <?php echo $smtpEncNone; ?>>None</option>
                                     <option value="TLS" <?php echo $smtpEncTLS; ?>>STARTTLS or TLS</option>
                                     <option value="SSL" <?php echo $smtpEncSSL; ?>>SSL</option>
@@ -438,29 +438,29 @@
                         <div class="feedDelete">Delete</div>
                     </div>
                     <div id="feedItems">
-                        <?php if(isset($config_values['Feeds'])): ?>
-                        <?php foreach($config_values['Feeds'] as $key => $feed): ?>
-                        <?php print("<div id=\"feedItem_" . $key . "\" class=\"feeditem\">"); ?>
-                        <div class="feedURLName">
-                            <input class="feed_url" type="text" name="feed_url_<?php echo $key; ?>" title="Feed URL" value="<?php echo $feed['Link']; ?>" placeholder="Feed URL (required)"></input>
-                            <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="Feed Name (optional)" value="<?php echo $feed['Name']; ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
-                            <input class="feed_website" type="text" name="feed_website_<?php echo $key; ?>" title="Feed Website URL (optional)" value="<?php echo $feed['Website']; ?>" placeholder="Feed Website URL (leave blank for official feed website)"></input>
-                        </div>
-                        <div class="feedOn">
-                            <?php if($feed['enabled'] == 1): ?>
-                            <input class="feed_on_off" type="checkbox" name="feed_on_<?php echo $key; ?>" value="feed_on" checked></input>
-                            <?php else: ?>
-                            <input class="feed_on_off" type="checkbox" name="feed_on_<?php echo $key; ?>" value="feed_on"></input>
-                            <?php endif; ?>
-                        </div>
-                        <div class="seedRatio">
-                            <input class="seed_ratio" type="text" name="seed_ratio_<?php echo $key; ?>" title="Set default seed ratio for this feed." value="<?php echo $feed['seedRatio']; ?>"></input>
-                        </div>
-                        <div class="feedDelete">
-                            <input class="feed_delete" type="checkbox" name="feed_delete_<?php echo $key; ?>" value="feed_delete"></input>
-                        </div>
-                        <?php print("</div>"); ?>
-                        <?php endforeach; ?>
+                        <?php if (isset($config_values['Feeds'])): ?>
+                            <?php foreach ($config_values['Feeds'] as $key => $feed): ?>
+                                <?php print("<div id=\"feedItem_" . $key . "\" class=\"feeditem\">"); ?>
+                                <div class="feedURLName">
+                                    <input class="feed_url" type="text" name="feed_url_<?php echo $key; ?>" title="Feed URL" value="<?php echo $feed['Link']; ?>" placeholder="Feed URL (required)"></input>
+                                    <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="Feed Name (optional)" value="<?php echo $feed['Name']; ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
+                                    <input class="feed_website" type="text" name="feed_website_<?php echo $key; ?>" title="Feed Website URL (optional)" value="<?php echo $feed['Website']; ?>" placeholder="Feed Website URL (leave blank for official feed website)"></input>
+                                </div>
+                                <div class="feedOn">
+                                    <?php if ($feed['enabled'] == 1): ?>
+                                        <input class="feed_on_off" type="checkbox" name="feed_on_<?php echo $key; ?>" value="feed_on" checked></input>
+                                    <?php else: ?>
+                                        <input class="feed_on_off" type="checkbox" name="feed_on_<?php echo $key; ?>" value="feed_on"></input>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="seedRatio">
+                                    <input class="seed_ratio" type="text" name="seed_ratio_<?php echo $key; ?>" title="Set default seed ratio for this feed." value="<?php echo $feed['seedRatio']; ?>"></input>
+                                </div>
+                                <div class="feedDelete">
+                                    <input class="feed_delete" type="checkbox" name="feed_delete_<?php echo $key; ?>" value="feed_delete"></input>
+                                </div>
+                                <?php print("</div>"); ?>
+                            <?php endforeach; ?>
                         <?php endif; ?>
                         <div id="feedItem_new" class="feeditem">
                             <div class="feedURLName">
@@ -488,22 +488,22 @@
         </div>
         <form action="torrentwatch-xa.php?delHidden=1" id="hidelist_form" name="hidelist_form" class="hidden">
             <div id="config_hideList" class="hidden configTab">
-                <?php if($config_values['Settings']['Disable Hide List']): ?>
-                <div style='border-bottom: 1px solid #979797'><span class="hiddenItem">&nbsp;Hide List is disabled: entries below are ignored.</span></div>
+                <?php if ($config_values['Settings']['Disable Hide List']): ?>
+                    <div style='border-bottom: 1px solid #979797'><span class="hiddenItem">&nbsp;Hide List is disabled: entries below are ignored.</span></div>
                 <?php endif; ?>
                 <div id="hideListContainer">
                     <ul class="hidelist">
-                        <?php if($config_values['Hidden']): ?>
-                        <?php ksort($config_values['Hidden'], SORT_STRING); ?>
-                        <?php foreach($config_values['Hidden'] as $key => $item): ?>
-                        <li>
-                            <label class="item checkbox">
-                                <input type="checkbox" name="unhide[]" value="<?=$key?>"/>
-                                <span class="hiddenItem"><?php echo $item; ?></span></label>
-                        </li>
-                        <?php endforeach; ?>
+                        <?php if ($config_values['Hidden']): ?>
+                            <?php ksort($config_values['Hidden'], SORT_STRING); ?>
+                            <?php foreach ($config_values['Hidden'] as $key => $item): ?>
+                                <li>
+                                    <label class="item checkbox">
+                                        <input type="checkbox" name="unhide[]" value="<?= $key ?>"/>
+                                        <span class="hiddenItem"><?php echo $item; ?></span></label>
+                                </li>
+                            <?php endforeach; ?>
                         <?php else: ?>
-                        <li>&nbsp;Hide List is empty.</li>
+                            <li>&nbsp;Hide List is empty.</li>
                         <?php endif; ?>
                     </ul>
                 </div>

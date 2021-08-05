@@ -76,8 +76,8 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['Transmission Port'] = "9091";
     $config_values['Settings']['Transmission Login'] = "transmission"; // default for Debian's transmission-daemon
     $config_values['Settings']['Transmission Password'] = "transmission";
-    $config_values['Settings']['Save Torrents'] = "0";
-    $config_values['Settings']['Save Torrents Dir'] = "";
+    $config_values['Settings']['Also Save Torrent Files'] = "0";
+    $config_values['Settings']['Also Save Dir'] = "";
     // Torrent tab
     $config_values['Settings']['Deep Directories'] = "0";
     $config_values['Settings']['Default Seed Ratio'] = "-1";
@@ -114,7 +114,6 @@ function writeDefaultConfigFile() {
     $config_values['Feeds'] = [
         0 => [
             'Link' => 'https://nyaa.si/?page=rss',
-            //'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'Nyaa Torrent File RSS',
@@ -122,7 +121,6 @@ function writeDefaultConfigFile() {
         ],
         1 => [
             'Link' => 'https://eztv.re/ezrss.xml',
-            //'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'TV Torrents RSS feed - EZTV',
@@ -130,35 +128,38 @@ function writeDefaultConfigFile() {
         ],
         2 => [
             'Link' => 'https://feed.animetosho.org/atom',
-            //'Type' => 'Atom',
             'seedRatio' => "",
             'enabled' => 1,
             'Name' => 'AnimeTosho.org Atom',
             'Website' => 'https://animetosho.org'
         ],
         3 => [
-            'Link' => 'https://www.anirena.com/rss.php',
-            //'Type' => 'RSS',
-            'seedRatio' => "",
-            'enabled' => 1,
-            'Name' => 'Anirena',
-            'Website' => 'https://www.anirena.com'
-        ],
-        4 => [
             'Link' => 'https://tokyotosho.info/rss.php?filter=1',
-            //'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 0,
             'Name' => 'TokyoTosho.info Anime',
             'Website' => 'https://www.tokyotosho.info'
         ],
-        5 => [
+        4 => [
             'Link' => 'https://www.acgnx.se/rss.xml',
-            //'Type' => 'RSS',
             'seedRatio' => "",
             'enabled' => 0,
             'Name' => 'AcgnX Torrent Resources Base.Global',
             'Website' => 'https://www.acgnx.se'
+//        ],
+//        5 => [
+//            'Link' => 'https://www.anirena.com/rss.php',
+//            'seedRatio' => "",
+//            'enabled' => 0,
+//            'Name' => 'Anirena',
+//            'Website' => 'https://www.anirena.com'
+//        ],
+//        6 => [
+//            'Link' => 'https://anidex.info/rss/?cat=1,2,3',
+//            'seedRatio' => "",
+//            'enabled' => 0,
+//            'Name' => 'Anidex Tracker',
+//            'Website' => 'https://anidex.info'
         ]
     ];
     setpHPTimeZone($config_values['Settings']['Time Zone']);
@@ -320,12 +321,12 @@ function set_smtp_passwd() {
 
 function setupConfigCacheDir() {
     $configCacheDir = getConfigCacheDir();
-    writeToLog("Setting up Config Cache in: $configCacheDir\n", 2);
+    writeToLog("Checking Config Cache: $configCacheDir\n", 2);
     if (file_exists($configCacheDir)) {
         if (is_dir($configCacheDir)) {
             if (is_writeable($configCacheDir)) {
                 // Config Cache Dir is already set up
-                writeToLog("Config Cache Dir is already set up: $configCacheDir\n", 2);
+                writeToLog("Config Cache Dir is already set up correctly: $configCacheDir\n", 2);
                 return true;
             } else {
                 writeToLog("Config Cache Dir exists but is not writeable, attempting to chmod it: $configCacheDir\n", -1);
@@ -407,7 +408,7 @@ function updateGlobalConfig() {
      * Do not put settings that are only accessible by editing the config file
      * in this array, as they will get overwritten by null.
      */
-    $input = array(
+    $input = [
         // Interface tab
         'Combine Feeds' => 'combinefeeds',
         'Disable Hide List' => 'dishidelist',
@@ -423,8 +424,8 @@ function updateGlobalConfig() {
         'Transmission Port' => 'trport',
         'Transmission Login' => 'truser',
         'Transmission Password' => 'trpass',
-        'Save Torrents' => 'savetorrents',
-        'Save Torrents Dir' => 'savetorrentsdir',
+        'Also Save Torrent Files' => 'alsosavetorrentfiles',
+        'Also Save Dir' => 'alsosavedir',
         // Torrent tab
         'Deep Directories' => 'deepdir',
         'Default Seed Ratio' => 'defaultratio',
@@ -451,7 +452,7 @@ function updateGlobalConfig() {
         'SMTP User' => 'smtpUser',
         'SMTP Password' => 'smtpPassword',
         'HELO Override' => 'hELOOverride'
-    );
+    ];
     foreach ($input as $key => $data) {
         $config_values['Settings'][$key] = filter_input(INPUT_GET, $data);
     }
@@ -481,9 +482,9 @@ function addHidden($name) {
     if (!empty($name)) {
         $guess = detectMatch(html_entity_decode($name));
         if (!empty($guess['favTitle'])) {
-            $lctitle = strtolower(trim(strtr($guess['favTitle'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))));
+            $lctitle = strtolower(trim(strtr($guess['favTitle'], [":" => "", "," => "", "'" => "", "." => " ", "_" => " "])));
             foreach ($config_values['Favorites'] as $fav) {
-                if ($lctitle == strtolower(strtr($fav['Name'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " ")))) {
+                if ($lctitle == strtolower(strtr($fav['Name'], [":" => "", "," => "", "'" => "", "." => " ", "_" => " "]))) {
                     writeToLog($fav['Name'] . " exists in favorites. Not adding to hide list.\n", 0);
                     echo "twxa-ERROR:" . $fav['Name'] . " exists in favorites. Not adding to hide list.";
                     return;
@@ -535,7 +536,7 @@ function add_favorite() {
         return("Error: Missing index or Name, cannot add Favorite");
     }
 
-    $list = array(
+    $list = [
         "name" => "Name",
         "filter" => "Filter",
         "not" => "Not",
@@ -547,7 +548,7 @@ function add_favorite() {
         "seedratio" => "seedRatio",
         "season" => "Season",
         "episode" => "Episode"
-    );
+    ];
     foreach ($list as $key => $data) {
         if (isset($_GET[$key])) {
             $config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
@@ -634,18 +635,72 @@ function updateFavoriteEpisode(&$fav, $ti) {
 }
 
 /// feed config functions
+//function addFeed($feedItem) {
+//    global $config_values;
+//    if (filter_var($feedItem['feedLink'], FILTER_VALIDATE_URL)) {
+//        writeToLog("Checking feed: " . $feedItem['feedLink'] . "\n", 2);
+//        $guessedFeedType = guess_feed_type($feedItem['feedLink']);
+//        if ($guessedFeedType != 'Unknown') {
+//        writeToLog("Adding feed: " . $feedItem['feedLink'] . "\n", 1);
+//        $config_values['Feeds'][]['Link'] = $feedItem['feedLink'];
+//        $arrayKeys = array_keys($config_values['Feeds']);
+//        $idx = end($arrayKeys);
+////            $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
+//        // check that seedRatio is numeric
+//        if (is_numeric($feedItem['seedRatio'])) {
+//            $config_values['Feeds'][$idx]['seedRatio'] = $feedItem['seedRatio'];
+//        } else {
+//            $config_values['Feeds'][$idx]['seedRatio'] = '';
+//        }
+//        // feed on/off
+//        if ($feedItem['feedOn'] === 'feed_on') {
+//            $config_values['Feeds'][$idx]['enabled'] = 1;
+//        } else {
+//            $config_values['Feeds'][$idx]['enabled'] = '';
+//        }
+////            loadAllFeeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
+//            loadAllFeeds(array(0 => array('Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
+//            if ($feedItem['feedName'] === '') {
+////                switch ($guessedFeedType) {
+////                    case 'RSS':
+////                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['title'];
+////                        break;
+////                    case 'Atom':
+////                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['FEED']['TITLE'];
+////                }
+//                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
+//            } else {
+//                $config_values['Feeds'][$idx]['Name'] = $feedItem['feedName'];
+//            }
+//            // feed website
+//            if (
+//                    (
+//                    !isset($config_values['Feeds'][$idx]['Website']) || $$config_values['Feeds'][$idx]['Website'] === ''
+//                    ) &&
+//                    (
+//                    isset($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website']) &&
+//                    $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'] !== ''
+//                    )
+//            ) {
+//                $config_values['Feeds'][$idx]['Website'] = filter_var($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'], FILTER_VALIDATE_URL);
+//            }
+//        } else {
+//            writeToLog("Could not connect to feed or guess feed type: " . $feedItem['feedLink'] . "\n", -1);
+//        }
+//    } else {
+//        writeToLog("Ignoring invalid feed URL\n", 0);
+//    }
+//}
 
 function addFeed($feedItem) {
     global $config_values;
     if (filter_var($feedItem['feedLink'], FILTER_VALIDATE_URL)) {
         writeToLog("Checking feed: " . $feedItem['feedLink'] . "\n", 2);
-        $guessedFeedType = guess_feed_type($feedItem['feedLink']);
-        if ($guessedFeedType != 'Unknown') {
+        if (parseOneFeed(['Link' => $feedItem['feedLink']], true)) { // 2nd parameter forces update
             writeToLog("Adding feed: " . $feedItem['feedLink'] . "\n", 1);
             $config_values['Feeds'][]['Link'] = $feedItem['feedLink'];
             $arrayKeys = array_keys($config_values['Feeds']);
             $idx = end($arrayKeys);
-//            $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
             // check that seedRatio is numeric
             if (is_numeric($feedItem['seedRatio'])) {
                 $config_values['Feeds'][$idx]['seedRatio'] = $feedItem['seedRatio'];
@@ -658,16 +713,7 @@ function addFeed($feedItem) {
             } else {
                 $config_values['Feeds'][$idx]['enabled'] = '';
             }
-//            load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
-            load_all_feeds(array(0 => array('Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
             if ($feedItem['feedName'] === '') {
-//                switch ($guessedFeedType) {
-//                    case 'RSS':
-//                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['title'];
-//                        break;
-//                    case 'Atom':
-//                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['FEED']['TITLE'];
-//                }
                 $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
             } else {
                 $config_values['Feeds'][$idx]['Name'] = $feedItem['feedName'];
@@ -685,7 +731,7 @@ function addFeed($feedItem) {
                 $config_values['Feeds'][$idx]['Website'] = filter_var($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'], FILTER_VALIDATE_URL);
             }
         } else {
-            writeToLog("Could not connect to feed or guess feed type: " . $feedItem['feedLink'] . "\n", -1);
+            writeToLog("Could not connect to and parse feed: " . $feedItem['feedLink'] . "\n", -1);
         }
     } else {
         writeToLog("Ignoring invalid feed URL\n", 0);
@@ -750,21 +796,12 @@ function updateFeed() {
                             if ($config_values['Feeds'][$idx]['Name'] !== $feedItem['feedName']) {
                                 // if the new feed name is blank, get the official feed name from the feed
                                 if ($feedItem['feedName'] === false || $feedItem['feedName'] === '') {
-                                    $guessedFeedType = guess_feed_type($feedItem['feedLink']);
-                                    if ($guessedFeedType != 'Unknown') {
-//                                        load_all_feeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedItem['feedLink'])), 1, true); // pass true even if feed is not enabled because we want the name
-                                        load_all_feeds(array(0 => array('Link' => $feedItem['feedLink'])), 1, true); // pass true even if feed is not enabled because we want the name
-//                                        switch ($guessedFeedType) {
-//                                            case 'RSS':
-//                                                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['title'];
-//                                                break;
-//                                            case 'Atom':
-//                                                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['FEED']['TITLE'];
-//                                        }
+//                                    loadAllFeeds(array(0 => array('Link' => $feedItem['feedLink'])), 1, true); // pass true even if feed is not enabled because we want the name
+                                    if (parseOneFeed(['Link' => $feedItem['feedLink']])) {
                                         $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
                                         $feedItemChanged = true;
                                     } else {
-                                        writeToLog("Could not connect to feed or guess feed type: " . $feedItem['feedLink'] . "\n", -1);
+                                        writeToLog("Could not connect to and parse feed: " . $feedItem['feedLink'] . "\n", -1);
                                     }
                                 } else {
                                     // update the feed name

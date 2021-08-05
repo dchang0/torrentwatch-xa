@@ -8,7 +8,7 @@ function add_history($ti) {
     if (file_exists($downloadHistoryFile)) {
         $history = unserialize(file_get_contents($downloadHistoryFile));
     }
-    $history[] = array('Title' => $ti, 'Date' => date("Y.m.d H:i"));
+    $history[] = ['Title' => $ti, 'Date' => date("Y.m.d H:i")];
     if (
             (
             !file_exists($downloadHistoryFile) &&
@@ -25,12 +25,12 @@ function add_history($ti) {
 
 function setupDownloadCacheDir() {
     $downloadCacheDir = getDownloadCacheDir();
-    writeToLog("Setting up Download Cache in: $downloadCacheDir\n", 2);
+    writeToLog("Checking Download Cache: $downloadCacheDir\n", 2);
     if (file_exists($downloadCacheDir)) {
         if (is_dir($downloadCacheDir)) {
             if (is_writeable($downloadCacheDir)) {
                 // Download Cache Dir is already set up
-                writeToLog("Config Cache Dir is already set up: $downloadCacheDir\n", 2);
+                writeToLog("Download Cache Dir is already set up correctly: $downloadCacheDir\n", 2);
                 return true;
             } else {
                 writeToLog("Download Cache Dir exists but is not writeable, attempting to chmod it: $downloadCacheDir\n", -1);
@@ -43,7 +43,7 @@ function setupDownloadCacheDir() {
     } else {
         writeToLog("Download Cache Dir does not exist or does not have correct permissions, creating: $downloadCacheDir\n", 1);
         //TODO make sure $downloadCacheDir looks like a path
-        if(mkdir($downloadCacheDir, 0775, true)) {
+        if (mkdir($downloadCacheDir, 0775, true)) {
             writeToLog("Successfully set up Download Cache Dir: $downloadCacheDir\n", 2);
             return true;
         } else {
@@ -59,39 +59,40 @@ function add_cache($ti) {
     return($cache_file);
 }
 
-function clear_cache_by_feed_type($file) {
+function delete_cache_files($file) {
     $fileglob = getDownloadCacheDir() . '/' . $file;
-    writeToLog("Clearing $fileglob\n", 2);
+    writeToLog("Deleting: $fileglob\n", 1);
     foreach (glob($fileglob) as $fn) {
-        writeToLog("Removing $fn\n", 2);
-        unlink($fn);
+        if (unlink($fn)) {
+            writeToLog("Deleted: $fn\n", 2);
+        } else {
+            writeToLog("Failed to delete: $fn\n", 0);
+        }
     }
 }
 
-function clear_cache_by_cache_type() {
-    switch (filter_input(INPUT_GET, 'type')) {
+function clear_cache($type) {
+    switch ($type) {
         case 'feeds':
-            clear_cache_by_feed_type("rsscache_*"); //TODO comment this out by version 1.7.0
-            clear_cache_by_feed_type("feedcache_*");
-            break;
-        case 'torrents':
-            clear_cache_by_feed_type("dl_*");
+            delete_cache_files("feedcache_*");
             break;
         case 'all':
-            clear_cache_by_feed_type("dl_*");
-            clear_cache_by_feed_type("rsscache_*"); //TODO comment this out by version 1.7.0
-            clear_cache_by_feed_type("feedcache_*");
+            delete_cache_files("feedcache_*");
+        case 'torrents':
+            delete_cache_files("dl_*");
     }
 }
 
-function get_torHash($cache_file) {
+function get_torHash($cache_file, $logMissingHash = false) {
     $handle = fopen($cache_file, "r");
     if ($handle) {
         if (filesize($cache_file)) {
             $torHash = fread($handle, filesize($cache_file));
             return $torHash;
         } else {
-            writeToLog("No torrent hash in cache file: $cache_file\n", 0);
+            if ($logMissingHash === true) {
+                writeToLog("No torrent hash in cache file: $cache_file\n", 0);
+            }
         }
     } else {
         writeToLog("Unable to open cache file: $cache_file\n", 0);
@@ -105,7 +106,7 @@ function check_cache_for_torHash($torHash) {
         while (false !== ($file = readdir($handle))) {
             // loop through each cache file in the Download Cache Dir and check its torHash
             if (substr($file, 0, 3) === "dl_") {
-                $tmpTorHash = get_torHash($dowloadCacheDir . "/" . $file);
+                $tmpTorHash = get_torHash($dowloadCacheDir . "/" . $file, true);
                 if ($torHash === $tmpTorHash) {
                     return $file;
                 }
@@ -201,3 +202,22 @@ function check_cache($ti) {
         return false;
     }
 }
+
+//function checkCache($ti, $exactMatchOnly = false) {
+//    //TODO this function is the inverse of check_cache() and should replace it someday for logical clarity
+//    if (isset($ti) && $ti !== '') {
+//        $cacheFile = getDownloadCacheDir() . '/dl_' . sanitizeFilename($ti);
+//        if (file_exists($cacheFile)) {
+//            if ($exactMatchOnly === false) {
+//                return !check_cache_episode($ti); //TODO invert this when check_cache_episode() is inverted
+//            } else {
+//                return true;
+//            }
+//        } else {
+//            return false;
+//        }
+//    } else {
+//        // $ti is blank, cannot check cache
+//        return false;
+//    }
+//}

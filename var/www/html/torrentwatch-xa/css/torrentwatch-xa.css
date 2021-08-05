@@ -69,6 +69,10 @@ label.category {
     display: none;
 }
 
+.strikethrough {
+    text-decoration: line-through;
+}
+
 /*-----------------
  * T O P   M E N U
  * ----------------*/
@@ -1491,7 +1495,7 @@ form.favinfo label.lastEpisode{
 }
 
 form.favinfo input.seedratio[type=text] {
-    width: 20px;
+    width: 34px;
     text-align: center;
 }
 

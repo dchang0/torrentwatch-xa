@@ -118,7 +118,7 @@ function addOneBulkFavorite($name, $filter, $quality = "") {
         $config_values['Favorites'][$idx]['Quality'] = urldecode($quality);
         $config_values['Favorites'][$idx]['Feed'] = 'All';
 
-        $list = array(
+        $list = [
             //"name" => "Name",
             //"filter" => "Filter",
             "not" => "Not",
@@ -130,7 +130,7 @@ function addOneBulkFavorite($name, $filter, $quality = "") {
             "seedratio" => "seedRatio",
             "season" => "Season",
             "episode" => "Episode"
-        );
+        ];
         foreach ($list as $key => $data) {
             $config_values['Favorites'][$idx][$data] = "";
         }

@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.6.0";
+$twxa_version[0] = "1.7.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -81,7 +81,7 @@ function parse_options($twxa_version) {
             updateFeed();
             break;
         case 'clearCache':
-            clear_cache_by_cache_type();
+            clear_cache(filter_input(INPUT_GET, 'type'));
             break;
         case 'setGlobals':
             updateGlobalConfig();
@@ -142,36 +142,34 @@ function parse_options($twxa_version) {
             }
             break;
         case 'dlTorrent':
-            // Loaded via ajax
-            foreach ($config_values['Favorites'] as $fav) {
-                $guess = detectMatch(html_entity_decode($_GET['title']));
-                $name = trim(strtr($guess['title'], "._", "  "));
-                if ($name == $fav['Name']) {
-                    $downloadDir = $fav['Download Dir'];
-                }
-            }
-            if (
-                    (
-                    empty($downloadDir) ||
-                    $downloadDir == "Default"
-                    ) &&
-                    !empty($config_values['Settings']['Download Dir'])
-            ) {
-                $downloadDir = $config_values['Settings']['Download Dir'];
-            }
-            $r = client_add_torrent(str_replace('/ /', '%20', trim($_GET['link'])), $downloadDir, $_GET['title'], $_GET['feed']);
-            if ($r == "Success") {
+            $emptyFav = null;
+            $r = clientAddTorrent(
+                    filter_input(INPUT_GET, 'link'),
+                    filter_input(INPUT_GET, 'linkType'),
+                    filter_input(INPUT_GET, 'title'),
+                    getArrayValueByKey($config_values['Settings'], 'Client'),
+                    getArrayValueByKey($config_values['Settings'], 'Download Dir'),
+                    getArrayValueByKey($config_values['Settings'], 'Deep Directories'),
+                    getArrayValueByKey($config_values['Settings'], 'SMTP Notifications'),
+                    getArrayValueByKey($config_values['Settings'], 'Enable Script'),
+                    getArrayValueByKey($config_values['Settings'], 'Also Save Torrent Files'),
+                    getArrayValueByKey($config_values['Settings'], 'Also Save Dir'),
+                    $emptyFav, // &$fav
+                    filter_input(INPUT_GET, 'feed'),
+                    $config_values['Feeds'],
+                    getArrayValueByKey($config_values['Settings'], 'Default Seed Ratio')
+            );
+            if ($r['errorCode'] === 0) {
                 $torHash = get_torHash(add_cache(filter_input(INPUT_GET, 'title')));
             }
             if (isset($torHash)) {
                 echo $torHash;
             } else {
-                echo $r;
+                echo $r['errorMessage'];
             }
             exit(0);
             break;
         case 'clearHistory':
-            // Loaded via ajax
             $downloadHistoryFile = getDownloadHistoryFile();
             if (file_exists($downloadHistoryFile)) {
                 unlink($downloadHistoryFile);
@@ -186,7 +184,7 @@ function parse_options($twxa_version) {
             exit;
         case 'get_autodel':
             global $config_values;
-            if($config_values['Settings']['Client'] === 'Transmission') {
+            if ($config_values['Settings']['Client'] === 'Transmission') {
                 echo $config_values['Settings']['Auto-Del Seeded Torrents'];
             }
             exit;
@@ -297,7 +295,7 @@ function display_global_config() {
     }
 
 // Client tab
-    $transmission = $folderclient = $savetorrents = '';
+    $transmission = $folderclient = $alsosavetorrentfiles = '';
     switch ($config_values['Settings']['Client']) {
         case "Transmission":
             $transmission = 'selected="selected"';
@@ -305,8 +303,8 @@ function display_global_config() {
         case "folder":
             $folderclient = 'selected="selected"';
     }
-    if ($config_values['Settings']['Save Torrents'] == 1) {
-        $savetorrents = 'checked=1';
+    if ($config_values['Settings']['Also Save Torrent Files'] == 1) {
+        $alsosavetorrentfiles = 'checked=1';
     }
 
 // Torrent tab
@@ -389,11 +387,11 @@ function display_global_config() {
 
 // Include the templates and append the results to html_out
     ob_start();
-    require('templates/global_config.tpl');
+    require('templates/global_config.php');
     return ob_get_contents();
 }
 
-function display_favorites_info($item, $key) { // $key gets fed into favorites_info.tpl
+function display_favorites_info($item, $key) { // $key gets fed into favorites_info.php
     global $config_values;
     $feed_options = '<option value="none">None</option>';
     $feed_options .= '<option value="all"';
@@ -415,13 +413,13 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
         }
     }
 // Dont handle with object buffer, is called inside display_favorites ob_start
-    require('templates/favorites_info.tpl');
+    require('templates/favorites_info.php');
 }
 
 function display_favorites() {
     global $config_values, $html_out;
     ob_start();
-    require('templates/favorites.tpl');
+    require('templates/favorites.php');
     return ob_get_contents();
 }
 
@@ -448,14 +446,14 @@ function display_history() {
         $history = [];
     }
     ob_start();
-    require('templates/history.tpl');
+    require('templates/history.php');
     return ob_get_contents();
 }
 
 function display_legend() {
     global $html_out;
     ob_start();
-    require('templates/legend.tpl');
+    require('templates/legend.php');
     return ob_get_contents();
 }
 
@@ -463,14 +461,14 @@ function display_transmission() {
     global $html_out;
     $host = getTransmissionWebuRL();
     ob_start();
-    require('templates/transmission.tpl');
+    require('templates/transmission.php');
     return ob_get_contents();
 }
 
 function display_clearCache() {
     global $html_out;
     ob_start();
-    require('templates/clear_cache.tpl');
+    require('templates/clear_cache.php');
     return ob_get_contents();
 }
 
@@ -503,7 +501,7 @@ function checkFilesAndDirs() {
     $downloadCacheDir = getDownloadCacheDir();
     $downloadHistoryFile = getDownloadHistoryFile();
     $downloadDir = $config_values['Settings']['Download Dir'];
-    $saveTorrentsDir = $config_values['Settings']['Save Torrents Dir'];
+    $alsoSaveDir = $config_values['Settings']['Also Save Dir'];
 
     // only check DownloadDir if it is local and client is folder
     if ($config_values['Settings']['Client'] === "folder") {
@@ -511,15 +509,15 @@ function checkFilesAndDirs() {
     } else {
         $checkLocalDownloadDir = false;
     }
-    // only check Save Torrents Dir if Save Torrents is on
+    // only check Also Save Dir if Also Save Torrent Files is on
     if (
             $config_values['Settings']['Client'] !== "folder" &&
-            $config_values['Settings']['Save Torrents'] &&
-            !empty($config_values['Settings']['Save Torrents Dir'])
+            $config_values['Settings']['Also Save Torrent Files'] &&
+            !empty($config_values['Settings']['Also Save Dir'])
     ) {
-        $checkSaveTorrentsDir = true;
+        $checkAlsoSaveDir = true;
     } else {
-        $checkSaveTorrentsDir = false;
+        $checkAlsoSaveDir = false;
     }
 
     $errorMessage = false;
@@ -610,25 +608,25 @@ function checkFilesAndDirs() {
                 }
             }
         case true:
-            // if Save Torrents is on, check 'Save Torrents Dir'
-            if ($checkSaveTorrentsDir) {
-                if (!file_exists($saveTorrentsDir)) {
-                    $errorMessage .= "Save Torrents Dir <b>$saveTorrentsDir</b> not found.<br/>";
+            // if Also Save Torrent Files is on, check 'Also Save Dir'
+            if ($checkAlsoSaveDir) {
+                if (!file_exists($alsoSaveDir)) {
+                    $errorMessage .= "Also Save Dir <b>$alsoSaveDir</b> not found.<br/>";
                     break;
                 }
             }
         case true:
-            // if Save Torrents is on, check 'Save Torrents Dir'
-            if ($checkSaveTorrentsDir) {
-                if (!is_dir($saveTorrentsDir)) {
-                    $errorMessage .= "Save Torrents Dir <b>$saveTorrentsDir</b> isn't a directory.<br/>";
+            // if Also Save Torrent Files is on, check 'Also Save Dir'
+            if ($checkAlsoSaveDir) {
+                if (!is_dir($alsoSaveDir)) {
+                    $errorMessage .= "Also Save Dir <b>$alsoSaveDir</b> isn't a directory.<br/>";
                     break;
                 }
             }
         case true:
-            // if Save Torrents is on, check 'Save Torrents Dir'
-            if ($checkSaveTorrentsDir) {
-                $temp = checkPathReadableAndWriteable($saveTorrentsDir, "Save Torrents Dir", $myuID);
+            // if Also Save Torrent Files is on, check 'Also Save Dir'
+            if ($checkAlsoSaveDir) {
+                $temp = checkPathReadableAndWriteable($alsoSaveDir, "Also Save Dir", $myuID);
                 if (!empty($temp)) {
                     $errorMessage .= $temp;
                     break;
@@ -660,57 +658,49 @@ function checkPathReadableAndWriteable($path, $description, $uID) {
 }
 
 function checkVersion($twxa_version) {
-    if (!isset($_COOKIE['VERSION-CHECK'])) {
-        $get = curl_init();
-        $curlOptions[CURLOPT_URL] = 'http://silverlakecorp.com/torrentwatch-xa/VERSION.txt';
+    if (!isset($_COOKIE['VERSION-CHECK'])) { //TODO replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
         $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-        getcURLDefaults($curlOptions);
-        curl_setopt_array($get, $curlOptions);
-        $latestFromWebsite = curl_exec($get);
-        curl_close($get);
-        $isLatestHigher = false;
-        $thisVersion = explode(".", $twxa_version[0]);
-        $latestVersion = explode(".", $latestFromWebsite);
+        $latestFromWebsite = getCurl('http://silverlakecorp.com/torrentwatch-xa/VERSION.txt', $curlOptions);
+        if (preg_match('/^\d+\.\d+\.\d+$/', $latestFromWebsite)) {
+            $isLatestHigher = false;
+            $thisVersion = explode(".", $twxa_version[0]);
+            $latestVersion = explode(".", $latestFromWebsite);
 
-        // Assume there are 3 numeric parts to the version number; compare them part by part
-        if ((int)$thisVersion[0] > (int)$latestVersion[0]) {
-            //$isLatestHigher = false;
-        } else if ((int)$thisVersion[0] === (int)$latestVersion[0]) {
-            // first parts are the same, compare the second parts
-            if ((int)$thisVersion[1] > (int)$latestVersion[1]) {
-                //$isLatestHigher = false;
-            } else if ((int)$thisVersion[1] === (int)$latestVersion[1]) {
-                // second parts are the same, compare the third parts
-                if ((int)$thisVersion[2] >= (int)$latestVersion[2]) {
-                    //$isLatestHigher = false;
-                } else if ((int)$thisVersion[2] < (int)$latestVersion[2]) {
+            // Assume there are 3 numeric parts to the version number; compare them part by part
+            if ((int) $thisVersion[0] > (int) $latestVersion[0]) {
+
+            } else if ((int) $thisVersion[0] === (int) $latestVersion[0]) {
+                // first parts are the same, compare the second parts
+                if ((int) $thisVersion[1] > (int) $latestVersion[1]) {
+
+                } else if ((int) $thisVersion[1] === (int) $latestVersion[1]) {
+                    // second parts are the same, compare the third parts
+                    if ((int) $thisVersion[2] >= (int) $latestVersion[2]) {
+
+                    } else if ((int) $thisVersion[2] < (int) $latestVersion[2]) {
+                        $isLatestHigher = true;
+                    } else {
+                        // one of the values is non-numeric
+                    }
+                } else if ((int) $thisVersion[1] < (int) $latestVersion[1]) {
                     $isLatestHigher = true;
                 } else {
                     // one of the values is non-numeric
                 }
-            } else if ((int)$thisVersion[1] < (int)$latestVersion[1]) {
+            } else if ((int) $thisVersion[0] < (int) $latestVersion[0]) {
                 $isLatestHigher = true;
             } else {
                 // one of the values is non-numeric
             }
-        } else if ((int)$thisVersion[0] < (int)$latestVersion[0]) {
-            $isLatestHigher = true;
-        } else {
-            // one of the values is non-numeric
-        }
 
-        if ($isLatestHigher) {
-            return "<div id=\"newVersion\" class=\"dialog_window\" style=\"display: block\">torrentwatch-xa $latestFromWebsite is available.
+            if ($isLatestHigher) {
+                return "<div id=\"newVersion\" class=\"dialog_window\" style=\"display: block\">torrentwatch-xa $latestFromWebsite is available.
                    Click <a href=\"https://github.com/dchang0/torrentwatch-xa/\">here</a> for more information.</div>";
+            }
+        } else {
+            // latest version from website does not look like a version number
         }
     }
-}
-
-function outputClient() {
-    global $config_values;
-    echo "<div id='clientId' class='hidden'>";
-    echo $config_values['Settings']['Client'];
-    echo "</div>";
 }
 
 function closehTML() {
@@ -720,7 +710,7 @@ function closehTML() {
 }
 
 function outputErrorDialog($message) {
-    echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">" . $message . "</div>";
+    echo "<div id = \"errorDialog\" class=\"dialog_window\" style=\"display: block\">" . $message . "</div>";
 }
 
 /// main
@@ -741,16 +731,20 @@ closehTML();
 
 writeToLog("=====torrentwatch-xa.php started running at $main_timer\n", 2); // cannot put this line any earlier
 
-load_all_feeds($config_values['Feeds']);
+loadAllFeeds($config_values['Feeds']);
+show_feed_lists_container();
 process_all_feeds($config_values['Feeds']);
 
-outputClient();
+echo "<div id='clientType' class='hidden'>" . $config_values['Settings']['Client'] . "</div>"; // this must precede show_transmission_div();
+if ($config_values['Settings']['Client'] == "Transmission") {
+    show_transmission_div();
+}
 closehTML();
 
-echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a>.</div>";
+echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a> or <a href=\"https://coindrop.to/dchang0\" target=\"_blank\">buy me a coffee</a> to support this project&mdash;thanks!</div>";
 
 if ($config_values['Settings']['Hide Donate Button'] != 1) {
-    echo '<div id="donate"><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+    echo '<!--<div id="donate"><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 <input type="hidden" name="cmd" value="_donations">
 <input type="hidden" name="business" value="foss@silverlakecorp.com">
 <input type="hidden" name="lc" value="US">
@@ -759,8 +753,10 @@ if ($config_values['Settings']['Hide Donate Button'] != 1) {
 <input type="hidden" name="currency_code" value="USD">
 <input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHostedGuest">
 <input type="image" src="images/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-</form></div>';
+</form></div>-->';
 }
+
+close_feed_lists_container();
 
 writeToLog("=====torrentwatch-xa.php finished running in " . getElapsedMicrotime($main_timer) . "s\n", 2);
 exit(0);

@@ -1,12 +1,13 @@
 <?php
 
-// functions for handling torrent files and Transmission
+// functions for handling torrent files, magnet links, and Transmission
+// NOTE: There is a difference between a .torrent file and a torrent.
 function getClientData($encodeJson = true) {
-    $fields = array('id', 'name', 'errorString', 'hashString', 'uploadRatio', 'percentDone',
+    $fields = ['id', 'name', 'errorString', 'hashString', 'uploadRatio', 'percentDone',
         'leftUntilDone', 'downloadDir', 'totalSize', 'addedDate', 'status', 'eta',
         'peersSendingToUs', 'peersGettingFromUs', 'peersConnected', 'seedRatioLimit',
-        'recheckProgress', 'rateDownload', 'rateUpload');
-    $request = array('arguments' => array('fields' => $fields), 'method' => 'torrent-get');
+        'recheckProgress', 'rateDownload', 'rateUpload'];
+    $request = ['arguments' => ['fields' => $fields], 'method' => 'torrent-get'];
     $response = transmission_rpc($request);
     if ($encodeJson) {
         return json_encode($response);
@@ -17,14 +18,14 @@ function getClientData($encodeJson = true) {
 
 function startTorrent($torHash) {
     $idsArray = explode(',', $torHash); // this is okay because $torHash is a SHA1 hexadecimal number and never has commas
-    $request = array('arguments' => array('ids' => $idsArray), 'method' => 'torrent-start');
+    $request = ['arguments' => ['ids' => $idsArray], 'method' => 'torrent-start'];
     $response = transmission_rpc($request);
     return json_encode($response);
 }
 
 function stopTorrent($torHash) {
     $idsArray = explode(',', $torHash);
-    $request = array('arguments' => array('ids' => $idsArray), 'method' => 'torrent-stop');
+    $request = ['arguments' => ['ids' => $idsArray], 'method' => 'torrent-stop'];
     $response = transmission_rpc($request);
     return json_encode($response);
 }
@@ -42,7 +43,7 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
         $idsArray = $deleteHashes;
     }
     if (count($idsArray) >= 1) { //TODO maybe test || $checkCache === false too
-        $request = array('arguments' => array('delete-local-data' => $toTrash, 'ids' => $idsArray), 'method' => 'torrent-remove');
+        $request = ['arguments' => ['delete-local-data' => $toTrash, 'ids' => $idsArray], 'method' => 'torrent-remove'];
         $response = transmission_rpc($request);
         return json_encode($response);
     } else {
@@ -81,7 +82,7 @@ function auto_del_seeded_torrents() {
 
 function moveTorrent($location, $torHash) {
     $idsArray = explode(',', $torHash);
-    $request1 = array('arguments' => array('fields' => array('leftUntilDone', 'totalSize'), 'ids' => $idsArray), 'method' => 'torrent-get');
+    $request1 = ['arguments' => ['fields' => ['leftUntilDone', 'totalSize'], 'ids' => $idsArray], 'method' => 'torrent-get'];
     $response1 = transmission_rpc($request1);
     $totalSize = $response1['arguments']['torrents']['0']['totalSize'];
     $leftUntilDone = $response1['arguments']['torrents']['0']['leftUntilDone'];
@@ -90,7 +91,7 @@ function moveTorrent($location, $torHash) {
     } else {
         $move = false;
     }
-    $request2 = array('arguments' => array('location' => $location, 'move' => $move, 'ids' => $torHash), 'method' => 'torrent-set-location');
+    $request2 = ['arguments' => ['location' => $location, 'move' => $move, 'ids' => $torHash], 'method' => 'torrent-set-location'];
     $response2 = transmission_rpc($request2);
     return json_encode($response2);
 }
@@ -118,21 +119,13 @@ function transmission_sessionId() {
         $tr_host = $config_values['Settings']['Transmission Host'];
         $tr_port = $config_values['Settings']['Transmission Port'];
 
-        $sid = curl_init();
-        $curl_options = array(
-            CURLOPT_URL => "http://$tr_host:$tr_port" . getTransmissionrPCPath(),
+        $curlOptions = [
             CURLOPT_HEADER => true,
             CURLOPT_NOBODY => true,
             CURLOPT_USERPWD => "$tr_user:$tr_pass"
-        );
-        getcURLDefaults($curl_options);
-
-        curl_setopt_array($sid, $curl_options);
-
-        $header = curl_exec($sid);
-        curl_close($sid);
+        ];
         $ID = [];
-        preg_match("/X-Transmission-Session-Id:\s(\w+)/", $header, $ID);
+        preg_match("/X-Transmission-Session-Id:\s(\w+)/", getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions), $ID);
 
         if (isset($ID[1])) {
             $handle = fopen($sessionIdFile, "w");
@@ -167,25 +160,19 @@ function transmission_rpc($request) {
     $run = 1;
     while ($run) {
         $SessionId = transmission_sessionId();
-
-        $post = curl_init();
-        $curl_options = array(
-            CURLOPT_URL => "http://$tr_host:$tr_port" . getTransmissionrPCPath(),
+        $curlOptions = [
             CURLOPT_USERPWD => "$tr_user:$tr_pass",
-            CURLOPT_HTTPHEADER => array(
+            CURLOPT_HTTPHEADER => [
                 "POST " . getTransmissionrPCPath() . " HTTP/1.1",
                 "Host: $tr_host",
                 "X-Transmission-Session-Id: $SessionId",
                 'Connection: Close',
                 "Content-Length: $reqLen",
                 'Content-Type: application/json'
-            ),
+            ],
             CURLOPT_POSTFIELDS => "$requestjSON"
-        );
-        getcURLDefaults($curl_options);
-        curl_setopt_array($post, $curl_options);
-        $raw = curl_exec($post);
-        curl_close($post);
+        ];
+        $raw = getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions);
         if (preg_match('/409:? Conflict/', $raw)) {
             if (file_exists($sessionIdFile)) {
                 unlink($sessionIdFile);
@@ -197,9 +184,8 @@ function transmission_rpc($request) {
     return json_decode($raw, true);
 }
 
-function get_deep_dir($dest, $tor_name) {
-    global $config_values;
-    switch ($config_values['Settings']['Deep Directories']) {
+function get_deep_dir($dest, $tor_name, $deepDirs = '0') {
+    switch ($deepDirs) {
         case '0':
             break;
         case 'Title_Season':
@@ -277,10 +263,6 @@ function get_deep_dir($dest, $tor_name) {
                 break;
             }
             writeToLog("Deep Directories: Couldn't match $tor_name Reverting to Full\n", 1);
-        /* case 'Full':
-          default:
-          $dest = $dest . "/" . ucwords(strtolower($tor_name));
-          break; */
     }
     return $dest;
 }
@@ -339,16 +321,54 @@ function folder_add_torrent($tor, $dest, $ti, $isMagnet = false) {
     }
 }
 
+function folderAddTorrent($tor, $dest, $ti, $linkType) {
+    if (is_dir($dest) && is_writeable($dest)) {
+        $fullFilename = makeTorrentOrMagnetFilename($ti, ($linkType === 'magnet'));
+        if ($fullFilename !== "") {
+            $fullPath = "$dest/$fullFilename";
+            if (!file_exists($fullPath)) {
+                // save it
+                $return = file_put_contents($fullPath, $tor);
+                if ($return === false) {
+                    return [
+                        'errorCode' => 1,
+                        'errorMessage' => "Failed to write: $fullPath"
+                    ];
+                } else {
+                    return [
+                        'errorCode' => 0,
+                        'errorMessage' => "Successfully saved torrent: $ti"
+                    ];
+                }
+            } else {
+                return [
+                    'errorCode' => 0, // ordinarily should be an error, but why warn when we have the file already?
+                    'errorMessage' => "File already exists, skipping: $fullPath"
+                ];
+            }
+        } else {
+            return [
+                'errorCode' => 1,
+                'errorMessage' => "No filename to save: $ti"
+            ];
+        }
+    } else {
+        return [
+            'errorCode' => 1,
+            'errorMessage' => "Directory inaccessible: $dest"
+        ];
+    }
+}
+
 function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     // transmission dies with bad folder if it doesn't end in a /
     if (substr($dest, strlen($dest) - 1, 1) != '/') {
         $dest .= '/';
     }
-
     if (strpos($tor, 'magnet:') === 0) {
-        $request1 = array('method' => 'torrent-add', 'arguments' => array('download-dir' => $dest, 'filename' => $tor));
+        $request1 = ['method' => 'torrent-add', 'arguments' => ['download-dir' => $dest, 'filename' => $tor]];
     } else {
-        $request1 = array('method' => 'torrent-add', 'arguments' => array('download-dir' => $dest, 'metainfo' => base64_encode($tor)));
+        $request1 = ['method' => 'torrent-add', 'arguments' => ['download-dir' => $dest, 'metainfo' => base64_encode($tor)]];
     }
     $response1 = transmission_rpc($request1);
     if (isset($response1['result'])) {
@@ -365,14 +385,14 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
                 }
                 // set seed ratio
                 if ($seedRatio >= 0) {
-                    $request2 = array(
+                    $request2 = [
                         'method' => 'torrent-set',
-                        'arguments' => array(
+                        'arguments' => [
                             'ids' => $torHash,
                             'seedRatioLimit' => $seedRatio,
                             'seedRatioMode' => 1
-                        )
-                    );
+                        ]
+                    ];
                     $response2 = transmission_rpc($request2);
                     if ($response2['result'] !== 'success') {
                         writeToLog("Failed setting seed ratio limit for $ti\n", 0);
@@ -410,246 +430,236 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     }
 }
 
-function client_add_torrent($filename, $dest, $ti, $feed = null, &$fav = null, $retried = false) {
-    //TODO this function needs major cleanup! Be aware that return value should be an array but Javascript .dlTorrent expects a string
-    global $config_values;
-    if (isset($filename) && $filename !== '') {
-        if (isset($fav) && isset($fav['Filter']) && strtolower($fav['Filter']) === "any") {
-            $any = 1;
+function getDestinationPath($clientType, $globalDownloadDir, $deepDirs, $fav, $torName) {
+    // figure out the destination for the torrent download
+    $dest = $globalDownloadDir;
+    //TODO if $fav is null, then loop through the Favorites to see if the title matches a Favorite and get the Favorite's Download Dir
+    if (isset($fav['Download Dir']) && $fav['Download Dir'] !== '') {
+        if (
+                ($clientType === "folder" &&
+                is_dir($fav['Download Dir']) &&
+                is_writeable($fav['Download Dir'])) ||
+                $clientType !== "folder"
+        ) {
+            $dest = $fav['Download Dir'];
         }
-        if (strpos($filename, 'magnet:') === 0) {
-            $tor = $filename;
-            $magnet = true;
-        } else {
-            $magnet = false;
-            $filename = htmlspecialchars_decode($filename);
-
-            // Detect and append cookies from the feed url
-            $url = $filename;
-            if ($feed && strpos($feed, ':COOKIE:') !== false && strpos($url, ':COOKIE:') === false) {
-                $url .= stristr($feed, ':COOKIE:');
-            }
-
-            $get = curl_init();
-            $response = parseURLForCookies($url);
-            if ($response) {
-                $url = $response['url'];
-                $cookies = $response['cookies'];
-            }
-            $curlOptions[CURLOPT_URL] = $url;
-            if (isset($cookies)) {
-                $curlOptions[CURLOPT_COOKIE] = $cookies;
-            }
-            getcURLDefaults($curlOptions);
-            curl_setopt_array($get, $curlOptions);
-            $tor = curl_exec($get);
-            curl_close($get);
-
-            if (strncasecmp($tor, 'd8:announce', 11) != 0) { // Check for torrent magic-entry
-                // not a torrent file, so it's probably XML / HTML content or possibly a gzipped torrent file
-                // first, check the URL for a torrent hash and use that
-                $mat = [];
-                if (preg_match('/([a-fA-F0-9]{40})/', $filename, $mat) === 1) {
-                    writeToLog("Using torrent hash found in the URL: " . $mat[1] . "\n", 1);
-                    $tor = "magnet:?xt=urn:btih:$mat[1]";
-                    $magnet = true;
-                } else {
-                    if (!$retried) {
-                        // try to retrieve a .torrent link from the content.
-                        $link = find_torrent_link($url, $tor);
-                        //TODO test the link before recursively calling client_add_torrent
-                        return client_add_torrent($link, $dest, $ti, $feed, $fav, $url); // $url is used as boolean in $retried here but also as value in else below
-                    } else {
-                        if (isset($retried)) {
-                            $url = $retried;
-                        }
-                        $errMsg = "No torrent file link found in $url. Might be a gzipped torrent.";
-                        writeToLog("$errMsg\n", -1);
-                        //TODO remove this later
-                        writeToLog("HTTP response: $tor\n", 2);
-                        return $errMsg;
-                    }
-                }
-            } // do not add else with return here as it will break adding torrent files
-
-            if (!$tor) {
-                $errMsg = "Couldn't open torrent: $filename";
-                writeToLog("$errMsg\n", -1);
-                return $errMsg;
-            }
-        }
-
-        $tor_info = new BDecode("", $tor);
-        if (!($tor_name = $tor_info->{'result'}['info']['name'])) {
-            $tor_name = $ti; //TODO do we really need $tor_name in place of $ti?
-        }
-
-        if (!isset($dest)) {
-            $dest = $config_values['Settings']['Download Dir'];
-        }
-        if (isset($fav) && !empty($fav['Download Dir'])) {
-            if (
-                    ($config_values['Settings']['Client'] === "folder" &&
-                    is_dir($fav['Download Dir']) &&
-                    is_writeable($fav['Download Dir'])) ||
-                    $config_values['Settings']['Client'] !== "folder"
-            ) {
-                $dest = $fav['Download Dir'];
-            } else {
-                $dest = $config_values['Settings']['Download Dir'];
-            }
-        }
-
-        $dest = get_deep_dir(preg_replace('/\/$/', '', $dest), $tor_name);
-
-        $transmissionHost = $config_values['Settings']['Transmission Host'];
-        if ($transmissionHost === '127.0.0.1' || $transmissionHost === 'localhost') {
-            if (file_exists($dest)) {
-                // path exists, is it a file or directory?
-                if (!is_dir($dest)) {
-                    // it's a file--destroy and recreate it as a directory
-                    $old_umask = umask(0);
-                    writeToLog("Attempting to destroy file and recreate as directory: $dest\n", 2);
-                    unlink($dest);
-                    mkdir($dest, 0775, true);
-                    umask($old_umask);
-                }
-            } else {
-                // path doesn't exist, create it as a directory
-                $old_umask = umask(0);
-                writeToLog("Attempting to create directory: $dest\n", 2);
-                mkdir($dest, 0775, true);
-                umask($old_umask);
-            }
-        }
-
-        foreach ($config_values['Feeds'] as $key => $feedLink) {
-            if ($feedLink['Link'] == "$feed") {
-                $idx = $key;
-            }
-        }
-        if (isset($fav) && isset($fav['seedRatio']) && is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
-            $seedRatio = $fav['seedRatio'];
-        } else if (is_numeric($config_values['Feeds'][$idx]['seedRatio']) && $config_values['Feeds'][$idx]['seedRatio'] >= 0) {
-            $seedRatio = $config_values['Feeds'][$idx]['seedRatio'];
-        } else if (is_numeric($config_values['Settings']['Default Seed Ratio'])) {
-            $seedRatio = $config_values['Settings']['Default Seed Ratio'];
-        } else {
-            $seedRatio = -1;
-        }
-
-        switch ($config_values['Settings']['Client']) {
-            case "Transmission":
-                $return1 = transmission_add_torrent($tor, $dest, $ti, getArrayValueByKey($fav, '$seedRatio', $seedRatio));
-                break;
-            case "folder":
-                $return1 = folder_add_torrent($tor, $dest, $tor_name, $magnet);
-                break;
-            default:
-                writeToLog("Invalid torrent client: " . $config_values['Settings']['Client'] . "\n", -1);
-                exit(1); //TODO deal with this in revamping return of this function
-        }
-        if ($return1['errorCode'] === 0) {
-            add_history($tor_name);
-            writeToLog("Started: $tor_name in $dest\n", 1);
-            if (isset($fav)) {
-                if ($config_values['Settings']['SMTP Notifications']) {
-                    $subject = "\"$tor_name\" started downloading";
-                    $msg = "torrentwatch-xa started downloading \"$tor_name\"";
-                    notifyByEmail($msg, $subject);
-                }
-                if ($config_values['Settings']['Enable Script']) {
-                    runScript('favstart', $ti);
-                }
-                if (!isset($any) || !$any) {
-                    if (updateFavoriteEpisode($fav, $ti)) {
-                        writeToLog("Updated Favorite: $ti\n", 2);
-                    } else {
-                        writeToLog("Failed to update Favorite: $ti\n", 2);
-                    }
-                }
-            } else if ($config_values['Settings']['Enable Script']) {
-                runScript('nonfavstart', $ti);
-            }
-            if ($config_values['Settings']['Client'] !== "folder" &&
-                    $config_values['Settings']['Save Torrents']) {
-                if (
-                        isset($fav) &&
-                        !empty($fav['Also Save Dir']) &&
-                        is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
-                        is_writeable($fav['Also Save Dir'])
-                ) {
-                    $alsodest = $fav['Also Save Dir'];
-                } else {
-                    $alsodest = $config_values['Settings']['Save Torrents Dir'];
-                }
-                writeToLog("Also saving to file: $alsodest/" . makeTorrentOrMagnetFilename($tor_name, $magnet) . "\n", 2);
-                $return2 = folder_add_torrent($tor, $alsodest, $tor_name, $magnet);
-                if ($return2['errorCode'] !== 0) {
-                    return "Error: " . $return2['errorMessage']; //TODO deal with this in revamping return of this function
-                }
-            }
-            return "Success"; //TODO deal with this in revamping return of this function
-        } else {
-            writeToLog("Failed starting: $tor_name : " . $return1['errorMessage'] . "\n", -1);
-            $msg = "torrentwatch-xa tried to start \"$tor_name\" but failed with the following error:\n\n";
-            $msg .= $return1['errorMessage'] . "\n";
-            if ($config_values['Settings']['SMTP Notifications']) {
-                $subject = "Failed starting: \"$tor_name\"";
-                notifyByEmail($msg, $subject);
-            }
-            if ($config_values['Settings']['Enable Script']) {
-                runScript('error', $ti, $msg);
-            }
-            return "Error: " . $return1['errorMessage']; //TODO deal with this in revamping return of this function
-        }
-    } else {
-        $errMsg = "Error: magnet or torrent link cannot be blank. Please check that this feed item conforms to spec.";
-        writeToLog("$errMsg\n", -1);
-        return $errMsg;
     }
+    return get_deep_dir(preg_replace('/\/$/', '', $dest), $torName, $deepDirs);
 }
 
-function find_torrent_link($url_old, $content) {
-    $url = "";
-    $matches = [];
-    if (preg_match('/["\']([^\'"]*?\.torrent[^\'"]*?)["\']/', $content, $matches)) {
-        $url = $matches[1];
-        if (stripos($url, 'http://') === false && stripos($url, 'https://') === false) {
-            if (strpos($url, '/') === 0) {
-                $url = dirname($url_old) . $url;
-            } else {
-                $url = dirname($url_old) . '/' . $url;
-            }
-        }
-    } else if (preg_match_all('/href=["\']([^#].+?)["\']/', $content, $matches)) {
-        foreach ($matches[1] as $match) {
-            if (stripos($match, 'http://') === false && stripos($match, 'https://') === false) {
-                if (strpos($match, '/') === 0) {
-                    $match = dirname($url_old) . $match;
-                } else {
-                    $match = dirname($url_old) . '/' . $match;
-                }
-            }
-            if (stripos($match, 'w3.org') !== false) {
+function getFeedSeedRatio($configFeeds, $feedUrl) {
+    // get the seed ratio from a specific feed
+    // $configFeeds is $config_values['Feeds']
+    // this function should really be in twxa_feed.php but since twxa_torrent.php is called first, it must stay here
+    $seedRatio = null;
+    if (isset($configFeeds) && isset($feedUrl)) {
+        $idx = '';
+        foreach ($configFeeds as $key => $value) {
+            if ($value['Link'] == $feedUrl) {
+                $idx = $key;
                 break;
             }
-            $opts = array('http' => array('timeout' => 10));
-            stream_context_get_default($opts);
-            $headers = get_headers($match, 1);
-            if (
-                    (
-                    isset($headers['Content-Disposition']) &&
-                    preg_match('/filename=.+\.torrent/i', $headers['Content-Disposition'])
-                    ) ||
-                    (
-                    isset($headers['Content-Type']) &&
-                    $headers['Content-Type'] == 'application/x-bittorrent'
-                    )
-            ) {
-                $url = $match;
-            }
+        }
+        if (isset($configFeeds[$idx]['seedRatio']) && is_numeric($configFeeds[$idx]['seedRatio']) && $configFeeds[$idx]['seedRatio'] >= 0) {
+            $seedRatio = $configFeeds[$idx]['seedRatio'];
         }
     }
-    return $url;
+    return $seedRatio;
+}
+
+function clientAddTorrent(
+        $link,
+        $linkType,
+        $ti,
+        $clientType,
+        $globalDownloadDir,
+        $deepDirs,
+        $sMTPNotifications,
+        $enableScript,
+        $alsoSaveTorrentFiles,
+        $alsoSaveDir,
+        &$fav = null,
+        $feed = null,
+        $configFeeds = null,
+        $defaultSeedRatio = -1
+) {
+    // adds a single torrent to the specified client
+    if (isset($link) && $link !== '') {
+        $torrentFile = "";
+        if ($linkType === 'magnet') {
+            // it's a magnet link; do nothing for now
+        } else if ($linkType === 'torrent' || $linkType === 'torrent.gz') {
+            // download the .torrent or .torrent.gz file
+            $tempUrl = htmlspecialchars_decode($link);
+            // transfer a cookie from the feed URL to the item URL if the feed URL has a cookie and the item URL does not
+            if ($feed && strpos($feed, ':COOKIE:') !== false && strpos($tempUrl, ':COOKIE:') === false) {
+                $tempUrl .= stristr($feed, ':COOKIE:');
+            }
+            $tempParsedCookies = parseURLForCookies($tempUrl);
+            if (isset($tempParsedCookies['url'])) {
+                $tempUrl = $tempParsedCookies['url'];
+            }
+            $curlOptions[CURLOPT_URL] = $tempUrl;
+            if (isset($tempParsedCookies['cookies'])) {
+                $curlOptions[CURLOPT_COOKIE] = $tempParsedCookies['cookies'];
+            }
+            $torrentFile = getCurl(null, $curlOptions);
+            if ($torrentFile !== false) {
+                if ($linkType === 'torrent.gz') {
+                    // gunzip the .torrent.gz file into $torrentFile
+                    $torrentFile = gzdecode($torrentFile);
+                    $linkType = 'torrent';
+                }
+                // check $torrentFile for torrent magic entry
+                if (strncasecmp($torrentFile, 'd8:announce', 11) !== 0) {
+                    // not a torrent file; try to salvage the download
+                    // search for a torrent info hash in the URL itself
+                    $mat = [];
+                    if (preg_match('/([a-fA-F0-9]{40})/', $link, $mat) === 1) {
+                        writeToLog("Using torrent hash found in the URL: " . $mat[1] . "\n", 1);
+                        $link = "magnet:?xt=urn:btih:$mat[1]";
+                        $linkType = 'magnet';
+                    } else {
+                        //TODO search through the retrieved content itself using detectahrefsInString()
+                        writeToLog("Failed to retrieve .torrent file from: $link\n", 0);
+                        $linkType = 'unknown';
+                    }
+                } else {
+                    // it's a valid .torrent file; do nothing for now
+                }
+            }
+        }
+        // should have valid .torrent file or magnet: link by now; start the torrent download
+        if ($linkType === 'torrent' || $linkType === 'magnet') {
+            // figure out the torrent download filename
+            $torName = $ti;
+            if ($linkType === 'torrent') { // no need to check if $torrentFile is a valid torrent file
+                // if it's a torrent file, get the torrent name from within the file
+                $torInfo = new BDecode("", $torrentFile);
+                if (isset($torInfo->{'result'}['info']['name']) && $torInfo->{'result'}['info']['name'] !== '') {
+                    $torName = $torInfo->{'result'}['info']['name'];
+                }
+            }
+            // figure out the full download path
+            $dest = getDestinationPath($clientType, $globalDownloadDir, $deepDirs, $fav, $torName);
+            // client can be 'Transmission' or 'Save Torrent File or Magnet Link In Folder'
+            if ($clientType === 'folder') {
+                switch ($linkType) {
+                    case 'magnet':
+                        $addResult = folderAddTorrent($link, $dest, $torName, $linkType);
+                        break;
+                    case 'torrent':
+                    default:
+                        $addResult = folderAddTorrent($torrentFile, $dest, $torName, $linkType);
+                }
+            } else {
+                // get the seed ratio
+                if (isset($fav) && isset($fav['seedRatio']) && is_numeric($fav['seedRatio']) && $fav['seedRatio'] >= 0) {
+                    $seedRatio = $fav['seedRatio'];
+                } else {
+                    $feedSeedRatio = getFeedSeedRatio($configFeeds, $feed);
+                    if (is_numeric($feedSeedRatio) && $feedSeedRatio >= 0) {
+                        $seedRatio = $feedSeedRatio;
+                    } else if (is_numeric($defaultSeedRatio)) {
+                        $seedRatio = $defaultSeedRatio;
+                    } else {
+                        $seedRatio = -1;
+                    }
+                }
+                switch ($linkType) {
+                    case 'magnet':
+                        $addResult = transmission_add_torrent($link, $dest, $ti, $seedRatio);
+                        break;
+                    case 'torrent':
+                    default:
+                        $addResult = transmission_add_torrent($torrentFile, $dest, $ti, $seedRatio);
+                }
+            }
+            // if succeeded, update Favorite if Filter is not 'any', then run Triggers
+            if ($addResult['errorCode'] === 0) {
+                add_history($torName);
+                writeToLog("Started: $torName in $dest\n", 1);
+                if (isset($fav)) {
+                    if ($sMTPNotifications) {
+                        $subject = "\"$torName\" started downloading";
+                        $msg = "torrentwatch-xa started downloading \"$torName\"";
+                        notifyByEmail($msg, $subject);
+                    }
+                    if ($enableScript) {
+                        runScript('favstart', $ti);
+                    }
+                    if (isset($fav) && isset($fav['Filter']) && strtolower($fav['Filter']) === "any") {
+                        // do nothing
+                    } else {
+                        if (updateFavoriteEpisode($fav, $ti)) {
+                            writeToLog("Updated Favorite: $ti\n", 2);
+                        } else {
+                            writeToLog("Failed to update Favorite: $ti\n", 2);
+                        }
+                    }
+                } else if ($enableScript) {
+                    runScript('nonfavstart', $ti);
+                }
+                if ($clientType !== "folder" &&
+                        $alsoSaveTorrentFiles) {
+                    if (
+                            isset($fav) &&
+                            !empty($fav['Also Save Dir']) &&
+                            is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
+                            is_writeable($fav['Also Save Dir'])
+                    ) {
+                        $alsodest = $fav['Also Save Dir'];
+                    } else {
+                        $alsodest = $alsoSaveDir;
+                    }
+                    writeToLog("Also saving to file: $alsodest/" . makeTorrentOrMagnetFilename($torName, ($linkType === 'magnet')) . "\n", 2);
+                    switch ($linkType) {
+                        case 'magnet':
+                            $alsoSaveResult = folderAddTorrent($link, $alsodest, $torName, $linkType);
+                            break;
+                        case 'torrent':
+                        default:
+                            $alsoSaveResult = folderAddTorrent($torrentFile, $alsodest, $torName, $linkType);
+                    }
+                    if ($alsoSaveResult['errorCode'] !== 0) {
+                        return [
+                            'errorCode' => 1,
+                            'errorMessage' => "Error: " . $alsoSaveResult['errorMessage']
+                        ];
+                    }
+                }
+                return [
+                    'errorCode' => 0,
+                    'errorMessage' => "Success"
+                ];
+            } else {
+                writeToLog("Failed starting: $torName : " . $addResult['errorMessage'] . "\n", -1);
+                $msg = "torrentwatch-xa tried to start \"$torName\" but failed with the following error:\n\n";
+                $msg .= $addResult['errorMessage'] . "\n";
+                if ($sMTPNotifications) {
+                    $subject = "Failed starting: \"$torName\"";
+                    notifyByEmail($msg, $subject);
+                }
+                if ($enableScript) {
+                    runScript('error', $ti, $msg);
+                }
+                return [
+                    'errorCode' => 2,
+                    'errorMessage' => "Error: " . $addResult['errorMessage']
+                ];
+            }
+        } else {
+            writeToLog("No valid .torrent file or magnet: link at: $link\n", 0);
+            return [
+                'errorCode' => 2,
+                'errorMessage' => "Error: No valid .torrent file or magnet: link at: $link"
+            ];
+        }
+    } else {
+        writeToLog("Empty link, skipping download: $link\n", 0);
+        return [
+            'errorCode' => 2,
+            'errorMessage' => "Error: Empty link, skipping download: $link"
+        ];
+    }
 }

@@ -38,9 +38,9 @@
             <input type="text" class="text" name="downloaddir" value="<?php echo $item['Download Dir']; ?>">
         </div>
     </div>
-    <?php if($config_values['Settings']['Client'] !== "folder" && $config_values['Settings']['Save Torrents']) { ?><div class="favorite_alsosavedir" id="favorite_alsosavedir">
+    <?php if($config_values['Settings']['Client'] !== "folder" && $config_values['Settings']['Also Save Torrent Files']) { ?><div class="favorite_alsosavedir" id="favorite_alsosavedir">
         <div class="left">
-            <label class="item" title="Also Save Torrents Directory; overrides global default">Also Save Dir:</label>
+            <label class="item" title="Also Save Directory; overrides global default">Also Save Dir:</label>
         </div>
         <div class="right">
             <input type="text" class="text" name="alsosavedir" value="<?php echo $item['Also Save Dir']; ?>">
@@ -78,7 +78,7 @@
         </div>
         <div class="right">
             <input type="text" class="seedratio text" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="display: none"'; } ?> name="seedratio" value="<?php echo getArrayValueByKey($item, 'seedRatio'); ?>">
-            <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="padding-left: 137px"'; } ?>>Last Downloaded:</label>
+            <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only" <?php if($config_values['Settings']['Client'] == "folder") { echo 'style="padding-left: 137px"'; } ?>>Last Download:</label>
             <?php if(isset($item['Episode']) && $item['Season'] !== 0 && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
             <input class='lastSeason text' type="text" name="season" value="<?php echo $item['Season']; ?>">
             <label class="lastEpisode item">x</label>

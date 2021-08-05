@@ -12,8 +12,7 @@ function close_feed_lists_container() {
 
 function show_transmission_div() {
     global $html_out;
-    $html_out .= '<div id="transmission_data" class="transmission">';
-    $html_out .= '<ul id="transmission_list" class="torrentlist">';
+    $html_out .= '<div id="transmission_data" class="transmission"><ul id="transmission_list" class="torrentlist"></div>';
 }
 
 function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id) {
@@ -21,7 +20,7 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
     $guess = detectMatch($item['title']);
 
     if (!$config_values['Settings']['Disable Hide List']) {
-        if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['favTitle'], array(":" => "", "," => "", "'" => "", "." => " ", "_" => " "))))])) {
+        if (isset($config_values['Hidden'][strtolower(trim(strtr($guess['favTitle'], [":" => "", "," => "", "'" => "", "." => " ", "_" => " "])))])) {
             return;
         }
     }
@@ -38,13 +37,17 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
 
     $ti = $item['title'];
     // Copy feed cookies to item
-    $ulink = get_torrent_link($item);
+    //$ulink = get_torrent_link($item);
+    $itemLinks = getBestTorrentOrMagnetLinks($item);
+    $ulink = $itemLinks['link'];
+    $linkType = $itemLinks['type'];
+    $magnetLink = $itemLinks['magnetLink'];
     if (($pos = strpos($feed, ':COOKIE:')) !== false) {
         $ulink .= substr($feed, $pos);
     }
 
     ob_start();
-    require('templates/feed_item.tpl');
+    require('templates/feed_item.php');
     $html_out .= ob_get_contents();
     ob_end_clean();
 }
@@ -68,8 +71,10 @@ function show_feed_list($idx) {
             $ti = $config_values['Feeds'][$idx]['Link'];
         }
         if (isset($config_values['Feeds'][$idx]['Website']) && $config_values['Feeds'][$idx]['Website'] !== '') {
-            $ti = '<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank">' . $ti . '</a>';
+            $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank"><img src="images/weblink10x10.png" alt="feed website"/></a>';
         }
+        $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Link'] . '" target="_blank"><img src="images/feedlink10x10.png" alt="feed link"/></a>';
+        
         $html_out .= "<td class='feed_title'><span>$ti</span><span class='matches'></span></td>\n";
         $html_out .= "<td class='hide_feed'>\n";
         $html_out .= "<span class=\"hide_feed_right\">\n";

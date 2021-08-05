@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 require_once 'laminas-xml/Security.php';
 require_once 'PicoFeed/Config/Config.php';
 require_once 'PicoFeed/Logging/Logger.php';
@@ -77,7 +71,7 @@ class FeedParserWrapper {
             $cacheFile = $cacheDir . '/feedcache_' . md5($file);
             if (file_exists($cacheFile) && time() < filemtime($cacheFile) + $cacheExpires) {
                 $timeTillExpiry = filemtime($cacheFile) + $cacheExpires - time();
-                writeToLog("Feed cache expires in $timeTillExpiry seconds, skipping refresh for: $file\n", 2);
+                writeToLog("Feed cache expires in $timeTillExpiry" . "s, skipping refresh: $file\n", 2);
                 // cache file is new enough
                 $this->feedData = unserialize(join('', file($cacheFile)));
                 // set 'cached' to 1 only if cached file is correct
@@ -109,45 +103,41 @@ class FeedParserWrapper {
     function parse($file) {
         try {
             $reader = new Reader;
-
             // get a resource
             $resource = $reader->download($file);
-
 //            // detect feed format
-//            $format = $reader->detectFormat($content);
-//
+//            $format = $reader->detectFormat($resource->getContent());
 //            if (empty($format)) {
 //                throw new UnsupportedFeedFormatException('Unable to detect feed format');
 //            }
-
             // get the right parser instance according to the feed format
             $parser = $reader->getParser(
                     $resource->getUrl(),
                     $resource->getContent(),
                     $resource->getEncoding()
             );
-
+            //TODO figure out why magnet: links are filtered out by the ContentFilter even though they are supposed to be whitelisted, then re-enable content filtering
+            $parser->disableContentFiltering();
             // get a feed object
             $feed = $parser->execute();
-
             // print the feed properties with the magic method __toString()
-            //echo $feed;
+            //writeToLog("raw feed: " . $feed . "\n", 2);
             $this->feedData = $this->convertFeedObjectToArray($feed);
         } catch (PicoFeedException $e) {
-            //TODO handle error
+            writeToLog("Error parsing feed: $file: " . print_r($e, true) . "\n", -1);
         }
     }
 
     private function convertFeedObjectToArray($feedObject) {
         $feedArray = [];
         // Feed object
-         //TODO get rid of ['feed']
+        //TODO get rid of ['feed']
         $feedArray['feed']['id'] = $feedObject->getId(); // Unique feed id
         $feedArray['feed']['title'] = $feedObject->getTitle(); // Feed title
         $feedArray['feed']['link'] = $feedObject->getFeedUrl(); // Feed URL
         $feedArray['feed']['website'] = $feedObject->getSiteUrl(); // Website URL
         $feedArray['feed']['updated'] = $this->convertDateTimeToString($feedObject->getDate(), 'c'); // Feed last updated date (DateTime object)
-        $feedArray['feed']['subtitle'] = $feedObject->getDescription(); // Feed description
+        //$feedArray['feed']['subtitle'] = $feedObject->getDescription(); // Feed description
         for ($i = 0; $i < count($feedObject->items); $i++) {
             // Item object
             $feedArray['feed']['entry'][$i]['id'] = $feedObject->items[$i]->getId(); // Item unique id
@@ -160,6 +150,9 @@ class FeedParserWrapper {
             $feedArray['feed']['entry'][$i]['enclosure']['type'] = $feedObject->items[$i]->getEnclosureType(); // Enclosure mime-type (audio/mp3, image/png...)
             $feedArray['feed']['entry'][$i]['content'] = $feedObject->items[$i]->getContent(); // Item content (filtered or raw)
             $feedArray['feed']['entry'][$i]['pubDate'] = $this->convertDateTimeToString($feedObject->items[$i]->getPublishedDate(), $this->dateFormat);
+            //TODO where is the item description?
+            //Item description is optional for RSS2.0 only if the item title exists but required if it doesn't.
+            //Item description does not exist in Atom spec; an optional item summary presumably takes its place.
         }
         return $feedArray;
     }

@@ -18,7 +18,7 @@
             <li class='legend st_downloading'>
                 <span class='torrent_name'><b>Downloading</b><br>Item is downloading.</span></li>
             <li class='legend st_downloaded'>
-                <span class='torrent_name'><b>Downloaded / Seeding</b><br>Item was just downloaded and is seeding.</span></li>
+                <span class='torrent_name'><b>Downloaded / Seeding</b><br>Item was just downloaded and is seeding in the torrent client.</span></li>
             <li class='legend st_inCacheNotActive'>
                 <span class='torrent_name'><b>Previously Downloaded</b><br>Seen in download cache but no longer active in the torrent client.</span></li>
             <li class='legend tc_paused'>

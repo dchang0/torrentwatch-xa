@@ -5,7 +5,6 @@ global $config_values;
 // Prerequisite PHP JSON, PHP cURL, PHP XML, and PHP mbstring packages are assumed to be installed.
 
 require_once("twxa_config_lib.php");
-//require_once("twxa_lastRSS.php");
 require_once("twxa_feed_parser_wrapper.php");
 require_once("class.bdecode.php");
 require_once("class.phpmailer.php");
@@ -33,22 +32,79 @@ function multi_str_search($haystack, $needles) {
     return false;
 }
 
-function getcURLDefaults(&$curlOptions) {
+//function getcURLDefaults(&$curlOptions) {
+//    global $twxa_version;
+//    $curlOptions[CURLOPT_CONNECTTIMEOUT] = 20;
+//    $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+//    $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+//    $curlOptions[CURLOPT_FOLLOWLOCATION] = true;
+//    $curlOptions[CURLOPT_UNRESTRICTED_AUTH] = true;
+//    $curlOptions[CURLOPT_TIMEOUT] = 30;
+//    $curlOptions[CURLOPT_RETURNTRANSFER] = true;
+//    $userAgent = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
+//    if ($userAgent === false || $userAgent === null || $userAgent === '') {
+//        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
+//    } else {
+//        $curlOptions[CURLOPT_USERAGENT] = $userAgent;
+//    }
+//    return($curlOptions);
+//}
+
+function fillCurlOptions($curlOptions = null) {
+    // fills out missing curl options for PHP curl
+    // existing options get precedence
     global $twxa_version;
-    $curlOptions[CURLOPT_CONNECTTIMEOUT] = 20; // was 15
-    $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
-    $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
-    $curlOptions[CURLOPT_FOLLOWLOCATION] = true;
-    $curlOptions[CURLOPT_UNRESTRICTED_AUTH] = true;
-    $curlOptions[CURLOPT_TIMEOUT] = 30; // was 20
-    $curlOptions[CURLOPT_RETURNTRANSFER] = true;
-    if (filter_input(INPUT_SERVER, "HTTP_USER_AGENT") == "") {
-        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-        //$curlOptions[CURLOPT_USERAGENT] = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13';
+    (isset($curlOptions[CURLOPT_CONNECTTIMEOUT]) && is_integer($curlOptions[CURLOPT_CONNECTTIMEOUT])) ?: $curlOptions[CURLOPT_CONNECTTIMEOUT] = 20;
+    (isset($curlOptions[CURLOPT_SSL_VERIFYPEER]) && is_bool($curlOptions[CURLOPT_SSL_VERIFYPEER])) ?: $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+    (isset($curlOptions[CURLOPT_SSL_VERIFYHOST]) && is_bool($curlOptions[CURLOPT_SSL_VERIFYHOST])) ?: $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
+    (isset($curlOptions[CURLOPT_FOLLOWLOCATION]) && is_bool($curlOptions[CURLOPT_FOLLOWLOCATION])) ?: $curlOptions[CURLOPT_FOLLOWLOCATION] = true;
+    (isset($curlOptions[CURLOPT_UNRESTRICTED_AUTH]) && is_bool($curlOptions[CURLOPT_UNRESTRICTED_AUTH])) ?: $curlOptions[CURLOPT_UNRESTRICTED_AUTH] = true;
+    (isset($curlOptions[CURLOPT_TIMEOUT]) && is_integer($curlOptions[CURLOPT_TIMEOUT])) ?: $curlOptions[CURLOPT_TIMEOUT] = 30;
+    (isset($curlOptions[CURLOPT_RETURNTRANSFER]) && is_bool($curlOptions[CURLOPT_RETURNTRANSFER])) ?: $curlOptions[CURLOPT_RETURNTRANSFER] = true;
+    if (isset($curlOptions[CURLOPT_USERAGENT]) && !empty($curlOptions[CURLOPT_USERAGENT])) {
+        // do nothing
     } else {
-        $curlOptions[CURLOPT_USERAGENT] = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
+        $userAgent = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
+        if ($userAgent === false || $userAgent === null || $userAgent === '') {
+            $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
+        } else {
+            $curlOptions[CURLOPT_USERAGENT] = $userAgent;
+        }
     }
     return($curlOptions);
+}
+
+function getCurl($url, $curlOptions = null) {
+    // use PHP curl to GET the resource at $url and return the contents
+    // overwrite the URL with $url if $url is set
+    if (isset($url) && is_string($url)) {
+        $curlOptions[CURLOPT_URL] = $url;
+    }
+    $result = false;
+    if (isset($curlOptions[CURLOPT_URL]) && is_string($curlOptions[CURLOPT_URL]) && $curlOptions[CURLOPT_URL] !== '') {
+        $curlHandle = curl_init();
+        if ($curlHandle === false) {
+            writeToLog("Unable to init curl handle\n", -1);
+        } else {
+            if (curl_setopt_array($curlHandle, fillCurlOptions($curlOptions))) {
+                $response = curl_exec($curlHandle);
+                curl_close($curlHandle);
+                if ($response === false) {
+                    writeToLog("curl failed to GET " . $curlOptions[CURLOPT_URL] . " with error: " . curl_error($curlHandle) . "\n", -1);
+                } else if ($response === true) {
+                    $result = '';
+                } else {
+                    $result = $response;
+                }
+            } else {
+                writeToLog("Unable to set curl options: " . print_r($curlOptions, true) . "\n", 0);
+            }
+        }
+    } else {
+        // no URL provided
+        writeToLog("curl cannot GET a blank URL\n", 0);
+    }
+    return $result;
 }
 
 function getCurrentMicrotime() {
@@ -62,7 +118,6 @@ function getElapsedMicrotime($startTime) {
 
 function sanitizeFilename($filename) {
     // makes a filename filesystem-safe
-    #return preg_replace("/\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\|/", "_", $filename);
     return preg_replace("/\:|\?|\/|\\|\+|\=|\>|\<|\,|\"|\*|\||\[|\]|\^/", "_", $filename);
 }
 
@@ -84,7 +139,7 @@ function writeToLog($string, $lvl = -1) {
     }
     if (!isset($config_values['Settings']['Log Level']) || (int) $config_values['Settings']['Log Level'] >= $lvl) {
         /* if ($lvl === -1 && isset($config_values['Global']['HTMLOutput'])) {
-          $string = trim(strtr($string, array("'" => "\\'")));
+          $string = trim(strtr($string, ["'" => "\\'"]));
           $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once
           } */
         // write plain text to log file
@@ -242,7 +297,10 @@ function parseURLForCookies($url) {
     if ($cookies !== false) {
         $url = rtrim(substr($url, 0, -strlen($cookies)), '&');
         $cookies = strtr(substr($cookies, 8), '&', ';');
-        return array('url' => $url, 'cookies' => $cookies);
+        return [
+            'url' => $url,
+            'cookies' => $cookies
+        ];
     }
 }
 
