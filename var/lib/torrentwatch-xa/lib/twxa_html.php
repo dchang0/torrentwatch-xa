@@ -1,17 +1,14 @@
 <?php
 
-function show_feed_lists_container() {
-    global $html_out;
+function show_feed_lists_container(&$html_out) {
     $html_out .= "<div id='torrentlist_container'>\n";
 }
 
-function close_feed_lists_container() {
-    global $html_out;
+function close_feed_lists_container(&$html_out) {
     $html_out .= "</div>\n";
 }
 
-function show_transmission_div() {
-    global $html_out;
+function show_transmission_div(&$html_out) {
     $html_out .= '<div id="transmission_data" class="transmission"><ul id="transmission_list" class="torrentlist"></div>';
 }
 
@@ -93,9 +90,10 @@ function show_feed_down_header($idx) {
         $ti = $config_values['Feeds'][$idx]['Name'];
     }
     if (isset($config_values['Feeds'][$idx]['Website']) && $config_values['Feeds'][$idx]['Website'] !== '') {
-        $ti = '<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank">' . $ti . '</a>';
+        $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank"><img src="images/weblink10x10.png" alt="feed website"/></a>';
     }
-    $html_out .= "<div class=\"errorHeader\">$ti is not available.</div>\n";
+    $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Link'] . '" target="_blank"><img src="images/feedlink10x10.png" alt="feed link"/></a>';
+    $html_out .= "<div class=\"errorHeader\">$ti&nbsp;&nbsp;is not available.</div>\n";
 }
 
 // close the div that contains all the feed items

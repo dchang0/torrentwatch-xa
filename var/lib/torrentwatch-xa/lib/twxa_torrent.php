@@ -115,7 +115,7 @@ function transmission_sessionId() {
         }
     } else {
         $tr_user = $config_values['Settings']['Transmission Login'];
-        $tr_pass = get_client_passwd();
+        $tr_pass = get_client_passwd($config_values['Settings']['Transmission Password']);
         $tr_host = $config_values['Settings']['Transmission Host'];
         $tr_port = $config_values['Settings']['Transmission Port'];
 
@@ -150,7 +150,7 @@ function transmission_rpc($request) {
     }
 
     $tr_user = $config_values['Settings']['Transmission Login'];
-    $tr_pass = get_client_passwd();
+    $tr_pass = get_client_passwd($config_values['Settings']['Transmission Password']);
     $tr_host = $config_values['Settings']['Transmission Host'];
     $tr_port = $config_values['Settings']['Transmission Port'];
 
@@ -605,7 +605,7 @@ function clientAddTorrent(
                     if (
                             isset($fav) &&
                             !empty($fav['Also Save Dir']) &&
-                            is_dir($fav['Also Save Dir']) && //TODO maybe add error handling
+                            is_dir($fav['Also Save Dir']) &&
                             is_writeable($fav['Also Save Dir'])
                     ) {
                         $alsodest = $fav['Also Save Dir'];

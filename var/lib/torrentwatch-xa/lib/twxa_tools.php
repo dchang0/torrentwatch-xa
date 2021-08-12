@@ -32,24 +32,6 @@ function multi_str_search($haystack, $needles) {
     return false;
 }
 
-//function getcURLDefaults(&$curlOptions) {
-//    global $twxa_version;
-//    $curlOptions[CURLOPT_CONNECTTIMEOUT] = 20;
-//    $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
-//    $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
-//    $curlOptions[CURLOPT_FOLLOWLOCATION] = true;
-//    $curlOptions[CURLOPT_UNRESTRICTED_AUTH] = true;
-//    $curlOptions[CURLOPT_TIMEOUT] = 30;
-//    $curlOptions[CURLOPT_RETURNTRANSFER] = true;
-//    $userAgent = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
-//    if ($userAgent === false || $userAgent === null || $userAgent === '') {
-//        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-//    } else {
-//        $curlOptions[CURLOPT_USERAGENT] = $userAgent;
-//    }
-//    return($curlOptions);
-//}
-
 function fillCurlOptions($curlOptions = null) {
     // fills out missing curl options for PHP curl
     // existing options get precedence

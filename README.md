@@ -38,7 +38,7 @@ Most notably:
 
 Please report any bugs using Github Issues.
 
-Buy me a coffee for late-night programming on torrentwatch-xa at [Ko-Fi](https://ko-fi.com/dchang0) or [CoinDrop](https://coindrop.to/dchang0/).
+If you like, buy me a coffee for those late-night torrentwatch-xa programming stints at [Ko-Fi](https://ko-fi.com/dchang0) or [CoinDrop](https://coindrop.to/dchang0/).
 
 Documentation
 ===============

@@ -175,7 +175,7 @@ function parse_options($twxa_version) {
                 unlink($downloadHistoryFile);
             }
             display_history();
-            closeHtml();
+            closeHtml($html_out);
             exit(0);
             break;
         case 'get_client':
@@ -218,7 +218,7 @@ function parse_options($twxa_version) {
         case 'get_dialog_data':
             switch (filter_input(INPUT_GET, 'get_dialog_data')) {
                 case '#favorites':
-                    display_favorites();
+                    display_favorites($html_out);
                     exit;
                 case '#configuration':
                     display_global_config();
@@ -262,7 +262,7 @@ function display_global_config() {
     global $config_values;
 
 // Interface tab
-    $combinefeeds = $dishidelist = $showdebug = $hidedonate = $checkversion = '';
+    $combinefeeds = $dishidelist = $showdebug = $checkversion = '';
     $loglevelalert = $loglevelerror = $loglevelinfo = $logleveldebug = '';
     if ($config_values['Settings']['Combine Feeds'] == 1) {
         $combinefeeds = 'checked=1';
@@ -272,9 +272,6 @@ function display_global_config() {
     }
     if ($config_values['Settings']['Show Debug'] == 1) {
         $showdebug = 'checked=1';
-    }
-    if ($config_values['Settings']['Hide Donate Button'] == 1) {
-        $hidedonate = 'checked=1';
     }
     if ($config_values['Settings']['Check for Updates'] == 1) {
         $checkversion = 'checked=1';
@@ -416,8 +413,8 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
     require('templates/favorites_info.php');
 }
 
-function display_favorites() {
-    global $config_values, $html_out;
+function display_favorites(&$html_out) {
+    global $config_values;
     ob_start();
     require('templates/favorites.php');
     return ob_get_contents();
@@ -432,7 +429,6 @@ function update_hidelist() {
 }
 
 function display_history() {
-    global $html_out;
     $downloadHistoryFile = getDownloadHistoryFile();
     if (file_exists($downloadHistoryFile)) {
         $historyContents = unserialize(file_get_contents($downloadHistoryFile));
@@ -451,14 +447,12 @@ function display_history() {
 }
 
 function display_legend() {
-    global $html_out;
     ob_start();
     require('templates/legend.php');
     return ob_get_contents();
 }
 
 function display_transmission() {
-    global $html_out;
     $host = getTransmissionWebuRL();
     ob_start();
     require('templates/transmission.php');
@@ -466,7 +460,6 @@ function display_transmission() {
 }
 
 function display_clearCache() {
-    global $html_out;
     ob_start();
     require('templates/clear_cache.php');
     return ob_get_contents();
@@ -703,8 +696,7 @@ function checkVersion($twxa_version) {
     }
 }
 
-function closehTML() {
-    global $html_out;
+function closehTML(&$html_out) {
     echo $html_out;
     $html_out = "";
 }
@@ -726,37 +718,24 @@ if (checkpHPRequirements()) {
     return;
 }
 checkFilesAndDirs();
-closehTML();
+closehTML($html_out);
 //flush();
 
 writeToLog("=====torrentwatch-xa.php started running at $main_timer\n", 2); // cannot put this line any earlier
 
 loadAllFeeds($config_values['Feeds']);
-show_feed_lists_container();
+show_feed_lists_container($html_out);
 process_all_feeds($config_values['Feeds']);
 
 echo "<div id='clientType' class='hidden'>" . $config_values['Settings']['Client'] . "</div>"; // this must precede show_transmission_div();
 if ($config_values['Settings']['Client'] == "Transmission") {
-    show_transmission_div();
+    show_transmission_div($html_out);
 }
-closehTML();
+closehTML($html_out);
 
 echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a> or <a href=\"https://coindrop.to/dchang0\" target=\"_blank\">buy me a coffee</a> to support this project&mdash;thanks!</div>";
 
-if ($config_values['Settings']['Hide Donate Button'] != 1) {
-    echo '<!--<div id="donate"><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_donations">
-<input type="hidden" name="business" value="foss@silverlakecorp.com">
-<input type="hidden" name="lc" value="US">
-<input type="hidden" name="item_name" value="foss@silverlakecorp.com">
-<input type="hidden" name="item_number" value="torrentwatch-xa">
-<input type="hidden" name="currency_code" value="USD">
-<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHostedGuest">
-<input type="image" src="images/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-</form></div>-->';
-}
-
-close_feed_lists_container();
+close_feed_lists_container($html_out);
 
 writeToLog("=====torrentwatch-xa.php finished running in " . getElapsedMicrotime($main_timer) . "s\n", 2);
 exit(0);

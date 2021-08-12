@@ -26,18 +26,19 @@ All other files have functions that need improvement or rewrites or validation.
 ## Code cleanup tasks
 
 - fix collision between ul#torrentlist and ul.torrentlist in phone.css and twxa_html.php
-- rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
 - move $items assignment from inside process_feed() up to process_all_feeds()
 - simplify/performance-tune JQuery code, especially implicit .each loops
 - apply JQuery Best Practices from: http://lab.abhinayrathore.com/jquery-standards/
-- merge errorDialog into twError
 
 ## Bugfixes
 
-- Apostrophe in Erai-raws King's Raid causes match to not show in the web UI, though it doesn't seem to stop the favorite from matching for downloads; replace with HTML encoded apostrophe 
 - if torrent item is removed from another browser session, this browser doesn't figure it out
 - with the episode filter it also ignores all the batches regardless of the setting to ignore batches
+
 - fix debug console in web UI
+  - merge errorDialog into twError
+  - use error function instead of alert() in torrentwatch-xa.js
+
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
 - handle resolution and quality 1080p60
@@ -45,6 +46,10 @@ All other files have functions that need improvement or rewrites or validation.
 
 ## Improvements
 
+- design class interface for TorrentClient and design child classes FolderClient and TransmissionClient
+  - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
+
+- modify Configure > Feeds to allow re-ordering of Feeds
 - change getCurl() to use PicoFeed's Curl class
 - possibly rewrite torrent links to pass around an array of detected links to be tried in order from best to worst until one of them works, but this is difficult for Save Torrent In Folder behavior
 - per-feed Filter capability to only show some items
@@ -55,7 +60,6 @@ All other files have functions that need improvement or rewrites or validation.
 - consolidate/simplify code in displayFilter's switch-case block
 - possibly allow user to un-Favorite or un-Hide items via contextual menu
 - implement Ignore Batches feature per Favorite as well as globally
-- Clear Cache dialog closes automatically after any button is pressed; change this to Javascript with AJAX
 - store item version numbers in Favorite Last Downloaded field
 - sometimes the History looks like it downloaded the same episode twice, but this is due to different numbering systems for the same episode, such as 1x26 = 2x1 for Attack on Titan; the ultimate way to fix it is to compare torrent hashes with all the cached hashes before downloading again, but this is not possible, as the torrent hash is not known until after a torrent is added
   - fix problem of different season and episode numbering by one or all of the below:
@@ -64,7 +68,6 @@ All other files have functions that need improvement or rewrites or validation.
     - adding a "stay in this season" checkbox to each Favorite
     - do not match Favorites in this feed
 
-- use error function instead of alert() in torrentwatch-xa.js
 - add itemVersion handling to batches such as 1x03v2-1x05v2 (requires changing many match functions to handle version numbers)
 - make list items double-tall for smartphone displays and wrap the title text properly
 - possibly change Hide List from using favTitle to a list of regexes so the user can block anything they like
@@ -85,7 +88,7 @@ All other files have functions that need improvement or rewrites or validation.
 
 - reduce use of global variables 
   - $config_values['Global'] appears to be a crappy way of globally passing some data, maybe convert to $GLOBALS
-  - $html_out (can't use passing by value because performance suffers badly as $html_out gets very large, so use passing by reference, but definitely do not return $html_out if passing by reference)
+  - $html_out (can't use passing by value because performance suffers badly as $html_out gets very large, so use passing by reference, but definitely do not return $html_out if passing by reference because of poor performance)
   - $twxa_version
 
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design
@@ -97,7 +100,6 @@ All other files have functions that need improvement or rewrites or validation.
 - write test suite and automate tests if possible
 - POSSIBLY combine Downloading and Downloaded filters into one, using color-coding to differentiate between states
 - add ability to select a torrent and report just that item as having a detection bug (requires move away from GitHub Issues)
-- REVAMP EPISODE DETECTION TO USE TORRENT CONTENTS (IF TORRENT CONTAINS ONLY ONE FILE >1MB & <1GB, MUST BE ONE EPISODE), BUT THIS REQUIRES DOWNLOADING EVERY TORRENT FILE IN EVERY FEED, WHICH WOULD BE VERY SLOW
 - implement five-star rating system with separate subfolders for each to make watching the best shows first easier
 - implement "probation" system for shows that haven't been liked enough to keep (perhaps zero stars out of five)
 - sort torrents into resolutions by folder and allow for download of low-res version first, then high-res later, with toggle-able auto-delete of low-res version

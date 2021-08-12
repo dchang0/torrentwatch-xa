@@ -833,15 +833,6 @@ Functional Changes
 - switched from Paypal Donate button to Ko-Fi "Buy Me a Coffee" and CoinDrop.to links
 - widened Seed Ratio text input in Favorite to handle three-digit ratios like 0.15
 
-
-IN PROGRESS
-
-- Started downloading item with Download button in web UI, then Trashed it completely, switched to Client = "Save .torrent/magnet: Files In Folder", and item switched from st_inCacheNotActive to st_downloading state; it switches back to st_downloading if Client is changed back to Transmission, even though the item is clearly not being downloaded
-
-- check if st_noURL item state can be used when item is missing any URL
-
-- Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter
-
 Code Changes
 
 - renamed all .tpl files as .php files because they are not actually Smarty templates
@@ -864,10 +855,6 @@ Code Changes
 - rewrote client_add_torrent() as clientAddTorrent()
 - replaced find_torrent_link() with getBestTorrentOrMagnetLinks()
 
-IN PROGRESS
-
-  - use PicoFeed's Curl class where appropriate
-
 Next Version
 
 Functional Changes
@@ -883,7 +870,19 @@ IN PROGRESS
 - show alerts in web UI
 - change reload button so that it doesn't clear the Filter textbox OR add Lock checkbox to the filter
 
+- Upload/Download rates still show when Client is changed to Folder, but it goes away on reload
+
+- Started downloading item with Download button in web UI, then Trashed it completely, switched to Client = "Save .torrent/magnet: Files In Folder", and item switched from st_inCacheNotActive to st_downloading state; it switches back to st_downloading if Client is changed back to Transmission, even though the item is clearly not being downloaded
+
+- check if st_noURL item state can be used when item is missing any URL
+
+- Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter, but this goes away on reload
+
 Code Changes
+
+- removed some obsolete TODO items
+- converted most `global $html_out` to passing by reference
+- completely removed Hide Donate Button code
 
 IN PROGRESS
 
@@ -903,3 +902,5 @@ IN PROGRESS
 - continue cleaning up CSS with csslint.net
 - fix Quality filtering in check_for_torrent() before checking the download cache
 - adding a favorite from Nyaa feed (second in the feed list at the time) seems to end up with Feed = Nyaa rather than Feed = All
+
+- use PicoFeed's Curl class where appropriate

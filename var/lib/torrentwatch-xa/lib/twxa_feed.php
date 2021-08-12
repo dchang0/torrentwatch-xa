@@ -645,7 +645,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                             $alsoSaveDir,
                             $configFeeds,
                             $defaultSeedRatio
-                    ); //TODO add error handling for this call
+                    );
                 }
             }
             // check every item, regardless of whether it matches a Favorite

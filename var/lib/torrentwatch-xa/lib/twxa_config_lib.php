@@ -65,7 +65,6 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['Combine Feeds'] = "0";
     $config_values['Settings']['Disable Hide List'] = "0";
     $config_values['Settings']['Show Debug'] = "0";
-    $config_values['Settings']['Hide Donate Button'] = "0";
     $config_values['Settings']['Check for Updates'] = "1";
     $config_values['Settings']['Time Zone'] = "UTC";
     $config_values['Settings']['Log Level'] = "0";
@@ -228,7 +227,6 @@ function readjSONConfigFile() {
             if ($config_values === false) {
                 // fall through to config below
             } else {
-                //TODO test to see if $config_values contains useful settings
                 break;
             }
         case "config":
@@ -244,7 +242,6 @@ function readjSONConfigFile() {
             if ($config_values === false) {
                 // fall through to new below
             } else {
-                //TODO test to see if $config_values contains useful settings
                 if (isset($config_values)) {
                     $return = writejSONConfigFile();
                 } else {
@@ -265,7 +262,6 @@ function readjSONConfigFile() {
 
 function writeConfigCacheFile($configCacheFile, $config_values) {
     // write cache file
-    //TODO possibly remove $config_values['Global']['Feeds'] before writing config cache, but read_config_file() did not do so
     file_put_contents($configCacheFile, serialize($config_values)); // apparently serialize can't return a failure
     chmod($configCacheFile, 0660);
 }
@@ -288,18 +284,16 @@ function setpHPTimeZone($timezone) {
     }
 }
 
-function get_client_passwd() {
-    global $config_values; //TODO remove use of global
-    return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $config_values['Settings']['Transmission Password']));
+function get_client_passwd($configClientPassword) {
+    return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $configClientPassword));
 }
 
-function set_client_passwd() {
-    global $config_values; //TODO remove use of global
-    if (!(preg_match('/^\$%&(.*)\$%&$/', $config_values['Settings']['Transmission Password']))) {
-        if ($config_values['Settings']['Transmission Password']) {
-            $config_values['Settings']['Transmission Password'] = preg_replace('/^(.*)$/', '\$%&$1\$%&', base64_encode($config_values['Settings']['Transmission Password']));
+function set_client_passwd(&$configClientPassword) {
+    if (!(preg_match('/^\$%&(.*)\$%&$/', $configClientPassword))) {
+        if ($configClientPassword) {
+            $configClientPassword = preg_replace('/^(.*)$/', '\$%&$1\$%&', base64_encode($configClientPassword));
         } else {
-            $config_values['Settings']['Transmission Password'] = "";
+            $configClientPassword = "";
         }
     }
 }
@@ -358,7 +352,7 @@ function writejSONConfigFile() {
 
     writeToLog("Writing config file: $configFile\n", 2);
 
-    set_client_passwd(); //TODO this should happen outside this function
+    set_client_passwd($config_values['Settings']['Transmission Password']); //TODO this should happen outside this function
     set_smtp_passwd(); //TODO this should happen outside this function
     // copy everything but $config_values['Global'] so that it doesn't pollute the config file
     $configOut = $config_values;
@@ -413,7 +407,6 @@ function updateGlobalConfig() {
         'Combine Feeds' => 'combinefeeds',
         'Disable Hide List' => 'dishidelist',
         'Show Debug' => 'showdebug',
-        'Hide Donate Button' => 'hidedonate',
         'Check for Updates' => 'checkversion',
         'Time Zone' => 'tz',
         'Log Level' => 'loglevel',
@@ -633,64 +626,6 @@ function updateFavoriteEpisode(&$fav, $ti) {
         return false;
     }
 }
-
-/// feed config functions
-//function addFeed($feedItem) {
-//    global $config_values;
-//    if (filter_var($feedItem['feedLink'], FILTER_VALIDATE_URL)) {
-//        writeToLog("Checking feed: " . $feedItem['feedLink'] . "\n", 2);
-//        $guessedFeedType = guess_feed_type($feedItem['feedLink']);
-//        if ($guessedFeedType != 'Unknown') {
-//        writeToLog("Adding feed: " . $feedItem['feedLink'] . "\n", 1);
-//        $config_values['Feeds'][]['Link'] = $feedItem['feedLink'];
-//        $arrayKeys = array_keys($config_values['Feeds']);
-//        $idx = end($arrayKeys);
-////            $config_values['Feeds'][$idx]['Type'] = $guessedFeedType;
-//        // check that seedRatio is numeric
-//        if (is_numeric($feedItem['seedRatio'])) {
-//            $config_values['Feeds'][$idx]['seedRatio'] = $feedItem['seedRatio'];
-//        } else {
-//            $config_values['Feeds'][$idx]['seedRatio'] = '';
-//        }
-//        // feed on/off
-//        if ($feedItem['feedOn'] === 'feed_on') {
-//            $config_values['Feeds'][$idx]['enabled'] = 1;
-//        } else {
-//            $config_values['Feeds'][$idx]['enabled'] = '';
-//        }
-////            loadAllFeeds(array(0 => array('Type' => $guessedFeedType, 'Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
-//            loadAllFeeds(array(0 => array('Link' => $feedItem['feedLink'])), 1, true); // pass true for newly added feeds
-//            if ($feedItem['feedName'] === '') {
-////                switch ($guessedFeedType) {
-////                    case 'RSS':
-////                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['title'];
-////                        break;
-////                    case 'Atom':
-////                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['FEED']['TITLE'];
-////                }
-//                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
-//            } else {
-//                $config_values['Feeds'][$idx]['Name'] = $feedItem['feedName'];
-//            }
-//            // feed website
-//            if (
-//                    (
-//                    !isset($config_values['Feeds'][$idx]['Website']) || $$config_values['Feeds'][$idx]['Website'] === ''
-//                    ) &&
-//                    (
-//                    isset($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website']) &&
-//                    $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'] !== ''
-//                    )
-//            ) {
-//                $config_values['Feeds'][$idx]['Website'] = filter_var($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'], FILTER_VALIDATE_URL);
-//            }
-//        } else {
-//            writeToLog("Could not connect to feed or guess feed type: " . $feedItem['feedLink'] . "\n", -1);
-//        }
-//    } else {
-//        writeToLog("Ignoring invalid feed URL\n", 0);
-//    }
-//}
 
 function addFeed($feedItem) {
     global $config_values;

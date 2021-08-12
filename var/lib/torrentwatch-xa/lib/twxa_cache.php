@@ -42,7 +42,6 @@ function setupDownloadCacheDir() {
         }
     } else {
         writeToLog("Download Cache Dir does not exist or does not have correct permissions, creating: $downloadCacheDir\n", 1);
-        //TODO make sure $downloadCacheDir looks like a path
         if (mkdir($downloadCacheDir, 0775, true)) {
             writeToLog("Successfully set up Download Cache Dir: $downloadCacheDir\n", 2);
             return true;

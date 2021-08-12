@@ -87,14 +87,6 @@
                                 <input type="checkbox" name="showdebug" value="1" <?php echo $showdebug; ?> />
                             </div>
                         </div>
-                        <!--<div id="config_hide_donate">
-                            <div class="left">
-                                <label class="item checkbox">Hide Donate Button:</label>
-                            </div>
-                            <div class="right">
-                                <input type="checkbox" name="hidedonate" value="1" <?php echo $hidedonate; ?> />
-                            </div>
-                        </div>-->
                         <div id="config_check_updates">
                             <div class="left">
                                 <label class="item checkbox">Check for Updates:</label>
