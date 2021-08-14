@@ -87,13 +87,6 @@ function parse_options($twxa_version) {
             updateGlobalConfig();
             break;
         case 'addFavorite':
-            //$feedLink = $_GET['rss'];
-            $feedLink = $_GET['feed'];
-            foreach ($config_values['Feeds'] as $key => $feed) {
-                if ($feed['Link'] == "$feedLink") {
-                    $idx = $key;
-                }
-            }
             if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
                 $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
                 switch ($config_values['Settings']['Match Style']) {
@@ -110,7 +103,6 @@ function parse_options($twxa_version) {
                         $_GET['filter'] = trim($tmp['favTitle']);
                         $_GET['quality'] = $tmp['qualitiesRegEx']; // Add to Favorites uses the detected qualities as a regex or .* if no qualities detected
                 }
-                //$_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['downloaddir'] = '';
                 $_GET['alsosavedir'] = '';
@@ -119,7 +111,6 @@ function parse_options($twxa_version) {
                 $_GET['name'] = $_GET['title'];
                 $_GET['filter'] = $_GET['title'];
                 $_GET['quality'] = 'All';
-                //$_GET['feed'] = $_GET['rss'];
                 $_GET['button'] = 'Add';
                 $_GET['downloaddir'] = '';
                 $_GET['alsosavedir'] = '';
@@ -261,7 +252,7 @@ function parse_options($twxa_version) {
 function display_global_config() {
     global $config_values;
 
-// Interface tab
+    // Interface tab
     $combinefeeds = $dishidelist = $showdebug = $checkversion = '';
     $loglevelalert = $loglevelerror = $loglevelinfo = $logleveldebug = '';
     if ($config_values['Settings']['Combine Feeds'] == 1) {
@@ -291,7 +282,7 @@ function display_global_config() {
             $loglevelerror = 'selected="selected"';
     }
 
-// Client tab
+    // Client tab
     $transmission = $folderclient = $alsosavetorrentfiles = '';
     switch ($config_values['Settings']['Client']) {
         case "Transmission":
@@ -304,7 +295,7 @@ function display_global_config() {
         $alsosavetorrentfiles = 'checked=1';
     }
 
-// Torrent tab
+    // Torrent tab
     $deeptitle = $deepTitleSeason = $deepoff = '';
     $autodel = '';
     switch ($config_values['Settings']['Deep Directories']) {
@@ -318,7 +309,7 @@ function display_global_config() {
         $autodel = 'checked=1';
     }
 
-// Favorites tab
+    // Favorites tab
     $matchregexp = $matchglob = $matchsimple = $resoallqualities = $resoresolutionsonly = '';
     $favdefaultall = $require_epi_info = $onlynewer = $fetchversions = $ignorebatches = '';
     switch ($config_values['Settings']['Match Style']) {
@@ -351,7 +342,7 @@ function display_global_config() {
         default: $resoallqualities = "selected='selected'";
     }
 
-// Trigger tab
+    // Trigger tab
     $enableScript = $enableSMTP = '';
     $smtpAuthNone = $smtpAuthLOGIN = $smtpAuthPLAIN = '';
     $smtpEncNone = $smtpEncTLS = $smtpEncSSL = '';
@@ -382,7 +373,7 @@ function display_global_config() {
             $smtpEncSSL = 'selected="selected"';
     }
 
-// Include the templates and append the results to html_out
+    // Include the templates and append the results to html_out
     ob_start();
     require('templates/global_config.php');
     return ob_get_contents();
@@ -409,7 +400,7 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
             $feed_options .= '>' . $feed['Name'] . '</option>';
         }
     }
-// Dont handle with object buffer, is called inside display_favorites ob_start
+    // Dont handle with object buffer, is called inside display_favorites ob_start
     require('templates/favorites_info.php');
 }
 

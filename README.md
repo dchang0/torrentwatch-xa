@@ -32,7 +32,7 @@ Most notably:
 - the detection of .torrent, .torrent.gz, and magnet: links in the feeds has been improved and made more reliable
 - minor bugs in Client = "Save .torrent/magnet: Files In Folder" have finally been fixed
 - magnet: link functionality has finally been fully fleshed out
-- torrentwatch-xa can now handle .torrent.gz files, though this functionality has not been tested since EZTV no longer publishes .torrent.gz files, and I don't know of any other feeds that do
+- torrentwatch-xa can now handle links to .torrent.gz files
 - each feed header now has icons that link to each feed's website and raw feed to make diagnosis of feed errors easier (especially feed downs caused by DDOS protection)
 - the PayPal Donate button has been changed to an unobtrusive text link to CoinDrop, and the automatically-suggested donation amount is much lower
 
