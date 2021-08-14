@@ -251,7 +251,7 @@ Then, at the command line, run:
 
 `sudo /usr/bin/php /var/www/html/torrentwatch-xa/twxa_fav_import.php <path to TSV>`
 
-You can watch the web server's log file (default: /var/log/apache2/error.log) for PHP errors and torrentwatch-xa's log (default: /var/log/twxalog) for import errors.
+You can watch the web server's syslog file (default: /var/log/syslog) for PHP errors and torrentwatch-xa's log (default: /var/log/twxalog) for import errors.
 If there are no errors, go ahead and open torrentwatch-xa in the browser and make sure the new Favorites are imported.
 
 If the TSV file confuses PHP's fgetcsv() function, there is a good possibility you will corrupt your config file. If you have to put the backup file back, do this:
@@ -262,7 +262,7 @@ Close the browser if you have torrentwatch-xa's web UI open.
 
 ### Clear All Caches if Switching Configure > Client > Client
 
-If changing the setting Configure > Client > Client, be sure to clear all the caches. Otherwise benign errors could show up in the log due to leftover download cache files.
+If changing the setting Configure > Client > Client, be sure to clear all the caches and reload the page. Otherwise benign errors could show up in the log due to leftover download cache files.
 
 Design Decisions Explained
 ===============
@@ -300,4 +300,4 @@ If one starts an item downloading from a feed list, and that item is bumped off 
 
 ### Watch Dir
 
-transmission-daemon provides a watch directory feature. To enable it, use `watch-dir` and `watch-dir-enabled` in `settings.json`.
+transmission-daemon provides a watch directory feature. To enable it, use `watch-dir` and `watch-dir-enabled` in `settings.json`. In Debian/Ubuntu LINUX, `settings.json` is located at `/etc/transmission-daemon/settings.json`.

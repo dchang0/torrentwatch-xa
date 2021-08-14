@@ -281,7 +281,6 @@ function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) 
                         } else {
                             $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $fav['Filter'])) . '\b/u';
                         }
-                        //TODO deal with single quote in title like in King's Raid
                         $itemMatchesFave = (
                                 (
                                 $fav['Filter'] !== '' &&
