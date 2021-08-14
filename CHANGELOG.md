@@ -832,6 +832,7 @@ Functional Changes
 - removed "Waiting for client data..." when Client == "folder"
 - switched from Paypal Donate button to Ko-Fi "Buy Me a Coffee" and CoinDrop.to links
 - widened Seed Ratio text input in Favorite to handle three-digit ratios like 0.15
+- changed Qualities filter in glob mode from strpos() to fnmatch()
 
 Code Changes
 
@@ -854,6 +855,9 @@ Code Changes
   - stopped using global $itemState and used proper parameter passing instead
 - rewrote client_add_torrent() as clientAddTorrent()
 - replaced find_torrent_link() with getBestTorrentOrMagnetLinks()
+- removed some obsolete TODO items
+- converted most `global $html_out` to passing by reference
+- completely removed Hide Donate Button code
 
 Next Version
 
@@ -861,10 +865,8 @@ Functional Changes
 
 IN PROGRESS
 
-- add PHP prerequisite check to twxa_cli.php
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
-- sometimes adding/updating a Favorite does not close the dialog and refresh the browser
 - Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
 - show alerts in web UI
@@ -879,10 +881,6 @@ IN PROGRESS
 - Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter, but this goes away on reload
 
 Code Changes
-
-- removed some obsolete TODO items
-- converted most `global $html_out` to passing by reference
-- completely removed Hide Donate Button code
 
 IN PROGRESS
 
@@ -900,7 +898,5 @@ IN PROGRESS
 - figure out window.gotAllData logic, maybe merge window.gotAllData into window.updatingClientData or remove one
   - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
 - continue cleaning up CSS with csslint.net
-- fix Quality filtering in check_for_torrent() before checking the download cache
-- adding a favorite from Nyaa feed (second in the feed list at the time) seems to end up with Feed = Nyaa rather than Feed = All
 
 - use PicoFeed's Curl class where appropriate

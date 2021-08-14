@@ -269,7 +269,8 @@ function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) 
                                 (
                                 strtolower($fav['Quality']) == 'all' ||
                                 $fav['Quality'] === '' ||
-                                strpos($itemTitle, strtolower($fav['Quality'])) !== false
+                                //strpos($itemTitle, strtolower($fav['Quality'])) !== false
+                                fnmatch(strtolower($fav['Quality']), $itemTitle) !== false
                                 )
                                 );
                         break;
