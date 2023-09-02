@@ -116,7 +116,7 @@ $(document).ready(function () {
         if (!(window.hideProgressBar)) {
             $('#refresh a').html('<img src="images/ajax-loader-small.gif" alt="Working...">');
             if ($('div.dialog').is(":visible")) {
-                $('#progress').removeClass('progress_full').fadeIn();
+                $('#progress').removeClass('progress_full').fadeIn('fast');
             }
             if ($('#clientButtons').is(":visible")) {
                 window.visibleButtons = $('#clientButtonsHolder li.button').not('.hidden');
@@ -129,7 +129,7 @@ $(document).ready(function () {
     }).ajaxStop(function () {
         window.ajaxActive = 0;
         $('#refresh a').html('<img src="images/refresh_32x32.png" alt="Refresh" width="16" height="16">');
-        $('#progress').fadeOut();
+        $('#progress').fadeOut('fast');
         $('#clientButtonsBusy').remove();
         if (window.hideButtonHolder) {
             clearTimeout(hideButtonHolder);

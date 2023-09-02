@@ -10,25 +10,13 @@
         <!-- For new browsers - multisize ico  -->
         <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="images/favicon.ico">
 
-        <!-- For iPad with high-resolution Retina display running iOS ≥ 7: -->
-        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="images/torrentwatch-xa-logo152.png">
-
-        <!-- For iPad with high-resolution Retina display running iOS ≤ 6: -->
-        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/torrentwatch-xa-logo144.png">
-
-        <!-- For iPhone with high-resolution Retina display running iOS ≥ 7: -->
-        <link rel="apple-touch-icon-precomposed" sizes="120x120" href="images/torrentwatch-xa-logo120.png">
-
-        <!-- For iPhone with high-resolution Retina display running iOS ≤ 6: -->
-        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/torrentwatch-xa-logo114.png">
-
-        <!-- For iPhone 6+ -->
         <link rel="apple-touch-icon-precomposed" sizes="180x180" href="images/torrentwatch-xa-logo180.png">
-
-        <!-- For first- and second-generation iPad: -->
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="images/torrentwatch-xa-logo152.png">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/torrentwatch-xa-logo144.png">
+        <link rel="apple-touch-icon-precomposed" sizes="120x120" href="images/torrentwatch-xa-logo120.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/torrentwatch-xa-logo114.png">
+        <link rel="apple-touch-icon-precomposed" sizes="76x76" href="images/torrentwatch-xa-logo76.png">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/torrentwatch-xa-logo72.png">
-
-        <!-- For non-Retina iPhone, iPod Touch, and Android 2.1+ devices: -->
         <link rel="apple-touch-icon-precomposed" href="images/torrentwatch-xa-logo57.png">
 
         <!-- For Old Chrome -->
@@ -37,22 +25,18 @@
         <!-- Chrome for Android -->
         <link rel="icon" sizes="192x192" href="images/torrentwatch-xa-logo192.png">
 
-        <link rel="stylesheet" type="text/css" href="css/reset.css" />
-        <link rel="stylesheet" href="css/torrentwatch-xa.css" type="text/css"  />
+        <link rel="stylesheet" type="text/css" href="css/reset.css"/>
+        <link rel="stylesheet" type="text/css" href="css/torrentwatch-xa.css"/>
         <link rel="stylesheet" media="screen and (min-width: 768px) and (max-width: 1024px) and (device-aspect-ratio: 4/3, device-aspect-ratio: 16/10, device-aspect-ratio: 16/9) and (orientation: portrait)" href="css/tablet.css" type="text/css" />
         <link rel="stylesheet" media="screen and (min-width: 320px) and (max-width: 640px)" href="css/phone.css" type="text/css" />
-        <!--[if IE]>
-          <link rel="Stylesheet" type="text/css" href="css/ie.css"></link>
-        <![endif]-->
-        <script type="text/javascript" src="javascript/jquery-3.5.1.min.js"></script>
-        <!--<script type="text/javascript" src="javascript/jquery-migrate-3.3.1.min.js"></script>-->
-        <script type="text/javascript" src="javascript/jquery.tinysort.min.js"></script>
-        <script type="text/javascript" src="javascript/js.cookie-2.2.1.min.js"></script>
-        <script type="text/javascript" src="javascript/jquery.form.min.js"></script>
-        <script type="text/javascript" src="javascript/twxa_utility_functions.js"></script>
-        <script type="text/javascript" src="javascript/torrentwatch-xa.js"></script>
-        <script type="text/javascript" src="javascript/twxa_ui_functions.js"></script>
-        <script type="text/javascript" src="javascript/twxa_event_bindings.js"></script>
+        <script src="javascript/jquery-3.5.1.min.js"></script>
+        <script src="javascript/jquery.tinysort.min.js"></script>
+        <script src="javascript/js.cookie-2.2.1.min.js"></script>
+        <script src="javascript/jquery.form.min.js"></script>
+        <script src="javascript/twxa_utility_functions.js"></script>
+        <script src="javascript/torrentwatch-xa.js"></script>
+        <script src="javascript/twxa_ui_functions.js"></script>
+        <script src="javascript/twxa_event_bindings.js"></script>
     </head>
     <body>
         <div id="topmenu">
@@ -106,7 +90,7 @@
                 <li class='button move_button' onclick="toggleTorMove();"><img src='images/tor_move_40x40.png' alt="Move" width="20" height="20"/></li>
                 <li class="move_data hidden"><input id="moveTo" type="text" class="text" name="moveTo"/></li>
                 <li id="Move" class='button move_data hidden' onclick="$.processSelected('move')">Move</li>
-                <li class='close hidden' onclick="$('#clientButtons .move_data').fadeOut();"></li>
+                <li class='close hidden' onclick="$('#clientButtons .move_data').fadeOut('fast');"></li>
             </ul>
         </div>
         <div id='progress' class="progress progress_full">

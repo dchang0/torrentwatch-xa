@@ -282,44 +282,44 @@ function makeTorrentOrMagnetFilename($ti, $isMagnet) {
     }
 }
 
-function folder_add_torrent($tor, $dest, $ti, $isMagnet = false) {
-    if (is_dir($dest) && is_writeable($dest)) {
-        $fullFilename = makeTorrentOrMagnetFilename($ti, $isMagnet);
-        if ($fullFilename !== "") {
-            $fullPath = "$dest/$fullFilename";
-            if (!file_exists($fullPath)) {
-                // save it
-                $return = file_put_contents($fullPath, $tor);
-                if ($return === false) {
-                    return [
-                        'errorCode' => 1,
-                        'errorMessage' => "Failed to write: $fullPath"
-                    ];
-                } else {
-                    return [
-                        'errorCode' => 0,
-                        'errorMessage' => "Successfully saved torrent: $ti"
-                    ];
-                }
-            } else {
-                return [
-                    'errorCode' => 0, // ordinarily should be an error, but why warn when we have the file already?
-                    'errorMessage' => "File already exists, skipping: $fullPath"
-                ];
-            }
-        } else {
-            return [
-                'errorCode' => 1,
-                'errorMessage' => "No filename to save: $ti"
-            ];
-        }
-    } else {
-        return [
-            'errorCode' => 1,
-            'errorMessage' => "Directory inaccessible: $dest"
-        ];
-    }
-}
+//function folder_add_torrent($tor, $dest, $ti, $isMagnet = false) {
+//    if (is_dir($dest) && is_writeable($dest)) {
+//        $fullFilename = makeTorrentOrMagnetFilename($ti, $isMagnet);
+//        if ($fullFilename !== "") {
+//            $fullPath = "$dest/$fullFilename";
+//            if (!file_exists($fullPath)) {
+//                // save it
+//                $return = file_put_contents($fullPath, $tor);
+//                if ($return === false) {
+//                    return [
+//                        'errorCode' => 1,
+//                        'errorMessage' => "Failed to write: $fullPath"
+//                    ];
+//                } else {
+//                    return [
+//                        'errorCode' => 0,
+//                        'errorMessage' => "Successfully saved torrent: $ti"
+//                    ];
+//                }
+//            } else {
+//                return [
+//                    'errorCode' => 0, // ordinarily should be an error, but why warn when we have the file already?
+//                    'errorMessage' => "File already exists, skipping: $fullPath"
+//                ];
+//            }
+//        } else {
+//            return [
+//                'errorCode' => 1,
+//                'errorMessage' => "No filename to save: $ti"
+//            ];
+//        }
+//    } else {
+//        return [
+//            'errorCode' => 1,
+//            'errorMessage' => "Directory inaccessible: $dest"
+//        ];
+//    }
+//}
 
 function folderAddTorrent($tor, $dest, $ti, $linkType) {
     if (is_dir($dest) && is_writeable($dest)) {

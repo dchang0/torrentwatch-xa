@@ -6,7 +6,7 @@
             if ($(this).find("span.hiddenItem").text().toLowerCase().match(hideSearchText)) {
                 $(this).removeClass('hidden');
             }
-        })
+        });
     });
     // binding for Test button on Trigger config tab
     $("a#testSMTPSettings").on("click",

@@ -4,7 +4,6 @@ $(document).ready(function () { // first binding to document ready (while torren
         // define hideMe function by browser/userAgent/device
         var timeOut = 400;
         if (empty === true ||
-                //navigator.appName === 'Microsoft Internet Explorer' ||
                 navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) {
             $.fn.hideMe = function () {
                 $(this).hide();
@@ -18,7 +17,6 @@ $(document).ready(function () { // first binding to document ready (while torren
         }
         // define showMe function by browser/userAgent/device
         if (empty === true ||
-                //navigator.appName === 'Microsoft Internet Explorer' ||
                 navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) {
             $.fn.showMe = function () {
                 $(this).show();
@@ -235,9 +233,9 @@ $(document).ready(function () { // first binding to document ready (while torren
     toggleTorMove = function (torHash) {
         var curObject = $('#clientButtons li.move_data, #clientButtons li#Move');
         if (curObject.is(":visible")) {
-            curObject.fadeOut('normal', updateClientButtons); // fadeOut() doesn't set width and height to 0 like hide() does
+            curObject.fadeOut('fast', updateClientButtons); // fadeOut('fast') doesn't set width and height to 0 like hide() does
         } else {
-            curObject.fadeIn('normal', updateClientButtons);
+            curObject.fadeIn('fast', updateClientButtons);
         }
         curObject = null;
     };
@@ -744,7 +742,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 }
             } else {
                 if ($('#clientButtonsHolder').is(':visible') === false) {
-                    $('#clientButtonsHolder').fadeIn();
+                    $('#clientButtonsHolder').fadeIn('fast');
                 }
             }
             if (navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) {
@@ -769,7 +767,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 }
             } else {
                 if ($('#clientButtonsHolder').is(':visible') === true) {
-                    $('#clientButtonsHolder').fadeOut(200);
+                    $('#clientButtonsHolder').fadeOut('fast');
                 }
             }
             $('#clientButtons .move_data').hide();
@@ -924,7 +922,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             var target = this.hash === '#' ? '#' + $(this).closest('.dialog_window').id : this.hash;
             current_dialog = target === last && window.dialog === 1 ? '' : this.hash;
             if (last) {
-                $(last).fadeOut("normal");
+                $(last).fadeOut('fast');
                 $('#favorites, #configuration, #history, #show_legend, #clear_cache').remove(); //TODO does this really need #show_legend and #clear_cache?
                 $('#mainoptions li a').removeClass('selected');
                 $('#dynamicdata .dialog .dialog_window, .dialogTitle').remove();
@@ -935,13 +933,12 @@ $(document).ready(function () { // first binding to document ready (while torren
                     $('#dynamicdata.dyndata').append(data);
                     $('#dynamicdata').find("ul.favorite > li").initFavorites().end().find("form").initForm().end().initConfigDialog();
                     $('#dynamicdata .dialog_last').remove();
-                    //if (navigator.appName === 'Microsoft Internet Explorer' || last) {
                     if (last) {
                         $('.dialog').show();
                     } else {
-                        $('.dialog').fadeIn();
+                        $('.dialog').fadeIn('fast');
                     }
-                    $(current_dialog).fadeIn("normal");
+                    $(current_dialog).fadeIn('fast');
                     setTimeout(function () {
                         $("#dynamicdata .dialog_window input, #dynamicdata .dialog_window select").on("change", function () {
                             window.input_change = 1;
@@ -954,7 +951,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 });
                 $("li#id_" + this.parentNode.id + " a").addClass("selected");
             } else {
-                $('#dynamicdata .dialog').fadeOut();
+                $('#dynamicdata .dialog').fadeOut('fast');
                 setTimeout(function () {
                     $('#dynamicdata .dialog').remove();
                 }, 400);
@@ -1008,9 +1005,9 @@ $(document).ready(function () { // first binding to document ready (while torren
             if (!last) {
                 $(current_favorite).show();
             } else {
-                $(last).fadeOut(400,
+                $(last).fadeOut('fast', // was 400
                         function () {
-                            $(current_favorite).fadeIn(400);
+                            $(current_favorite).fadeIn('fast'); // was 400
                             $(current_favorite).resetForm();
                         });
             }

@@ -49,6 +49,8 @@ All other files have functions that need improvement or rewrites or validation.
 - design class interface for TorrentClient and design child classes FolderClient and TransmissionClient
   - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
 
+- add "super-Favorite" that creates Favorites based on filter match; any Favorite can be made a "super-Favorite"
+
 - modify Configure > Feeds to allow re-ordering of Feeds
 - change getCurl() to use PicoFeed's Curl class
 - possibly rewrite torrent links to pass around an array of detected links to be tried in order from best to worst until one of them works, but this is difficult for Save Torrent In Folder behavior

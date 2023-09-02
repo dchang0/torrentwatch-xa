@@ -3,7 +3,6 @@
       if(isset($style)) {
       echo $style;
       }?>>
-    <!--<input type="hidden" name="idx" id="idx" value="<?php echo $key; ?>">-->
     <input type="hidden" name="idx" id="<?php echo 'idx_' . $key; ?>" value="<?php echo $key; ?>">
     <div class="favorite_name">
         <div class="left">
