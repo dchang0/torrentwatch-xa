@@ -788,7 +788,7 @@ $(document).ready(function () { // first binding to document ready (while torren
     }, 500);
 });
 (function ($) {
-    var current_favorite, current_dialog;
+    var current_superfavorite, current_favorite, current_dialog;
     // Remove old dynamic content, replace it with passed html(ajax success function)
     $.loadDynamicData = function (html) {
         window.gotAllData = false;
@@ -798,6 +798,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             var dynamic = $("<div id='dynamicdata' class='dyndata'/>");
             // Use innerHTML because some browsers choke with $(html) when html is many KB
             dynamic[0].innerHTML = html;
+            dynamic.find("ul.superfavorite > li").initSuperFavorites().end().find("form").initForm().end().initConfigDialog().appendTo("body");
             dynamic.find("ul.favorite > li").initFavorites().end().find("form").initForm().end().initConfigDialog().appendTo("body");
             setTimeout(function () {
                 var container = $("#torrentlist_container");
@@ -892,9 +893,15 @@ $(document).ready(function () { // first binding to document ready (while torren
         } else {
             form = $(button).closest("form");
         }
-        if (button.id === "Delete") { //TODO for some reason this line is reached when clicking the Paypal donate button, seems to be an event bound to Paypal form
+        if (button.id === "Delete") {
             $.get(form.get(0).action, form.buildDataString(button));
-            if (button.href.match(/#favorite/)) {
+            if (button.href.match(/#superfavorite/)) {
+                var id = button.href.match(/#superfavorite_(\d+)/)[1];
+                $("#superfavorite_" + id).toggleSuperFavorite();
+                $("#superfavorite_" + id).remove();
+                $("#superfav_" + id).remove();
+                window.dialog = 1;
+            } else if (button.href.match(/#favorite/)) {
                 var id = button.href.match(/#favorite_(\d+)/)[1];
                 $("#favorite_" + id).toggleFavorite();
                 $("#favorite_" + id).remove();
@@ -931,6 +938,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             if (current_dialog && this.hash !== '#') {
                 $.get('torrentwatch-xa.php', {get_dialog_data: this.hash}, function (data) {
                     $('#dynamicdata.dyndata').append(data);
+                    $('#dynamicdata').find("ul.superfavorite > li").initSuperFavorites().end().find("form").initForm().end().initConfigDialog();
                     $('#dynamicdata').find("ul.favorite > li").initFavorites().end().find("form").initForm().end().initConfigDialog();
                     $('#dynamicdata .dialog_last').remove();
                     if (last) {
@@ -965,6 +973,16 @@ $(document).ready(function () { // first binding to document ready (while torren
         });
         return this;
     };
+    $.fn.initSuperFavorites = function () {
+        setTimeout(function () {
+            $("ul.superfavorite").find(":first a").toggleSuperFavorite();
+            $('#superfavorite_new a#Update').addClass('disabled').removeClass('submitForm');
+        }, 300);
+        this.not(":first").tsort('a');
+        return this.not(":first").end().on("click", function () {
+            $(this).find("a").toggleSuperFavorite();
+        });
+    };
     $.fn.initFavorites = function () {
         setTimeout(function () {
             $("ul.favorite").find(":first a").toggleFavorite();
@@ -980,6 +998,37 @@ $(document).ready(function () { // first binding to document ready (while torren
             e.stopImmediatePropagation();
             $.submitForm(this);
             return false;
+        });
+        return this;
+    };
+    $.fn.toggleSuperFavorite = function () {
+        this.each(function () {
+            if (window.input_change) {
+                var answer = confirm('You have unsaved changes.\nAre you sure you want to continue?');
+                if (!(answer)) {
+                    return;
+                }
+                window.input_change = 0;
+            }
+            var last = current_superfavorite;
+            current_superfavorite = this.hash;
+            $("#superfavorites input").on("keyup", function () {
+                if ($(current_superfavorite + ' input:text[name=name]').val().length &&
+                        $(current_superfavorite + ' input:text[name=filter]').val().length) {
+                    $(current_superfavorite + ' a#Update').removeClass('disabled').addClass('submitForm');
+                } else {
+                    $(current_superfavorite + ' a#Update').addClass('disabled').removeClass('submitForm');
+                }
+            });
+            if (!last) {
+                $(current_superfavorite).show();
+            } else {
+                $(last).fadeOut('fast', // was 400
+                        function () {
+                            $(current_superfavorite).fadeIn('fast'); // was 400
+                            $(current_superfavorite).resetForm();
+                        });
+            }
         });
         return this;
     };

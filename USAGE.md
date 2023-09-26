@@ -21,6 +21,10 @@ Transmission itself has a seed ratio limit that will override any limit set with
 
 torrentwatch-xa provides you with several default feeds when starting fresh with no config file. If you've added your own feeds, you should probably disable or remove any of these default feeds that you don't use to improve twxa_cli.php's performance and reduce the load placed on the feed host(s), saving their operators bandwidth. Please be sure to visit your favorite feeds' websites often so that they can earn advertising revenue from your support and help keep the anime fansubbing community alive--thanks!
 
+### Disable an Individual Favorite or Super-Favorite
+
+If you wish to disable an individual Favorite or Super-Favorite without changing its matching or deleting it, simply set its Feed to None.
+
 ### Configure > Trigger
 
 torrentwatch-xa can trigger email notifications by SMTP or shell scripts or both. Shell scripts can be used for post-processing including sending email notifications in place of or in addition to the built-in SMTP notifications.
@@ -203,6 +207,40 @@ Example 3: Let's say you like 720p and 480p but don't like 1080p. In the Qualiti
 This will match 720p or 480p but not 1080p nor 540p nor any other resolution.
 Note that for a single Favorite offered in multiple resolutions, with the above filter, whichever of 720p or 480p comes first in the feed matches and downloads. The other would be considered a duplicate and would match but not download.
 
+### Super-Favorites
+
+Under Configure > Favorites, Matching Style is set to RegExp and Enable Super-Favorites is checked.
+
+Under Super-Favorites, with a Super-Favorite set like so:
+
+Name: Erai-raws
+Filter: Erai-raws
+Not: Bleach
+Feed: All
+Quality: 480p
+
+when this item is encountered in the feed:
+
+Erai-raws Ayakashi Triangle - 12 480p Multiple Subtitle ENG POR-BR SPA-LA SPA FRE GER ITA RUS
+
+the Super-Favorite will create this Favorite:
+
+Name: Erai-raws Ayakashi Triangle (matched by the Super-Favorite's Filter and Not fields)
+Filter: Erai-raws Ayakashi Triangle (always the same as tne Name above)
+Not: (always blank)
+Download Dir: (always blank)
+Episodes: (always blank)
+Feed: All (carried over from the Super-Favorite)
+Quality: 480p (carried over from the Super-Favorite)
+Seed Ratio: (always blank)
+Last Download: (always blank)
+
+Note that the Not field of the Favorite is not carried over from the Super-Favorite because the Super-Favorite's Not is used in conjunction with the Super-Favorite's Filter to produce the Favorite's Name (and thus Filter) in full.
+
+Keep in mind that while a Super-Favorite is active, it doesn't make sense to delete any Favorites created by it while the episodic item is still ongoing. It will simply be re-added back the next time an episode of that item shows up in the feed. So, if you wish to stop a Favorite that was created by a Super-Favorite, change its Feed to None so that it will never match anything. As long as it exists with the same Name, the Super-Favorite can't re-add it. You can delete the Favorite after the season is done.
+
+Using the same trick to disable an individual Favorite, you can also disable an individual Super-Favorite by setting its Feed to None. That will cause it to never match any item, thus preventing it from creating any Favorites.
+
 ### Authentication for Private RSS Feeds
 
 See the section "Only Public Torrent RSS or Atom Feeds Are Supported" in the **Design Decisions Explained** section below for more details.
@@ -231,7 +269,7 @@ The Cron Interval setting is not exposed through the web UI; to change it, you m
 
 _WARNING!! The bulk importer is experimental; use it at your own risk! Be sure to back up your config file before any bulk import!_
 
-1.1.0 includes twxa_fav_import.php, a command-line tool that can import a tab-separated-values (TSV) file containing a list of favorites.
+1.1.0 includes twxa_fav_import.php, a command-line tool that can import a tab-separated-values (TSV) file containing a list of favorites. 1.8.0 adds the Not column.
 
 A good way to use the bulk Favorites importer is to go to anichart.net, look up next season's anime titles, and then create the TSV and import it. This will catch the first episode of each show right when it starts. Be aware that importing a massive number of Favorites will slow down torrentwatch-xa if you are running a Raspberry Pi or other low-powered CPU.
 
@@ -239,9 +277,10 @@ Create a plain text TSV file with these columns in order from left to right:
 
 1. Name (required)
 2. Filter (required)
-3. Quality (optional)
+3. Not (optional)
+4. Quality (optional)
 
-Filter and Quality can be regular expressions. (Set Configure > Favorites > Matching Style to RegExp in order to use regular expressions.)
+Filter, Not, and Quality can be regular expressions. (Set Configure > Favorites > Matching Style to RegExp in order to use regular expressions.)
 
 Close the browser if you have torrentwatch-xa's web UI open.
 

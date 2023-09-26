@@ -43,13 +43,12 @@ All other files have functions that need improvement or rewrites or validation.
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
 - handle resolution and quality 1080p60
 - check setupCacheDir() to see if file_exists() check fails even if download cache dir exists but permissions are wrong
+- fix main UI Responsive Design especially for phones in portrait mode
 
 ## Improvements
 
 - design class interface for TorrentClient and design child classes FolderClient and TransmissionClient
   - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
-
-- add "super-Favorite" that creates Favorites based on filter match; any Favorite can be made a "super-Favorite"
 
 - modify Configure > Feeds to allow re-ordering of Feeds
 - change getCurl() to use PicoFeed's Curl class

@@ -232,6 +232,83 @@ function getBestTorrentOrMagnetLinks($item) {
     ];
 }
 
+function checkItemTitleMatchesSuperFavorite($superfav, $itemTitle, $feedUrl, $matchStyle) {
+    // checks if this item's title matches this Super-Favorite's title
+    $itemMatchesSuperFave = false;
+    if (isset($superfav)) {
+        if (isset($itemTitle) && !empty($itemTitle)) {
+            if (!isset($superfav['Feed']) || $superfav['Feed'] === '' || strtolower($superfav['Feed']) === 'all' || $superfav['Feed'] == $feedUrl) {
+                // if Super-Favorite's Feed is unset, blank, all, or matches the item, proceed
+                switch ($matchStyle) {
+                    case 'simple':
+                        $itemMatchesSuperFave = (
+                                (
+                                $superfav['Filter'] !== '' &&
+                                strpos(strtr($itemTitle, " .", "__"), strtr(strtolower($superfav['Filter']), " .", "__")) === 0
+                                ) &&
+                                (
+                                $superfav['Not'] === '' ||
+                                multi_str_search($itemTitle, strtolower($superfav['Not'])) === false
+                                ) &&
+                                (
+                                strtolower($superfav['Quality']) == 'all' ||
+                                $superfav['Quality'] === '' ||
+                                multi_str_search($itemTitle, strtolower($superfav['Quality'])) !== false
+                                )
+                                );
+                        break;
+                    case 'glob':
+                        $itemMatchesSuperFave = (
+                                (
+                                $superfav['Filter'] !== '' &&
+                                fnmatch(strtolower($superfav['Filter']), $itemTitle)) &&
+                                (
+                                $superfav['Not'] === '' ||
+                                !fnmatch(strtolower($superfav['Not']), $itemTitle)
+                                ) &&
+                                (
+                                strtolower($superfav['Quality']) == 'all' ||
+                                $superfav['Quality'] === '' ||
+                                fnmatch(strtolower($superfav['Quality']), $itemTitle) !== false
+                                )
+                                );
+                        break;
+                    case 'regexp':
+                    default:
+                        if (substr($superfav['Filter'], -1) === '!') {
+                            // last character of regex is an exclamation point, which fails to match when in front of \b
+                            $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $superfav['Filter'])) . '/u';
+                        } else {
+                            $pattern = '/\b' . strtolower(str_replace(' ', '[\s._]', $superfav['Filter'])) . '\b/u';
+                        }
+                        $itemMatchesSuperFave = (
+                                (
+                                $superfav['Filter'] !== '' &&
+                                preg_match($pattern, $itemTitle)) &&
+                                (
+                                $superfav['Not'] === '' ||
+                                !preg_match('/' . strtolower($superfav['Not']) . '/u', $itemTitle)
+                                ) &&
+                                (
+                                $superfav['Quality'] === '' ||
+                                preg_match('/' . strtolower($superfav['Quality']) . '/u', $itemTitle)
+                                )
+                                );
+                }
+            } else {
+                // item does not match this Super-Favorite's Feed filter
+            }
+        } else {
+            // no item to compare
+            writeToLog("No item to compare to the Super-Favorite\n", 0);
+        }
+    } else {
+        // no Super-Favorite to compare
+        writeToLog("No Super-Favorite to compare to the item\n", 0);
+    }
+    return $itemMatchesSuperFave;
+}
+
 function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) {
     // checks if this item's title matches this Favorite's title
     $itemMatchesFave = false;
@@ -269,7 +346,6 @@ function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) 
                                 (
                                 strtolower($fav['Quality']) == 'all' ||
                                 $fav['Quality'] === '' ||
-                                //strpos($itemTitle, strtolower($fav['Quality'])) !== false
                                 fnmatch(strtolower($fav['Quality']), $itemTitle) !== false
                                 )
                                 );
@@ -435,6 +511,30 @@ function checkItemNumberingMatchesFavorite(&$itemState, $fav, $guessItem, $dload
     return $itemMatchesFave;
 }
 
+function checkItemMatchesSuperFavorite($superfav, $item, $feedUrl, $matchStyle = "regexp", $reqEpisInfo = 1) {
+    // checks if this item matches this Super-Favorite
+    $itemMatchesSuperFave = false;
+    $ti = strtolower($item['title']);
+    if (checkItemTitleMatchesSuperFavorite($superfav, $ti, $feedUrl, $matchStyle)) {
+        $guessItem = detectMatch($ti);
+        if ($reqEpisInfo == 1) {
+            if ($guessItem['numberSequence'] > 0) {
+                // match
+                $itemMatchesSuperFave = true;
+            }
+        } else {
+            // match
+            $itemMatchesSuperFave = true;
+        }
+    } else {
+        // no match between Item Title and Super-Favorite
+    }
+    if ($itemMatchesSuperFave) {
+        writeToLog("Super-Favorite match found for " . $item['title'] . "\n", 2);
+    }
+    return $itemMatchesSuperFave;
+}
+
 function checkItemMatchesFavorite(&$itemState, $fav, $item, $feedUrl, $matchStyle = "regexp", $reqEpisInfo = 1, $onlyNewer = 1, $dloadVersions = 1, $ignBatches = 0) {
     // checks if this item matches this Favorite
     $itemMatchesFave = false;
@@ -472,15 +572,14 @@ function checkItemMatchesFavorite(&$itemState, $fav, $item, $feedUrl, $matchStyl
             $itemState = "st_favReady";
         }
     } else {
-        // no match between Item Title and Favorites, leave $itemState blank
+        // no match between Item Title and Favorite, leave $itemState blank
     }
     if ($itemMatchesFave) {
-        writeToLog("Match found for " . $item['title'] . "\n", 2);
+        writeToLog("Favorite match found for " . $item['title'] . "\n", 2);
     }
     return $itemMatchesFave;
 }
 
-//function processMatchedItemDownload(&$itemState, &$fav, $item, $feedUrl, $clientType) {
 function processMatchedItemDownload(
         &$itemState,
         &$fav,
@@ -609,6 +708,32 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
             }
             $torHash = "";
             $itemState = "st_notAMatch"; // assign initial state to each item, to be overwritten if a match; $itemState is not used above this function
+            if (isset($config_values['Settings']['Enable Super-Favorites']) && $config_values['Settings']['Enable Super-Favorites'] == 1) {
+                // compare this item to Super-Favorites
+                //TODO comparing each item to Super-Favorites this early could result in poor performance
+                if (isset($config_values['Super-Favorites'])) {
+                    // loop through every Super-Favorite and compare this item to each Super-Favorite
+                    foreach ($config_values['Super-Favorites'] as $superfavKey => $superfavValue) { // BEGIN loop through Super-Favorites; $superfavValue is not used
+                        if (checkItemMatchesSuperFavorite(
+                                $config_values['Super-Favorites'][$superfavKey], 
+                                $item,
+                                $feed['URL'],
+                                $matchStyle
+                            )
+                        ) {
+                            // item matches a Super-Favorite, create a Favorite from it
+                            $guess = detectMatch($item['title']);
+                            addFavoriteFromSuperFavoriteMatch(
+                                $guess['favTitle'], // name (item guessed title)
+                                $guess['favTitle'], // filter (item guessed title)
+                                $config_values['Super-Favorites'][$superfavKey]['Feed'], // feed (same as Super-Favorite)
+                                $config_values['Super-Favorites'][$superfavKey]['Quality'] // quality (same as Super-Favorite)
+                            );
+                            break;
+                        }
+                    } // END loop through Super-Favorites
+                }
+            }
             // compare this item to Favorites
             if (isset($config_values['Favorites'])) {
                 // loop through every Favorite and compare this item to each Favorite

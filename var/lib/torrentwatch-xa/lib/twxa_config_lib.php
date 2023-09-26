@@ -82,6 +82,7 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['Default Seed Ratio'] = "-1";
     $config_values['Settings']['Auto-Del Seeded Torrents'] = "1";
     // Favorites tab
+    $config_values['Settings']['Enable Super-Favorites'] = "0";
     $config_values['Settings']['Match Style'] = "regexp";
     $config_values['Settings']['Default Feed All'] = "1";
     $config_values['Settings']['Require Episode Info'] = "1";
@@ -105,6 +106,8 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['HELO Override'] = "";
     // Settings not exposed through the web UI
     $config_values['Settings']['Cron Interval'] = 15; // measured in minutes, match the interval in torrentwatch-xa-cron
+    // wipe the Super-Favorites section
+    $config_values['Super-Favorites'] = [];
     // wipe the Favorites section
     $config_values['Favorites'] = [];
     // wipe the Hidden section
@@ -145,20 +148,6 @@ function writeDefaultConfigFile() {
             'enabled' => 0,
             'Name' => 'AcgnX Torrent Resources Base.Global',
             'Website' => 'https://www.acgnx.se'
-//        ],
-//        5 => [
-//            'Link' => 'https://www.anirena.com/rss.php',
-//            'seedRatio' => "",
-//            'enabled' => 0,
-//            'Name' => 'Anirena',
-//            'Website' => 'https://www.anirena.com'
-//        ],
-//        6 => [
-//            'Link' => 'https://anidex.info/rss/?cat=1,2,3',
-//            'seedRatio' => "",
-//            'enabled' => 0,
-//            'Name' => 'Anidex Tracker',
-//            'Website' => 'https://anidex.info'
         ]
     ];
     setpHPTimeZone($config_values['Settings']['Time Zone']);
@@ -424,6 +413,7 @@ function updateGlobalConfig() {
         'Default Seed Ratio' => 'defaultratio',
         'Auto-Del Seeded Torrents' => 'autodel',
         // Favorites tab
+        'Enable Super-Favorites' => 'enablesuperfavorites',
         'Match Style' => 'matchstyle',
         'Default Feed All' => 'favdefaultall',
         'Require Episode Info' => 'require_epi_info',
@@ -452,18 +442,36 @@ function updateGlobalConfig() {
     return(writejSONConfigFile());
 }
 
-function update_favorite() { //TODO seems to break Add to Favorites javascript if this is rewritten--might be an array
+function updateSuperFavoriteFromgET() {
     if (!isset($_GET['button'])) {
         return;
     }
     switch ($_GET['button']) {
         case 'Add':
         case 'Update':
-            $response = add_favorite();
+            $response = addSuperFavoriteFromgET();
             writejSONConfigFile();
             break;
         case 'Delete':
-            deleteFavorite();
+            deleteSuperFavoriteFromgET();
+    }
+    if (isset($response)) {
+        return $response;
+    }
+}
+
+function updateFavoriteFromgET() { //TODO seems to break Add to Favorites javascript if this is rewritten--might be an array
+    if (!isset($_GET['button'])) {
+        return;
+    }
+    switch ($_GET['button']) {
+        case 'Add':
+        case 'Update':
+            $response = addFavoriteFromgET();
+            writejSONConfigFile();
+            break;
+        case 'Delete':
+            deleteFavoriteFromgET();
     }
     if (isset($response)) {
         return $response;
@@ -508,7 +516,209 @@ function delHidden($list) {
     }
 }
 
-function add_favorite() {
+function addSuperFavoriteFromgET() {
+    global $config_values;
+
+    if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
+        foreach ($config_values['Super-Favorites'] as $superfav) {
+            if ($_GET['name'] == $superfav['Name']) {
+                return("Error: \"" . $_GET['name'] . "\" already exists in Super-Favorites.");
+            }
+        }
+    }
+    if (isset($_GET['idx']) && $_GET['idx'] != 'new') {
+        $idx = $_GET['idx'];
+    } else if (isset($_GET['name'])) {
+        $config_values['Super-Favorites'][]['Name'] = $_GET['name'];
+        $arrayKeys = array_keys($config_values['Super-Favorites']);
+        $idx = end($arrayKeys);
+        $_GET['idx'] = $idx; // So display_superfavorite_info() can see it
+    } else {
+        return("Error: Missing index or Name, cannot add Super-Favorite");
+    }
+
+    $list = [
+        "name" => "Name",
+        "filter" => "Filter",
+        "not" => "Not",
+        //"downloaddir" => "Download Dir",
+        //"alsosavedir" => "Also Save Dir",
+        //"episodes" => "Episodes",
+        "feed" => "Feed",
+        "quality" => "Quality",
+            //"seedratio" => "seedRatio"
+    ];
+    foreach ($list as $key => $data) {
+        if (isset($_GET[$key])) {
+            $config_values['Super-Favorites'][$idx][$data] = $_GET[$key];
+        } else {
+            $config_values['Super-Favorites'][$idx][$data] = "";
+        }
+    }
+
+    $superfavInfo['title'] = $_GET['name'];
+    $superfavInfo['quality'] = $_GET['quality'];
+    $superfavInfo['feed'] = urlencode($_GET['feed']);
+
+    return(json_encode($superfavInfo));
+}
+
+function addFavoriteFromParams(
+        $name, // required
+        $filter = null,
+        $feed = null,
+        $quality = null,
+        $not = null,
+        $episodes = null,
+        $seedratio = null,
+        $season = null,
+        $episode = null,
+        $downloaddir = null,
+        $alsosavedir = null,
+        $idx = null
+) {
+    global $config_values;
+
+    if (isset($name)) {
+        // name is set, but is it useful?
+        $trimmedname = trim((string) $name);
+        if (strlen($trimmedname) > 0) {
+            // name is usefl, check for index
+            if (isset($idx) && $idx != 'new') {
+                // idx is set and not 'new', will update
+                $targetidx = $idx;
+            } else {
+                // idx is not set or is 'new', try add by name
+                foreach ($config_values['Favorites'] as $favKey => $favValue) {
+                    if ($trimmedname == $favValue['Name']) {
+                        return [
+                            'index' => $favKey,
+                            'errorCode' => 2,
+                            'errorMessage' => "\"$trimmedname\" already exists in Favorites at index \"$favKey\"."
+                        ];
+                    }
+                }
+                // okay to add by name, then update with details later
+                $config_values['Favorites'][]['Name'] = $trimmedname;
+                $arrayKeys = array_keys($config_values['Favorites']);
+                $targetidx = end($arrayKeys);
+            }
+        } else {
+            // trimmed name is blank
+            return [
+                'index' => null,
+                'errorCode' => 1,
+                'errorMessage' => "Cannot add Favorite without Name."
+            ];
+        }
+    } else {
+        // no name specified; it is absolutely required
+        return [
+            'index' => null,
+            'errorCode' => 1,
+            'errorMessage' => "Cannot add Favorite without Name."
+        ];
+    }
+
+    // update Favorite at $targetidx
+    $config_values['Favorites'][$targetidx]['Name'] = $trimmedname;
+    if (isset($filter)) {
+        $config_values['Favorites'][$targetidx]['Filter'] = $filter;
+    } else {
+        $config_values['Favorites'][$targetidx]['Filter'] = "";
+    }
+    if (isset($not)) {
+        $config_values['Favorites'][$targetidx]['Not'] = $not;
+    } else {
+        $config_values['Favorites'][$targetidx]['Not'] = "";
+    }
+    if (isset($downloaddir)) {
+        $config_values['Favorites'][$targetidx]['Download Dir'] = $downloaddir;
+    } else {
+        $config_values['Favorites'][$targetidx]['Download Dir'] = "";
+    }
+    if (isset($alsosavedir)) {
+        $config_values['Favorites'][$targetidx]['Also Save Dir'] = $alsosavedir;
+    } else {
+        $config_values['Favorites'][$targetidx]['Also Save Dir'] = "";
+    }
+    if (isset($episodes)) {
+        $config_values['Favorites'][$targetidx]['Episodes'] = $episodes;
+    } else {
+        $config_values['Favorites'][$targetidx]['Episodes'] = "";
+    }
+    if (isset($feed)) {
+        $config_values['Favorites'][$targetidx]['Feed'] = $feed;
+    } else {
+        $config_values['Favorites'][$targetidx]['Feed'] = "";
+    }
+    if (isset($quality)) {
+        $config_values['Favorites'][$targetidx]['Quality'] = $quality;
+    } else {
+        $config_values['Favorites'][$targetidx]['Quality'] = "";
+    }
+    if (isset($seedratio)) {
+        $config_values['Favorites'][$targetidx]['seedRatio'] = $seedratio;
+    } else {
+        $config_values['Favorites'][$targetidx]['seedRatio'] = "";
+    }
+    if (isset($season)) {
+        $config_values['Favorites'][$targetidx]['Season'] = $season;
+    } else {
+        $config_values['Favorites'][$targetidx]['Season'] = "";
+    }
+    if (isset($episode)) {
+        $config_values['Favorites'][$targetidx]['Episode'] = $episode;
+    } else {
+        $config_values['Favorites'][$targetidx]['Episode'] = "";
+    }
+    writejSONConfigFile();
+    // assume success by now
+    return [
+        'index' => $targetidx,
+        'errorCode' => 0,
+        'errorMessage' => "Successfully added/updated Favorite \"$trimmedname\" at index \"$targetidx\"."
+    ];
+}
+
+function addFavoriteFromSuperFavoriteMatch(
+        $name, // required
+        $filter = null,
+        $feed = null,
+        $quality = null
+) {
+    writeToLog("Adding Favorite \"$name\" from Super-Favorite match.\n", 2);
+    $return = addFavoriteFromParams(
+            $name, // required
+            $filter,
+            $feed,
+            $quality,
+            null, // $not
+            null, // $episodes
+            null, // $seedratio
+            null, // $season
+            null, // $episode
+            null, // $downloaddir
+            null, // $alsosavedir
+            null // $idx
+    );
+    switch ($return['errorCode']) {
+        case 2: // Favorite already exists
+            writeToLog($return['errorMessage'] . "\n", 1);
+            break;
+        case 1:
+            writeToLog($return['errorMessage'] . "\n", 0);
+            break;
+        case 0:
+            writeToLog($return['errorMessage'] . "\n", 1);
+            break;
+        default:
+        // do nothing
+    }
+    return $return;
+}
+
+function addFavoriteFromgET() {
     global $config_values;
 
     if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
@@ -544,7 +754,8 @@ function add_favorite() {
     ];
     foreach ($list as $key => $data) {
         if (isset($_GET[$key])) {
-            $config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
+            //$config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
+            $config_values['Favorites'][$idx][$data] = $_GET[$key];
         } else {
             $config_values['Favorites'][$idx][$data] = "";
         }
@@ -567,7 +778,17 @@ function add_favorite() {
     return(json_encode($favInfo));
 }
 
-function deleteFavorite() {
+function deleteSuperFavoriteFromgET() {
+    global $config_values;
+    $index = filter_input(INPUT_GET, 'idx');
+    if ($index !== false && isset($config_values['Super-Favorites'][$index])) {
+        unset($config_values['Super-Favorites'][$index]);
+        writejSONConfigFile();
+//TODO switch to new, empty Super-Favorite by using CSS to change id=favorite_new to display: block;
+    }
+}
+
+function deleteFavoriteFromgET() {
     global $config_values;
     $index = filter_input(INPUT_GET, 'idx');
     if ($index !== false && isset($config_values['Favorites'][$index])) {

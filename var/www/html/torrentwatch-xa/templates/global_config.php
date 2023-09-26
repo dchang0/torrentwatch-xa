@@ -224,6 +224,14 @@
                 </div>
                 <div id="config_favorites" class="configTab hidden">
                     <div class="fav_settings">
+                        <div title="Enable Super-Favorites">
+                            <div class="left">
+                                <label class="item checkbox">Enable Super-Favorites:</label>
+                            </div>
+                            <div class="right">
+                                <input type="checkbox" name="enablesuperfavorites" value="1" <?php echo $enablesuperfavorites; ?> />
+                            </div>
+                        </div>
                         <div id="config_matchstyle" title="Type of text-matching to use">
                             <div class="left">
                                 <label class="item select">Matching Style:</label>

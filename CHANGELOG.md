@@ -859,13 +859,35 @@ Code Changes
 - converted most `global $html_out` to passing by reference
 - completely removed Hide Donate Button code
 
-Next Version
+1.8.0
 
 Functional Changes
 
+- added Super-Favorites
+  - changed hiding of right-hand buttons for new Super-Favorites button
 - changed all JQuery fadeIn and fadeOut from default speed of 400ms to 'fast' speed of 200ms
+- added Not filter to twxa_fav_import as optional third column in tab-separated values file
 
 IN PROGRESS
+
+- maybe hide Super-Favorites button if Super-Favorites are disabled
+- add more error-handling to all Super-Favorites functions
+- refactor old Add Favorites PHP functions to wrap addFavoriteFromParams()
+- disable Delete button on New Favorite and New Super-Favorite forms
+
+Code Changes
+
+- removed commented-out Internet Explorer code
+- renamed add_favorite() to addFavoriteFromgET()
+- renamed deleteFavorite() to deleteFavoriteFromgET()
+- renamed update_favorite() to updateFavoriteFromgET()
+- renamed addOneBulkFavorite() to addFavoriteFromImport()
+
+IN PROGRESS
+
+Next Version
+
+Functional Changes
 
 - if Transmission list is empty and cookie is older than 1 hour, switch to the All filter
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
@@ -884,10 +906,6 @@ IN PROGRESS
 - Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter, but this goes away on reload
 
 Code Changes
-
-- removed commented-out Internet Explorer code
-
-IN PROGRESS
 
 - rewrite check_cache() and check_cache_episode() so that they are inverted; use check_cache() in processFeed()
 

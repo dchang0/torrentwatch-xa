@@ -114,6 +114,10 @@ div.dialog_window:not(#trash_tor_data):not(#transmissionWindow) {
 top:130px
 }
 
+#superfavorites {
+left:294px
+}
+
 #favorites {
 left:294px
 }

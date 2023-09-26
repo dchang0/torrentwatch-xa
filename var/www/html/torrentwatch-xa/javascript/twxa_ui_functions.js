@@ -3,10 +3,10 @@ function adjustWebUIButton() {
     switch (window.client) {
         case "Transmission" :
             // shrink/expand/hide/show Web UI button to fit window
-            if ($(window).width() < 545) {
+            if ($(window).width() < 635) {
                 $("#webui").hide();
                 $("#webuiLabel").hide();
-            } else if ($(window).width() < 620) {
+            } else if ($(window).width() < 710) { // was 620 before Super-Favorites
                 $("#webui").show();
                 $("#webuiLabel").hide();
             } else {

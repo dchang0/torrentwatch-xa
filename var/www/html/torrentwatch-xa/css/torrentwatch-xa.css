@@ -1379,6 +1379,128 @@ div.smtpTestRight {
 }
 
 /***********************************
+ * S U P E R - F A V O R I T E S   D I A L O G
+ **********************************/
+#superfavorites {
+    width: 590px;
+    margin-left: -287px;
+    height: 267px;
+    padding-top: 5px;
+}
+
+#superfavDialog .dialogTitle {
+    padding-top: 2px;
+    width: 600px;
+    margin-left: -287px;
+}
+
+div.superfavorite {
+    height: 265px;
+    width: 198px;
+    float: left;
+    clear: left;
+    border: 1px solid #979797;
+    padding: 0;
+    background-color: #eee;
+}
+
+ul.superfavorite {
+    height: 265px;
+    font-size: 120%;
+    overflow: auto;
+}
+
+div.superfavinfo {
+    height: 265px;
+    float: right;
+    clear: right;
+    border: 1px solid #979797;
+    padding: 0 0 0 5px;
+    width: 380px;
+    background-color: #eee;
+}
+
+div.superfavinfo .right {
+    vertical-align: top;
+}
+
+div.superfavinfo .left {
+    width: 90px;
+    vertical-align: top;
+}
+
+ul.superfavorite li {
+    padding-left: 6px;
+    padding-right: 3px;
+    padding-bottom: 4px;
+    word-break: break-all;
+    overflow: hidden;
+    cursor: pointer;
+    height: 20px;
+}
+
+ul.superfavorite li a {
+    vertical-align: middle;
+    font-size: 0.8em;
+    text-decoration: none;
+    color: #000;
+    overflow: hidden;
+}
+
+ul.superfavorite li:hover {
+    background-color: #9DACC1;
+}
+
+ul.superfavorite li:hover a {
+    color: #FFF;
+}
+
+form.superfavinfo {
+    display: none;
+    padding: 5px 0;
+    margin: 5px 0;
+    width: 380px;
+    float: right;
+}
+form.superfavinfo div {
+    height: 24px;
+}
+
+form.superfavinfo #mode,
+form.superfavinfo input#idx {
+    display: none;
+}
+
+form.superfavinfo select {
+    width: 272px;
+}
+
+form.superfavinfo input.text,
+form.superfavinfo input[type=text] {
+    width: 270px;
+}
+
+form.superfavinfo div.superfavorite_seed {
+    float: right;
+    width: 380px;
+}
+
+form.superfavinfo input.seedratio[type=text] {
+    width: 34px;
+    text-align: center;
+}
+
+div.superfavinfo div.buttonContainer {
+    position: absolute;
+    top: 230px;
+    right: 82px;
+}
+
+#superfavClose {
+    right: 13px;
+}
+
+/***********************************
  * F A V O R I T E S   D I A L O G
  **********************************/
 #favorites {

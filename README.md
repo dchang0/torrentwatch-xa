@@ -23,18 +23,27 @@ Common setups:
 Status
 ===============
 
-I've posted 1.7.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.8.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-1.7.0 has a major rewrite of several of the core functions of torrentwatch-xa. The overall functionality hasn't changed much, but a few minor bugs and improvements triggered the major rewrite that's been in the [TODO.md](TODO.md) list since 0.3.0.
+1.8.0 has a major new feature called Super-Favorites.
 
-Most notably:
+A Super-Favorite is a type of favorite that creates a Favorite from the item title when it matches an item.
 
-- the detection of .torrent, .torrent.gz, and magnet: links in the feeds has been improved and made more reliable
-- minor bugs in Client = "Save .torrent/magnet: Files In Folder" have finally been fixed
-- magnet: link functionality has finally been fully fleshed out
-- torrentwatch-xa can now handle links to .torrent.gz files
-- each feed header now has icons that link to each feed's website and raw feed to make diagnosis of feed errors easier (especially feed downs caused by DDOS protection)
-- the PayPal Donate button has been changed to an unobtrusive text link to CoinDrop, and the automatically-suggested donation amount is much lower
+I created the Super-Favorite because I wanted some way to add Favorites for all the shows from a specific fansubbing crew at the start of an anime season--just before the season starts. It has been tedious to have to research and then type in the titles of ten or more anime series before the first episode aired, and I often missed the first episodes if I waited for the anime series to show up in the feeds so that I could add them from the GUI. The bulk Favorite importer twxa_fav_import.php didn't bypass the tedium of researching and inputing anime titles either.
+
+Enter the Super-Favorite!
+
+Every item in the feed is matched against all the configured Super-Favorites, and if any episodic item matches a Super-Favorite, the item's title is turned into a new Favorite's Name and Filter fields with the same Feed and Quality from the matched Super-Favorite. (All other fields of the Favorite will be blank.)
+
+After a few weeks, the Super-Favorite will have Favorited every episodic item that matched during that time, the Favorites it created will be downloading the specific items episode after episode, and Super-Favorites can be disabled to improve performance. Then, when the next season rolls around, you can enable the Super-Favorites again (keeping the same Super-Favorites as before) and create the new set of Favorites.
+
+Obviously, Super-Favorites can create a lot of unwanted Favorites if the Filter and Not fields are poorly designed. Deleting erroneous Favorites is slow since they can only be deleted one by one, so Super-Favorites are disabled by default. New users should not enable them until after learning how the pattern matching style of their choice works.
+
+It is not necessary to convert your 1.7.0 config file to accept Super-Favorites after upgrading to 1.8.0, though you may see PHP warnings in your web server log until you enable Super-Favorites and create one Super-Favorite for the first time. Starting with a fresh 1.8.0 config file will not generate any PHP warnings.
+
+I may make Super-Favorites more powerful by adding back some of the other fields such as the Episodes filter or Download Dir/Also Save Dir, if there is enough demand. It's probably more important to come up with a way to delete multiple Favorites at once, though.
+
+For more details on how to use Super-Favorites, see [USAGE.md](USAGE.md).
 
 Please report any bugs using Github Issues.
 

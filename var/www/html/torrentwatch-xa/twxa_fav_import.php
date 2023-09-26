@@ -14,7 +14,7 @@ require_once("twxa_tools.php");
 function usage() {
     print (__FILE__ . " [-h | --help] <favorites TSV file>\ntorrentwatch-xa bulk Favorites importer\nOptions:\n");
     print ("           -h | --help : show this help\n");
-    print ("           <favorites TSV file> : tab-separated plain text file containing Name, Filter, and Quality columns, one Favorite per line\n");
+    print ("           <favorites TSV file> : tab-separated plain text file containing Name, Filter, Not, and Quality columns, one Favorite per line\n");
 }
 
 function parse_args($argc, $argv) {
@@ -51,17 +51,22 @@ if (is_readable($argv[1])) {
                 // first field is only field provided, use it as Name and Filter
                 print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[0] . "\n");
                 writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[0] . "\n", 1);
-                $return = addOneBulkFavorite($data[0], $data[0]);
+                $return = addFavoriteFromImport($data[0], $data[0]);
             } else if (count($data) === 2) {
                 // first field is Name, second is Filter
                 print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\n");
                 writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\n", 1);
-                $return = addOneBulkFavorite($data[0], $data[1]);
-            } else if (count($data) >= 3) {
-                // first field is Name, second is Filter, third is Quality
-                print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tQuality: " . $data[2] . "\n");
-                writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tQuality: " . $data[2] . "\n", 1);
-                $return = addOneBulkFavorite($data[0], $data[1], $data[2]);
+                $return = addFavoriteFromImport($data[0], $data[1]);
+            } else if (count($data) === 3) {
+                // first field is Name, second is Filter, third is Not
+                print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tNot: " . $data[2] . "\n");
+                writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tNot: " . $data[2] . "\n", 1);
+                $return = addFavoriteFromImport($data[0], $data[1], $data[2]);
+            } else if (count($data) >= 4) {
+                // first field is Name, second is Filter, third is Not, fourth is Quality
+                print("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tNot: " . $data[2] . "\tQuality: " . $data[3] . "\n");
+                writeToLog("Importing Favorite: Name: " . $data[0] . "\tFilter: " . $data[1] . "\tNot: " . $data[2] . "\tQuality: " . $data[3] . "\n", 1);
+                $return = addFavoriteFromImport($data[0], $data[1], $data[2], $data[3]);
             } else {
                 print("Can't detect at least one tab-separated field, skipping line: $row\n");
                 writeToLog("Can't detect at least one tab-separated field, skipping line: $row\n", 0);
@@ -100,7 +105,7 @@ if (is_readable($argv[1])) {
     writeToLog("File not readable: " . $argv[1] . "\n", 0);
 }
 
-function addOneBulkFavorite($name, $filter, $quality = "") {
+function addFavoriteFromImport($name, $filter, $not = "", $quality = "") {
     global $config_values;
 
     if (isset($name)) {
@@ -115,13 +120,14 @@ function addOneBulkFavorite($name, $filter, $quality = "") {
         $idx = end($arrayKeys);
 
         $config_values['Favorites'][$idx]['Filter'] = urldecode($filter);
+        $config_values['Favorites'][$idx]['Not'] = urldecode($not);
         $config_values['Favorites'][$idx]['Quality'] = urldecode($quality);
         $config_values['Favorites'][$idx]['Feed'] = 'All';
 
         $list = [
             //"name" => "Name",
             //"filter" => "Filter",
-            "not" => "Not",
+            //"not" => "Not",
             "downloaddir" => "Download Dir",
             "alsosavedir" => "Also Save Dir",
             "episodes" => "Episodes",

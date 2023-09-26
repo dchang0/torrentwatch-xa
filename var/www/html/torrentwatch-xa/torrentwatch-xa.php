@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.7.0";
+$twxa_version[0] = "1.8.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 if (get_magic_quotes_gpc()) {
@@ -71,8 +71,14 @@ function parse_options($twxa_version) {
         case 'moveTo':
             echo moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash']);
             exit;
+        case 'updateSuperFavorite':
+            $response = updateSuperFavoriteFromgET();
+            if (strpos($response, 'Error:') === 0) {
+                echo "<div id=\"superfav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
+            }
+            break;
         case 'updateFavorite':
-            $response = update_favorite();
+            $response = updateFavoriteFromgET();
             if (strpos($response, 'Error:') === 0) {
                 echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
             }
@@ -119,7 +125,7 @@ function parse_options($twxa_version) {
             if ($config_values['Settings']['Default Feed All'] && $tmp['numberSequence'] > 0) { // set default feed to all only if serialized
                 $_GET['feed'] = 'All';
             }
-            $response = update_favorite();
+            $response = updateFavoriteFromgET();
             if ($response) {
                 echo "$response";
             }
@@ -208,6 +214,9 @@ function parse_options($twxa_version) {
             exit;
         case 'get_dialog_data':
             switch (filter_input(INPUT_GET, 'get_dialog_data')) {
+                case '#superfavorites':
+                    display_superfavorites($html_out);
+                    exit;
                 case '#favorites':
                     display_favorites($html_out);
                     exit;
@@ -311,7 +320,10 @@ function display_global_config() {
 
     // Favorites tab
     $matchregexp = $matchglob = $matchsimple = $resoallqualities = $resoresolutionsonly = '';
-    $favdefaultall = $require_epi_info = $onlynewer = $fetchversions = $ignorebatches = '';
+    $enablesuperfavorites = $favdefaultall = $require_epi_info = $onlynewer = $fetchversions = $ignorebatches = '';
+    if ($config_values['Settings']['Enable Super-Favorites'] == 1) {
+        $enablesuperfavorites = 'checked=1';
+    }
     switch ($config_values['Settings']['Match Style']) {
         case 'glob': $matchglob = "selected='selected'";
             break;
@@ -379,6 +391,31 @@ function display_global_config() {
     return ob_get_contents();
 }
 
+function display_superfavorites_info($item, $key) { // $key gets fed into superfavorites_info.php
+    global $config_values;
+    $feed_options = '<option value="none">None</option>';
+    $feed_options .= '<option value="all"';
+    if (strtolower($item['Feed']) === "all" || $item['Name'] === "") {
+        $feed_options .= ' selected="selected">All</option>';
+    } else {
+        $feed_options .= '>All</option>';
+    }
+    if (isset($config_values['Feeds'])) {
+        foreach ($config_values['Feeds'] as $feed) {
+            $feed_options .= '<option value="' . urlencode($feed['Link']) . '"';
+            if ($feed['Link'] == $item['Feed']) {
+                $feed_options .= ' selected="selected"';
+            }
+            if ($feed['enabled'] !== 1) {
+                $feed_options .= ' disabled';
+            }
+            $feed_options .= '>' . $feed['Name'] . '</option>';
+        }
+    }
+    // Dont handle with object buffer, is called inside display_superfavorites ob_start
+    require('templates/superfavorites_info.php');
+}
+
 function display_favorites_info($item, $key) { // $key gets fed into favorites_info.php
     global $config_values;
     $feed_options = '<option value="none">None</option>';
@@ -402,6 +439,13 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
     }
     // Dont handle with object buffer, is called inside display_favorites ob_start
     require('templates/favorites_info.php');
+}
+
+function display_superfavorites(&$html_out) {
+    global $config_values;
+    ob_start();
+    require('templates/superfavorites.php');
+    return ob_get_contents();
 }
 
 function display_favorites(&$html_out) {

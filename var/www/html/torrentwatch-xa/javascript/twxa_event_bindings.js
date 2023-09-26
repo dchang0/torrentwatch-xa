@@ -33,7 +33,7 @@ $(document).ready(function () {
             }
         });
     });
-    // binding for Configure form and Favorites form ajax submit
+    // binding for Configure form, Favorites form, and Super-Favorites form ajax submit
     $(document).on("click", "a.submitForm", function (e) {
         window.input_change = 0;
         e.stopImmediatePropagation();

@@ -3,7 +3,7 @@ Officially-supported OSes
 
 - Debian 9.x and up
 - Ubuntu 16.04 and up
-- Fedora Server 34 with SELINUX in Permissive mode (see below for more details on SELINUX)
+- Fedora Server 34 and up with SELINUX in Permissive mode (see below for more details on SELINUX)
 
 Other LINUX distributions and other operating systems will work as long as they provide a web server with PHP 5.6.0alpha3 and up with mbstring, xml, curl, and posix_getuid() support. PHP 5.6.0alpha3 is really only required by PHPMailer's SMTP 5.2.23 library to support TLS 1.1 and 1.2. torrentwatch-xa itself only requires PHP 5.4.0. If you are not using email triggers with TLS 1.1 or 1.2, you should be able to avoid this version requirement by downgrading PHPMailer's SMTP library.
 
@@ -93,7 +93,7 @@ Manual Installation
     - `ls -l /etc/cron.d`
 - Skip to the section __Continue below for all distros:__ below.
 
-### Fedora Server 34:
+### Fedora Server 34 and up:
 
 Note that these instructions will work for versions of Fedora Server going pretty far back--at least as far back as Fedora Server 25, but probably further back than that.
 
