@@ -13,21 +13,21 @@ require_once("twxa_tools.php");
 $twxa_version[0] = "1.8.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
-if (get_magic_quotes_gpc()) {
-    $process = [&$_GET, &$_POST, &$_COOKIE, &$_REQUEST];
-    while (list($key, $val) = each($process)) {
-        foreach ($val as $k => $v) {
-            unset($process[$key][$k]);
-            if (is_array($v)) {
-                $process[$key][stripslashes($k)] = $v;
-                $process[] = &$process[$key][stripslashes($k)];
-            } else {
-                $process[$key][stripslashes($k)] = stripslashes($v);
-            }
-        }
-    }
-    unset($process);
-}
+//if (get_magic_quotes_gpc()) {
+//    $process = [&$_GET, &$_POST, &$_COOKIE, &$_REQUEST];
+//    while (list($key, $val) = each($process)) {
+//        foreach ($val as $k => $v) {
+//            unset($process[$key][$k]);
+//            if (is_array($v)) {
+//                $process[$key][stripslashes($k)] = $v;
+//                $process[] = &$process[$key][stripslashes($k)];
+//            } else {
+//                $process[$key][stripslashes($k)] = stripslashes($v);
+//            }
+//        }
+//    }
+//    unset($process);
+//}
 
 // parses commands sent from web UI (usually torrentwatch-xa.js)
 function parse_options($twxa_version) {
