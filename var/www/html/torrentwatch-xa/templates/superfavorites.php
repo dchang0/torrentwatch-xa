@@ -2,6 +2,7 @@
     <div class="dialogTitle">
         <a class="toggleDialog button titleClose" href="#"></a>
         Super-Favorites
+        <?php if (empty($config_values['Settings']['Enable Super-Favorites'])) { echo "- Globally Disabled"; } ?>
     </div>
     <div class="dialog_window" id="superfavorites">
         <div class="superfavorite">
