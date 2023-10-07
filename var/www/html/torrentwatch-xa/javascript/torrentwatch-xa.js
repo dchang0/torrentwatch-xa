@@ -977,6 +977,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         setTimeout(function () {
             $("ul.superfavorite").find(":first a").toggleSuperFavorite();
             $('#superfavorite_new a#Update').addClass('disabled').removeClass('submitForm');
+            $('#superfavorite_new a#Delete').addClass('disabled').removeClass('submitForm');
         }, 300);
         this.not(":first").tsort('a');
         return this.not(":first").end().on("click", function () {
@@ -987,6 +988,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         setTimeout(function () {
             $("ul.favorite").find(":first a").toggleFavorite();
             $('#favorite_new a#Update').addClass('disabled').removeClass('submitForm');
+            $('#favorite_new a#Delete').addClass('disabled').removeClass('submitForm');
         }, 300);
         this.not(":first").tsort('a');
         return this.not(":first").end().on("click", function () {
@@ -1020,6 +1022,11 @@ $(document).ready(function () { // first binding to document ready (while torren
                     $(current_superfavorite + ' a#Update').addClass('disabled').removeClass('submitForm');
                 }
             });
+            if (current_superfavorite === "#superfavorite_new") {
+                $(current_superfavorite + ' a#Delete').addClass('disabled').removeClass('submitForm');
+            } else {
+                $(current_superfavorite + ' a#Delete').removeClass('disabled').addClass('submitForm');
+            }
             if (!last) {
                 $(current_superfavorite).show();
             } else {
@@ -1051,6 +1058,11 @@ $(document).ready(function () { // first binding to document ready (while torren
                     $(current_favorite + ' a#Update').addClass('disabled').removeClass('submitForm');
                 }
             });
+            if (current_favorite === "#favorite_new") {
+                $(current_favorite + ' a#Delete').addClass('disabled').removeClass('submitForm');
+            } else {
+                $(current_favorite + ' a#Delete').removeClass('disabled').addClass('submitForm');
+            }
             if (!last) {
                 $(current_favorite).show();
             } else {

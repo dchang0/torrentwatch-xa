@@ -209,7 +209,7 @@ Note that for a single Favorite offered in multiple resolutions, with the above 
 
 ### Super-Favorites
 
-Under Configure > Favorites, Matching Style is set to RegExp and Enable Super-Favorites is checked.
+For the following example, under Configure > Favorites, Matching Style is set to RegExp and Enable Super-Favorites is checked.
 
 Under Super-Favorites, with a Super-Favorite set like so:
 
@@ -235,7 +235,15 @@ Quality: 480p (carried over from the Super-Favorite)
 Seed Ratio: (always blank)
 Last Download: (always blank)
 
-Note that the Not field of the Favorite is not carried over from the Super-Favorite because the Super-Favorite's Not is used in conjunction with the Super-Favorite's Filter to produce the Favorite's Name (and thus Filter) in full.
+Due to the Not field being set to:
+
+Bleach
+
+This show will not be turned into a Favorite:
+
+Erai-raws Bleach - Sennen Kessen Hen - Ketsubetsu Tan - 01 480p Multiple Subtitle
+
+Note that the Not field of the Favorite is not carried over from the Super-Favorite because the Super-Favorite's Not is used in conjunction with the Super-Favorite's Filter to produce the Favorite's Name (and thus its Filter) in full.
 
 Keep in mind that while a Super-Favorite is active, it doesn't make sense to delete any Favorites created by it while the episodic item is still ongoing. It will simply be re-added back the next time an episode of that item shows up in the feed. So, if you wish to stop a Favorite that was created by a Super-Favorite, change its Feed to None so that it will never match anything. As long as it exists with the same Name, the Super-Favorite can't re-add it. You can delete the Favorite after the season is done.
 

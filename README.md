@@ -29,19 +29,19 @@ I've posted 1.8.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 A Super-Favorite is a type of favorite that creates a Favorite from the item title when it matches an item.
 
-I created the Super-Favorite because I wanted some way to add Favorites for all the shows from a specific fansubbing crew at the start of an anime season--just before the season starts. It has been tedious to have to research and then type in the titles of ten or more anime series before the first episode aired, and I often missed the first episodes if I waited for the anime series to show up in the feeds so that I could add them from the GUI. The bulk Favorite importer twxa_fav_import.php didn't bypass the tedium of researching and inputing anime titles either.
+I created the Super-Favorite because I wanted some way to add Favorites for all the shows from a specific fansubbing crew at the start of an anime season--right before the season starts so as to capture the first episode. It has been tedious to have to research and then type in the titles of ten or more anime series before the first episode aired, and I often missed the first episodes if I waited for the anime series to show up in the feeds so that I could add them from the feed. The bulk Favorite importer twxa_fav_import.php didn't bypass the tedium of researching and inputing anime titles either.
 
 Enter the Super-Favorite!
 
-Every item in the feed is matched against all the configured Super-Favorites, and if any episodic item matches a Super-Favorite, the item's title is turned into a new Favorite's Name and Filter fields with the same Feed and Quality from the matched Super-Favorite. (All other fields of the Favorite will be blank.)
+Every item in the feed is matched against all the configured Super-Favorites, and if any item matches a Super-Favorite, the item's title is turned into a new Favorite's Name and Filter fields with the same Feed and Quality from the matched Super-Favorite. (All other fields of the Favorite will be blank.)
 
-After a few weeks, the Super-Favorite will have Favorited every episodic item that matched during that time, the Favorites it created will be downloading the specific items episode after episode, and Super-Favorites can be disabled to improve performance. Then, when the next season rolls around, you can enable the Super-Favorites again (keeping the same Super-Favorites as before) and create the new set of Favorites.
+After a few weeks, the Super-Favorite will have Favorited every item that matched during that time, the Favorites it created will be downloading the specific items as it should, and Super-Favorites can be globally-disabled to improve performance. Then, when the next season rolls around, you can globally-enable Super-Favorites again, maybe make slight modifications to individual Super-Favorites carried over from the prior season, and create the new season's set of Favorites.
 
 Obviously, Super-Favorites can create a lot of unwanted Favorites if the Filter and Not fields are poorly designed. Deleting erroneous Favorites is slow since they can only be deleted one by one, so Super-Favorites are disabled by default. New users should not enable them until after learning how the pattern matching style of their choice works.
 
 It is not necessary to convert your 1.7.0 config file to accept Super-Favorites after upgrading to 1.8.0, though you may see PHP warnings in your web server log until you enable Super-Favorites and create one Super-Favorite for the first time. Starting with a fresh 1.8.0 config file will not generate any PHP warnings.
 
-I may make Super-Favorites more powerful by adding back some of the other fields such as the Episodes filter or Download Dir/Also Save Dir, if there is enough demand. It's probably more important to come up with a way to delete multiple Favorites at once, though.
+I may make Super-Favorites more powerful by adding some of the other fields such as the Episodes filter or Download Dir/Also Save Dir, if there is enough demand. It's probably more important to come up with a way to delete multiple Favorites at once, though.
 
 For more details on how to use Super-Favorites, see [USAGE.md](USAGE.md).
 

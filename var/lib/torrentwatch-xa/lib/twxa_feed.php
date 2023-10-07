@@ -710,24 +710,23 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
             $itemState = "st_notAMatch"; // assign initial state to each item, to be overwritten if a match; $itemState is not used above this function
             if (isset($config_values['Settings']['Enable Super-Favorites']) && $config_values['Settings']['Enable Super-Favorites'] == 1) {
                 // compare this item to Super-Favorites
-                //TODO comparing each item to Super-Favorites this early could result in poor performance
                 if (isset($config_values['Super-Favorites'])) {
                     // loop through every Super-Favorite and compare this item to each Super-Favorite
                     foreach ($config_values['Super-Favorites'] as $superfavKey => $superfavValue) { // BEGIN loop through Super-Favorites; $superfavValue is not used
                         if (checkItemMatchesSuperFavorite(
-                                $config_values['Super-Favorites'][$superfavKey], 
-                                $item,
-                                $feed['URL'],
-                                $matchStyle
-                            )
+                                        $config_values['Super-Favorites'][$superfavKey],
+                                        $item,
+                                        $feed['URL'],
+                                        $matchStyle
+                                )
                         ) {
                             // item matches a Super-Favorite, create a Favorite from it
                             $guess = detectMatch($item['title']);
                             addFavoriteFromSuperFavoriteMatch(
-                                $guess['favTitle'], // name (item guessed title)
-                                $guess['favTitle'], // filter (item guessed title)
-                                $config_values['Super-Favorites'][$superfavKey]['Feed'], // feed (same as Super-Favorite)
-                                $config_values['Super-Favorites'][$superfavKey]['Quality'] // quality (same as Super-Favorite)
+                                    $guess['favTitle'], // name (item guessed title)
+                                    $guess['favTitle'], // filter (item guessed title)
+                                    $config_values['Super-Favorites'][$superfavKey]['Feed'], // feed (same as Super-Favorite)
+                                    $config_values['Super-Favorites'][$superfavKey]['Quality'] // quality (same as Super-Favorite)
                             );
                             break;
                         }

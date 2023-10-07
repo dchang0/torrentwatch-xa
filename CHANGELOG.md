@@ -867,13 +867,8 @@ Functional Changes
   - changed hiding of right-hand buttons for new Super-Favorites button
 - changed all JQuery fadeIn and fadeOut from default speed of 400ms to 'fast' speed of 200ms
 - added Not filter to twxa_fav_import as optional third column in tab-separated values file
-
-IN PROGRESS
-
-- maybe hide Super-Favorites button if Super-Favorites are disabled
-- add more error-handling to all Super-Favorites functions
-- refactor old Add Favorites PHP functions to wrap addFavoriteFromParams()
-- disable Delete button on New Favorite and New Super-Favorite forms
+- disabled Delete button on New Favorite and New Super-Favorite forms
+- fixed bug where feed could only be set to All or None in Favorites pane
 
 Code Changes
 
@@ -882,13 +877,17 @@ Code Changes
 - renamed deleteFavorite() to deleteFavoriteFromgET()
 - renamed update_favorite() to updateFavoriteFromgET()
 - renamed addOneBulkFavorite() to addFavoriteFromImport()
-
-IN PROGRESS
+- commented out section using get_magic_quotes_gpc() due to PHP 8 deprecation
+- fixed curly braces deprecation in PicoFeed/Client/Url.php, line 137
 
 Next Version
 
 Functional Changes
 
+IN PROGRESS
+
+- add ability to understand double-byte numerals in season and episode numbering
+- maybe hide Super-Favorites button if Super-Favorites are disabled
 - if Transmission list is empty and cookie is older than 1 hour, switch to the All filter
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
@@ -906,6 +905,10 @@ Functional Changes
 - Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter, but this goes away on reload
 
 Code Changes
+
+IN PROGRESS
+
+- refactor old Add Favorites PHP functions to wrap addFavoriteFromParams()
 
 - rewrite check_cache() and check_cache_episode() so that they are inverted; use check_cache() in processFeed()
 

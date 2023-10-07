@@ -74,9 +74,9 @@ function normalizeCodecs($ti, $seps = '\s\.\_') {
 }
 
 function validateYYYYMMDD($date) {
-    $YYYY = (int)substr($date, 0, 4);
-    $MM = (int)substr($date, 4, 2);
-    $DD = (int)substr($date, 6, 2);
+    $YYYY = (int) substr($date, 0, 4);
+    $MM = (int) substr($date, 4, 2);
+    $DD = (int) substr($date, 6, 2);
     return checkdate($MM, $DD, $YYYY);
 }
 
@@ -388,7 +388,7 @@ function detectpROPERrEPACK($ti) {
 }
 
 function detectMatch($ti) {
-    global $config_values; //TODO remove use of global
+    global $config_values;
 
     $episGuess = "";
 

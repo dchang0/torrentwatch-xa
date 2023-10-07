@@ -161,7 +161,6 @@ function readjSONConfigFile() {
     $configFile = getConfigFile();
     $configCacheFile = getConfigCacheFile();
 
-    //writeToLog("Reading config file: $configFile\n", 2); // this line will fill the log file due to getClientData calls
     // file ages are integer UNIX timestamp: seconds since epoch
     // check for config file
     if (file_exists($configFile)) {
@@ -333,7 +332,7 @@ function setupConfigCacheDir() {
 }
 
 function writejSONConfigFile() {
-    global $config_values; //TODO remove use of global
+    global $config_values;
 
     $configFile = getConfigFile();
     $configTempFile = $configFile . "_tmp";
@@ -579,7 +578,7 @@ function addFavoriteFromParams(
 ) {
     global $config_values;
 
-    if (isset($name)) {
+    if (isset($name) && !is_null($name)) {
         // name is set, but is it useful?
         $trimmedname = trim((string) $name);
         if (strlen($trimmedname) > 0) {
@@ -718,6 +717,70 @@ function addFavoriteFromSuperFavoriteMatch(
     return $return;
 }
 
+//function addFavoriteFromgET() {
+//    //TODO can probably call addFavoriteFromParams() directly from torrentwatch-xa and dump this function
+//    // cannot use filter_input() on regexp fields due to shell characters like pipe
+//    if (isset($_GET['name'])) {
+//        $name = $_GET['name'];
+//    } else {
+//        $name = null;
+//    }
+//    if (isset($_GET['quality'])) {
+//        $quality = $_GET['quality'];
+//    } else {
+//        $quality = null;
+//    }
+//    if (isset($_GET['feed'])) {
+//        $feed = $_GET['feed'];
+//    } else {
+//        $feed = null;
+//    }
+//    if (isset($_GET['season'])) {
+//        $season = $_GET['season'];
+//    } else {
+//        $season = null;
+//    }
+//    if (isset($_GET['episode'])) {
+//        $episode = $_GET['episode'];
+//    } else {
+//        $episode = null;
+//    }
+//    // split single field for new Favorite's Season x Episode into separate Season x Episode
+//    if ($season == '' && $episode != '') {
+//        $tempMatches = [];
+//        if (preg_match('/(\d+)\s*[xX]\s*(\d+|FULL)/', $episode, $tempMatches)) { // we ignore S##E## notation and version number
+//            $episode = $tempMatches[2];
+//            $season = $tempMatches[1];
+//        } else if (preg_match('/^(\d{8})$/', $episode)) {
+//            $season = 0; // for date notation, Season = 0
+//        }
+//    }
+//    $return = addFavoriteFromParams(
+//            $name, // required
+//            (isset($_GET['filter']) ? $_GET['filter'] : null),
+//            $feed,
+//            $quality,
+//            (isset($_GET['not']) ? $_GET['not'] : null),
+//            (isset($_GET['episodes']) ? $_GET['episodes'] : null),
+//            (isset($_GET['seedratio']) ? $_GET['seedratio'] : null),
+//            $season,
+//            $episode,
+//            (isset($_GET['downloaddir']) ? $_GET['downloaddir'] : null),
+//            (isset($_GET['alsosavedir']) ? $_GET['alsosavedir'] : null),
+//            (isset($_GET['idx']) ? $_GET['idx'] : null)
+//    );
+//    //TODO add error handling of $return from addFavoriteParams()
+//    // send data or error message to Javascript side when Add Favorite button is clicked
+//    if ($return['errorCode'] === 1) {
+//        return("Error: " & $return['errorMessage']);
+//    } else {
+//        $favInfo['title'] = $name;
+//        $favInfo['quality'] = $quality;
+//        $favInfo['feed'] = urlencode($feed);
+//        return(json_encode($favInfo));
+//    }
+//}
+
 function addFavoriteFromgET() {
     global $config_values;
 
@@ -746,7 +809,6 @@ function addFavoriteFromgET() {
         "downloaddir" => "Download Dir",
         "alsosavedir" => "Also Save Dir",
         "episodes" => "Episodes",
-        "feed" => "Feed",
         "quality" => "Quality",
         "seedratio" => "seedRatio",
         "season" => "Season",
@@ -754,11 +816,13 @@ function addFavoriteFromgET() {
     ];
     foreach ($list as $key => $data) {
         if (isset($_GET[$key])) {
-            //$config_values['Favorites'][$idx][$data] = urldecode($_GET[$key]);
             $config_values['Favorites'][$idx][$data] = $_GET[$key];
         } else {
             $config_values['Favorites'][$idx][$data] = "";
         }
+    }
+    if(isset($_GET['feed'])) {
+        $config_values['Favorites'][$idx]['Feed'] = urldecode($_GET['feed']);
     }
 
     // split single field for new Favorite's Season x Episode into separate Season x Episode
@@ -952,7 +1016,6 @@ function updateFeed() {
                             if ($config_values['Feeds'][$idx]['Name'] !== $feedItem['feedName']) {
                                 // if the new feed name is blank, get the official feed name from the feed
                                 if ($feedItem['feedName'] === false || $feedItem['feedName'] === '') {
-//                                    loadAllFeeds(array(0 => array('Link' => $feedItem['feedLink'])), 1, true); // pass true even if feed is not enabled because we want the name
                                     if (parseOneFeed(['Link' => $feedItem['feedLink']])) {
                                         $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
                                         $feedItemChanged = true;
