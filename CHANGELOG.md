@@ -869,6 +869,7 @@ Functional Changes
 - added Not filter to twxa_fav_import as optional third column in tab-separated values file
 - disabled Delete button on New Favorite and New Super-Favorite forms
 - fixed bug where feed could only be set to All or None in Favorites pane
+- fixed bug where Add to Favorites could add a Favorite that has a blank Filter
 
 Code Changes
 
