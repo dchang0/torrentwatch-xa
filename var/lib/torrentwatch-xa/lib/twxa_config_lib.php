@@ -784,6 +784,9 @@ function addFavoriteFromSuperFavoriteMatch(
 function addFavoriteFromgET() {
     global $config_values;
 
+    if (empty($_GET['filter'])) {
+        return("Error: Missing Filter, cannot add Favorite");
+    }
     if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
         foreach ($config_values['Favorites'] as $fav) {
             if ($_GET['name'] == $fav['Name']) {
@@ -800,10 +803,6 @@ function addFavoriteFromgET() {
         $_GET['idx'] = $idx; // So display_favorite_info() can see it
     } else {
         return("Error: Missing index or Name, cannot add Favorite");
-    }
-    
-    if(empty($_GET['filter'])) {
-        return("Error: Missing Filter, cannot add Favorite");
     }
 
     $list = [
@@ -825,7 +824,7 @@ function addFavoriteFromgET() {
             $config_values['Favorites'][$idx][$data] = "";
         }
     }
-    if(isset($_GET['feed'])) {
+    if (isset($_GET['feed'])) {
         $config_values['Favorites'][$idx]['Feed'] = urldecode($_GET['feed']);
     }
 
