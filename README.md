@@ -23,27 +23,15 @@ Common setups:
 Status
 ===============
 
-I've posted 1.8.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.9.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-1.8.0 has a major new feature called Super-Favorites.
+The Favorites and Super-Favorites dialogs now stay pinned open until closed, making it easier to do multiple Updates. This is a necessary change now that Super-Favorites can rapidly create dozens of Favorites that have to be edited/disabled. It was surprisingly difficult to add this feature due in part to a quirk in JQuery, probably explaining why the authors of TorrentWatch-X chose to simply force a reload of the page after every Update.
 
-A Super-Favorite is a type of favorite that creates a Favorite from the item title when it matches an item.
+Error messages on the Javascript side have been partially-consolidated towards the final goal of having just one error message div targeted by just one Javascript function and just one PHP function.
 
-I created the Super-Favorite because I wanted some way to add Favorites for all the shows from a specific fansubbing crew at the start of an anime season--right before the season starts so as to capture the first episode. It has been tedious to have to research and then type in the titles of ten or more anime series before the first episode aired, and I often missed the first episodes if I waited for the anime series to show up in the feeds so that I could add them from the feed. The bulk Favorite importer twxa_fav_import.php didn't bypass the tedium of researching and inputing anime titles either.
+I will probably consolidate the error message handling in 1.9.1 and stop adding features for a while, focusing on bugfixing the major 1.8.0 and 1.9.0 changes.
 
-Enter the Super-Favorite!
-
-Every item in the feed is matched against all the configured Super-Favorites, and if any item matches a Super-Favorite, the item's title is turned into a new Favorite's Name and Filter fields with the same Feed and Quality from the matched Super-Favorite. (All other fields of the Favorite will be blank.)
-
-After a few weeks, the Super-Favorite will have Favorited every item that matched during that time, the Favorites it created will be downloading the specific items as it should, and Super-Favorites can be globally-disabled to improve performance. Then, when the next season rolls around, you can globally-enable Super-Favorites again, maybe make slight modifications to individual Super-Favorites carried over from the prior season, and create the new season's set of Favorites.
-
-Obviously, Super-Favorites can create a lot of unwanted Favorites if the Filter and Not fields are poorly designed. Deleting erroneous Favorites is slow since they can only be deleted one by one, so Super-Favorites are disabled by default. New users should not enable them until after learning how the pattern matching style of their choice works.
-
-It is not necessary to convert your 1.7.0 config file to accept Super-Favorites after upgrading to 1.8.0, though you may see PHP warnings in your web server log until you enable Super-Favorites and create one Super-Favorite for the first time. Starting with a fresh 1.8.0 config file will not generate any PHP warnings.
-
-I may make Super-Favorites more powerful by adding some of the other fields such as the Episodes filter or Download Dir/Also Save Dir, if there is enough demand. It's probably more important to come up with a way to delete multiple Favorites at once, though.
-
-For more details on how to use Super-Favorites, see [USAGE.md](USAGE.md).
+It's my hope that I can then rewrite the PHP core of torrentwatch-xa to use OOP, specifically encapsulating its basic concepts (such as a Favorite or Feed Item) in object classes. Creating a Client class would allow others to inherit and write other Client classes so that other BitTorrent clients than Transmission can be hooked into torrentwatch-xa. This huge a change will  catapult torrentwatch-xa into major version 2.0.0.
 
 Please report any bugs using Github Issues.
 

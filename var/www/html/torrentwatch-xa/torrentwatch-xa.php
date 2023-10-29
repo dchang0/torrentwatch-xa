@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.8.0";
+$twxa_version[0] = "1.9.0";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 // parses commands sent from web UI (usually torrentwatch-xa.js)
@@ -54,18 +54,30 @@ function parse_options($twxa_version) {
         case 'moveTo':
             echo moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash']);
             exit;
+//        case 'updateSuperFavorite':
+//            $response = updateSuperFavoriteFromgET();
+//            if (strpos($response, 'Error:') === 0) {
+//                echo "<div id=\"superfav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
+//            }
+//            break;
         case 'updateSuperFavorite':
             $response = updateSuperFavoriteFromgET();
-            if (strpos($response, 'Error:') === 0) {
-                echo "<div id=\"superfav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
+            if(isset($response)) {
+                echo "$response";
             }
-            break;
+            exit;
+//        case 'updateFavorite':
+//            $response = updateFavoriteFromgET();
+//            if (strpos($response, 'Error:') === 0) {
+//                echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
+//            }
+//            break;
         case 'updateFavorite':
             $response = updateFavoriteFromgET();
-            if (strpos($response, 'Error:') === 0) {
-                echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
+            if(isset($response)) {
+                echo "$response";
             }
-            break;
+            exit;
         case 'updateFeed':
             updateFeed();
             break;
@@ -109,7 +121,7 @@ function parse_options($twxa_version) {
                 $_GET['feed'] = 'All';
             }
             $response = updateFavoriteFromgET();
-            if ($response) {
+            if (isset($response)) {
                 echo "$response";
             }
             exit;
@@ -148,7 +160,6 @@ function parse_options($twxa_version) {
                 echo $r['errorMessage'];
             }
             exit(0);
-            break;
         case 'clearHistory':
             $downloadHistoryFile = getDownloadHistoryFile();
             if (file_exists($downloadHistoryFile)) {
@@ -157,7 +168,6 @@ function parse_options($twxa_version) {
             display_history();
             closeHtml($html_out);
             exit(0);
-            break;
         case 'get_client':
             global $config_values;
             echo $config_values['Settings']['Client'];
@@ -679,15 +689,15 @@ function checkVersion($twxa_version) {
 
             // Assume there are 3 numeric parts to the version number; compare them part by part
             if ((int) $thisVersion[0] > (int) $latestVersion[0]) {
-
+                
             } else if ((int) $thisVersion[0] === (int) $latestVersion[0]) {
                 // first parts are the same, compare the second parts
                 if ((int) $thisVersion[1] > (int) $latestVersion[1]) {
-
+                    
                 } else if ((int) $thisVersion[1] === (int) $latestVersion[1]) {
                     // second parts are the same, compare the third parts
                     if ((int) $thisVersion[2] >= (int) $latestVersion[2]) {
-
+                        
                     } else if ((int) $thisVersion[2] < (int) $latestVersion[2]) {
                         $isLatestHigher = true;
                     } else {

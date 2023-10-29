@@ -34,11 +34,6 @@ All other files have functions that need improvement or rewrites or validation.
 
 - if torrent item is removed from another browser session, this browser doesn't figure it out
 - with the episode filter it also ignores all the batches regardless of the setting to ignore batches
-
-- fix debug console in web UI
-  - merge errorDialog into twError
-  - use error function instead of alert() in torrentwatch-xa.js
-
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
 - "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
 - handle resolution and quality 1080p60
@@ -46,6 +41,9 @@ All other files have functions that need improvement or rewrites or validation.
 - fix main UI Responsive Design especially for phones in portrait mode
 
 ## Improvements
+
+- handle multibyte numerals when detecting season and episode
+- handle when the date or number is at the very beginning of the item title as with some Japanese multibyte titles
 
 - design class interface for TorrentClient and design child classes FolderClient and TransmissionClient
   - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future
@@ -56,7 +54,6 @@ All other files have functions that need improvement or rewrites or validation.
 - change getCurl() to use PicoFeed's Curl class
 - possibly rewrite torrent links to pass around an array of detected links to be tried in order from best to worst until one of them works, but this is difficult for Save Torrent In Folder behavior
 - per-feed Filter capability to only show some items
-- handle multibyte numerals when detecting season and episode
 - enable PicoFeed HTTP basic authentication functionality
 - move checks for DownloadCacheDir and ConfigCacheDir in torrentwatch-xa till after attempt to create them if they are missing so that the error does not show in the web UI
 - use 'use strict'; to clean up blocks of code in torrentwatch-xa.js starting from smaller blocks to larger
@@ -89,8 +86,8 @@ All other files have functions that need improvement or rewrites or validation.
 - finish new "Serialization" concept as replacement for Episodes (now that print media can be faved)
   - check to make sure that new decimal PV numbering system works throughout entire app
 
-- reduce use of global variables 
-  - $config_values['Global'] appears to be a crappy way of globally passing some data, maybe convert to $GLOBALS
+- reduce use of global variables
+  - $config_values['Global'] appears to be a crappy way of globally passing some data, maybe convert to $GLOBALS or replace with singleton Config object
   - $html_out (can't use passing by value because performance suffers badly as $html_out gets very large, so use passing by reference, but definitely do not return $html_out if passing by reference because of poor performance)
   - $twxa_version
 

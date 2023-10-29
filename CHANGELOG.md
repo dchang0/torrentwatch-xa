@@ -724,7 +724,7 @@ Code Changes
 
 Functional Changes
 
-- redesigned Configuration > Feeds tab
+- redesigned Configure > Feeds tab
 - disabled Feeds are no longer selectable in each Favorite
 - added Configure > Trigger > From: Name
 - added Configure > Trigger > HELO Override to satisfy some SMTP servers
@@ -881,20 +881,39 @@ Code Changes
 - commented out section using get_magic_quotes_gpc() due to PHP 8 deprecation
 - fixed curly braces deprecation in PicoFeed/Client/Url.php, line 137
 
-Next Version
+1.9.0
 
 Functional Changes
 
+- changed position of Close button in Configure dialog to match other dialogs
+- changed Favorites dialog so that it stays open until closed
+- fixed Add Favorite in client buttons bar due to change to Favorites dialog
+- changed Super-Favorites dialog so that it stays open until closed
+- consolidated Javascript error message functions into showErrorPanel()
+- moved #twError div towards the top of the screen and put it on top of z-stack even when dialog is open
+
+Code Changes
+
+- switched from 'title' to 'name' in .addFavorite() and addFavoriteFromgET()--note that 'name' is from the Favorite side but 'title' is from the Feed Item and parsing side, and they meet when the Favorite is used to match the Feed Item.
+- renamed arrow.png to arrow-down.png
+- removed ie.css
+
+Next Version
+
+Feature Changes
+
 IN PROGRESS
 
-- add ability to understand double-byte numerals in season and episode numbering
+- merge Javascript-side's #clientError div and showClientError() into #twError div and $.fn.showErrorPanel()
+- maybe merge PHP-side's #errorDialog div into #twError div
+
+- Add Favorite and Hide Item in client buttons bar don't go away if the item is already in favorites or already hidden, respectively
 - maybe hide Super-Favorites button if Super-Favorites are disabled
 - if Transmission list is empty and cookie is older than 1 hour, switch to the All filter
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
-- Add to Favorites and Hide Item in contextual menu doesn't go away if the item is already in favorites or already hidden, respectively
+
 - fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
-- show alerts in web UI
 - change reload button so that it doesn't clear the Filter textbox OR add Lock checkbox to the filter
 
 - Upload/Download rates still show when Client is changed to Folder, but it goes away on reload
@@ -908,6 +927,8 @@ IN PROGRESS
 Code Changes
 
 IN PROGRESS
+
+- give all Update and Delete buttons in Favorites and Super-Favorites dialogs unique ids 
 
 - refactor old Add Favorites PHP functions to wrap addFavoriteFromParams()
 

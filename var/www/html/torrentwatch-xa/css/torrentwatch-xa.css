@@ -792,7 +792,7 @@ span.hide_item img {
 div.header span.hide_feed_left,
 div.header span.hide_feed_right {
     margin: 5px 0 5px 0;
-    background: url(../images/arrow.png) no-repeat left center;
+    background: url(../images/arrow-down.png) no-repeat left center;
 }
 
 div.header_hidden span.hide_feed_left {
@@ -1087,11 +1087,11 @@ div.legend input {
 
 #twError {
     display: none;
-    top: 60px;
+    top: 32px; /* TODO maybe try 0px */
     color: red;
     background-color: #bbb;
     text-align: center;
-    z-index: 1;
+    z-index: 100;
     border-color: #AAA;
 }
 
@@ -1352,10 +1352,6 @@ input.feed_delete {
 #hidelistContainer ul.hidelist li:hover {
     background-color: #9DACC1;
     color: #FFF;
-}
-
-.linkButtons  {
-    float: right;
 }
 
 #script {

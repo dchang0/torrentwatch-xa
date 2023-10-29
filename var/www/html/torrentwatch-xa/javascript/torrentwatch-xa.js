@@ -255,7 +255,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 '</td></tr></table></li>';
         return (transmissionItem);
     };
-    // show error div
+    // show #clientError div (not the same as #twError div shown by $.fn.showErrorPanel())
     showClientError = function (error) {
         $('#clientError p').html(error);
         $('#clientError').slideDown();
@@ -565,7 +565,7 @@ $(document).ready(function () { // first binding to document ready (while torren
 
         // post the upSpeed and downSpeed totals
         if (!isNaN(downSpeed) && !isNaN(upSpeed)) {
-            $("#rates").html("D: " + Math.formatBytes(downSpeed) + "/s&nbsp;&nbsp;</br>U: " + Math.formatBytes(upSpeed) + "/s"); // was $("li#rates")
+            $("#rates").html("D: " + Math.formatBytes(downSpeed) + "/s&nbsp;&nbsp;</br>U: " + Math.formatBytes(upSpeed) + "/s");
         }
 
         ///// remove torrents in #transmission_list that are not in the transmission-daemon
@@ -777,9 +777,6 @@ $(document).ready(function () { // first binding to document ready (while torren
     var supportsOrientationChange = "onorientationchange" in window,
             orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
     window.addEventListener(orientationEvent, toggleClientButtons, false);
-//    window.onresize = function () {
-//        adjustUIElements();
-//    };
     var waitForDynData = setInterval(function () {
         if ($('#dynamicdata').length) {
             listSelector();
@@ -893,8 +890,11 @@ $(document).ready(function () { // first binding to document ready (while torren
         } else {
             form = $(button).closest("form");
         }
+        //if (button.id.substr(-6) === "Delete") {
         if (button.id === "Delete") {
+            // Delete button is only in the Favorites and Super-Favorites dialogs
             $.get(form.get(0).action, form.buildDataString(button));
+            //TODO handle error message in json response with $.fn.showErrorPanel()
             if (button.href.match(/#superfavorite/)) {
                 var id = button.href.match(/#superfavorite_(\d+)/)[1];
                 $("#superfavorite_" + id).toggleSuperFavorite();
@@ -908,12 +908,101 @@ $(document).ready(function () { // first binding to document ready (while torren
                 $("#fav_" + id).remove();
                 window.dialog = 1;
             }
+            //} else if (button.id.substr(-6) === "Update") {
         } else if (button.id === "Update") {
-            //TODO finish code to "pin open" Feeds panel when Update button is pressed
-            //TODO finish code to "pin open" Favorites panel when Update button (at favorites_info.php:87) is pressed
-            $.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
+            // Update button is only in the Favorites and Super-Favorites dialogs
+            //$.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html'); // returned full html page gets fed into $.loadDynamicData, which rebuilds dynamic data on page using output of main section from torrentwatch-xa.php
+            $.get(form.get(0).action, form.buildDataString(button), function (response) {
+                // handle error message in json response
+                if (response.errorCode !== 0 && response.errorMessage !== "") {
+                    $.fn.showErrorPanel(response.errorMessage);
+                } else {
+                    if (response.type === "superfavorite") {
+                        // response json is used to set the values of a single Super-Favorite in the Super-Favorites dialog
+                        if (response.idx !== null && response.idx.toString() !== "") {
+                            // if response.name changed, change the name in the left pane (no re-sort until page reload)
+                            $("#superfav_" + response.idx + "_anchor").text(response.name);
+                            // does the <form> with id "superfavorite_### exist?"
+                            var superfavoriteiDPrefix = "#superfavorite_" + response.idx;
+                            if ($(superfavoriteiDPrefix)) {
+                                //$(superfavoriteiDPrefix + "_alsosavedir").attr("value", response.alsosavedir);
+                                //$(superfavoriteiDPrefix + "_downloaddir").attr("value", response.downloaddir);
+                                //$(superfavoriteiDPrefix + "_episodes").attr("value", response.episodes);
+                                // remove selected from all _feed options
+                                $(superfavoriteiDPrefix + "_feed option").each(function () {
+                                    $(this).removeAttr("selected");
+                                    //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
+                                });
+                                // set _feed select option to response.feed
+                                $(superfavoriteiDPrefix + "_feed option[value='" + response.feed + "']").attr("selected", "selected").change();
+                                //$(superfavoriteiDPrefix + "_feed option[value='" + response.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
+                                window.input_change = 0; // cancel the change alert dialog set by the change event handler
+                                $(superfavoriteiDPrefix + "_filter").attr("value", response.filter);
+                                $(superfavoriteiDPrefix + "_name").attr("value", response.name);
+                                $(superfavoriteiDPrefix + "_not").attr("value", response.not);
+                                $(superfavoriteiDPrefix + "_quality").attr("value", response.quality);
+                                //$(superfavoriteiDPrefix + "_seedratio").attr("value", response.seedratio);
+                            } else {
+                                $.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + response.idx + "' in Favorites dialog for refresh.");
+                            }
+                        } else {
+                            $.fn.showErrorPanel("No idx for Super-Favorite; update must have failed.");
+                        }
+                    } else {
+                        // response json is used to set the values of a single Favorite in the Favorites dialog
+                        if (response.idx !== null && response.idx.toString() !== "") {
+                            // if response.name changed, change the name in the left pane (no re-sort until page reload)
+                            $("#fav_" + response.idx + "_anchor").text(response.name);
+                            // does the <form> with id "favorite_### exist?"
+                            var favoriteiDPrefix = "#favorite_" + response.idx;
+                            if ($(favoriteiDPrefix)) {
+                                $(favoriteiDPrefix + "_alsosavedir").attr("value", response.alsosavedir);
+                                $(favoriteiDPrefix + "_downloaddir").attr("value", response.downloaddir);
+                                $(favoriteiDPrefix + "_episode").attr("value", response.episode);
+                                $(favoriteiDPrefix + "_episodes").attr("value", response.episodes);
+                                // remove selected from all _feed options
+                                $(favoriteiDPrefix + "_feed option").each(function () {
+                                    $(this).removeAttr("selected");
+                                    //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
+                                });
+                                // set _feed select option to response.feed
+                                $(favoriteiDPrefix + "_feed option[value='" + response.feed + "']").attr("selected", "selected").change();
+                                //$(favoriteiDPrefix + "_feed option[value='" + response.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
+                                window.input_change = 0; // cancel the change alert dialog set by the change event handler
+                                $(favoriteiDPrefix + "_filter").attr("value", response.filter);
+                                $(favoriteiDPrefix + "_name").attr("value", response.name);
+                                $(favoriteiDPrefix + "_not").attr("value", response.not);
+                                $(favoriteiDPrefix + "_quality").attr("value", response.quality);
+                                $(favoriteiDPrefix + "_season").attr("value", response.season);
+                                $(favoriteiDPrefix + "_seedratio").attr("value", response.seedratio);
+                            } else {
+                                $.fn.showErrorPanel("Cannot target Favorite with idx = '" + response.idx + "' in Favorites dialog for refresh.");
+                            }
+                        } else {
+                            $.fn.showErrorPanel("No idx for Favorite; update must have failed.");
+                        }
+                    }
+                }
+            }, 'json');
+            window.dialog = 1;
         } else {
+            //TODO finish code to "pin open" Feeds panel when Save button is pressed
+            // Handle all other buttons including Close, Save
             $.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
+        }
+    };
+    $.fn.showErrorPanel = function (errorMessage) {
+        // check if there is an errorMessage to display
+        var errorMessageString = errorMessage.toString();
+        if (errorMessageString !== "") {
+            var errorID = new Date().getTime();
+            $('#twError').show().append('<p id="error_' + errorID + '">' + errorMessage + '</p>');
+            setTimeout(function () {
+                $('#twError p#error_' + errorID).remove();
+                if (!$('#twError p').length) {
+                    $('#twError').hide();
+                }
+            }, 5000);
         }
     };
     $.fn.toggleDialog = function () {
@@ -1030,9 +1119,9 @@ $(document).ready(function () { // first binding to document ready (while torren
             if (!last) {
                 $(current_superfavorite).show();
             } else {
-                $(last).fadeOut('fast', // was 400
+                $(last).fadeOut('fast',
                         function () {
-                            $(current_superfavorite).fadeIn('fast'); // was 400
+                            $(current_superfavorite).fadeIn('fast');
                             $(current_superfavorite).resetForm();
                         });
             }
@@ -1066,9 +1155,9 @@ $(document).ready(function () { // first binding to document ready (while torren
             if (!last) {
                 $(current_favorite).show();
             } else {
-                $(last).fadeOut('fast', // was 400
+                $(last).fadeOut('fast',
                         function () {
-                            $(current_favorite).fadeIn('fast'); // was 400
+                            $(current_favorite).fadeIn('fast');
                             $(current_favorite).resetForm();
                         });
             }
@@ -1093,25 +1182,20 @@ $(document).ready(function () { // first binding to document ready (while torren
         return escape(str).replace(/\+/g, '%2B').replace(/%20/g, '+').replace(/\*/g, '%2A').replace(/\//g, '%2F').replace(/@/g, '%40');
     };
     $.addFavorite = function (feed, title) {
-        window.favving = 1;
+        window.favving = 1; //TODO may not need window.favving any more after changing addFavoriteFromgET()
         $.get('torrentwatch-xa.php', {
             addFavorite: 1,
             title: title,
             feed: feed
         }, function (response) {
-            if (response.match(/^Error:/)) {
-                var errorID = new Date().getTime();
-                $('#twError').show().append('<p id="error_' + errorID + '">' + response + '</p>');
-                setTimeout(function () {
-                    $('#twError p#error_' + errorID).remove();
-                    if (!$('#twError p').length) {
-                        $('#twError').hide();
-                    }
-                }, 5000);
+            //if (response.match(/^Error:/)) {
+            if (response.errorCode !== 0) {
+                $.fn.showErrorPanel(response.errorMessage);
             } else {
-                response = JSON.parse(response);
+                // find all items that match the name, quality, feed and
                 $.each($("ul#torrentlist li"), function (i, item) {
-                    if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(response.title.toLowerCase()) &&
+                    //if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(response.title.toLowerCase()) &&
+                    if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(response.name.toLowerCase()) &&
                             $('li#' + item.id + ' input.show_quality').val().toLowerCase().match(response.quality.toLowerCase()) &&
                             ($.urlencode($('li#' + item.id + ' input.feed_link').val()).match(response.feed) ||
                                     response.feed === 'All')) {
@@ -1120,7 +1204,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                 });
             }
             window.favving = 0;
-        }, 'html');
+            //}, 'html');
+        }, 'json');
     };
     $.dlTorrent = function (title, link, linkType, feed, id) {
         $.get("torrentwatch-xa.php", {
@@ -1133,7 +1218,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         },
                 function (torHash) {
                     if (torHash.match(/Error:\s\w+/)) {
-                        alert('Something went wrong while adding this torrent. ' + torHash); //TODO use error function
+                        $.fn.showErrorPanel('Something went wrong while adding this torrent. ' + torHash);
                         return;
                     }
                     if (window.client === "folder") {
@@ -1241,8 +1326,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                             }
                             setTimeout(getClientData, 10);
                         } else {
-                            //alert('Request failed'); //TODO use error function
                             // as of 0.5.1, torrentwatch-xa.php's delTorrent returns result string "nothing to delete" here
+                            $.fn.showErrorPanel("No torrent to delete.");
                         }
                     });
         }
@@ -1262,7 +1347,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                         toggleTorResumePause(torHash);
                         setTimeout(getClientData, 10);
                     } else {
-                        alert('Request failed'); //TODO use error function
+                        $.fn.showErrorPanel("Failed to " + stopStart + " torrent.");
                     }
                 });
     };
@@ -1286,14 +1371,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         window.hiding = 1;
         $.get('torrentwatch-xa.php', {hide: title}, function (response) {
             if (response.match(/^twxa-ERROR:/)) {
-                var errorID = new Date().getTime();
-                $('#twError').show().append('<p id="error_' + errorID + '">' + response.match(/^twxa-ERROR:(.*)/)[1] + '</p>');
-                setTimeout(function () {
-                    $('#twError p#error_' + errorID).remove();
-                    if (!$('#twError p').length) {
-                        $('#twError').hide();
-                    }
-                }, 5000);
+                $.fn.showErrorPanel(response.match(/^twxa-ERROR:(.*)/)[1]);
             } else {
                 $.each($('#torrentlist_container li'), function () {
                     if (this.querySelector('input.show_title').value === response) {

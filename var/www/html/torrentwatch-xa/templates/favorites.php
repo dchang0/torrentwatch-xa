@@ -9,7 +9,7 @@
                 <li><a href="#favorite_new">New Favorite</a></li>
                 <?php if (isset($config_values['Favorites'])): ?>
                     <?php foreach ($config_values['Favorites'] as $key => $item): ?>
-                        <?php print("<li id=\"fav_" . $key . "\"><a href=\"#favorite_" . $key . "\">" . $item['Name'] . "</a></li>"); ?>
+                        <?php print("<li id=\"fav_" . $key . "\"><a id=\"fav_" . $key . "_anchor\" href=\"#favorite_" . $key . "\">" . $item['Name'] . "</a></li>"); ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </ul>

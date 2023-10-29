@@ -10,7 +10,7 @@
                 <li><a href="#superfavorite_new">New Super-Favorite</a></li>
                 <?php if (isset($config_values['Super-Favorites'])): ?>
                     <?php foreach ($config_values['Super-Favorites'] as $key => $item): ?>
-                        <?php print("<li id=\"superfav_" . $key . "\"><a href=\"#superfavorite_" . $key . "\">" . $item['Name'] . "</a></li>"); ?>
+                        <?php print("<li id=\"superfav_" . $key . "\"><a id=\"superfav_" . $key . "_anchor\" href=\"#superfavorite_" . $key . "\">" . $item['Name'] . "</a></li>"); ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </ul>

@@ -423,10 +423,8 @@
                     </div>
                 </div>
                 <div class="buttonContainer">
-                    <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
-                </div>
-                <div class="buttonContainer linkButtons">
                     <a class='toggleDialog button close' href='#'>Close</a>
+                    <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
                 </div>
             </form>
             <form action="torrentwatch-xa.php?updateFeed=1" class="feedform">
@@ -479,10 +477,8 @@
                         </div>
                     </div>
                     <div class="buttonContainer">
-                        <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
-                    </div>
-                    <div class="buttonContainer linkButtons">
                         <a class='toggleDialog button close' href='#'>Close</a>
+                        <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
                     </div>
             </form>
         </div>
@@ -512,10 +508,8 @@
                 <input type="text" id="hideSearchText" placeholder="Filter" name="hideSearch"></input>
             </div>
             <div class="buttonContainer">
-                <a class="submitForm button" id="Unhide" href="#">Unhide</a>
-            </div>
-            <div class="buttonContainer linkButtons">
                 <a class='toggleDialog button close' href='#'>Close</a>
+                <a class="submitForm button" id="Unhide" href="#">Unhide</a>
             </div>
         </form>
     </div>
