@@ -1010,7 +1010,16 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $clone.find("#favorite_new_downloaddir").attr("id", "favorite_" + rsp.idx + "_downloaddir").attr("value", rsp.downloaddir);
                                 $clone.find("#favorite_new_alsosavedir").attr("id", "favorite_" + rsp.idx + "_alsosavedir").attr("value", rsp.alsosavedir); // this might not exist if not enabled
                                 $clone.find("#favorite_new_episodes").attr("id", "favorite_" + rsp.idx + "_episodes").attr("value", rsp.episodes);
-                                $clone.find("#favorite_new_feed").attr("id", "favorite_" + rsp.idx + "_feed").attr("value", rsp.feed);
+                                // remove selected from all _feed options
+                                $clone.find("#favorite_new_feed option").each(function () {
+                                    $(this).removeAttr("selected");
+                                    //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
+                                });
+                                // set _feed select option to rsp.feed
+                                $clone.find("#favorite_new_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                //$clone.find("#favorite_new_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
+                                window.input_change = 0; // cancel the change alert dialog set by the change event handler
+                                $clone.find("#favorite_new_feed").attr("id", "favorite_" + rsp.idx + "_feed");
                                 $clone.find("#favorite_new_quality").attr("id", "favorite_" + rsp.idx + "_quality").attr("value", rsp.quality);
                                 $clone.find("#favorite_new_seedratio").attr("id", "favorite_" + rsp.idx + "_seedratio").attr("value", rsp.seedratio);
                                 // insert in the season input raw text using .before, not .insertBefore; sizing is handled by CSS
