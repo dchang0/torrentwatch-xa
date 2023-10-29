@@ -920,11 +920,20 @@ $(document).ready(function () { // first binding to document ready (while torren
                     if (response.type === "superfavorite") {
                         // response json is used to set the values of a single Super-Favorite in the Super-Favorites dialog
                         if (response.idx !== null && response.idx.toString() !== "") {
-                            // if response.name changed, change the name in the left pane (no re-sort until page reload)
-                            $("#superfav_" + response.idx + "_anchor").text(response.name);
+                            // search the left-hand pane for the name
+                            if ($("#superfav_" + response.idx + "_anchor").length) {
+                                // if response.name changed, change the name in the left pane (no re-sort until page reload)
+                                $("#superfav_" + response.idx + "_anchor").text(response.name);
+                            } else {
+                                // add the name to the left-hand pane at the end of the list
+                                if($("#superfavoriteList").length) {
+                                    $("#superfavoriteList").append("<li id=\"superfav_" + response.idx + "\"><a id=\"superfav_" + response.idx + "_anchor\" href=\"#superfavorite_" + response.idx + "\">" + response.name + "</a></li>");
+                                }
+                                //TODO maybe scroll to the newly-added name and highlight it
+                            }
                             // does the <form> with id "superfavorite_### exist?"
                             var superfavoriteiDPrefix = "#superfavorite_" + response.idx;
-                            if ($(superfavoriteiDPrefix)) {
+                            if ($(superfavoriteiDPrefix).length) {
                                 //$(superfavoriteiDPrefix + "_alsosavedir").attr("value", response.alsosavedir);
                                 //$(superfavoriteiDPrefix + "_downloaddir").attr("value", response.downloaddir);
                                 //$(superfavoriteiDPrefix + "_episodes").attr("value", response.episodes);
@@ -943,7 +952,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $(superfavoriteiDPrefix + "_quality").attr("value", response.quality);
                                 //$(superfavoriteiDPrefix + "_seedratio").attr("value", response.seedratio);
                             } else {
-                                $.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + response.idx + "' in Favorites dialog for refresh.");
+                                $.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + response.idx + "' in Super-Favorites dialog for refresh.");
                             }
                         } else {
                             $.fn.showErrorPanel("No idx for Super-Favorite; update must have failed.");
@@ -951,11 +960,20 @@ $(document).ready(function () { // first binding to document ready (while torren
                     } else {
                         // response json is used to set the values of a single Favorite in the Favorites dialog
                         if (response.idx !== null && response.idx.toString() !== "") {
-                            // if response.name changed, change the name in the left pane (no re-sort until page reload)
-                            $("#fav_" + response.idx + "_anchor").text(response.name);
+                            // search the left-hand pane for the name
+                            if ($("#fav_" + response.idx + "_anchor").length) {
+                                // if response.name changed, change the name in the left pane (no re-sort until page reload)
+                                $("#fav_" + response.idx + "_anchor").text(response.name);
+                            } else {
+                                // add the name to the left-hand pane at the end of the list
+                                if($("#favoriteList").length) {
+                                    $("#favoriteList").append("<li id=\"fav_" + response.idx + "\"><a id=\"fav_" + response.idx + "_anchor\" href=\"#favorite_" + response.idx + "\">" + response.name + "</a></li>");
+                                }
+                                //TODO maybe scroll to the newly-added name and highlight it
+                            }
                             // does the <form> with id "favorite_### exist?"
                             var favoriteiDPrefix = "#favorite_" + response.idx;
-                            if ($(favoriteiDPrefix)) {
+                            if ($(favoriteiDPrefix).length) {
                                 $(favoriteiDPrefix + "_alsosavedir").attr("value", response.alsosavedir);
                                 $(favoriteiDPrefix + "_downloaddir").attr("value", response.downloaddir);
                                 $(favoriteiDPrefix + "_episode").attr("value", response.episode);

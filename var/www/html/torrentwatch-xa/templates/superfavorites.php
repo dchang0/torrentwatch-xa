@@ -6,7 +6,7 @@
     </div>
     <div class="dialog_window" id="superfavorites">
         <div class="superfavorite">
-            <ul class="superfavorite">
+            <ul class="superfavorite" id="superfavoriteList">
                 <li><a href="#superfavorite_new">New Super-Favorite</a></li>
                 <?php if (isset($config_values['Super-Favorites'])): ?>
                     <?php foreach ($config_values['Super-Favorites'] as $key => $item): ?>
