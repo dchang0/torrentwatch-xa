@@ -929,6 +929,10 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 if ($("#superfavoriteList").length) {
                                     $("#superfavoriteList").append("<li id=\"superfav_" + rsp.idx + "\"><a id=\"superfav_" + rsp.idx + "_anchor\" href=\"#superfavorite_" + rsp.idx + "\">" + rsp.name + "</a></li>");
                                 }
+                                // bind the .toggleFavorite event to the new name
+                                $("#superfav_" + rsp.idx).on("click", function () {
+                                    $(this).find("a").toggleSuperFavorite();
+                                });
                                 //TODO maybe scroll to the newly-added name and highlight it
                             }
                             // does the <form> with id "superfavorite_### exist?"
@@ -952,7 +956,38 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $(superfavoriteiDPrefix + "_quality").attr("value", rsp.quality);
                                 //$(superfavoriteiDPrefix + "_seedratio").attr("value", rsp.seedratio);
                             } else {
-                                $.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + rsp.idx + "' in Super-Favorites dialog for refresh.");
+                                //$.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + rsp.idx + "' in Super-Favorites dialog for refresh.");
+                                // Super-Favorite is missing a superfavInfo form, clone the new one
+                                var $clone = $("#superfavorite_new").clone(true, true);
+                                // rename and set values of elements in the clone
+                                $clone.attr("id", "superfavorite_" + rsp.idx);
+                                $clone.find("#superfavorite_new_idx").attr("id", "superfavorite_" + rsp.idx + "_idx").attr("value", rsp.idx);
+                                $clone.find("#superfavorite_new_name").attr("id", "superfavorite_" + rsp.idx + "_name").attr("value", rsp.name);
+                                $clone.find("#superfavorite_new_filter").attr("id", "superfavorite_" + rsp.idx + "_filter").attr("value", rsp.filter);
+                                $clone.find("#superfavorite_new_not").attr("id", "superfavorite_" + rsp.idx + "_not").attr("value", rsp.not);
+                                //$clone.find("#superfavorite_new_downloaddir").attr("id", "superfavorite_" + rsp.idx + "_downloaddir").attr("value", rsp.downloaddir);
+                                //$clone.find("#superfavorite_new_alsosavedir").attr("id", "superfavorite_" + rsp.idx + "_alsosavedir").attr("value", rsp.alsosavedir); // this might not exist if not enabled
+                                //$clone.find("#superfavorite_new_episodes").attr("id", "superfavorite_" + rsp.idx + "_episodes").attr("value", rsp.episodes);
+                                // remove selected from all _feed options
+                                $clone.find("#superfavorite_new_feed option").each(function () {
+                                    $(this).removeAttr("selected");
+                                    //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
+                                });
+                                // set _feed select option to rsp.feed
+                                $clone.find("#superfavorite_new_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                //$clone.find("#superfavorite_new_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
+                                window.input_change = 0; // cancel the change alert dialog set by the change event handler
+                                $clone.find("#superfavorite_new_feed").attr("id", "superfavorite_" + rsp.idx + "_feed");
+                                $clone.find("#superfavorite_new_quality").attr("id", "superfavorite_" + rsp.idx + "_quality").attr("value", rsp.quality);
+                                $clone.find("#superfavorite_new_seedratio").attr("id", "superfavorite_" + rsp.idx + "_seedratio").attr("value", rsp.seedratio);
+                                $clone.find("#Delete").attr("href", "#superfavorite_" + rsp.idx);
+                                $clone.find("#Update").attr("href", "#superfavorite_" + rsp.idx);
+                                // hide the clone by removing its style="display: block;"--do not use .hide()
+                                $clone.removeAttr("style");
+                                // insert the clone to the div containing the superfavInfo forms just before last child #superfavClose
+                                $clone.insertBefore("#superfavClose");
+                                // re-init Super-Favorites; doesn't seem to be necessary but it forces user to re-select the newly-added Super-Favorite to edit
+                                $.fn.initSuperFavorites();
                             }
                         } else {
                             $.fn.showErrorPanel("No idx for Super-Favorite; update must have failed.");
