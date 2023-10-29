@@ -281,9 +281,9 @@ $(document).ready(function () { // first binding to document ready (while torren
         }
         // get the state of Disable Hide List
         window.hideProgressBar = true; // prevents recurring progress bar in Configure dialog
-        $.get('torrentwatch-xa.php', {getDisableHideList: 1}, function (response) {
+        $.get('torrentwatch-xa.php', {getDisableHideList: 1}, function (rsp) {
             // do not put this inside toggleClientButtons or updateClientButtons as it will slow down the browser
-            if (response) {
+            if (rsp) {
                 window.disableHideList = true;
             } else {
                 window.disableHideList = false; // need this to avoid undefined
@@ -912,89 +912,120 @@ $(document).ready(function () { // first binding to document ready (while torren
         } else if (button.id === "Update") {
             // Update button is only in the Favorites and Super-Favorites dialogs
             //$.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html'); // returned full html page gets fed into $.loadDynamicData, which rebuilds dynamic data on page using output of main section from torrentwatch-xa.php
-            $.get(form.get(0).action, form.buildDataString(button), function (response) {
-                // handle error message in json response
-                if (response.errorCode !== 0 && response.errorMessage !== "") {
-                    $.fn.showErrorPanel(response.errorMessage);
+            $.get(form.get(0).action, form.buildDataString(button), function (rsp) {
+                // handle error message in json rsp
+                if (rsp.errorCode !== 0 && rsp.errorMessage !== "") {
+                    $.fn.showErrorPanel(rsp.errorMessage);
                 } else {
-                    if (response.type === "superfavorite") {
-                        // response json is used to set the values of a single Super-Favorite in the Super-Favorites dialog
-                        if (response.idx !== null && response.idx.toString() !== "") {
+                    if (rsp.type === "superfavorite") {
+                        // rsp json is used to set the values of a single Super-Favorite in the Super-Favorites dialog
+                        if (rsp.idx !== null && rsp.idx.toString() !== "") {
                             // search the left-hand pane for the name
-                            if ($("#superfav_" + response.idx + "_anchor").length) {
-                                // if response.name changed, change the name in the left pane (no re-sort until page reload)
-                                $("#superfav_" + response.idx + "_anchor").text(response.name);
+                            if ($("#superfav_" + rsp.idx + "_anchor").length) {
+                                // if rsp.name changed, change the name in the left pane (no re-sort until page reload)
+                                $("#superfav_" + rsp.idx + "_anchor").text(rsp.name);
                             } else {
                                 // add the name to the left-hand pane at the end of the list
-                                if($("#superfavoriteList").length) {
-                                    $("#superfavoriteList").append("<li id=\"superfav_" + response.idx + "\"><a id=\"superfav_" + response.idx + "_anchor\" href=\"#superfavorite_" + response.idx + "\">" + response.name + "</a></li>");
+                                if ($("#superfavoriteList").length) {
+                                    $("#superfavoriteList").append("<li id=\"superfav_" + rsp.idx + "\"><a id=\"superfav_" + rsp.idx + "_anchor\" href=\"#superfavorite_" + rsp.idx + "\">" + rsp.name + "</a></li>");
                                 }
                                 //TODO maybe scroll to the newly-added name and highlight it
                             }
                             // does the <form> with id "superfavorite_### exist?"
-                            var superfavoriteiDPrefix = "#superfavorite_" + response.idx;
+                            var superfavoriteiDPrefix = "#superfavorite_" + rsp.idx;
                             if ($(superfavoriteiDPrefix).length) {
-                                //$(superfavoriteiDPrefix + "_alsosavedir").attr("value", response.alsosavedir);
-                                //$(superfavoriteiDPrefix + "_downloaddir").attr("value", response.downloaddir);
-                                //$(superfavoriteiDPrefix + "_episodes").attr("value", response.episodes);
+                                //$(superfavoriteiDPrefix + "_alsosavedir").attr("value", rsp.alsosavedir);
+                                //$(superfavoriteiDPrefix + "_downloaddir").attr("value", rsp.downloaddir);
+                                //$(superfavoriteiDPrefix + "_episodes").attr("value", rsp.episodes);
                                 // remove selected from all _feed options
                                 $(superfavoriteiDPrefix + "_feed option").each(function () {
                                     $(this).removeAttr("selected");
                                     //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
                                 });
-                                // set _feed select option to response.feed
-                                $(superfavoriteiDPrefix + "_feed option[value='" + response.feed + "']").attr("selected", "selected").change();
-                                //$(superfavoriteiDPrefix + "_feed option[value='" + response.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
+                                // set _feed select option to rsp.feed
+                                $(superfavoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                //$(superfavoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
                                 window.input_change = 0; // cancel the change alert dialog set by the change event handler
-                                $(superfavoriteiDPrefix + "_filter").attr("value", response.filter);
-                                $(superfavoriteiDPrefix + "_name").attr("value", response.name);
-                                $(superfavoriteiDPrefix + "_not").attr("value", response.not);
-                                $(superfavoriteiDPrefix + "_quality").attr("value", response.quality);
-                                //$(superfavoriteiDPrefix + "_seedratio").attr("value", response.seedratio);
+                                $(superfavoriteiDPrefix + "_filter").attr("value", rsp.filter);
+                                $(superfavoriteiDPrefix + "_name").attr("value", rsp.name);
+                                $(superfavoriteiDPrefix + "_not").attr("value", rsp.not);
+                                $(superfavoriteiDPrefix + "_quality").attr("value", rsp.quality);
+                                //$(superfavoriteiDPrefix + "_seedratio").attr("value", rsp.seedratio);
                             } else {
-                                $.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + response.idx + "' in Super-Favorites dialog for refresh.");
+                                $.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + rsp.idx + "' in Super-Favorites dialog for refresh.");
                             }
                         } else {
                             $.fn.showErrorPanel("No idx for Super-Favorite; update must have failed.");
                         }
                     } else {
-                        // response json is used to set the values of a single Favorite in the Favorites dialog
-                        if (response.idx !== null && response.idx.toString() !== "") {
+                        // rsp json is used to set the values of a single Favorite in the Favorites dialog
+                        if (rsp.idx !== null && rsp.idx.toString() !== "") {
                             // search the left-hand pane for the name
-                            if ($("#fav_" + response.idx + "_anchor").length) {
-                                // if response.name changed, change the name in the left pane (no re-sort until page reload)
-                                $("#fav_" + response.idx + "_anchor").text(response.name);
+                            if ($("#fav_" + rsp.idx + "_anchor").length) {
+                                // if rsp.name changed, change the name in the left pane (no re-sort until page reload)
+                                $("#fav_" + rsp.idx + "_anchor").text(rsp.name);
                             } else {
                                 // add the name to the left-hand pane at the end of the list
-                                if($("#favoriteList").length) {
-                                    $("#favoriteList").append("<li id=\"fav_" + response.idx + "\"><a id=\"fav_" + response.idx + "_anchor\" href=\"#favorite_" + response.idx + "\">" + response.name + "</a></li>");
+                                if ($("#favoriteList").length) {
+                                    $("#favoriteList").append("<li id=\"fav_" + rsp.idx + "\"><a id=\"fav_" + rsp.idx + "_anchor\" href=\"#favorite_" + rsp.idx + "\">" + rsp.name + "</a></li>");
+                                    // bind the .toggleFavorite event to the new name
+                                    $("#fav_" + rsp.idx).on("click", function () {
+                                        $(this).find("a").toggleFavorite();
+                                    });
                                 }
                                 //TODO maybe scroll to the newly-added name and highlight it
                             }
                             // does the <form> with id "favorite_### exist?"
-                            var favoriteiDPrefix = "#favorite_" + response.idx;
+                            var favoriteiDPrefix = "#favorite_" + rsp.idx;
                             if ($(favoriteiDPrefix).length) {
-                                $(favoriteiDPrefix + "_alsosavedir").attr("value", response.alsosavedir);
-                                $(favoriteiDPrefix + "_downloaddir").attr("value", response.downloaddir);
-                                $(favoriteiDPrefix + "_episode").attr("value", response.episode);
-                                $(favoriteiDPrefix + "_episodes").attr("value", response.episodes);
+                                $(favoriteiDPrefix + "_alsosavedir").attr("value", rsp.alsosavedir);
+                                $(favoriteiDPrefix + "_downloaddir").attr("value", rsp.downloaddir);
+                                $(favoriteiDPrefix + "_episode").attr("value", rsp.episode);
+                                $(favoriteiDPrefix + "_episodes").attr("value", rsp.episodes);
                                 // remove selected from all _feed options
                                 $(favoriteiDPrefix + "_feed option").each(function () {
                                     $(this).removeAttr("selected");
                                     //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
                                 });
-                                // set _feed select option to response.feed
-                                $(favoriteiDPrefix + "_feed option[value='" + response.feed + "']").attr("selected", "selected").change();
-                                //$(favoriteiDPrefix + "_feed option[value='" + response.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
+                                // set _feed select option to rsp.feed
+                                $(favoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                //$(favoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
                                 window.input_change = 0; // cancel the change alert dialog set by the change event handler
-                                $(favoriteiDPrefix + "_filter").attr("value", response.filter);
-                                $(favoriteiDPrefix + "_name").attr("value", response.name);
-                                $(favoriteiDPrefix + "_not").attr("value", response.not);
-                                $(favoriteiDPrefix + "_quality").attr("value", response.quality);
-                                $(favoriteiDPrefix + "_season").attr("value", response.season);
-                                $(favoriteiDPrefix + "_seedratio").attr("value", response.seedratio);
+                                $(favoriteiDPrefix + "_filter").attr("value", rsp.filter);
+                                $(favoriteiDPrefix + "_name").attr("value", rsp.name);
+                                $(favoriteiDPrefix + "_not").attr("value", rsp.not);
+                                $(favoriteiDPrefix + "_quality").attr("value", rsp.quality);
+                                $(favoriteiDPrefix + "_season").attr("value", rsp.season);
+                                $(favoriteiDPrefix + "_seedratio").attr("value", rsp.seedratio);
                             } else {
-                                $.fn.showErrorPanel("Cannot target Favorite with idx = '" + response.idx + "' in Favorites dialog for refresh.");
+                                //$.fn.showErrorPanel("Cannot target Favorite with idx = '" + rsp.idx + "' in Favorites dialog for refresh.");
+                                // Favorite is missing a favInfo form, clone the new one
+                                var $clone = $("#favorite_new").clone(true, true);
+                                // rename and set values of elements in the clone
+                                $clone.attr("id", "favorite_" + rsp.idx);
+                                $clone.find("#favorite_new_idx").attr("id", "favorite_" + rsp.idx + "_idx").attr("value", rsp.idx);
+                                $clone.find("#favorite_new_name").attr("id", "favorite_" + rsp.idx + "_name").attr("value", rsp.name);
+                                $clone.find("#favorite_new_filter").attr("id", "favorite_" + rsp.idx + "_filter").attr("value", rsp.filter);
+                                $clone.find("#favorite_new_not").attr("id", "favorite_" + rsp.idx + "_not").attr("value", rsp.not);
+                                $clone.find("#favorite_new_downloaddir").attr("id", "favorite_" + rsp.idx + "_downloaddir").attr("value", rsp.downloaddir);
+                                $clone.find("#favorite_new_alsosavedir").attr("id", "favorite_" + rsp.idx + "_alsosavedir").attr("value", rsp.alsosavedir); // this might not exist if not enabled
+                                $clone.find("#favorite_new_episodes").attr("id", "favorite_" + rsp.idx + "_episodes").attr("value", rsp.episodes);
+                                $clone.find("#favorite_new_feed").attr("id", "favorite_" + rsp.idx + "_feed").attr("value", rsp.feed);
+                                $clone.find("#favorite_new_quality").attr("id", "favorite_" + rsp.idx + "_quality").attr("value", rsp.quality);
+                                $clone.find("#favorite_new_seedratio").attr("id", "favorite_" + rsp.idx + "_seedratio").attr("value", rsp.seedratio);
+                                // insert in the season input raw text using .before, not .insertBefore; sizing is handled by CSS
+                                if (rsp.season !== 0) { //TODO also needs to handle episode with length > 8 chars
+                                    $clone.find("#favorite_new_episode").before("<input class='lastSeason text' type=\"text\" name=\"season\" id=\"favorite_" + rsp.idx + "_season\" value=\"" + rsp.season + "\"> <label class=\"lastEpisode item\">x</label> ");
+                                }
+                                $clone.find("#favorite_new_episode").attr("id", "favorite_" + rsp.idx + "_episode").attr("value", rsp.episode);
+                                $clone.find("#Delete").attr("href", "#favorite_" + rsp.idx);
+                                $clone.find("#Update").attr("href", "#favorite_" + rsp.idx);
+                                // hide the clone by removing its style="display: block;"--do not use .hide()
+                                $clone.removeAttr("style");
+                                // insert the clone to the div containing the favInfo forms just before last child #favClose
+                                $clone.insertBefore("#favClose");
+                                // re-init Favorites; doesn't seem to be necessary but it forces user to re-select the newly-added Favorite to edit
+                                $.fn.initFavorites();
                             }
                         } else {
                             $.fn.showErrorPanel("No idx for Favorite; update must have failed.");
@@ -1205,18 +1236,18 @@ $(document).ready(function () { // first binding to document ready (while torren
             addFavorite: 1,
             title: title,
             feed: feed
-        }, function (response) {
-            //if (response.match(/^Error:/)) {
-            if (response.errorCode !== 0) {
-                $.fn.showErrorPanel(response.errorMessage);
+        }, function (rsp) {
+            //if (rsp.match(/^Error:/)) {
+            if (rsp.errorCode !== 0) {
+                $.fn.showErrorPanel(rsp.errorMessage);
             } else {
                 // find all items that match the name, quality, feed and
                 $.each($("ul#torrentlist li"), function (i, item) {
-                    //if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(response.title.toLowerCase()) &&
-                    if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(response.name.toLowerCase()) &&
-                            $('li#' + item.id + ' input.show_quality').val().toLowerCase().match(response.quality.toLowerCase()) &&
-                            ($.urlencode($('li#' + item.id + ' input.feed_link').val()).match(response.feed) ||
-                                    response.feed === 'All')) {
+                    //if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(rsp.title.toLowerCase()) &&
+                    if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(rsp.name.toLowerCase()) &&
+                            $('li#' + item.id + ' input.show_quality').val().toLowerCase().match(rsp.quality.toLowerCase()) &&
+                            ($.urlencode($('li#' + item.id + ' input.feed_link').val()).match(rsp.feed) ||
+                                    rsp.feed === 'All')) {
                         $('li#' + item.id).removeClass('st_notAMatch').addClass('st_favReady');
                     }
                 });
@@ -1387,12 +1418,12 @@ $(document).ready(function () { // first binding to document ready (while torren
     };
     $.hideItem = function (title, id) {
         window.hiding = 1;
-        $.get('torrentwatch-xa.php', {hide: title}, function (response) {
-            if (response.match(/^twxa-ERROR:/)) {
-                $.fn.showErrorPanel(response.match(/^twxa-ERROR:(.*)/)[1]);
+        $.get('torrentwatch-xa.php', {hide: title}, function (rsp) {
+            if (rsp.match(/^twxa-ERROR:/)) {
+                $.fn.showErrorPanel(rsp.match(/^twxa-ERROR:(.*)/)[1]);
             } else {
                 $.each($('#torrentlist_container li'), function () {
-                    if (this.querySelector('input.show_title').value === response) {
+                    if (this.querySelector('input.show_title').value === rsp) {
                         $(this).removeClass('selected').remove();
                     }
                 });

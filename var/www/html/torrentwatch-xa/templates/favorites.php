@@ -14,7 +14,7 @@
                 <?php endif; ?>
             </ul>
         </div>
-        <div class=favinfo>
+        <div class="favinfo" id="favInfo">
             <?php
             display_favorites_info(
                     [
