@@ -220,9 +220,13 @@ For the following example, under Configure > Favorites, Matching Style is set to
 Under Super-Favorites, with a Super-Favorite set like so:
 
 Name: Erai-raws
+
 Filter: Erai-raws
+
 Not: Bleach
+
 Feed: All
+
 Quality: 480p
 
 when this item is encountered in the feed:
@@ -232,13 +236,21 @@ Erai-raws Ayakashi Triangle - 12 480p Multiple Subtitle ENG POR-BR SPA-LA SPA FR
 the Super-Favorite will create this Favorite:
 
 Name: Erai-raws Ayakashi Triangle (matched by the Super-Favorite's Filter and Not fields)
+
 Filter: Erai-raws Ayakashi Triangle (always the same as tne Name above)
+
 Not: (always blank)
+
 Download Dir: (always blank)
+
 Episodes: (always blank)
+
 Feed: All (carried over from the Super-Favorite)
+
 Quality: 480p (carried over from the Super-Favorite)
+
 Seed Ratio: (always blank)
+
 Last Download: (always blank)
 
 Due to the Not field being set to:
