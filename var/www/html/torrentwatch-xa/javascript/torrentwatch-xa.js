@@ -1420,7 +1420,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                             setTimeout(getClientData, 10);
                         } else {
                             // as of 0.5.1, torrentwatch-xa.php's delTorrent returns result string "nothing to delete" here
-                            $.fn.showErrorPanel("No torrent to delete.");
+                            //$.fn.showErrorPanel("No torrent to delete.");
                         }
                     });
         }
