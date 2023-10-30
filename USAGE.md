@@ -209,6 +209,12 @@ Note that for a single Favorite offered in multiple resolutions, with the above 
 
 ### Super-Favorites
 
+A Super-Favorite is a type of favorite that creates a Favorite from the item title when it matches a feed item.
+
+I created the Super-Favorite because I wanted some way to add Favorites for all the shows from a specific fansubbing crew at the start of an anime season--right before the season starts so as to capture the first episodes of all the crew's series.
+
+When enabled, every item in the feed is matched against all the configured Super-Favorites, and if any item matches a Super-Favorite, the item's title is turned into a new Favorite's Name and Filter fields with the same Feed and Quality from the matched Super-Favorite. (All other fields of the Favorite will be blank.)
+
 For the following example, under Configure > Favorites, Matching Style is set to RegExp and Enable Super-Favorites is checked.
 
 Under Super-Favorites, with a Super-Favorite set like so:
@@ -244,6 +250,10 @@ This show will not be turned into a Favorite:
 Erai-raws Bleach - Sennen Kessen Hen - Ketsubetsu Tan - 01 480p Multiple Subtitle
 
 Note that the Not field of the Favorite is not carried over from the Super-Favorite because the Super-Favorite's Not is used in conjunction with the Super-Favorite's Filter to produce the Favorite's Name (and thus its Filter) in full.
+
+After a few weeks, the Super-Favorite will have Favorited every item that matched during that time, the Favorites it created will be downloading the specific items as they should, and Super-Favorites can be globally-disabled to improve performance. Then, when the next season rolls around, you can globally-enable Super-Favorites again, maybe make slight modifications to individual Super-Favorites carried over from the prior season, and create the new season's set of Favorites.
+
+Obviously, Super-Favorites can create a lot of unwanted Favorites if the Filter and Not fields are poorly designed. Deleting erroneous Favorites is slow since they can only be deleted one by one, so Super-Favorites are disabled by default. New users should not enable them until after learning how the pattern matching style of their choice works.
 
 Keep in mind that while a Super-Favorite is active, it doesn't make sense to delete any Favorites created by it while the episodic item is still ongoing. It will simply be re-added back the next time an episode of that item shows up in the feed. So, if you wish to stop a Favorite that was created by a Super-Favorite, change its Feed to None so that it will never match anything. As long as it exists with the same Name, the Super-Favorite can't re-add it. You can delete the Favorite after the season is done.
 
