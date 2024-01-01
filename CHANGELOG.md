@@ -898,9 +898,13 @@ Code Changes
 - renamed arrow.png to arrow-down.png
 - removed ie.css
 
-Next Version
+1.9.1
 
 Feature Changes
+
+- added Super-Favorites Episodes filter
+
+Next Version
 
 IN PROGRESS
 
@@ -908,7 +912,6 @@ IN PROGRESS
 - maybe merge PHP-side's #errorDialog div into #twError div
 
 - Add Favorite and Hide Item in client buttons bar don't go away if the item is already in favorites or already hidden, respectively
-- maybe hide Super-Favorites button if Super-Favorites are disabled
 - if Transmission list is empty and cookie is older than 1 hour, switch to the All filter
 - fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
 - fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)

@@ -940,7 +940,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                             if ($(superfavoriteiDPrefix).length) {
                                 //$(superfavoriteiDPrefix + "_alsosavedir").attr("value", rsp.alsosavedir);
                                 //$(superfavoriteiDPrefix + "_downloaddir").attr("value", rsp.downloaddir);
-                                //$(superfavoriteiDPrefix + "_episodes").attr("value", rsp.episodes);
+                                $(superfavoriteiDPrefix + "_episodes").attr("value", rsp.episodes);
                                 // remove selected from all _feed options
                                 $(superfavoriteiDPrefix + "_feed option").each(function () {
                                     $(this).removeAttr("selected");
@@ -967,7 +967,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $clone.find("#superfavorite_new_not").attr("id", "superfavorite_" + rsp.idx + "_not").attr("value", rsp.not);
                                 //$clone.find("#superfavorite_new_downloaddir").attr("id", "superfavorite_" + rsp.idx + "_downloaddir").attr("value", rsp.downloaddir);
                                 //$clone.find("#superfavorite_new_alsosavedir").attr("id", "superfavorite_" + rsp.idx + "_alsosavedir").attr("value", rsp.alsosavedir); // this might not exist if not enabled
-                                //$clone.find("#superfavorite_new_episodes").attr("id", "superfavorite_" + rsp.idx + "_episodes").attr("value", rsp.episodes);
+                                $clone.find("#superfavorite_new_episodes").attr("id", "superfavorite_" + rsp.idx + "_episodes").attr("value", rsp.episodes);
                                 // remove selected from all _feed options
                                 $clone.find("#superfavorite_new_feed option").each(function () {
                                     $(this).removeAttr("selected");

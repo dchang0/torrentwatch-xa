@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.9.0";
+$twxa_version[0] = "1.9.1";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 // parses commands sent from web UI (usually torrentwatch-xa.js)
@@ -54,24 +54,12 @@ function parse_options($twxa_version) {
         case 'moveTo':
             echo moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash']);
             exit;
-//        case 'updateSuperFavorite':
-//            $response = updateSuperFavoriteFromgET();
-//            if (strpos($response, 'Error:') === 0) {
-//                echo "<div id=\"superfav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
-//            }
-//            break;
         case 'updateSuperFavorite':
             $response = updateSuperFavoriteFromgET();
             if(isset($response)) {
                 echo "$response";
             }
             exit;
-//        case 'updateFavorite':
-//            $response = updateFavoriteFromgET();
-//            if (strpos($response, 'Error:') === 0) {
-//                echo "<div id=\"fav_error\" class=\"dialog_window\" style=\"display: block\">$response</div>";
-//            }
-//            break;
         case 'updateFavorite':
             $response = updateFavoriteFromgET();
             if(isset($response)) {

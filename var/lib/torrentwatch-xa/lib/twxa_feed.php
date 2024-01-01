@@ -517,12 +517,14 @@ function checkItemMatchesSuperFavorite($superfav, $item, $feedUrl, $matchStyle =
     $ti = strtolower($item['title']);
     if (checkItemTitleMatchesSuperFavorite($superfav, $ti, $feedUrl, $matchStyle)) {
         $guessItem = detectMatch($ti);
-        if ($reqEpisInfo == 1) {
-            if ($guessItem['numberSequence'] > 0) {
-                // match
-                $itemMatchesSuperFave = true;
-            }
-        } else {
+        writeToLog("reqEpisodeInfo = $reqEpisInfo\n", 2);
+        if (
+                $reqEpisInfo != 1 ||
+                (
+                $guessItem['numberSequence'] > 0 &&
+                episode_filter($guessItem, $superfav['Episodes']) == true
+                )
+        ) {
             // match
             $itemMatchesSuperFave = true;
         }
@@ -717,7 +719,8 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                                         $config_values['Super-Favorites'][$superfavKey],
                                         $item,
                                         $feed['URL'],
-                                        $matchStyle
+                                        $matchStyle,
+                                        $reqEpisInfo
                                 )
                         ) {
                             // item matches a Super-Favorite, create a Favorite from it

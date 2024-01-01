@@ -46,15 +46,15 @@ if (isset($style)) {
             <div class="right">
                 <input type="text" class="text" name="alsosavedir" id="superfavorite_<?php //echo $key; ?>_alsosavedir" value="<?php //echo $item['Also Save Dir'];  ?>">
             </div>
-        </div><?php //}  ?>
-    <!--<div class="superfavorite_episodes">
+        </div><?php //}  ?>-->
+    <div class="superfavorite_episodes">
         <div class="left">
-            <label class="item" title="Episode filter. ex.: 1x1-3x24 for Season 1 Episode 1 to Season 3 Episode 24. To just set a starting point use: 2x10. You may use s01e12 instead of 1x12." >Episodes:</label>
+            <label class="item" title="Episode filter. ex.: 1x1-3x24 for Season 1 Episode 1 to Season 3 Episode 24. To just set one episode use: 2x10. You may use s01e12 instead of 1x12." >Episodes:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="episodes" id="superfavorite_<?php //echo $key; ?>_episodes" title="Episodes filter. Please read the instructions on how to use this feature." value="<?php //echo $item['Episodes']  ?>">
+            <input type="text" class="text" name="episodes" id="superfavorite_<?php echo $key; ?>_episodes" title="Episodes filter. Please read the instructions on how to use this feature." value="<?php echo $item['Episodes']  ?>">
         </div>
-    </div>-->
+    </div>
     <div class="superfavorite_feed">
         <div class="left">
             <label class="item" title="Feed to match against">Feed:</label>

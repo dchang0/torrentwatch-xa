@@ -64,13 +64,13 @@ For items not recognized as having an episodic numbering, Glummy ("_ ) is displa
 
 Internally, the new Favorite matching engine uses direct comparisons of the separate season and episode as discrete numeric values and does not deal with this notation at all.
 
-Later, when the Favorite Episodes filter functionality is implemented, it will also use this notation (except for Glummy, who is for display only).
+Later, when the new Episodes filter functionality is implemented, it will also use this notation (except for Glummy, who is for display only).
 
 The ideal notation for videos is actually SxVxEv# (Season x Volume x Episode version #); if downloading anime BluRay Disc sets becomes super-popular, I may implement this notation style throughout torrentwatch-xa in a future version.
 
 ### Current Episodes Filter Notation
 
-The Episodes filter currently in each Favorite is still the old TorrentWatch-X filter. The notation style is the old style, like so:
+The Episodes filter currently in use still uses the old TorrentWatch-X notation style, like so:
 
 - SxE = single episode
 - SxEp = single episode, PROPER or Repack
@@ -225,6 +225,8 @@ Filter: Erai-raws
 
 Not: Bleach
 
+Episodes:
+
 Feed: All
 
 Quality: 480p
@@ -267,9 +269,19 @@ After a few weeks, the Super-Favorite will have Favorited every item that matche
 
 Obviously, Super-Favorites can create a lot of unwanted Favorites if the Filter and Not fields are poorly designed. Deleting erroneous Favorites is slow since they can only be deleted one by one, so Super-Favorites are disabled by default. New users should not enable them until after learning how the pattern matching style of their choice works.
 
-Keep in mind that while a Super-Favorite is active, it doesn't make sense to delete any Favorites created by it while the episodic item is still ongoing. It will simply be re-added back the next time an episode of that item shows up in the feed. So, if you wish to stop a Favorite that was created by a Super-Favorite, change its Feed to None so that it will never match anything. As long as it exists with the same Name, the Super-Favorite can't re-add it. You can delete the Favorite after the season is done.
+Keep in mind that while a Super-Favorite is active, it doesn't make sense to delete any Favorites created by it while the episodic item is still ongoing. The Favorite will simply be re-added back the next time an episode of that item matches the Super-Favorite. To address this, as of 1.9.1, each Super-Favorite now has an Episode filter.
 
-Using the same trick to disable an individual Favorite, you can also disable an individual Super-Favorite by setting its Feed to None. That will cause it to never match any item, thus preventing it from creating any Favorites.
+Here is a common problem: as the current season ends and transitions into the next, the later episodes of shows that had a late start in the current season overlap with the early episodes of the shows starting early in the next season. Without an Episode filter, if you enable the Super-Favorite, it will end up re-adding Favorites for the outgoing shows that you may have deleted, but you want to capture the new incoming shows as soon as the first episodes are released.
+
+To solve this, set the Episode filter to
+
+1x1,2x1,3x1,4x1
+
+causing the Super-Favorite to only create a Favorite if it matches the first episode in any season from 1 through 4, ignoring the later episodes of the shows of the outgoing season. With this, you can keep Super-Favorites turned on all the time and also delete Favorites for shows that were created by the Super-Favorites without having them be re-added by later episodes.
+
+### Disable a Super-Favorite or Favorite
+
+You can disable an individual Super-Favorite or Favorite by setting its Feed to None.
 
 ### Authentication for Private RSS Feeds
 

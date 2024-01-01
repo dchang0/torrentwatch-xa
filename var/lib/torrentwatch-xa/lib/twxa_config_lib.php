@@ -449,7 +449,6 @@ function updateSuperFavoriteFromgET() {
         case 'Add':
         case 'Update':
             $response = addSuperFavoriteFromgET();
-            //writejSONConfigFile();
             break;
         case 'Delete':
             $response = deleteSuperFavoriteFromgET();
@@ -467,7 +466,6 @@ function updateFavoriteFromgET() {
         case 'Add':
         case 'Update':
             $response = addFavoriteFromgET();
-            //writejSONConfigFile();
             break;
         case 'Delete':
             $response = deleteFavoriteFromgET();
@@ -559,7 +557,7 @@ function addSuperFavoriteFromgET() {
         "not" => "Not",
         //"downloaddir" => "Download Dir",
         //"alsosavedir" => "Also Save Dir",
-        //"episodes" => "Episodes",
+        "episodes" => "Episodes",
         "feed" => "Feed",
         "quality" => "Quality",
         //"seedratio" => "seedRatio"

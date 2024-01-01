@@ -24,7 +24,7 @@
                         'Not' => '',
                         //'Download Dir' => '',
                         //'Also Save Dir' => '',
-                        //'Episodes' => '',
+                        'Episodes' => '',
                         'Feed' => '',
                         'Quality' => '',
                     //'seedRatio' => ''

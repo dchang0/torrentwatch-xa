@@ -23,15 +23,34 @@ Common setups:
 Status
 ===============
 
-I've posted 1.9.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.9.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-The Favorites and Super-Favorites dialogs now stay pinned open until closed, making it easier to do multiple Updates. This is a necessary change now that Super-Favorites can rapidly create dozens of Favorites that have to be edited/disabled. It was surprisingly difficult to add this feature due in part to a quirk in JQuery, probably explaining why the authors of TorrentWatch-X chose to simply force a reload of the page after every Update.
+Super-Favorites now have an Episode filter that can be used to restrict the creation of Favorites to just the first episodes of the coming season.
 
-Error messages on the Javascript side have been partially-consolidated towards the final goal of having just one error message div targeted by just one Javascript function and just one PHP function.
+For instance, let's say you want to capture all the shows fansubbed by Subsplease, and you know that you will be watching the first episodes and deleting about half of the Favorites before the second episodes come out. You don't want the Super-Favorite to re-add the deleted Favorites when it sees the second episodes. So, the Super-Favorite would be set up like this:
 
-I will probably consolidate the error message handling in 1.9.1 and stop adding features for a while, focusing on bugfixing the major 1.8.0 and 1.9.0 changes.
+Name: Subsplease
 
-It's my hope that I can then rewrite the PHP core of torrentwatch-xa to use OOP, specifically encapsulating its basic concepts (such as a Favorite or Feed Item) in object classes. Creating a Client class would allow others to inherit and write other Client classes so that other BitTorrent clients than Transmission can be hooked into torrentwatch-xa. This huge a change will  catapult torrentwatch-xa into major version 2.0.0.
+Filter: Subsplease
+
+Not:
+
+Episodes: 1x1,2x1,3x1,4x1
+
+Feed: All
+
+Quality: 480p
+
+This Super-Favorite will create a Favorite whenever it sees a Subsplease show that only has episode 1x1, 2x1, 3x1, or 4x1. This will capture the first episode of any season from 1 to 4 in 480p from any feed. 
+
+Now, there is a problem with shows that don't use season numbers and just continue sequentially where the last season left off. For example, let's say Edens Zero is going to start the next season at episode 51. You could change the Episodes filter to:
+
+1x1,2x1,3x1,4x1,1x51
+
+and it would also match Edens Zero episode 51 but not 52 and later. Having to plan ahead for Edens Zero's sequential numbering misses the point of Super-Favorites, though (it's easier to simply add a Favorite for Edens Zero like normal), so I'm trying to come up with a novel way to address this issue.
+
+Still, the Episodes filter is extremely useful, so I am releasing it now on its own in 1.9.1.
+
 
 Please report any bugs using Github Issues.
 
