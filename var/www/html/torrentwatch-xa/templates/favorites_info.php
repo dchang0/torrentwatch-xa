@@ -93,9 +93,7 @@ if (isset($style)) {
             }
             ?>>Last Download:</label>
                    <?php if (isset($item['Episode']) && $item['Season'] !== 0 && !preg_match('/^(\d{8})$/', $item['Episode'])) { ?>
-                <input class='lastSeason text' type="text" name="season" id="favorite_<?php echo $key; ?>_season" value="<?php echo $item['Season']; ?>">
-                <label class="lastEpisode item">x</label>
-                <input class='lastEpisode text' type="text" name="episode" id="favorite_<?php echo $key; ?>_episode" value="<?php echo $item['Episode']; ?>">
+                <input class='lastSeason text' type="text" name="season" id="favorite_<?php echo $key; ?>_season" value="<?php echo $item['Season']; ?>">&hairsp;<label class="lastEpisode item">x</label>&hairsp;<input class='lastEpisode text' type="text" name="episode" id="favorite_<?php echo $key; ?>_episode" value="<?php echo $item['Episode']; ?>">
             <?php } else { ?>
                 <input class='lastEpisode text' type="text" name="episode" id="favorite_<?php echo $key; ?>_episode" value="<?php
                 if (isset($item['Episode'])) {
