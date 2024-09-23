@@ -90,122 +90,128 @@ function matchTitle3_($ti, $seps, $wereQualitiesDetected = false) {
                 break;
             }
         case true :
-            // explicit S## E### - ### or S## ( E### - ### )
+            // 1st|2nd|3rd Season ## - ##
             $result = matchTitle3_2($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S##E## - E## range
+            // explicit S## E### - ### or S## ( E### - ### )
             $result = matchTitle3_3($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S# - ####.#
+            // isolated S##E## - E## range
             $result = matchTitle3_4($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // S# - ### - ###
+            // isolated S# - ####.#
             $result = matchTitle3_5($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Japanese YYYY MM DD Print Media
+            // S# - ### - ###
             $result = matchTitle3_6($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // explicit S##E###.#
+            // Japanese YYYY MM DD Print Media
             $result = matchTitle3_7($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // YYYY.SSxEE
+            // explicit S##E###.#
             $result = matchTitle3_8($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ## Episode ###.# but not ##E##.#
+            // YYYY.SSxEE
             $result = matchTitle3_9($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Episode ##.# - ##
+            // ## Episode ###.# but not ##E##.#
             $result = matchTitle3_10($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Episode ## - ##.#
+            // Episode ##.# - ##
             $result = matchTitle3_11($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ### to ###.# episodes
+            // Episode ## - ##.#
             $result = matchTitle3_12($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ###.# to ### episodes
+            // ### to ###.# episodes
             $result = matchTitle3_13($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // (YYYY) EE - EE (must precede (YYYY) - EE (EEE))
+            // ###.# to ### episodes
             $result = matchTitle3_14($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // (YYYY) - EE (EEE) (must precede (YYYY) - EE)
+            // (YYYY) EE - EE (must precede (YYYY) - EE (EEE))
             $result = matchTitle3_15($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S## ##v# (Season ## Episode ## Version #) (must precede isolated SS ##v#)
+            // (YYYY) - EE (EEE) (must precede (YYYY) - EE)
             $result = matchTitle3_16($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated SS ##v# (Season ## Episode ## Version #)
+            // isolated S## ##v# (Season ## Episode ## Version #) (must precede isolated SS ##v#)
             $result = matchTitle3_17($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### (EE - EE)
+            // isolated SS ##v# (Season ## Episode ## Version #)
             $result = matchTitle3_18($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### Ep EE - EE
+            // #### (EE - EE)
             $result = matchTitle3_19($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### EE - EE
+            // #### Ep EE - EE
             $result = matchTitle3_20($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated E1 E2 E3
+            // #### EE - EE
             $result = matchTitle3_21($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // isolated E1 E2 E3
+            $result = matchTitle3_22($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
