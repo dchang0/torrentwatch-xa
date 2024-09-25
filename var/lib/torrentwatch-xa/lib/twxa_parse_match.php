@@ -84,134 +84,158 @@ function matchTitle3_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly three numbers found
     switch (true) {
         case true :
-            // isolated YYYY MM DD or MM DD YYYY
+            // YYYY EE - EE
             $result = matchTitle3_1($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // 1st|2nd|3rd Season ## - ##
+            // isolated YYYY MM DD or MM DD YYYY
             $result = matchTitle3_2($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // explicit S## E### - ### or S## ( E### - ### )
+            // 1st|2nd|3rd Season ## - ##
             $result = matchTitle3_3($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S##E## - E## range
+            // explicit S## E### - ### or S## ( E### - ### )
             $result = matchTitle3_4($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S# - ####.#
+            // isolated S##E## - E## range
             $result = matchTitle3_5($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // S# - ### - ###
+            // isolated S# - ####.#
             $result = matchTitle3_6($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Japanese YYYY MM DD Print Media
+            // S# - ### - ###
             $result = matchTitle3_7($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // explicit S##E###.#
+            // Japanese YYYY MM DD Print Media
             $result = matchTitle3_8($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // YYYY.SSxEE
+            // explicit S##E###.#
             $result = matchTitle3_9($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ## Episode ###.# but not ##E##.#
+            // YYYY.SSxEE
             $result = matchTitle3_10($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Episode ##.# - ##
+            // ## Episode ###.# but not ##E##.#
             $result = matchTitle3_11($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Episode ## - ##.#
+            // Episode ##.# - ##
             $result = matchTitle3_12($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ### to ###.# episodes
+            // Episode ## - ##.#
             $result = matchTitle3_13($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ###.# to ### episodes
+            // ### to ###.# episodes
             $result = matchTitle3_14($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // (YYYY) EE - EE (must precede (YYYY) - EE (EEE))
+            // ###.# to ### episodes
             $result = matchTitle3_15($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // (YYYY) - EE (EEE) (must precede (YYYY) - EE)
+            // (YYYY) EE - EE (must precede (YYYY) - EE (EEE))
             $result = matchTitle3_16($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S## ##v# (Season ## Episode ## Version #) (must precede isolated SS ##v#)
+            // (YYYY) - EE (EEE) (must precede (YYYY) - EE)
             $result = matchTitle3_17($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated SS ##v# (Season ## Episode ## Version #)
+            // isolated S## ##v# (Season ## Episode ## Version #) (must precede isolated SS ##v#)
             $result = matchTitle3_18($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### (EE - EE)
+            // isolated SS ##v# (Season ## Episode ## Version #)
             $result = matchTitle3_19($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### Ep EE - EE
+            // SSxEE (v#) (Season ## Episode ## Version #)
             $result = matchTitle3_20($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #### EE - EE
+            // #### (EE - EE)
             $result = matchTitle3_21($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated E1 E2 E3
+            // #### Ep EE - EE
             $result = matchTitle3_22($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // #### EE - EE
+            $result = matchTitle3_23($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // EEE - EEE - (YYYY)
+            $result = matchTitle3_24($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // isolated E1 E2 E3
+            $result = matchTitle3_25($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // c####-#### (v#) (Chapters ####-#### of Volume ##)
+            $result = matchTitle3_26($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -310,188 +334,212 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
                 break;
             }
         case true :
+            // Batch ## - ##
+            $result = matchTitle2_15($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
             // Volume ## of ##
-            $result = matchTitle2_15($ti, $seps, $wereQualitiesDetected);
+            $result = matchTitle2_16($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // Part ## of ##
-            $result = matchTitle2_16($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // isolated ## of ##
             $result = matchTitle2_17($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
+            // isolated ## of ##
+            $result = matchTitle2_18($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
             // Volume ## & ##
-            $result = matchTitle2_18($ti, $seps, $wereQualitiesDetected);
+            $result = matchTitle2_19($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // Chapter ## & ##
-            $result = matchTitle2_19($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Season ## & ##
             $result = matchTitle2_20($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Episode ## & ##
+            // Season ## & ##
             $result = matchTitle2_21($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Part ## & ##
+            // Episode ## & ##
             $result = matchTitle2_22($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated ## & ##
+            // Part ## & ##
             $result = matchTitle2_23($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
+            // isolated ## & ##
+            $result = matchTitle2_24($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
             // Volume ## - ##
-            $result = matchTitle2_24($ti, $seps, $wereQualitiesDetected);
+            $result = matchTitle2_25($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // Volume ## Chapter ##
-            $result = matchTitle2_25($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Chapter ## Volume ##
             $result = matchTitle2_26($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Chapter ##-##
+            // Chapter ## Volume ##
             $result = matchTitle2_27($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // c## (v##)
+            // Chapter ##-##
             $result = matchTitle2_28($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated SS - Episode ##
+            // c## (v##)
             $result = matchTitle2_29($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Japanese ##-## Print Media Books/Volumes
+            // isolated SS - Episode ##
             $result = matchTitle2_30($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Japanese YYYY MM or YYYY ## Print Media
+            // Japanese ##-## Print Media Books/Volumes
             $result = matchTitle2_31($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // #nd EE
+            // Japanese YYYY MM or YYYY ## Print Media
             $result = matchTitle2_32($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
+            // #nd EE
+            $result = matchTitle2_33($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
             // isolated ###.#
-            $result = matchTitle2_33($ti);
+            $result = matchTitle2_34($ti);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated YYYY-MM or or YYYY-EE or title #### - EE
-            $result = matchTitle2_34($ti, $seps, $wereQualitiesDetected);
+            $result = matchTitle2_35($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated MM-YYYY
-            $result = matchTitle2_35($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // (YYYY) - EE or title (####) - EE
             $result = matchTitle2_36($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // EEE - (YYYY)
+            // (YYYY) - EE or title (####) - EE
             $result = matchTitle2_37($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated No.##-No.##, Print Media Book/Volume
+            // EEE - (YYYY) or title #### (YYYY)
             $result = matchTitle2_38($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated S1 #10
+            // isolated No.##-No.##, Print Media Book/Volume
             $result = matchTitle2_39($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated ## to ##
+            // isolated S1 #10
             $result = matchTitle2_40($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // ID-## - ## (different spacing around minuses)
+            // isolated ## to ##
             $result = matchTitle2_41($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated ##-##
+            // ID-## - ## (different spacing around minuses)
             $result = matchTitle2_42($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // S (EEE)
+            // isolated ##-##
             $result = matchTitle2_43($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated SS EE, SS EEE, or isolated EE EE
+            // S (EEE)
             $result = matchTitle2_44($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // two numbers separated by words
+            // month DD, YYYY
             $result = matchTitle2_45($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // isolated SS EE, SS EEE, or isolated EE EE
+            $result = matchTitle2_46($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // EE word v##
+            $result = matchTitle2_47($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // ## words - EE
+            $result = matchTitle2_48($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // #### - OVA ###
+            $result = matchTitle2_49($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -713,20 +761,34 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $thisYear = getdate()['year'];
             if ($matNum[1] > 1895 && $matNum[1] <= $thisYear) {
                 // probably YYYY
-                $result['numSeq'] = 2;
-                $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
-                $result['episEd'] = $result['episSt'] = $matNum[1];
-                $result['matFnd'] = "1_2-1";
+                // first check if there is a month name in front of YYYY
+                preg_match("/\b([A-Za-z]+)[$seps]?(\d{4})\b/", $ti, $matPre);
+                $MM = convertMonthToMM($matPre[1]);
+                if (is_numeric($MM)) {
+                    // probably month YYYY
+                    $result['numSeq'] = 2;
+                    $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
+                    $result['episEd'] = $result['episSt'] = $matNum[2] . $MM;
+                    $result['matFnd'] = "1_2-1-1";
+                    $result['favTi'] = preg_replace("/\b([A-Za-z]+)[$seps](\d{4})\b.*/", "", $ti);
+                } else {
+                    // assume just YYYY
+                    $result['numSeq'] = 2;
+                    $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
+                    $result['episEd'] = $result['episSt'] = $matNum[1];
+                    $result['matFnd'] = "1_2-1-2";
+                    $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
+                }
             } else {
                 $pair1 = substr($matNum[1], 0, 2);
                 $pair2 = substr($matNum[1], 2);
-                if (checkdate((int)$pair2, (int)$pair1, $thisYear)) {
+                if (checkdate((int) $pair2, (int) $pair1, $thisYear)) {
                     // probably DDMM (assume YYYY is current year)
                     $result['numSeq'] = 2;
                     $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                     $result['episEd'] = $result['episSt'] = $pair2 . $pair1;
                     $result['matFnd'] = "1_2-2-1";
-                } else if (checkdate((int)$pair1, (int)$pair2, $thisYear)) {
+                } else if (checkdate((int) $pair1, (int) $pair2, $thisYear)) {
                     // probably MMDD (assume YYYY is current year)
                     $result['numSeq'] = 2;
                     $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
@@ -739,8 +801,8 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                     $result['episEd'] = $result['episSt'] = $matNum[1];
                     $result['matFnd'] = "1_2-2-3";
                 }
+                $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             }
-            $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
             break;
         case 8 :
             // YYYYMMDD
@@ -757,25 +819,25 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $pair3 = substr($four2, 0, 2);
             $pair4 = substr($four2, 2, 2);
             $thisYear = getdate()['year'];
-            if (checkdate((int)$pair3, (int)$pair4, (int)$four1) && (int)$four1 <= $thisYear && (int)$four1 > 1895) {
+            if (checkdate((int) $pair3, (int) $pair4, (int) $four1) && (int) $four1 <= $thisYear && (int) $four1 > 1895) {
                 // YYYYMMDD
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $matNum[1];
                 $result['matFnd'] = "1_3-1";
-            } else if (checkdate((int)$pair4, (int)$pair3, (int)$four1) && (int)$four1 <= $thisYear && (int)$four1 > 1895) {
+            } else if (checkdate((int) $pair4, (int) $pair3, (int) $four1) && (int) $four1 <= $thisYear && (int) $four1 > 1895) {
                 // YYYYDDMM
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $four1 . $pair4 . $pair3;
                 $result['matFnd'] = "1_3-2";
-            } else if (checkdate((int)$pair1, (int)$pair2, (int)$four2) && (int)$four2 <= $thisYear && (int)$four2 > 1895) {
+            } else if (checkdate((int) $pair1, (int) $pair2, (int) $four2) && (int) $four2 <= $thisYear && (int) $four2 > 1895) {
                 // MMDDYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $four2 . $four1;
                 $result['matFnd'] = "1_3-3";
-            } else if (checkdate((int)$pair2, (int)$pair1, (int)$four2) && (int)$four2 <= $thisYear && (int)$four2 > 1895) {
+            } else if (checkdate((int) $pair2, (int) $pair1, (int) $four2) && (int) $four2 <= $thisYear && (int) $four2 > 1895) {
                 // DDMMYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
@@ -807,37 +869,37 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $pair3 = substr($matNum[1], 4, 2);
             $thisYear = getdate()['year'];
             $thisYearPair1 = substr($thisYear, 0, 2);
-            if (checkdate((int)$pair3, 1, (int)($pair1 . $pair2)) && (int)($pair1 . $pair2) <= $thisYear && (int)($pair1 . $pair2) > 1895) {
+            if (checkdate((int) $pair3, 1, (int) ($pair1 . $pair2)) && (int) ($pair1 . $pair2) <= $thisYear && (int) ($pair1 . $pair2) > 1895) {
                 // YYYYMM
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $matNum[1];
                 $result['matFnd'] = "1_4-1";
-            } else if (checkdate((int)$pair1, 1, (int)($pair2 . $pair3)) && (int)($pair2 . $pair3) <= $thisYear && (int)($pair2 . $pair3) > 1895) {
+            } else if (checkdate((int) $pair1, 1, (int) ($pair2 . $pair3)) && (int) ($pair2 . $pair3) <= $thisYear && (int) ($pair2 . $pair3) > 1895) {
                 // MMYYYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $pair2 . $pair3 . $pair1;
                 $result['matFnd'] = "1_4-2";
-            } else if (checkdate((int)$pair2, (int)$pair3, (int)($thisYearPair1 . $pair1)) && (int)($thisYearPair1 . $pair1) <= $thisYear && (int)($thisYearPair1 . $pair1) > 1895) {
+            } else if (checkdate((int) $pair2, (int) $pair3, (int) ($thisYearPair1 . $pair1)) && (int) ($thisYearPair1 . $pair1) <= $thisYear && (int) ($thisYearPair1 . $pair1) > 1895) {
                 // YYMMDD
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $thisYearPair1 . $pair1 . $pair2 . $pair3;
                 $result['matFnd'] = "1_4-3";
-            } else if (checkdate((int)$pair1, (int)$pair2, (int)($thisYearPair1 . $pair3)) && (int)($thisYearPair1 . $pair3) <= $thisYear && (int)($thisYearPair1 . $pair3) > 1895) {
+            } else if (checkdate((int) $pair1, (int) $pair2, (int) ($thisYearPair1 . $pair3)) && (int) ($thisYearPair1 . $pair3) <= $thisYear && (int) ($thisYearPair1 . $pair3) > 1895) {
                 // MMDDYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['episSt'] = $thisYearPair1 . $pair3 . $pair1 . $pair2;
                 $result['matFnd'] = "1_4-4";
-            } else if (checkdate((int)$pair2, (int)$pair1, (int)($thisYearPair1 . $pair3)) && (int)($thisYearPair1 . $pair3) <= $thisYear && (int)($thisYearPair1 . $pair3) > 1895) {
+            } else if (checkdate((int) $pair2, (int) $pair1, (int) ($thisYearPair1 . $pair3)) && (int) ($thisYearPair1 . $pair3) <= $thisYear && (int) ($thisYearPair1 . $pair3) > 1895) {
                 // DDMMYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
                 $result['episEd'] = $result['$episSt'] = $thisYearPair1 . $pair3 . $pair2 . $pair1;
                 $result['matFnd'] = "1_4-5";
-            } else if (checkdate((int)$pair3, (int)$pair2, (int)($thisYearPair1 . $pair1)) && (int)($thisYearPair1 . $pair1) <= $thisYear && (int)($thisYearPair1 . $pair1) > 1895) {
+            } else if (checkdate((int) $pair3, (int) $pair2, (int) ($thisYearPair1 . $pair1)) && (int) ($thisYearPair1 . $pair1) <= $thisYear && (int) ($thisYearPair1 . $pair1) > 1895) {
                 // YYDDMM
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
@@ -869,7 +931,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
             $result['episEd'] = $result['episSt'] = substr($matNum[1], 0, 8); // truncate the lengthy Date notation
             $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
-            $result['matFnd'] = "1_6";
+            $result['matFnd'] = "1_7";
             break;
         default:
             // unidentifiable #

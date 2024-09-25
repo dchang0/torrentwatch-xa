@@ -4,7 +4,7 @@
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-// NOTE: we should include config.php, but it is not necessary for testing parsing
+// NOTE: we should include config.php, but it is not necessary for testing parsing unless we need writeToLog()
 require_once 'twxa_tools.php';
 require_once 'twxa_parse.php';
 $title = $argv[1];

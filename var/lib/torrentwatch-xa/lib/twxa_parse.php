@@ -80,6 +80,60 @@ function validateYYYYMMDD($date) {
     return checkdate($MM, $DD, $YYYY);
 }
 
+function convertMonthToMM($month) {
+    $MM = null;
+    switch (strtolower($month)) {
+        case "january" :
+        case "jan" :
+            $MM = "01";
+            break;
+        case "february" :
+        case "feb" :
+            $MM = "02";
+            break;
+        case "march" :
+        case "mar" :
+            $MM = "03";
+            break;
+        case "april" :
+        case "apr" :
+            $MM = "04";
+            break;
+        case "may" :
+            $MM = "05";
+            break;
+        case "june" :
+        case "jun" :
+            $MM = "06";
+            break;
+        case "july" :
+        case "jul" :
+            $MM = "07";
+            break;
+        case "august" :
+        case "aug" :
+            $MM = "08";
+            break;
+        case "september" :
+        case "sept" :
+        case "sep" :
+            $MM = "09";
+            break;
+        case "october" :
+        case "oct" :
+            $MM = "10";
+            break;
+        case "november" :
+        case "nov" :
+            $MM = "11";
+            break;
+        case "december" :
+        case "dec" :
+            $MM = "12";
+    }
+    return $MM;
+}
+
 function simplifyTitle($ti) {
     // combines all the title processing functions
     $ti = sanitizeTitle($ti);
@@ -244,6 +298,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'iTunes',
         // codecs--could be high or low quality, who knows?
         'XviD',
+        'x264-w4f',
         'x264',
         'h264',
         'x265',

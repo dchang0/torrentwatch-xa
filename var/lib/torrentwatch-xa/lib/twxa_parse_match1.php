@@ -1,6 +1,6 @@
 <?php
 
-// contains just the matchTitle functions for exactly 1 number found in the title
+// contains most of the matchTitle functions for exactly 1 number found in the title
 
 function matchTitle1_1_1($ti, $seps) {
     // Season, Temporada; should also catch Season ## Complete

@@ -904,6 +904,12 @@ Feature Changes
 
 - added Super-Favorites Episodes filter
 
+1.9.2
+
+Feature Changes
+
+- added many new pattern detections and fixed a few existing ones
+
 Next Version
 
 IN PROGRESS
