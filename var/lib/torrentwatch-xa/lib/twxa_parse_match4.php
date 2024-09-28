@@ -5,21 +5,27 @@
 function matchTitle4_1($ti, $seps) {
     // v##-## (YYYY-YYYY)
     $mat = [];
-    $re = "/\b(Volumes|volumes|Vols\.|vols\.|Vol\.|vol\.|V\.|v\.|V|v)[$seps]?(\d{1,4})[$seps]?\-?[$seps]?(\d{1,4})[$seps]?\((\d{4})[$seps]?\-?[$seps]?(\d{4})\).*/";
-    # TODO check the YYYY values to make sure they're realistic, but we ignore them anyway
+    $re = "/\b(Volumes|volumes|Vols\.|vols\.|Vol\.|vol\.|V\.|v\.|V|v|)[$seps]?(\d{1,4})[$seps]?\-?[$seps]?(\d{1,4})[$seps]?\((\d{4})[$seps]?\-?[$seps]?(\d{4})\).*/";
     if (preg_match($re, $ti, $mat)) {
-        return [
-            // print Volume - Volume
-            'medTyp' => 4,
-            'numSeq' => 1,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[3],
-            'episSt' => 1,
-            'episEd' => "",
-            'itemVr' => 1,
-            'favTi' => preg_replace($re, "", $ti),
-            'matFnd' => "4_1"
-        ];
+        if (
+                (int) $mat[4] <= getdate()['year'] &&
+                (int) $mat[4] > 1895 &&
+                (int) $mat[5] <= getdate()['year'] &&
+                (int) $mat[5] > 1895
+        ) {
+            return [
+                // print Volume - Volume
+                'medTyp' => 4,
+                'numSeq' => 1,
+                'seasSt' => $mat[2],
+                'seasEd' => $mat[3],
+                'episSt' => 1,
+                'episEd' => "",
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "4_1"
+            ];
+        }
     }
 }
 
