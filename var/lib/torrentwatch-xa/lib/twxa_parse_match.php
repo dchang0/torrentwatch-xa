@@ -62,14 +62,20 @@ function matchTitle4_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly four numbers found
     switch (true) {
         case true:
-            // scan for ##x##-##x##
+            // v##-## (YYYY-YYYY) print media
             $result = matchTitle4_1($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }        
+        case true:
+            // scan for ##x##-##x##
+            $result = matchTitle4_2($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true:
             // isolated E1 E2 E3 E4
-            $result = matchTitle4_2($ti, $seps);
+            $result = matchTitle4_3($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
