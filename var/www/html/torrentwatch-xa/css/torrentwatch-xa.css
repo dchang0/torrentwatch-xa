@@ -6,7 +6,8 @@ html {
 }
 
 body {
-    font: 85% "lucida grande", Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    /* font: 85% "lucida grande", Tahoma, Verdana, Arial, Helvetica, sans-serif; */
+    font: 85% Arial, Helvetica, sans-serif;
     color: #323232;
     text-align: left;
     overflow: hidden;
