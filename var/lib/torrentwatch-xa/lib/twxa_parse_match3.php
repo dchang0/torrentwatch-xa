@@ -33,6 +33,7 @@ function matchTitle3_1($ti, $seps) {
 
 function matchTitle3_2($ti, $seps) {
     // isolated YYYY MM DD or MM DD YYYY or DD MM YYYY
+    //TODO make sure MM and DD have leading zeros if needed
     $mat = [];
     $re = "/\b(\d{1,4})[$seps\-\/](\d{1,4})[$seps\-\/](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
@@ -688,12 +689,13 @@ function matchTitle3_23($ti, $seps) {
     }
 }
 
+//TODO v### - ### - (YYYY) but it currently gets handled by v###-###, ignoring (YYYY)
 
 function matchTitle3_24($ti, $seps) {
     // EEE - EEE - (YYYY)
-    //TODO does not handle EEE + EEE - (YYYY) or v### - ### - (YYYY) properly yet
+    // also handles EEE + EEE - (YYYY) and treats it like EEE - EEE - (YYYY)
     $mat = [];
-    $re = "/\b(\d{1,3})[-$seps]{0,3}(\d{1,3})[-$seps]{0,3}\((\d{4})\).*/";
+    $re = "/\b(\d{1,3})[$seps]?[\-+][$seps]?(\d{1,3})[$seps]?\-?[$seps]?\((\d{4})\).*/";
     if (preg_match($re, $ti, $mat)) {
         if ((int)$mat[3] <= getdate()['year'] && (int)$mat[3] > 1895) {
             return [

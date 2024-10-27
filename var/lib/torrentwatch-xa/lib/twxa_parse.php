@@ -359,7 +359,9 @@ function detectQualities($ti, $seps = '\s\.\_') {
 function detectAudioCodecs($ti) {
     $detAudioCodecs = [];
     $audioCodecList = [// watch the order!
+        'EAC3\ 2\.0',
         'EAC3',
+        'AC3\ 2\.0',
         'AC3',
         'AACx2',
         'AAC2',

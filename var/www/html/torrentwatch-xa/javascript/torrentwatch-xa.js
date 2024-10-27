@@ -890,7 +890,6 @@ $(document).ready(function () { // first binding to document ready (while torren
         } else {
             form = $(button).closest("form");
         }
-        //if (button.id.substr(-6) === "Delete") {
         if (button.id === "Delete") {
             // Delete button is only in the Favorites and Super-Favorites dialogs
             $.get(form.get(0).action, form.buildDataString(button));
@@ -908,10 +907,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                 $("#fav_" + id).remove();
                 window.dialog = 1;
             }
-            //} else if (button.id.substr(-6) === "Update") {
         } else if (button.id === "Update") {
             // Update button is only in the Favorites and Super-Favorites dialogs
-            //$.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html'); // returned full html page gets fed into $.loadDynamicData, which rebuilds dynamic data on page using output of main section from torrentwatch-xa.php
             $.get(form.get(0).action, form.buildDataString(button), function (rsp) {
                 // handle error message in json rsp
                 if (rsp.errorCode !== 0 && rsp.errorMessage !== "") {

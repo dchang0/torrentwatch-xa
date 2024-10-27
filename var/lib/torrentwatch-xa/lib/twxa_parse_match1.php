@@ -67,7 +67,7 @@ function matchTitle1_1_3($ti, $seps, $detVid) {
                 'episEd' => "",
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "1_1_3-4"
+                'matFnd' => "1_1_3-2"
             ];
         }
     }
@@ -100,7 +100,7 @@ function matchTitle1_1_4($ti, $seps, $detVid) {
                 'episEd' => 0,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "1_1_4-4"
+                'matFnd' => "1_1_4-2"
             ];
         }
     }
@@ -280,7 +280,7 @@ function matchTitle1_1_14($ti, $seps) {
     // Spec02
     // SP# (Special #)
     $mat = [];
-    $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.)[\-$seps]{0,3}(\d{1,2}).*/i";
+    $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.|SP)[\-$seps]{0,3}(\d{1,2}).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
@@ -656,6 +656,39 @@ function matchTitle1_1_30_7($ti, $seps) {
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "1_1_30_7-2"
+            ];
+        }
+    }
+}
+
+function matchTitle1_1_1000($ti, $seps, $detVid) {
+    // word ##
+    $mat = [];
+    $re = "/(Volumen|Volume|\bVol\.|\bVol)[$seps]?(\d+).*/i";
+    if (preg_match($re, $ti, $mat)) {
+        if ($detVid) {
+            return [
+                'medTyp' => 1, // Video Media
+                'numSeq' => 4, // video Season x Volume/Part numbering
+                'seasSt' => 1, // assume Season 1
+                'seasEd' => 1,
+                'episSt' => $mat[2],
+                'episEd' => $mat[2],
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "1_1_1000-1"
+            ];
+        } else {
+            return [
+                'medTyp' => 4, // assume Print Media
+                'numSeq' => 1, // Volume x FULL
+                'seasSt' => $mat[2],
+                'seasEd' => $mat[2],
+                'episSt' => 1,
+                'episEd' => "",
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "1_1_1000-2"
             ];
         }
     }

@@ -908,9 +908,25 @@ Feature Changes
 
 Feature Changes
 
-- added many new pattern detections and fixed a few existing ones
+- added many new pattern detection algorithms and fixed a few existing ones
+
+1.9.3
+
+Feature Changes
+
+- added a few new pattern detection algorithms and fixed a few existing ones
+- removed Lucida Grande, Tahoma, and Verdana fonts because they were ruining the layout of the Favorites dialog in FireFox
+- inverted hover highlighting in Favorites and Super-Favorites dialogs
+
+Code Changes
+
+- combined multiple pattern detection algorithms to improve performance
+  - word ## of ##
+  - word ## &|y|et|and ##
 
 Next Version
+
+Feature Changes
 
 IN PROGRESS
 
@@ -936,6 +952,16 @@ IN PROGRESS
 Code Changes
 
 IN PROGRESS
+
+- combine more pattern detectors
+  - word ## -|through|thru|to ##
+  - word ## - word ##
+  - ## - word ## (could be difficult)
+  - word ## (including Month YYYY)
+
+- after switching pattern detectors to word-based patterns, move Volume|, Chapter|, Season|, Episode| word matches to functions
+
+- whatever is highlighted should stay highlighted even when the mouse moves; use lighter highlight for mouseover, darker for selected--same as in torrent list
 
 - give all Update and Delete buttons in Favorites and Super-Favorites dialogs unique ids 
 

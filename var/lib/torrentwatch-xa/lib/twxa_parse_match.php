@@ -5,6 +5,7 @@
 function matchTitle6_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly six numbers found
     switch (true) {
+        //TODO ####-#### as v####-#### + ####-#### (show as chapters first #### to last ####, even though it may skip some chapters)
         case true:
             // scan for ##x##v#-##x##v#
             $result = matchTitle6_1($ti, $seps);
@@ -33,6 +34,7 @@ function matchTitle6_($ti, $seps, $wereQualitiesDetected = false) {
 function matchTitle5_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly five numbers found
     switch (true) {
+        //TODO ####-#### as v####-#### + #### (show as chapters first #### to last ####, even though it may skip some chapters)
         case true:
             // ##x## - ##x##v#
             $result = matchTitle5_1($ti, $seps);
@@ -66,16 +68,22 @@ function matchTitle4_($ti, $seps, $wereQualitiesDetected = false) {
             $result = matchTitle4_1($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
-            }        
-        case true:
-            // scan for ##x##-##x##
+            }
+            case true:
+            // ####-#### as v####-####
             $result = matchTitle4_2($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true:
-            // isolated E1 E2 E3 E4
+            // scan for ##x##-##x##
             $result = matchTitle4_3($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true:
+            // isolated E1 E2 E3 E4
+            $result = matchTitle4_4($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -255,297 +263,262 @@ function matchTitle3_($ti, $seps, $wereQualitiesDetected = false) {
 function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly two numbers found
     switch (true) {
+        //TODO maybe short-circuit explicit S###E### and S### - EEE for performance
         case true :
             // S01v2 or S01.v2
+            //TODO could become part of word##word##
             $result = matchTitle2_1($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // S01E10
+            //TODO could become part of word##word##
+            //TODO add S01 PART2 as part of word##word##
             $result = matchTitle2_2($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // ## - v# (Episode ## Version #)
+            //TODO could become part of ### - word ###
             $result = matchTitle2_3($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // short-circuit Seasons ## through|thru|to ##
-            $result = matchTitle2_4($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // short-circuit Seasons ## - ##
-            $result = matchTitle2_5($ti, $seps);
+            // word #### - ####
+            $result = matchTitle2_4($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // short-circuit EP## - EP##
-            $result = matchTitle2_6($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // short-circuit S1 - ###
-            $result = matchTitle2_7($ti, $seps);
+            //TODO could become part of "word ### - word ###"
+            $result = matchTitle2_5($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // (Season, Temporada ##) - ##
-            $result = matchTitle2_8($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Season, Temporada ## - ##
-            $result = matchTitle2_9($ti, $seps);
+            $result = matchTitle2_6($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // 1st|2nd|3rd Season ##
-            $result = matchTitle2_10($ti, $seps);
+            //TODO could become part of ##word word##
+            $result = matchTitle2_7($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // ### - ###END
-            $result = matchTitle2_11($ti, $seps);
+            //TODO could become part of "### - ### word"
+            $result = matchTitle2_8($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // V##.## (Software Version ##.##)
-            $result = matchTitle2_12($ti, $seps, $wereQualitiesDetected);
+            //TODO could become part of word##word##
+            $result = matchTitle2_9($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // - ##x##
-            $result = matchTitle2_13($ti, $seps);
+            //TODO maybe combine with isolated ##x##
+            $result = matchTitle2_10($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ##x##
-            $result = matchTitle2_14($ti, $seps);
+            $result = matchTitle2_11($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Batch ## - ##
-            $result = matchTitle2_15($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Volume ## of ##
-            $result = matchTitle2_16($ti, $seps, $wereQualitiesDetected);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Part ## of ##
-            $result = matchTitle2_17($ti, $seps);
+            // word ## of ##
+            $result = matchTitle2_12($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ## of ##
-            $result = matchTitle2_18($ti, $seps);
+            // can catch ## of ## at very beginning of title
+            $result = matchTitle2_13($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Volume ## & ##
-            $result = matchTitle2_19($ti, $seps, $wereQualitiesDetected);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Chapter ## & ##
-            $result = matchTitle2_20($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Season ## & ##
-            $result = matchTitle2_21($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Episode ## & ##
-            $result = matchTitle2_22($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Part ## & ##
-            $result = matchTitle2_23($ti, $seps);
+            // word ## & ##
+            $result = matchTitle2_14($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ## & ##
-            $result = matchTitle2_24($ti, $seps);
+            // can catch ## & ## at very beginning of title
+            $result = matchTitle2_15($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // Volume ## - ##
-            $result = matchTitle2_25($ti, $seps, $wereQualitiesDetected);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Volume ## Chapter ##
-            $result = matchTitle2_26($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Chapter ## Volume ##
-            $result = matchTitle2_27($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true :
-            // Chapter ##-##
-            $result = matchTitle2_28($ti, $seps);
+            // word #### word ####
+            // word ####, word ####
+            $result = matchTitle2_16($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // c## (v##)
-            $result = matchTitle2_29($ti, $seps);
+            $result = matchTitle2_17($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated SS - Episode ##
-            $result = matchTitle2_30($ti, $seps);
+            //TODO could become part of ### - word ###
+            $result = matchTitle2_18($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // Japanese ##-## Print Media Books/Volumes
-            $result = matchTitle2_31($ti, $seps);
+            $result = matchTitle2_19($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // Japanese YYYY MM or YYYY ## Print Media
-            $result = matchTitle2_32($ti, $seps);
+            $result = matchTitle2_20($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // #nd EE
-            $result = matchTitle2_33($ti, $seps);
+            //TODO could become part of ##word ##
+            $result = matchTitle2_21($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ###.#
-            $result = matchTitle2_34($ti);
+            $result = matchTitle2_22($ti);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
-            // isolated YYYY-MM or or YYYY-EE or title #### - EE
-            $result = matchTitle2_35($ti, $seps, $wereQualitiesDetected);
+            // isolated YYYY-YYYY or YYYY-MM or YYYY-EE or title #### - EE
+            $result = matchTitle2_23($ti, $seps, $wereQualitiesDetected);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated MM-YYYY
-            $result = matchTitle2_36($ti, $seps);
+            $result = matchTitle2_24($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // (YYYY) - EE or title (####) - EE
-            $result = matchTitle2_37($ti, $seps);
+            $result = matchTitle2_25($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // EEE - (YYYY) or title #### (YYYY)
-            $result = matchTitle2_38($ti, $seps);
+        //TODO handle v### (YYYY) (this becomes word### (YYYY), v in this case is print volume, but handle video volume too
+            $result = matchTitle2_26($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
+        //TODO 2_27 (YYYY) (Season 1)
         case true :
             // isolated No.##-No.##, Print Media Book/Volume
-            $result = matchTitle2_39($ti, $seps);
+            //TODO could become part of "word ### - word ###"
+            $result = matchTitle2_28($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated S1 #10
-            $result = matchTitle2_40($ti, $seps);
+            //TODO could become part of word## word##
+            $result = matchTitle2_29($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ## to ##
-            $result = matchTitle2_41($ti, $seps);
+            //TODO could become part of isolated ### - ###
+            $result = matchTitle2_30($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // ID-## - ## (different spacing around minuses)
-            $result = matchTitle2_42($ti, $seps);
+            //TODO could become part of word ## - ##
+            $result = matchTitle2_31($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated ##-##
-            $result = matchTitle2_43($ti, $seps);
+            //TODO could become part of isolated ### - ###
+            $result = matchTitle2_32($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // S (EEE)
-            $result = matchTitle2_44($ti, $seps);
+            $result = matchTitle2_33($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // month DD, YYYY
-            $result = matchTitle2_45($ti, $seps);
+            $result = matchTitle2_34($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // DD month, YYYY
+            $result = matchTitle2_35($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
+            // word #### #### (must be before isolated SS EE)
+            $result = matchTitle2_36($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // isolated SS EE, SS EEE, or isolated EE EE
-            $result = matchTitle2_46($ti, $seps);
+            $result = matchTitle2_37($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
+        //TODO 2_38 ## several words Volume|Vol.##
         case true :
             // EE word v##
-            $result = matchTitle2_47($ti, $seps);
+            //TODO could become part of ##word word##
+            $result = matchTitle2_39($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true :
             // ## words - EE
-            $result = matchTitle2_48($ti, $seps);
+            $result = matchTitle2_40($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
+        //TODO 2_41 ## words EE (be careful about catching too many false positives)
         case true :
-            // #### - OVA ###
-            $result = matchTitle2_49($ti, $seps);
+            // #### - word ###
+            $result = matchTitle2_42($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -653,7 +626,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 case true :
                     // Special - 02
                     // Spec02
-                    // SP# (Special #)
+                    // SP# (Special #) //TODO SP# was removed at some point in the past and just put back--figure out better way
                     $result = matchTitle1_1_14($ti, $seps);
                     if (isset($result['matFnd'])) {
                         break;

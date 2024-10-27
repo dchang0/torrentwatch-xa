@@ -1445,12 +1445,12 @@ ul.superfavorite li a {
 }
 
 ul.superfavorite li:hover {
-    background-color: #9DACC1;
+    background-color: #e0e0e0; /* #9DACC1; */
 }
 
-ul.superfavorite li:hover a {
+/* ul.superfavorite li:hover a {
     color: #FFF;
-}
+} */
 
 form.superfavinfo {
     display: none;
@@ -1567,12 +1567,12 @@ ul.favorite li a {
 }
 
 ul.favorite li:hover {
-    background-color: #9DACC1;
+    background-color: #e0e0e0; /* was #9DACC1; */
 }
 
-ul.favorite li:hover a {
+/* ul.favorite li:hover a {
     color: #FFF;
-}
+} */
 
 form.favinfo {
     display: none;

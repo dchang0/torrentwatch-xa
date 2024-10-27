@@ -43,7 +43,7 @@ All other files have functions that need improvement or rewrites or validation.
 ## Improvements
 
 - handle multibyte numerals when detecting season and episode
-- handle when the date or number is at the very beginning of the item title as with some Japanese multibyte titles
+- handle when the date or number is at the very beginning of the item title as with some Japanese multibyte titles by checking if all the numbers (after codecs are removed) are at the front, then move them to the back and process normally. Either that, or in all cases, if there are lots of text behind the season x episode, keep the text as part of the title
 
 - design class interface for TorrentClient and design child classes FolderClient and TransmissionClient
   - rename references to Transmission to some generic "torrent client" where appropriate and keep references to Transmission where appropriate, in case other torrent clients are added in the future

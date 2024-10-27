@@ -23,9 +23,9 @@ Common setups:
 Status
 ===============
 
-I've posted 1.9.2 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.9.3 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-I finally got around to adding a bunch of additional pattern detection algorithms and fixing a few of the existing ones. As always, it is possible that older working pattern detectors will break due to the changes.
+It's more adding of pattern detection algorithms and fixing a few of the existing ones, plus combining a few separate checks to improve performance. As always, it is possible that older working pattern detectors will break due to the changes. There is a small cosmetic change in the Favorites and Super-Favorites dialogs' hover highlighting in preparation for selection highlighting.
 
 Please report any bugs using Github Issues.
 
