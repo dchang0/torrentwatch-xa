@@ -56,10 +56,12 @@
          * Args: {string} filepath: full or relative path to bencoded file
          **************************************************************************/
         function __construct($filepath, $torrent = NULL) {
-            if($torrent)
-                    $this->content = $torrent;
-            else
-                $this->content = @file_get_contents($filepath);
+            if($torrent) {
+                $this->content = $torrent;
+            }
+            else if(!empty($filepath)) {
+                $this->content = file_get_contents($filepath);
+            }
 
             if (!$this->content) {
                 $this->throwException('File does not exist!');
