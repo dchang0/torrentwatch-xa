@@ -27,6 +27,8 @@ I've posted 1.9.3 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
 It's more adding of pattern detection algorithms and fixing a few of the existing ones, plus combining a few separate checks to improve performance. As always, it is possible that older working pattern detectors will break due to the changes. There is a small cosmetic change in the Favorites and Super-Favorites dialogs' hover highlighting in preparation for selection highlighting.
 
+NOTE: As of 2025-01-17, I am testing Ubuntu 24.04, and there are some bugs preventing Transmission from working properly on Ubuntu 24. Aside from AppArmor blocking Transmission from running at all, the Transmission RPC doesn't seem to be working. I will update this documentation when I figure it out.
+
 Please report any bugs using Github Issues.
 
 If you like, buy me a coffee for those late-night torrentwatch-xa programming stints at [Ko-Fi](https://ko-fi.com/dchang0) or [CoinDrop](https://coindrop.to/dchang0/).
