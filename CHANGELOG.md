@@ -938,11 +938,11 @@ Feature Changes
 
 IN PROGRESS
 
-- put link to Transmission web interface at top of Transmission list
+- put link to Transmission web interface at top of Transmission dialog
 - remove Transmission client button to modal dialog entirely and make it a new _blank link
-- add "HTTPS" to Transmission client configuration panel and config file
 - use a single curl_init() for as many curl_exec() calls as possible to improve performance
 - strip down CURL options to bare minimum needed for Transmission RPC
+- add some kind of error handler for multiple timed-out CURL requests in a row
 
 - merge Javascript-side's #clientError div and showClientError() into #twError div and $.fn.showErrorPanel()
 - maybe merge PHP-side's #errorDialog div into #twError div
