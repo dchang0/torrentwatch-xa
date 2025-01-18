@@ -926,6 +926,10 @@ Code Changes
 
 1.9.4
 
+Feature Changes
+
+- added a link to pop-out the Transmission web UI into a new web browser page to modal dialog title bar
+
 Code Changes
 
 - for Ubuntu 24.04, added CURLOPT_RETURNTRANSFER on first request to Transmission RPC in order to retrieve X-Transmission-Session-Id to use for subsequent requests
@@ -938,8 +942,6 @@ Feature Changes
 
 IN PROGRESS
 
-- put link to Transmission web interface at top of Transmission dialog
-- remove Transmission client button to modal dialog entirely and make it a new _blank link
 - use a single curl_init() for as many curl_exec() calls as possible to improve performance
 - strip down CURL options to bare minimum needed for Transmission RPC
 - add some kind of error handler for multiple timed-out CURL requests in a row
