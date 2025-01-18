@@ -23,11 +23,9 @@ Common setups:
 Status
 ===============
 
-I've posted 1.9.3 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.9.4 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-It's more adding of pattern detection algorithms and fixing a few of the existing ones, plus combining a few separate checks to improve performance. As always, it is possible that older working pattern detectors will break due to the changes. There is a small cosmetic change in the Favorites and Super-Favorites dialogs' hover highlighting in preparation for selection highlighting.
-
-UPDATE 2025-01-17: While upgrading from Ubuntu 22.04 to 24.04, I ran into two breaking bugs.
+While upgrading from Ubuntu 22.04 to 24.04, I ran into two breaking bugs.
 
 1) transmission-daemon was being blocked from starting by AppArmor. To fix it, you need to edit /etc/apparmor.d/transmission and change this line:
 
@@ -40,6 +38,8 @@ to this:
 Then reboot for it to take effect. You can also force AppArmor to parse its files to avoid a restart.
 
 2) torrentwatch-xa was unable to connect to Transmission RPC because php-curl needed an additional CURL option, CURLOPT_RETURNTRANSFER, when getting the X-Transmission-Session-Id.
+
+Ubuntu 20.04 and 22.04 do not seem to mind this bug fix for Ubuntu 24.04. Given that CURLOPT_RETURNTRANSFER was being used for a very long time on the second and subsequent requests, I do not expect this fix to affect any other php-curl versions.
 
 Please report any bugs using Github Issues.
 
