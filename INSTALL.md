@@ -70,6 +70,15 @@ Manual Installation
 - `sudo apt-get install apache2 php php-mbstring php-curl php-xml libapache2-mod-php git`
 - Install transmission-daemon
   - `sudo apt-get install transmission-daemon`
+- IMPORTANT: For Ubuntu 24.04 (and probably all newer Ubuntu versions), AppArmor prevents transmission-daemon from starting. To fix it, you need to edit /etc/apparmor.d/transmission and change this line:
+
+  `profile transmission-daemon /usr/bin/transmission-daemon flags=(complain) {`
+
+  to this:
+
+  `profile transmission-daemon /usr/bin/transmission-daemon flags=(complain,attach_disconnected) {`
+
+  Then reboot for it to take effect.
 - Optional: configure transmission-daemon
   - Note that transmission-daemon must be stopped while you make changes to the configuration file.
   - `sudo vi /etc/transmission-daemon/settings.json`

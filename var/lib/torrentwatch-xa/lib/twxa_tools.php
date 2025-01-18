@@ -57,7 +57,7 @@ function fillCurlOptions($curlOptions = null) {
 }
 
 function getCurl($url, $curlOptions = null) {
-    // use PHP curl to GET the resource at $url and return the contents
+    // use PHP curl to request the resource at $url and return the contents
     // overwrite the URL with $url if $url is set
     if (isset($url) && is_string($url)) {
         $curlOptions[CURLOPT_URL] = $url;
@@ -72,7 +72,7 @@ function getCurl($url, $curlOptions = null) {
                 $response = curl_exec($curlHandle);
                 curl_close($curlHandle);
                 if ($response === false) {
-                    writeToLog("curl failed to GET " . $curlOptions[CURLOPT_URL] . " with error: " . curl_error($curlHandle) . "\n", -1);
+                    writeToLog("curl got no response from " . $curlOptions[CURLOPT_URL] . " with error: " . curl_error($curlHandle) . "\n", -1);
                 } else if ($response === true) {
                     $result = '';
                 } else {
@@ -84,7 +84,7 @@ function getCurl($url, $curlOptions = null) {
         }
     } else {
         // no URL provided
-        writeToLog("curl cannot GET a blank URL\n", 0);
+        writeToLog("curl cannot request a blank URL\n", 0);
     }
     return $result;
 }

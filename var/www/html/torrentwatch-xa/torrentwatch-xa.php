@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.9.3";
+$twxa_version[0] = "1.9.4";
 $twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
 
 // parses commands sent from web UI (usually torrentwatch-xa.js)
@@ -469,7 +469,7 @@ function display_legend() {
 }
 
 function display_transmission() {
-    $host = getTransmissionWebuRL();
+    $url = getTransmissionWebuRL();
     ob_start();
     require('templates/transmission.php');
     return ob_get_contents();

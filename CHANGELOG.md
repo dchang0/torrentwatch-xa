@@ -924,11 +924,25 @@ Code Changes
   - word ## of ##
   - word ## &|y|et|and ##
 
+1.9.4
+
+Code Changes
+
+- for Ubuntu 24.04, added CURLOPT_RETURNTRANSFER on first request to Transmission RPC in order to retrieve X-Transmission-Session-Id to use for subsequent requests
+- added missing Transmission port number in various places in the php-curl requests.
+- changed construction of the Transmission RPC URL for future HTTPS capability
+
 Next Version
 
 Feature Changes
 
 IN PROGRESS
+
+- put link to Transmission web interface at top of Transmission list
+- remove Transmission client button to modal dialog entirely and make it a new _blank link
+- add "HTTPS" to Transmission client configuration panel and config file
+- use a single curl_init() for as many curl_exec() calls as possible to improve performance
+- strip down CURL options to bare minimum needed for Transmission RPC
 
 - merge Javascript-side's #clientError div and showClientError() into #twError div and $.fn.showErrorPanel()
 - maybe merge PHP-side's #errorDialog div into #twError div

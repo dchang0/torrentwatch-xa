@@ -51,8 +51,8 @@ function getTransmissionWebuRL() {
     if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
         $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'SERVER_NAME'));
     }
-    $host = $host . ':' . $config_values['Settings']['Transmission Port'] . getTransmissionWebPath() . "/"; // ending slash is required
-    return $host;
+    $url = 'http://' . $host . ':' . $config_values['Settings']['Transmission Port'] . getTransmissionWebPath() . "/"; // ending slash is required
+    return $url;
 }
 
 function writeDefaultConfigFile() {
