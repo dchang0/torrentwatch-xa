@@ -37,9 +37,9 @@ to this:
 
 Then reboot for it to take effect. You can also force AppArmor to parse its files to avoid a restart.
 
-2) torrentwatch-xa was unable to connect to Transmission RPC because php-curl needed an additional CURL option, CURLOPT_RETURNTRANSFER, when getting the X-Transmission-Session-Id.
+2) torrentwatch-xa was unable to connect to Transmission RPC because php-curl 8.3 needed an additional CURL option, CURLOPT_RETURNTRANSFER, when getting the X-Transmission-Session-Id.
 
-Ubuntu 20.04 and 22.04 do not seem to mind this bug fix for Ubuntu 24.04. Given that CURLOPT_RETURNTRANSFER was being used for a very long time on the second and subsequent requests, I do not expect this fix to affect any other php-curl versions.
+Ubuntu 20.04 and 22.04 do not seem to mind this bug fix for Ubuntu 24.04. Given that CURLOPT_RETURNTRANSFER was being used for a very long time on the second and subsequent requests, I do not expect this fix to affect any other php-curl versions prior to 8.3.
 
 Please report any bugs using Github Issues.
 

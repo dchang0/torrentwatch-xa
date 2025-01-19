@@ -69,7 +69,7 @@ function matchTitle4_($ti, $seps, $wereQualitiesDetected = false) {
             if (isset($result['matFnd'])) {
                 break;
             }
-            case true:
+        case true:
             // ####-#### as v####-####
             $result = matchTitle4_2($ti, $seps);
             if (isset($result['matFnd'])) {
@@ -430,7 +430,7 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
             }
         case true :
             // EEE - (YYYY) or title #### (YYYY)
-        //TODO handle v### (YYYY) (this becomes word### (YYYY), v in this case is print volume, but handle video volume too
+            //TODO handle v### (YYYY) (this becomes word### (YYYY), v in this case is print volume, but handle video volume too
             $result = matchTitle2_26($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
@@ -531,6 +531,7 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
 
 function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
     // only one integer found, probably anime-style episode number, but look for preceding words
+    $result = null;
     preg_match("/(\d+)/u", $ti, $matNum);
     $matNumLen = strlen($matNum[1]);
 
@@ -741,22 +742,23 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
             if ($matNum[1] > 1895 && $matNum[1] <= $thisYear) {
                 // probably YYYY
                 // first check if there is a month name in front of YYYY
-                preg_match("/\b([A-Za-z]+)[$seps]?(\d{4})\b/", $ti, $matPre);
-                $MM = convertMonthToMM($matPre[1]);
-                if (is_numeric($MM)) {
-                    // probably month YYYY
-                    $result['numSeq'] = 2;
-                    $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
-                    $result['episEd'] = $result['episSt'] = $matNum[2] . $MM;
-                    $result['matFnd'] = "1_2-1-1";
-                    $result['favTi'] = preg_replace("/\b([A-Za-z]+)[$seps](\d{4})\b.*/", "", $ti);
-                } else {
-                    // assume just YYYY
-                    $result['numSeq'] = 2;
-                    $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
-                    $result['episEd'] = $result['episSt'] = $matNum[1];
-                    $result['matFnd'] = "1_2-1-2";
-                    $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
+                if (preg_match("/\b([A-Za-z]+)[$seps]?(\d{4})\b/", $ti, $matPre)) {
+                    $MM = convertMonthToMM($matPre[1]);
+                    if (is_numeric($MM)) {
+                        // probably month YYYY
+                        $result['numSeq'] = 2;
+                        $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
+                        $result['episEd'] = $result['episSt'] = $matNum[2] . $MM;
+                        $result['matFnd'] = "1_2-1-1";
+                        $result['favTi'] = preg_replace("/\b([A-Za-z]+)[$seps](\d{4})\b.*/", "", $ti);
+                    } else {
+                        // assume just YYYY
+                        $result['numSeq'] = 2;
+                        $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
+                        $result['episEd'] = $result['episSt'] = $matNum[1];
+                        $result['matFnd'] = "1_2-1-2";
+                        $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
+                    }
                 }
             } else {
                 $pair1 = substr($matNum[1], 0, 2);

@@ -120,9 +120,7 @@ function transmission_sessionId() {
         $tr_port = $config_values['Settings']['Transmission Port'];
 
         $curlOptions = [
-            //CURLOPT_HEADER => true,
             CURLOPT_RETURNTRANSFER => true,
-            //CURLOPT_NOBODY => true,
             CURLOPT_USERPWD => "$tr_user:$tr_pass"
         ];
         $ID = [];
@@ -164,7 +162,6 @@ function transmission_rpc($request) {
         $curlOptions = [
             CURLOPT_USERPWD => "$tr_user:$tr_pass",
             CURLOPT_HTTPHEADER => [
-                //"POST " . getTransmissionrPCPath() . " HTTP/1.1",
                 "Host: $tr_host:$tr_port",
                 "X-Transmission-Session-Id: $SessionId",
                 'Connection: Close',

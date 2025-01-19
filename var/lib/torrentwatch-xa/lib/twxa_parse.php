@@ -645,7 +645,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                 }
             case 1:
                 $result = matchTitle1_($ti, $seps, $wereQualitiesDetected);
-                if ($result['matFnd'] !== "1_") {
+                if (!is_null($result) && $result['matFnd'] !== "1_") {
                     if ($numbersDetected !== 1) {
                         $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
                     }
