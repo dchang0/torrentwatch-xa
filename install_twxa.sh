@@ -92,11 +92,7 @@ fi
 sudo cp -R var/www/html/torrentwatch-xa /var/www/html
 sudo cp etc/cron.d/torrentwatch-xa-cron /etc/cron.d
 sudo chown root:root /etc/cron.d/torrentwatch-xa-cron
-if [ -e /etc/logrotate.d ]
-then
-    sudo cp etc/logrotate.d/twxalog /etc/logrotate.d
-    sudo chown root:root /etc/logrotate.d/twxalog
-fi
+
 
 # create the log file
 echo "Creating log file..."
@@ -104,8 +100,13 @@ sudo touch /var/log/twxalog
 sudo chown www-data:www-data /var/log/twxalog
 if [ $? -ne 0 ]
 then
-  # try to chown the cache directories using Fedora default Apache user and group apache
+  # try to chown the log file using Fedora default Apache user and group apache
   sudo chown apache:apache /var/log/twxalog
+fi
+if [ -e /etc/logrotate.d ]
+then
+    sudo cp etc/logrotate.d/twxalog /etc/logrotate.d
+    sudo chown root:root /etc/logrotate.d/twxalog
 fi
 
 # copy in the old config file
