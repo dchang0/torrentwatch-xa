@@ -20,7 +20,7 @@ If you change the base or web directories' paths, you must also:
 #### Browser shows entirely or mostly blank page
 
 This is almost always due to missing PHP packages or functions OR problems with the config file or config cache directory. Check the web server error log for more details.
-
+With php-curl 8.3 or newer, if the page is mostly blank and can't connect to Transmission, make sure you upgrade torrentwatch-xa to version 1.9.4 or later.
 
 #### Can't add some feeds
 

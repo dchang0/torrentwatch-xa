@@ -92,6 +92,10 @@ Manual Installation
   - `sudo chown www-data:www-data /var/log/twxalog`
   - Make sure it is owned by `www-data:www-data` and has permissions `rw-r--r--` (644)
     - `ls -l /var/log/twxalog`
+- If you want to use logrotate, copy the config file to `/etc/logrotate.d`.
+  - `sudo cp ./torrentwatch-xa/etc/logrotate.d/twxalog /etc/logrotate.d`
+  - Make sure `/etc/logrotate.d/twxalog` is owned by `root:root` and has permissions `rw-r--r`.
+    - `ls -l /etc/logrotate.d`
 - Allow apache2 to write to the cache folders.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
 - Make sure that `config_cache` and `dl_cache` are both owned by `www-data:www-data` and have permissions `drwxr-xr-x` (755)
