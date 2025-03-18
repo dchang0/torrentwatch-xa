@@ -37,10 +37,28 @@ Password Security
 
 torrentwatch-xa stores and uses two passwords: one for Transmission and one for SMTP. If security is a concern, be sure to configure your web server with SSL and harden the OS.
 
+
+.deb Package Installation
+===============
+
+The easiest way to install torrentwatch-xa is via the .deb package for Debian-based LINUX distributions. The .deb package file is in the Releases section of this repository. Install it with this command:
+
+First, install the prerequisites:
+
+`sudo apt install transmission-daemon apache2 php libapache2-mod-php php-curl php-mbstring php-xml`
+
+Then, install the .deb package (replace #.#.# with the correct version number):
+
+`sudo dpkg -i torrentwatch-xa-#.#.#-0-noarch.deb`
+
+Then, open a web browser and visit `http://[IP of torrentwatch-xa webserver]/torrentwatch-xa`
+
 Installation Script
 ===============
 
-The provided install/upgrade script called `install_twxa.sh` will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. It does not install any prerequisite packages for you, nor does it configure or start/restart the Apache2 webserver. It also does not configure firewalld nor SELINUX for Fedora Server and other RedHat-derived distributions. See Manual Installation below for those steps.
+If the .deb package won't work for you, this repository provides an install/upgrade script called `install_twxa.sh`
+
+`install_twxa.sh` will remove an existing installation of torrentwatch-xa and only performs the copy and chown steps to put a fresh install in place. It does not install any prerequisite packages for you, nor does it configure or start/restart the Apache2 webserver. It also does not configure firewalld nor SELINUX for Fedora Server and other RedHat-derived distributions. See Manual Installation below for those steps.
 
 Be aware that the script contains potentially-dangerous `rm -fr` commands. **Use install_twxa.sh at your own risk!**
 

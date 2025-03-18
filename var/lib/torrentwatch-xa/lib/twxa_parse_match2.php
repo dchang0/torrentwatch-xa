@@ -2,6 +2,25 @@
 
 // contains just the matchTitle functions for exactly 2 numbers found in the title
 
+function matchTitle2_0($ti, $seps) {
+    // S01E10 only, short-circuit for performance
+    $mat = [];
+    $re = "/\b[Ss](\d{1,2})[Ee](\d{1,4})\b.*/";
+    if (preg_match($re, $ti, $mat)) {
+        return [
+            'medTyp' => 1,
+            'numSeq' => 1,
+            'seasSt' => $mat[1],
+            'seasEd' => $mat[1],
+            'episSt' => $mat[2],
+            'episEd' => $mat[2],
+            'itemVr' => 1,
+            'favTi' => preg_replace($re, "", $ti),
+            'matFnd' => "2_0"
+        ];
+    }
+}
+
 function matchTitle2_1($ti, $seps) {
     // S01v2 or S01.v2
     $mat = [];
@@ -47,7 +66,7 @@ function matchTitle2_2($ti, $seps) {
 function matchTitle2_1000($ti, $seps) {
     // word####word####
     $mat = [];
-    $re = "/\b\b([A-Za-z]+\.?)[$seps]?(\d{1,4})(\ \-\ |\,\ |\-|\,|\.|\ |)([A-Za-z]+\.?)[$seps]?(\d{1,4})\b.*/i";
+    $re = "/\b([A-Za-z]+\.?)[$seps]?(\d{1,4})(\ \-\ |\,\ |\-|\,|\.|\ |)([A-Za-z]+\.?)[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,

@@ -37,9 +37,12 @@ to this:
 
 Then reboot for it to take effect. You can also force AppArmor to parse its files to avoid a restart.
 
-2) torrentwatch-xa was unable to connect to Transmission RPC because php-curl 8.3 needed an additional CURL option, CURLOPT_RETURNTRANSFER, when getting the X-Transmission-Session-Id.
+2) torrentwatch-xa was unable to connect to Transmission RPC because php-curl 8.3 needed an additional CURL option, CURLOPT_RETURNTRANSFER, when getting the X-Transmission-Session-Id in the first request from torrentwatch-xa to Transmission.
 
-Ubuntu 20.04 and 22.04 do not seem to mind this bug fix for Ubuntu 24.04. Given that CURLOPT_RETURNTRANSFER was being used for a very long time on the second and subsequent requests, I do not expect this fix to affect any other php-curl versions prior to 8.3.
+Ubuntu 20.04 and 22.04 do not seem to mind this bug fix for Ubuntu 24.04. Given that CURLOPT_RETURNTRANSFER was being used for a very long time on the second and subsequent requests to Transmission, I do not expect this fix to affect any other php-curl versions prior to 8.3.
+
+UPDATE 2025-03-18: I finally got around to learning how to manually build a Debian/Ubuntu installation package. The resulting .deb file is in the Releases section, under 1.9.4. Please be aware that this package is very much in alpha testing. I have tested it but there may be bugs that I have not found yet. The plan is to always offer a .deb package with future releases.
+There are no plans to include the bugfix for AppArmor on Ubuntu 24 in the package, since that is the responsibility of the Ubuntu, AppArmor, or Transmission dev teams. As such, you will have to apply the bug fix yourself if you have Ubuntu 24 and AppArmor blocks Transmission from starting.
 
 Please report any bugs using Github Issues.
 
@@ -63,8 +66,8 @@ Testing Targets
 
 The main testing targets that I use for development are:
 
-Ubuntu 24.04 (PHP 8.3)
-Ubuntu 20.04 (PHP 7.4)
+- Ubuntu 24.04 (PHP 8.3)
+- Ubuntu 20.04 (PHP 7.4)
 
 I was testing on Ubuntu 22.04 (PHP 8.1) for quite a while but upgraded that server to Ubuntu 24.04.
 

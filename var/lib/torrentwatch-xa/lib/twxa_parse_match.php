@@ -263,7 +263,13 @@ function matchTitle3_($ti, $seps, $wereQualitiesDetected = false) {
 function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
     // exactly two numbers found
     switch (true) {
-        //TODO maybe short-circuit explicit S###E### and S### - EEE for performance
+        case true :
+            // S01E10 only, short-circuit for performance
+            $result = matchTitle2_0($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }      
+        //TODO maybe short-circuit S### - EEE for performance
         case true :
             // S01v2 or S01.v2
             //TODO could become part of word##word##
