@@ -53,6 +53,8 @@ Then, install the .deb package (replace #.#.# with the correct version number):
 
 Then, open a web browser and visit `http://[IP of torrentwatch-xa webserver]/torrentwatch-xa`
 
+Note that the .deb package will back up any existing config file in `/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config` to `/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config.bak`, overwriting the latter. It will also overwrite the config file with a fresh blank config file so that new configuration options will be available.
+
 Installation Script
 ===============
 
