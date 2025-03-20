@@ -105,7 +105,7 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['SMTP Password'] = "";
     $config_values['Settings']['HELO Override'] = "";
     // Settings not exposed through the web UI
-    $config_values['Settings']['Cron Interval'] = 15; // measured in minutes, match the interval in torrentwatch-xa-cron
+    $config_values['Settings']['Cron Interval'] = 15; // measured in minutes, match the interval in torrentwatch-xa
     // wipe the Super-Favorites section
     $config_values['Super-Favorites'] = [];
     // wipe the Favorites section

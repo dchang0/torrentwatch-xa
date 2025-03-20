@@ -7,7 +7,7 @@ There are four places to check for error messages:
 
 - a pop-up in the web browser (typically configuration errors such as permissions problems or unreachable paths)
 - web server error log: /var/log/apache2/error.log (all PHP errors, warnings, and notifications)
-- torrentwatch-xa error log: /var/log/twxalog (all errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
+- torrentwatch-xa error log: /var/log/torrentwatch-xa.log (all errors in torrentwatch-xa logic such as failures to process feeds or auto-download items)
 - web browser Javascript console (Javascript errors only, typically minor errors in torrentwatch-xa's web UI)
 
 #### If you change the installation path(s)
@@ -15,7 +15,7 @@ There are four places to check for error messages:
 If you change the base or web directories' paths, you must also:
 
 - Change the paths in get_webDir() and get_baseDir() in config.php (default location is /var/www/html/torrentwatch-xa/config.php as of 1.0.0)
-- Change the path to twxa_cli.php in the cron file torrentwatch-xa-cron (default location is /etc/cron.d/torrentwatch-xa-cron)
+- Change the path to twxa_cli.php in the cron file torrentwatch-xa (default location is /etc/cron.d/torrentwatch-xa)
 
 #### Browser shows entirely or mostly blank page
 
@@ -73,7 +73,7 @@ First, please review the section of [INSTALL.md](INSTALL.md) called **Use the Fa
 
 Second, check the Favorite's Quality filter and make sure it's not too restrictive, then make sure there are no typos in any of the Favorite's fields.
 
-Third, check torrentwatch-xa's log (typically /var/log/twxalog) for errors.
+Third, check torrentwatch-xa's log (typically /var/log/torrentwatch-xa.log) for errors.
 
 If you have followed the instructions correctly and are still having trouble, turn on Configure > Interface > Show Item Debug Info and refresh the browser so that you can see the show_title that must be matched by your Favorite Filter. You will likely find a typo in your Favorite's Filter that needs correcting.
 
@@ -107,9 +107,11 @@ Copy and paste that into the bug report.
 
 #### "Nothing downloads automatically, even though I see the items marked as matching and they download properly when I manually refresh the browser."
 
-Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa-cron, check that it is owned by root:root, and check the permissions (should be 644).
+Make sure you have installed the cron daemon and that it is running. Some minimal installations do not include cron.
 
-Watch the syslog to see CRON attempt to run /etc/cron.d/torrentwatch-xa-cron:
+Check that you successfully copied the CRON file /etc/cron.d/torrentwatch-xa, check that it is owned by root:root, and check the permissions (should be 644).
+
+Watch the syslog to see CRON attempt to run /etc/cron.d/torrentwatch-xa:
 
 `sudo tail -f /var/log/syslog | grep CRON`
 
@@ -119,7 +121,7 @@ You should see entries like these:
 
 Otherwise you will likely see errors with short instructions on how to fix the problem(s).
 
-It may also be necessary to check torrentwatch-xa's log file (typically /var/log/twxalog) for other errors preventing the auto-download.
+It may also be necessary to check torrentwatch-xa's log file (typically /var/log/torrentwatch-xa.log) for other errors preventing the auto-download.
 
 #### "Invalid or corrupt torrent file"
 
@@ -140,3 +142,17 @@ After setting the time zone in Configure > Interface > Time Zone, it may be nece
 - Double-check that the time zone setting is valid--invalid time zones will generate errors in the web server error log
 
 It still might not be possible to change the timestamps in the RSS/Atom feeds themselves if they are hardcoded into the feed.
+
+#### transmission-daemon won't start on Ubuntu 24.04
+
+While upgrading from Ubuntu 22.04 to 24.04, I ran into this breaking bug:
+
+transmission-daemon was being blocked from starting by AppArmor. To fix it, you need to edit /etc/apparmor.d/transmission and change this line:
+
+`profile transmission-daemon /usr/bin/transmission-daemon flags=(complain) {`
+
+to this:
+
+`profile transmission-daemon /usr/bin/transmission-daemon flags=(complain,attach_disconnected) {`
+
+Then reboot for it to take effect. You can also force AppArmor to parse its files to avoid a restart.

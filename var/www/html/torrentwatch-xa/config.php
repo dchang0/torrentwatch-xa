@@ -11,12 +11,12 @@ function get_baseDir() {
 
 // torrentwatch-xa web UI installation directory
 function get_webDir() {
-    return "/var/www/html/torrentwatch-xa"; // if you change this, be sure to change it in torrentwatch-xa-cron too
+    return "/var/www/html/torrentwatch-xa"; // if you change this, be sure to change it in torrentwatch-xa too
 }
 
 // torrentwatch-xa log file path
 function get_logFile() {
-    return "/var/log/twxalog";
+    return "/var/log/torrentwatch-xa.log";
 }
 
 // NOTE: More settings are located at the top of twxa_config_lib.php, but it is better to leave them alone.

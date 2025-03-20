@@ -14,6 +14,7 @@ Prerequisites
 
 From the official repositories:
 
+- cron
 - transmission-daemon
 - apache2
 - php-mbstring
@@ -22,15 +23,26 @@ From the official repositories:
 - php-curl
 - php-xml
 
+Suggested (optional):
+
+- logrotate
+
 ### Fedora Server
+
+cron is required but should be part of Fedora's base installation.
 
 From the official repositories:
 
+- transmission-daemon
 - httpd
 - php
 - php-mbstring
 - php-process (provides posix_getuid() function)
 - php-xml
+
+Suggested (optional):
+
+- logrotate
 
 Password Security
 ===============
@@ -53,7 +65,7 @@ Then, install the .deb package (replace #.#.# with the correct version number):
 
 Then, open a web browser and visit `http://[IP of torrentwatch-xa webserver]/torrentwatch-xa`
 
-Note that the .deb package will back up any existing config file in `/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config` to `/var/lib/torrentwatch-xa/config_cache/torrentwatch-xa.config.bak`, overwriting a prior backup file if it exists.
+NOTE: When uninstalling the .deb package to start over, be sure to run `dpkg --purge torrentwatch-xa` to remove the configuration files and clear the package details from the dpkg database.
 
 Installation Script
 ===============
@@ -108,21 +120,21 @@ Manual Installation
   - `sudo mv ./torrentwatch-xa/var/www/html/torrentwatch-xa /var/www/html`
   - `sudo mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
 - Create the log file:
-  - `sudo touch /var/log/twxalog`
-  - `sudo chown www-data:www-data /var/log/twxalog`
+  - `sudo touch /var/log/torrentwatch-xa.log`
+  - `sudo chown www-data:www-data /var/log/torrentwatch-xa.log`
   - Make sure it is owned by `www-data:www-data` and has permissions `rw-r--r--` (644)
-    - `ls -l /var/log/twxalog`
+    - `ls -l /var/log/torrentwatch-xa.log`
 - If you want to use logrotate, copy the config file to `/etc/logrotate.d`.
-  - `sudo cp ./torrentwatch-xa/etc/logrotate.d/twxalog /etc/logrotate.d`
-  - Make sure `/etc/logrotate.d/twxalog` is owned by `root:root` and has permissions `rw-r--r`.
+  - `sudo cp ./torrentwatch-xa/etc/logrotate.d/torrentwatch-xa /etc/logrotate.d`
+  - Make sure `/etc/logrotate.d/torrentwatch-xa` is owned by `root:root` and has permissions `rw-r--r`.
     - `ls -l /etc/logrotate.d`
 - Allow apache2 to write to the cache folders.
   - `sudo chown -R www-data:www-data /var/lib/torrentwatch-xa/*_cache`
 - Make sure that `config_cache` and `dl_cache` are both owned by `www-data:www-data` and have permissions `drwxr-xr-x` (755)
     - `ls -l /var/lib/torrentwatch-xa`
-- Set up the cron job by copying the cron job script `torrentwatch-xa-cron` to `/etc/cron.d`.
-  - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - Make sure `/etc/cron.d/torrentwatch-xa-cron` is owned by `root:root` and has permissions `rw-r--r--` (644), or it will not run.
+- Set up the cron job by copying the cron job script `torrentwatch-xa` to `/etc/cron.d`.
+  - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa /etc/cron.d`
+  - Make sure `/etc/cron.d/torrentwatch-xa` is owned by `root:root` and has permissions `rw-r--r--` (644), or it will not run.
     - `ls -l /etc/cron.d`
 - Skip to the section __Continue below for all distros:__ below.
 
@@ -163,20 +175,20 @@ The RedHat-derived distributions have extra security features that have to be de
   - `sudo mv ./torrentwatch-xa/var/www/html/torrentwatch-xa /var/www/html`
   - `sudo mv ./torrentwatch-xa/var/lib/torrentwatch-xa /var/lib`
 - Create the log file:
-  - `sudo touch /var/log/twxalog`
-  - `sudo chown apache:apache /var/log/twxalog`
+  - `sudo touch /var/log/torrentwatch-xa.log`
+  - `sudo chown apache:apache /var/log/torrentwatch-xa.log`
   - Make sure it is owned by `apache:apache` and has permissions `rw-r--r--` (644)
-    - `ls -l /var/log/twxalog`
+    - `ls -l /var/log/torrentwatch-xa.log`
 - Allow httpd to write to the cache folders.
   - `sudo chown -R apache:apache /var/lib/torrentwatch-xa/*_cache`
   - Make sure that `config_cache` and `dl_cache` are both owned by `apache:apache` and have permissions `drwxr-xr-x` (755)
     - `ls -l /var/lib/torrentwatch-xa`
-- Set up the cron job by copying the cron job script `torrentwatch-xa-cron` to `/etc/cron.d`.
-  - `vi ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron`
+- Set up the cron job by copying the cron job script `torrentwatch-xa` to `/etc/cron.d`.
+  - `vi ./torrentwatch-xa/etc/cron.d/torrentwatch-xa`
     - IMPORTANT: change `www-data` to `apache`
     - Save the file with `:wq`
-  - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa-cron /etc/cron.d`
-  - Make sure `/etc/cron.d/torrentwatch-xa-cron` is owned by `root:root` and the permissions are `rw-r--r--` (644), or it will not run.
+  - `sudo cp ./torrentwatch-xa/etc/cron.d/torrentwatch-xa /etc/cron.d`
+  - Make sure `/etc/cron.d/torrentwatch-xa` is owned by `root:root` and the permissions are `rw-r--r--` (644), or it will not run.
     - `ls -l /etc/cron.d`
 - Continue with the section __Continue below for all distros:__ below.
 
@@ -222,7 +234,7 @@ If you wish to keep SELINUX in the default `Enforcing` mode and configure it to 
 - httpd must be able to write to these files and folders:
   - `/var/lib/torrentwatch-xa/dl_cache` and all its contents
   - `/var/lib/torrentwatch-xa/config_cache` and all its contents
-  - `/var/log/twxalog`
+  - `/var/log/torrentwatch-xa.log`
   - the watch directory where torrentwatch-xa will drop .torrent and .magnet files for transmission-daemon or some other BitTorrent client to pick up
 - httpd must be able to contact either the local or remote transmission-daemon via RPC if you have Configure > Client > Client = Transmission
 

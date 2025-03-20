@@ -23,26 +23,19 @@ Common setups:
 Status
 ===============
 
-I've posted 1.9.4 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.9.5 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-While upgrading from Ubuntu 22.04 to 24.04, I ran into two breaking bugs.
+Finally, torrentwatch-xa is provided as a .deb installation package for Debian-based LINUX distributions!
 
-1) transmission-daemon was being blocked from starting by AppArmor. To fix it, you need to edit /etc/apparmor.d/transmission and change this line:
+I had to make a few changes to the installation and upgrade processes and scripts as well as rename some files to conform to Debian/Ubuntu naming conventions.
 
-`profile transmission-daemon /usr/bin/transmission-daemon flags=(complain) {`
+- /etc/cron.d/torrentwatch-xa-cron was renamed to /etc/cron.d/torrentwatch-xa. The existing /etc/cron.d/torrentwatch-xa-cron file will be deleted by dpkg during the upgrade.
+- /var/log/twxalog was renamed to /var/log/torrentwatch-xa.log. Existing /var/log/twxalog files will not be deleted by dpkg.
+- /etc/logrotate.d/twxalog was renamed to /etc/logrotate.d/torrentwatch-xa and it now manages the new log file name above. An existing /etc/logrotate.d/twxalog file will be deleted by dpkg during the ugprade.
 
-to this:
+This repository also includes a default configuration file so that dpkg can manage it during upgrades. Most notably, this means that when you are doing a dpkg upgrade, dpkg will compare the package's included config file to your existing one and offer you the choice of keeping your old one or accepting the new one, as well as merging the two manually.
 
-`profile transmission-daemon /usr/bin/transmission-daemon flags=(complain,attach_disconnected) {`
-
-Then reboot for it to take effect. You can also force AppArmor to parse its files to avoid a restart.
-
-2) torrentwatch-xa was unable to connect to Transmission RPC because php-curl 8.3 needed an additional CURL option, CURLOPT_RETURNTRANSFER, when getting the X-Transmission-Session-Id in the first request from torrentwatch-xa to Transmission.
-
-Ubuntu 20.04 and 22.04 do not seem to mind this bug fix for Ubuntu 24.04. Given that CURLOPT_RETURNTRANSFER was being used for a very long time on the second and subsequent requests to Transmission, I do not expect this fix to affect any other php-curl versions prior to 8.3.
-
-UPDATE 2025-03-18: I finally got around to learning how to manually build a Debian/Ubuntu installation package. The resulting .deb file is in the Releases section, under 1.9.4. Please be aware that this package is very much in alpha testing. I have tested it but there may be bugs that I have not found yet. The plan is to always offer a .deb package with future releases.
-There are no plans to include the bugfix for AppArmor on Ubuntu 24 in the package, since that is the responsibility of the Ubuntu, AppArmor, or Transmission dev teams. As such, you will have to apply the bug fix yourself if you have Ubuntu 24 and AppArmor blocks Transmission from starting.
+Debian/Ubuntu would probably want me to move the config file into /etc/ but since the config file is not meant for manual editing, keeping it where it is may make more sense.
 
 Please report any bugs using Github Issues.
 

@@ -42,9 +42,14 @@ then
     echo "Cannot find new torrentwatch-xa www tree to install; exiting."
     exit
 fi
-if [ ! -e etc/cron.d/torrentwatch-xa-cron ]
+if [ ! -e etc/cron.d/torrentwatch-xa ]
 then
     echo "Cannot find new torrentwatch-xa cron job to install; exiting."
+    exit
+fi
+if [ ! -e etc/logrotate.d/torrentwatch-xa ]
+then
+    echo "Cannot find new torrentwatch-xa logrotate config file to install; exiting."
     exit
 fi
 
@@ -70,6 +75,18 @@ if [ -f /etc/cron.d/torrentwatch-xa-cron ]
 then
     sudo rm /etc/cron.d/torrentwatch-xa-cron
 fi
+if [ -f /etc/cron.d/torrentwatch-xa ]
+then
+    sudo rm /etc/cron.d/torrentwatch-xa
+fi
+if [ -f /etc/logrotate.d/twxalog ]
+then
+    sudo rm /etc/cron.d/twxalog
+fi
+if [ -f /etc/logrotate.d/torrentwatch-xa ]
+then
+    sudo rm /etc/cron.d/torrentwatch-xa
+fi
 if [ -e /var/lib/torrentwatch-xa ]
 then
     sudo rm -fr /var/lib/torrentwatch-xa
@@ -90,23 +107,23 @@ then
   sudo chown -R apache:apache /var/lib/torrentwatch-xa/*_cache
 fi
 sudo cp -R var/www/html/torrentwatch-xa /var/www/html
-sudo cp etc/cron.d/torrentwatch-xa-cron /etc/cron.d
-sudo chown root:root /etc/cron.d/torrentwatch-xa-cron
+sudo cp etc/cron.d/torrentwatch-xa /etc/cron.d
+sudo chown root:root /etc/cron.d/torrentwatch-xa
 
 
 # create the log file
 echo "Creating log file..."
-sudo touch /var/log/twxalog
-sudo chown www-data:www-data /var/log/twxalog
+sudo touch /var/log/torrentwatch-xa.log
+sudo chown www-data:www-data /var/log/torrentwatch-xa.log
 if [ $? -ne 0 ]
 then
   # try to chown the log file using Fedora default Apache user and group apache
-  sudo chown apache:apache /var/log/twxalog
+  sudo chown apache:apache /var/log/torrentwatch-xa.log
 fi
 if [ -e /etc/logrotate.d ]
 then
-    sudo cp etc/logrotate.d/twxalog /etc/logrotate.d
-    sudo chown root:root /etc/logrotate.d/twxalog
+    sudo cp etc/logrotate.d/torrentwatch-xa /etc/logrotate.d
+    sudo chown root:root /etc/logrotate.d/torrentwatch-xa
 fi
 
 # copy in the old config file

@@ -303,7 +303,7 @@ The ability to save magnet links was added to deal with the increasingly-common 
 
 If caching is enabled, the feeds' caches expire after a certain number of seconds, forcing a refresh of the cache from the feeds' sources. While the feed cache has not expired, reloading the web UI will not trigger a refresh of the feeds. This allows the web UI to be more responsive and reduces the burden on the feed sources.
 
-When the cron job runs, it sets the feed cache to expire at just under the Cron Interval value to effectively force the feeds to be refreshed once each time the cron job runs. If you wish to change the interval between cron job runs by editing torrentwatch-xa-cron, you should change the Cron Interval setting to the same interval in minutes.
+When the cron job runs, it sets the feed cache to expire at just under the Cron Interval value to effectively force the feeds to be refreshed once each time the cron job runs. If you wish to change the interval between cron job runs by editing torrentwatch-xa, you should change the Cron Interval setting to the same interval in minutes.
 
 The Cron Interval setting is not exposed through the web UI; to change it, you must edit the config file directly.
 
@@ -332,7 +332,7 @@ Then, at the command line, run:
 
 `sudo /usr/bin/php /var/www/html/torrentwatch-xa/twxa_fav_import.php <path to TSV>`
 
-You can watch the web server's syslog file (default: /var/log/syslog) for PHP errors and torrentwatch-xa's log (default: /var/log/twxalog) for import errors.
+You can watch the web server's syslog file (default: /var/log/syslog) for PHP errors and torrentwatch-xa's log (default: /var/log/torrentwatch-xa.log) for import errors.
 If there are no errors, go ahead and open torrentwatch-xa in the browser and make sure the new Favorites are imported.
 
 If the TSV file confuses PHP's fgetcsv() function, there is a good possibility you will corrupt your config file. If you have to put the backup file back, do this:

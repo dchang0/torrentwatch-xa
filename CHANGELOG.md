@@ -936,6 +936,18 @@ Code Changes
 - added missing Transmission port number in various places in the php-curl requests.
 - changed construction of the Transmission RPC URL for future HTTPS capability
 
+1.9.5
+
+Feature Changes
+
+- introduced a .deb installation package for Debian-based LINUX distributions
+  - included default config file to allow dpkg to manage config file during upgrades
+  - renamed some files to conform to Debian/Ubuntu naming convention
+    - renamed /var/log/twxalog to /var/log/torrentwatch-xa.log
+    - renamed logrotate.d config file from twxalog to torrentwatch-xa
+    - renamed /etc/cron.d/torrentwatch-xa-cron to /etc/cron.d/torrentwatch-xa
+    - updated the installation script to delete files with the older file names except /var/log/twxalog
+
 Next Version
 
 Feature Changes
