@@ -60,9 +60,7 @@ Testing Targets
 The main testing targets that I use for development are:
 
 - Ubuntu 24.04 (PHP 8.3)
-- Ubuntu 20.04 (PHP 7.4)
-
-I was testing on Ubuntu 22.04 (PHP 8.1) for quite a while but upgraded that server to Ubuntu 24.04.
+- Ubuntu 22.04 (PHP 8.1)
 
 Really, what torrentwatch-xa is affected most by is the PHP version and whether or not a PHP module/library is installed or not, not the OS. All other LINUX distros should work fine so long as they don't modify PHP too much.
 
