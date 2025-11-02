@@ -65,7 +65,7 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['Combine Feeds'] = "0";
     $config_values['Settings']['Disable Hide List'] = "0";
     $config_values['Settings']['Show Debug'] = "0";
-    $config_values['Settings']['Check for Updates'] = "1";
+    $config_values['Settings']['Check for Updates'] = "0";
     $config_values['Settings']['Time Zone'] = "UTC";
     $config_values['Settings']['Log Level'] = "0";
     // Client tab
@@ -141,13 +141,6 @@ function writeDefaultConfigFile() {
             'enabled' => 0,
             'Name' => 'TokyoTosho.info Anime',
             'Website' => 'https://www.tokyotosho.info'
-        ],
-        4 => [
-            'Link' => 'https://www.acgnx.se/rss.xml',
-            'seedRatio' => "",
-            'enabled' => 0,
-            'Name' => 'AcgnX Torrent Resources Base.Global',
-            'Website' => 'https://www.acgnx.se'
         ]
     ];
     setpHPTimeZone($config_values['Settings']['Time Zone']);
@@ -574,6 +567,7 @@ function addSuperFavoriteFromgET() {
         $superfavInfo['feed'] = $_GET['feed'];
     }
     //$superfavInfo['title'] = $_GET['name']; // not needed for Super-Favorites
+    $config_values['Super-Favorites'][$idx]['lastUpdated'] = time();
     writejSONConfigFile();
     return(json_encode($superfavInfo));
 }
@@ -703,6 +697,7 @@ function addFavoriteFromParams(
     } else {
         $config_values['Favorites'][$targetidx]['Episode'] = "";
     }
+    $config_values['Favorites'][$targetidx]['lastUpdated'] = time();
     writejSONConfigFile();
     // assume success by now
     return [
@@ -821,6 +816,7 @@ function addFavoriteFromgET() { //TODO rewrite this as wrapper to addFavoriteFro
             $favInfo['season'] = $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0
         }
     }
+    $config_values['Favorites'][$idx]['lastUpdated'] = time();
     writejSONConfigFile();
     return(json_encode($favInfo));
 }
@@ -889,6 +885,7 @@ function updateFavoriteEpisode(&$fav, $ti) {
             // season batch end is not numeric, not sure what to do
             return false;
         }
+        $fav['lastUpdated'] = time();
         return(writejSONConfigFile());
     } else {
         return false;
@@ -933,6 +930,7 @@ function addFeed($feedItem) {
             ) {
                 $config_values['Feeds'][$idx]['Website'] = filter_var($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'], FILTER_VALIDATE_URL);
             }
+            $config_values['Feeds'][$idx]['lastUpdated'] = time();
         } else {
             writeToLog("Could not connect to and parse feed: " . $feedItem['feedLink'] . "\n", -1);
         }
@@ -1040,6 +1038,7 @@ function updateFeed() {
                                 }
                             }
                             if ($feedItemChanged === true) {
+                                $config_values['Feeds'][$idx]['lastUpdated'] = time();
                                 $writeChanges = true;
                                 writeToLog("Updated feed: $oldFeedLink\n", 1);
                             }
