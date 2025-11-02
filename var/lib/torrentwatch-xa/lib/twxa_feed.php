@@ -517,7 +517,6 @@ function checkItemMatchesSuperFavorite($superfav, $item, $feedUrl, $matchStyle =
     $ti = strtolower($item['title']);
     if (checkItemTitleMatchesSuperFavorite($superfav, $ti, $feedUrl, $matchStyle)) {
         $guessItem = detectMatch($ti);
-        writeToLog("reqEpisodeInfo = $reqEpisInfo\n", 2);
         if (
                 $reqEpisInfo != 1 ||
                 (
