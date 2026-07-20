@@ -280,7 +280,10 @@ function set_client_passwd(&$configClientPassword) {
 }
 
 function decryptsMTPPassword($encryptedPassword) {
-    return base64_decode(preg_replace('/^\$%&(.*)\$%&$/', '$1', $encryptedPassword));
+    if (preg_match('/^\$%&(.*)\$%&$/', $encryptedPassword, $matches)) {
+        return base64_decode($matches[1]);
+    }
+    return $encryptedPassword;
 }
 
 function set_smtp_passwd() {

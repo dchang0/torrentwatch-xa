@@ -781,7 +781,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                 if ($clientType !== 'folder') {
                     $torHash = get_torHash($cache_file);
                 }
-                if ($itemState === 'st_notAMatch') {
+                if ($itemState === 'st_notAMatch' || $itemState === 'st_favTooOld') {
                     $itemState = 'st_inCache'; // not a Favorite but is seen in cache--probably a manual download or a deleted Favorite
                 }
             }

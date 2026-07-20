@@ -23,19 +23,12 @@ Common setups:
 Status
 ===============
 
-I've posted 1.9.5 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.9.6 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-Finally, torrentwatch-xa is provided as a .deb installation package for Debian-based LINUX distributions!
+I've finally started fixing some of the bugs in my long TODO list. For now, I'm focusing on a mix of low-risk UI bug fixes with improvements to some of the core title parser functions.
+Small changes will be made cautiously and scattered in a way that it will be easy to determine which changes went awry.
 
-I had to make a few changes to the installation and upgrade processes and scripts as well as rename some files to conform to Debian/Ubuntu naming conventions.
-
-- /etc/cron.d/torrentwatch-xa-cron was renamed to /etc/cron.d/torrentwatch-xa. The existing /etc/cron.d/torrentwatch-xa-cron file will be deleted by dpkg during the upgrade.
-- /var/log/twxalog was renamed to /var/log/torrentwatch-xa.log. Existing /var/log/twxalog files will not be deleted by dpkg.
-- /etc/logrotate.d/twxalog was renamed to /etc/logrotate.d/torrentwatch-xa and it now manages the new log file name above. An existing /etc/logrotate.d/twxalog file will be deleted by dpkg during the ugprade.
-
-This repository also includes a default configuration file so that dpkg can manage it during upgrades. Most notably, this means that when you are doing a dpkg upgrade, dpkg will compare the package's included config file to your existing one and offer you the choice of keeping your old one or accepting the new one, as well as merging the two manually.
-
-Debian/Ubuntu would probably want me to move the config file into /etc/ but since the config file is not meant for manual editing, keeping it where it is may make more sense.
+Also, I plan on leaving the Ubuntu ecosystem due to their major release schedule being a bit too fast for me; I prefer Debian's slower major release schedule for my server builds. For now, the only change is that I am dropping Ubuntu 22 (PHP 8.1) as a testing target.
 
 Please report any bugs using Github Issues.
 
@@ -57,10 +50,9 @@ See:
 Testing Targets
 ===============
 
-The main testing targets that I use for development are:
+The main testing target that I use for development is:
 
 - Ubuntu 24.04 (PHP 8.3)
-- Ubuntu 22.04 (PHP 8.1)
 
 Really, what torrentwatch-xa is affected most by is the PHP version and whether or not a PHP module/library is installed or not, not the OS. All other LINUX distros should work fine so long as they don't modify PHP too much.
 

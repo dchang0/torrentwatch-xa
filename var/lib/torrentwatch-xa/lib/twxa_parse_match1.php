@@ -5,7 +5,7 @@
 function matchTitle1_1_1($ti, $seps) {
     // Season, Temporada; should also catch Season ## Complete
     $mat = [];
-    $re = "/(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?S?(\d+)\b.*/i";
+    $re = "/(" . SEASON_WORDS . ")[$seps]?S?(\d+)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1, // assume Video Media

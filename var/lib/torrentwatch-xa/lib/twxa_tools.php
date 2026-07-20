@@ -1,5 +1,8 @@
 <?php
 
+define('TWXA_VERSION', '1.9.6');
+define('TWXA_PLATFORM', php_uname("s") . " " . php_uname("r") . " " . php_uname("m"));
+
 global $config_values;
 
 // Prerequisite PHP JSON, PHP cURL, PHP XML, and PHP mbstring packages are assumed to be installed.
@@ -35,7 +38,6 @@ function multi_str_search($haystack, $needles) {
 function fillCurlOptions($curlOptions = null) {
     // fills out missing curl options for PHP curl
     // existing options get precedence
-    global $twxa_version;
     (isset($curlOptions[CURLOPT_CONNECTTIMEOUT]) && is_integer($curlOptions[CURLOPT_CONNECTTIMEOUT])) ?: $curlOptions[CURLOPT_CONNECTTIMEOUT] = 20;
     (isset($curlOptions[CURLOPT_SSL_VERIFYPEER]) && is_bool($curlOptions[CURLOPT_SSL_VERIFYPEER])) ?: $curlOptions[CURLOPT_SSL_VERIFYPEER] = false;
     (isset($curlOptions[CURLOPT_SSL_VERIFYHOST]) && is_bool($curlOptions[CURLOPT_SSL_VERIFYHOST])) ?: $curlOptions[CURLOPT_SSL_VERIFYHOST] = false;
@@ -48,7 +50,7 @@ function fillCurlOptions($curlOptions = null) {
     } else {
         $userAgent = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
         if ($userAgent === false || $userAgent === null || $userAgent === '') {
-            $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
+            $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION . " (" . TWXA_PLATFORM . ")";
         } else {
             $curlOptions[CURLOPT_USERAGENT] = $userAgent;
         }

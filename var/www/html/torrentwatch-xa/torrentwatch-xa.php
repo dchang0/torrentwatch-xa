@@ -9,11 +9,8 @@ error_reporting(E_ALL);
 require_once("config.php");
 require_once("twxa_tools.php");
 
-$twxa_version[0] = "1.9.5";
-$twxa_version[1] = php_uname("s") . " " . php_uname("r") . " " . php_uname("m");
-
 // parses commands sent from web UI (usually torrentwatch-xa.js)
-function parse_options($twxa_version) {
+function parse_options() {
     global $html_out, $config_values;
 
     array_keys($_GET);
@@ -190,7 +187,7 @@ function parse_options($twxa_version) {
         case 'checkVersion':
             global $config_values;
             if ($config_values['Settings']['Check for Updates'] == 1) {
-                echo checkVersion($twxa_version);
+                echo checkVersion();
             }
             exit;
         case 'get_dialog_data':
@@ -666,13 +663,13 @@ function checkPathReadableAndWriteable($path, $description, $uID) {
     }
 }
 
-function checkVersion($twxa_version) {
+function checkVersion() {
     if (!isset($_COOKIE['VERSION-CHECK'])) { //TODO replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
-        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/$twxa_version[0] ($twxa_version[1])";
-        $latestFromWebsite = getCurl('http://silverlakecorp.com/torrentwatch-xa/VERSION.txt', $curlOptions);
+        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION . " (" . TWXA_PLATFORM . ")";
+        $latestFromWebsite = getCurl('https://raw.githubusercontent.com/dchang0/torrentwatch-xa/refs/heads/master/VERSION.txt', $curlOptions);
         if (preg_match('/^\d+\.\d+\.\d+$/', $latestFromWebsite)) {
             $isLatestHigher = false;
-            $thisVersion = explode(".", $twxa_version[0]);
+            $thisVersion = explode(".", TWXA_VERSION);
             $latestVersion = explode(".", $latestFromWebsite);
 
             // Assume there are 3 numeric parts to the version number; compare them part by part
@@ -729,7 +726,7 @@ readjSONConfigFile();
 $config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";
 
-parse_options($twxa_version);
+parse_options();
 if (checkpHPRequirements()) {
     return;
 }
@@ -748,7 +745,7 @@ if ($config_values['Settings']['Client'] == "Transmission") {
 }
 closehTML($html_out);
 
-echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">$twxa_version[0]</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a> or <a href=\"https://coindrop.to/dchang0\" target=\"_blank\">buy me a coffee</a> to support this project&mdash;thanks!</div>";
+echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">" . TWXA_VERSION . "</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a> or <a href=\"https://coindrop.to/dchang0\" target=\"_blank\">buy me a coffee</a> to support this project&mdash;thanks!</div>";
 
 close_feed_lists_container($html_out);
 

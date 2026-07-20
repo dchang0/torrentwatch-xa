@@ -3,22 +3,8 @@
 // contains just the matchTitle functions for exactly 6 numbers found in the title
 
 function matchTitle6_1($ti, $seps) {
-    // ##x##v# - ##x##v#
-    $mat = [];
-    $re = "/\b(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})[$seps]?[Vv](\d{1,2})[$seps]?-[$seps]?(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})[$seps]?[Vv](\d{1,2})\b.*/";
-    if (preg_match($re, $ti, $mat)) {
-        return [
-            'medTyp' => 1,
-            'numSeq' => 1,
-            'seasSt' => $mat[1],
-            'seasEd' => $mat[4],
-            'episSt' => $mat[2],
-            'episEd' => $mat[5],
-            'itemVr' => $mat[6], // ignore the start version number
-            'favTi' => preg_replace($re, "", $ti),
-            'matFnd' => "6_1"
-        ];
-    }
+    // DEPRECATED: use matchTitleBatchRange instead
+    return matchTitleBatchRange($ti, $seps);
 }
 
 function matchTitle6_2($ti, $seps) {
@@ -40,7 +26,7 @@ function matchTitle6_2($ti, $seps) {
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "6_2-1"
             ];
-        } else if (validateYYYYMMDD($mat[3] . $mat[1] . $mat[2]) && validateYYYYMMDD($mat[3] . $mat[1] . $mat[2])) {
+        } else if (validateYYYYMMDD($mat[3] . $mat[1] . $mat[2]) && validateYYYYMMDD($mat[6] . $mat[4] . $mat[5])) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -52,7 +38,7 @@ function matchTitle6_2($ti, $seps) {
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "6_2-2"
             ];
-        } else if (validateYYYYMMDD($mat[3] . $mat[2] . $mat[1]) && validateYYYYMMDD($mat[3] . $mat[2] . $mat[1])) {
+        } else if (validateYYYYMMDD($mat[3] . $mat[2] . $mat[1]) && validateYYYYMMDD($mat[6] . $mat[5] . $mat[4])) {
             return [
                 'medTyp' => 1,
                 'numSeq' => 1,
@@ -69,29 +55,6 @@ function matchTitle6_2($ti, $seps) {
 }
 
 function matchTitle6_3($ti, $seps) {
-    // isolated E1 E2 E3 E4 E5 E6
-    $mat = [];
-    $re = "/\b(\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})\b.*/";
-    if (preg_match($re, $ti, $mat)) {
-        if (
-                (int)$mat[1] + 1 === (int)$mat[2] &&
-                (int)$mat[1] + 2 === (int)$mat[3] &&
-                (int)$mat[1] + 3 === (int)$mat[4] &&
-                (int)$mat[1] + 4 === (int)$mat[5] &&
-                (int)$mat[1] + 5 === (int)$mat[6]
-        ) {
-            // almost certainly sequence of episodes
-            return [
-                'medTyp' => 1,
-                'numSeq' => 1,
-                'seasSt' => 1,
-                'seasEd' => 1,
-                'episSt' => $mat[1],
-                'episEd' => $mat[6],
-                'itemVr' => 1,
-                'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "6_3"
-            ];
-        }
-    }
+    // DEPRECATED: use matchTitleSequential instead
+    return matchTitleSequential($ti, $seps, 6);
 }

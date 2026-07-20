@@ -1,6 +1,7 @@
 <?php
 
-// contains just the matchTitle functions for exactly 4 numbers found in the title
+// contains matchTitle functions for exactly 4 numbers found in the title
+// plus shared unified functions (matchTitleBatchRange, matchTitleSequential) used by levels 4-6
 
 function matchTitle4_1($ti, $seps) {
     // v##-## (YYYY-YYYY)
@@ -63,47 +64,69 @@ function matchTitle4_2($ti, $seps) {
     }
 }
 
-function matchTitle4_3($ti, $seps) {
-    // ##x## - ##x##
+function matchTitleBatchRange($ti, $seps) {
+    // Unified batch range: handles 4, 5, and 6 numbers
+    // 4: ##x## - ##x##
+    // 5: ##x## - ##x##v#  or  ##x##v# - ##x##
+    // 6: ##x##v# - ##x##v#
     $mat = [];
-    $re = "/\b(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})[$seps]?-[$seps]?(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})\b.*/";
+    $re = "/\b(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})(?:[$seps]?[Vv](\d{1,2}))?[$seps]?-[$seps]?(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})(?:[$seps]?[Vv](\d{1,2}))?\b.*/";
     if (preg_match($re, $ti, $mat)) {
+        $itemVr = 1;
+        if (isset($mat[6]) && $mat[6] !== "") {
+            $itemVr = $mat[6];
+        } else if (isset($mat[3]) && $mat[3] !== "") {
+            $itemVr = $mat[3];
+        }
         return [
             'medTyp' => 1,
             'numSeq' => 1,
             'seasSt' => $mat[1],
-            'seasEd' => $mat[3],
+            'seasEd' => $mat[4],
             'episSt' => $mat[2],
-            'episEd' => $mat[4],
-            'itemVr' => 1,
+            'episEd' => $mat[5],
+            'itemVr' => $itemVr,
             'favTi' => preg_replace($re, "", $ti),
-            'matFnd' => "4_3"
+            'matFnd' => "batch_range"
         ];
     }
 }
 
-function matchTitle4_4($ti, $seps) {
-    // isolated E1 E2 E3 E4
+function matchTitleSequential($ti, $seps, $count) {
+    // Unified sequential episodes: handles 4, 5, or 6 consecutive numbers
     $mat = [];
-    $re = "/\b(\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})[$seps](\d{1,3})\b.*/";
-    if (preg_match($re, $ti, $mat)) {
-        if (
-                (int) $mat[1] + 1 === (int) $mat[2] &&
-                (int) $mat[1] + 2 === (int) $mat[3] &&
-                (int) $mat[1] + 3 === (int) $mat[4]
-        ) {
-            // almost certainly sequence of episodes
-            return [
-                'medTyp' => 1,
-                'numSeq' => 1,
-                'seasSt' => 1,
-                'seasEd' => 1,
-                'episSt' => $mat[1],
-                'episEd' => $mat[4],
-                'itemVr' => 1,
-                'favTi' => preg_replace($re, "", $ti),
-                'matFnd' => "4_4"
-            ];
-        }
+    $re = "/\\b(\\d{1,3})";
+    for ($i = 2; $i <= $count; $i++) {
+        $re .= "[$seps](\\d{1,3})";
     }
+    $re .= "\\b.*/";
+
+    if (preg_match($re, $ti, $mat)) {
+        for ($i = 2; $i <= $count; $i++) {
+            if ((int)$mat[$i] !== (int)$mat[1] + ($i - 1)) {
+                return null;
+            }
+        }
+        return [
+            'medTyp' => 1,
+            'numSeq' => 1,
+            'seasSt' => 1,
+            'seasEd' => 1,
+            'episSt' => $mat[1],
+            'episEd' => $mat[$count],
+            'itemVr' => 1,
+            'favTi' => preg_replace($re, "", $ti),
+            'matFnd' => $count . "_seq"
+        ];
+    }
+}
+
+function matchTitle4_3($ti, $seps) {
+    // DEPRECATED: use matchTitleBatchRange instead
+    return matchTitleBatchRange($ti, $seps);
+}
+
+function matchTitle4_4($ti, $seps) {
+    // DEPRECATED: use matchTitleSequential instead
+    return matchTitleSequential($ti, $seps, 4);
 }

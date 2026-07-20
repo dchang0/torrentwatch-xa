@@ -24,7 +24,7 @@ function matchTitle2_0($ti, $seps) {
 function matchTitle2_1($ti, $seps) {
     // S01v2 or S01.v2
     $mat = [];
-    $re = "/(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?(\d{1,2})[$seps]?v[$seps]?(\d{1,2})\b.*/i";
+    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?v[$seps]?(\d{1,2})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
@@ -47,7 +47,7 @@ function matchTitle2_2($ti, $seps) {
     // Seas 2, Epis 3
     // S3 - E6
     $mat = [];
-    $re = "/(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?(\d{1,2})[\,\-$seps]{0,3}(Episode|Epizode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4})\b.*/i";
+    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[\,\-$seps]{0,3}(" . EPISODE_WORDS . ")[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
@@ -68,6 +68,19 @@ function matchTitle2_1000($ti, $seps) {
     $mat = [];
     $re = "/\b([A-Za-z]+\.?)[$seps]?(\d{1,4})(\ \-\ |\,\ |\-|\,|\.|\ |)([A-Za-z]+\.?)[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
+        //TODO switch to handle these patterns:
+        // S01v2 or S01.v2
+        // S##E## is already handled by short-circuit, but do these:
+            // Season 1 Episode 10
+    // Se.2.Ep.5
+    // Seas 2, Epis 3
+    // S3 - E6
+        //TODO add S01 PART2 as part of word##word##
+        // V##.## (Software Version ##.##)
+        // isolated S1 #10
+        // ID-## - ## (different spacing around minuses)
+        $firstWord = strtolower($mat[1]);
+        $secondWord = strtolower($mat[4]);
         return [
             'medTyp' => 1,
             'numSeq' => 1,
@@ -251,7 +264,7 @@ function matchTitle2_5($ti, $seps) {
 function matchTitle2_6($ti, $seps) {
     // (Season, Temporada ##) - ###
     $mat = [];
-    $re = "/\([$seps]?(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?(\d{1,2})[$seps]?\)[\-$seps]{0,3}(\d{1,4}).*/i";
+    $re = "/\([$seps]?(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?\)[\-$seps]{0,3}(\d{1,4}).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,

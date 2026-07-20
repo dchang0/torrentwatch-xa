@@ -90,7 +90,7 @@ if (isset($style)) {
         </div>
     </div>-->
     <div class="buttonContainer">
-        <a class="submitForm button" id="Update" href="#superfavorite_<?php echo $key ?>">Update</a>
-        <a class="submitForm button" id="Delete" href="#superfavorite_<?php echo $key ?>">Delete</a>
+        <a class="submitForm button" id="superfavorite_<?php echo $key ?>_Update" href="#superfavorite_<?php echo $key ?>">Update</a>
+        <a class="submitForm button" id="superfavorite_<?php echo $key ?>_Delete" href="#superfavorite_<?php echo $key ?>">Delete</a>
     </div>
 </form>

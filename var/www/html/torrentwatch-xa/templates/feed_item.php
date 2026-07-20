@@ -92,7 +92,7 @@ print <<< EOH
 <input type="hidden" class="link_type" value="$linkType"/>
 <input type="hidden" class="magnet_link" value="$magnetLink"/>
 <input type="hidden" class="feed_link" value="$feed"/>
-<input type="hidden" class="client_id" value="$id"/>
+<input type="hidden" class="feed_item_id" value="$id"/>
 <table width="100%" cellspacing="0">
 <tr>
 <td class="identifier"></td>

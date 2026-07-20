@@ -900,19 +900,19 @@ Code Changes
 
 1.9.1
 
-Feature Changes
+Functional Changes
 
 - added Super-Favorites Episodes filter
 
 1.9.2
 
-Feature Changes
+Functional Changes
 
 - added many new pattern detection algorithms and fixed a few existing ones
 
 1.9.3
 
-Feature Changes
+Functional Changes
 
 - added a few new pattern detection algorithms and fixed a few existing ones
 - removed Lucida Grande, Tahoma, and Verdana fonts because they were ruining the layout of the Favorites dialog in FireFox
@@ -926,7 +926,7 @@ Code Changes
 
 1.9.4
 
-Feature Changes
+Functional Changes
 
 - added a link to pop-out the Transmission web UI into a new web browser page to modal dialog title bar
 
@@ -938,7 +938,7 @@ Code Changes
 
 1.9.5
 
-Feature Changes
+Functional Changes
 
 - introduced a .deb installation package for Debian-based LINUX distributions
   - included default config file to allow dpkg to manage config file during upgrades
@@ -948,66 +948,31 @@ Feature Changes
     - renamed /etc/cron.d/torrentwatch-xa-cron to /etc/cron.d/torrentwatch-xa
     - updated the installation script to delete files with the older file names except /var/log/twxalog
 
-Next Version
+1.9.6
 
-Feature Changes
+Functional Changes
 
-IN PROGRESS
-
-- use a single curl_init() for as many curl_exec() calls as possible to improve performance
-- strip down CURL options to bare minimum needed for Transmission RPC
-- add some kind of error handler for multiple timed-out CURL requests in a row
-
-- merge Javascript-side's #clientError div and showClientError() into #twError div and $.fn.showErrorPanel()
-- maybe merge PHP-side's #errorDialog div into #twError div
-
-- Add Favorite and Hide Item in client buttons bar don't go away if the item is already in favorites or already hidden, respectively
-- if Transmission list is empty and cookie is older than 1 hour, switch to the All filter
-- fix rare bug where button bar stays visible when multiple items are trashed from Transmission list
-- fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
-
-- fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
-- change reload button so that it doesn't clear the Filter textbox OR add Lock checkbox to the filter
-
-- Upload/Download rates still show when Client is changed to Folder, but it goes away on reload
-
-- Started downloading item with Download button in web UI, then Trashed it completely, switched to Client = "Save .torrent/magnet: Files In Folder", and item switched from st_inCacheNotActive to st_downloading state; it switches back to st_downloading if Client is changed back to Transmission, even though the item is clearly not being downloaded
-
-- check if st_noURL item state can be used when item is missing any URL
-
-- Move torrent button should be disabled when switching Client to Transmission and torrents are in Transmission filter, but this goes away on reload
+- removed acgnx.se feed from default feeds due to inability to access it
+- added lastUpdated UNIX timestamps to Favorites, Super-Favorites, and Feeds
+- changed default for "Check for Updates" to false
+- changed URL for "Check for Updates" to use GitHub repo's VERSION.txt
+- fixed bug where clicking SMTP Notification's Test button only worked after the Save
 
 Code Changes
 
-IN PROGRESS
+- started using SEASON_WORDS across some pattern matching functions
+- consolidated some matching functions in twxa_parse_match4.php through twxa_parse_match6.php
+- fixed date validation bug in matchTitle6_2()
+- gave all Update and Delete buttons in Favorites and Super-Favorites dialogs unique ids
+- renamed client_id to feed_item_id to disambiguate it from clientId
+- started performance-tuning JQuery .each loops with updateMatchCounts and processTransmissionData
+- removed empty CSS rulesets, added missing user-select
+- fixed Upload/Download rates still showing when Client changed to Folder
+- fixed rare bug where button bar stays visible when multiple items are trashed from Transmission list
+- fixed Move torrent button not being disabled when switching Client to Transmission and torrents are in Transmission filter
+- fixed "Error connecting to Transmission" Javascript alert staying open even after successful re-connection to Transmission
+- fixed bug when torrent item is removed from another browser session, this browser doesn't figure it out
+- fixed old st_favTooOld bug where it would override an active download/seeding
+- defined .showMe() and .hideMe() once per page load
+- changed $twxa_version from global to define
 
-- combine more pattern detectors
-  - word ## -|through|thru|to ##
-  - word ## - word ##
-  - ## - word ## (could be difficult)
-  - word ## (including Month YYYY)
-
-- after switching pattern detectors to word-based patterns, move Volume|, Chapter|, Season|, Episode| word matches to functions
-
-- whatever is highlighted should stay highlighted even when the mouse moves; use lighter highlight for mouseover, darker for selected--same as in torrent list
-
-- give all Update and Delete buttons in Favorites and Super-Favorites dialogs unique ids 
-
-- refactor old Add Favorites PHP functions to wrap addFavoriteFromParams()
-
-- rewrite check_cache() and check_cache_episode() so that they are inverted; use check_cache() in processFeed()
-
-- getBestTorrentOrMagnetLinks() only needs to be called once, when the feed is parsed and not in show_feed_item(); major rewrite to refer to feed cache unless cache is disabled
-
-- rename $output to $result when appropriate: $result is typically a boolean result returned by a function; $output is typically a string returned by a function
-- modify PicoFeed to provide getDescription for each RSS feed item description or each Atom feed item summary
-- clicking Test button with blank/default SMTP settings failed (clicking Test only worked after the Save, but it should work before the Save)
-- JQuery.fx.interval is deprecated (might be a benign warning)
-- continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
-- move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
-- add function that detects errors in $config_values
-- figure out window.gotAllData logic, maybe merge window.gotAllData into window.updatingClientData or remove one
-  - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
-- continue cleaning up CSS with csslint.net
-
-- use PicoFeed's Curl class where appropriate

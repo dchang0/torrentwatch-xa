@@ -101,7 +101,7 @@ function matchTitle3_4($ti, $seps) {
     // explicit S## E### - ### or S## ( E### - ### )
     // must have minus or space between E### or E## will match
     $mat = [];
-    $re = "/(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?(\d{1,2})[$seps]?[\,\-\(]?[$seps]?(Episodes|Episode|Epizodes|Epizode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\)?\b.*/i";
+    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?[\,\-\(]?[$seps]?(" . EPISODE_WORDS . ")[$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\)?\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,
@@ -220,7 +220,7 @@ function matchTitle3_8($ti, $seps) {
 function matchTitle3_9($ti, $seps) {
     // explicit S##E###.#
     $mat = [];
-    $re = "/(Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSais\.|\bSea|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT)[$seps]?(\d{1,2})[$seps]?[\,\-]?[$seps]?(Episode|Epizode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E|[$seps])[$seps]?(\d{1,4}\.\d)\b.*/i";
+    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?[\,\-]?[$seps]?(" . EPISODE_WORDS . "|[$seps])[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => 1,

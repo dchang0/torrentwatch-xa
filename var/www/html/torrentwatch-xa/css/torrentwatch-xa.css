@@ -369,15 +369,6 @@ label.category {
     padding: 0 5px 0 5px;
 }
 
-#clientButtons li.button .start,
-#clientButtons li.button .resume,
-#clientButtons li.button .pause,
-#clientButtons li.button .delete,
-#clientButtons li.button .trash,
-#clientButtons li.button .move_button,
-#clientButtons li.close .hidden
-{}
-
 #clientButtons li.disabled,
 #clientButtons li.disabled:hover {
     border-bottom: 1px solid #aaa;
@@ -431,6 +422,7 @@ ul.show_legend li {
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
+    user-select: none;
 }
 
 #torrentlist_container div.errorHeader {
@@ -1135,8 +1127,6 @@ div.legend input {
     z-index: 99;
     margin-left: -125px;
 }
-
-.progressbar .dialog_window {}
 
 /*****************************
  * C O N F I G   D I A L O G

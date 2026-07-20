@@ -7,8 +7,8 @@ function matchTitle6_($ti, $seps, $wereQualitiesDetected = false) {
     switch (true) {
         //TODO ####-#### as v####-#### + ####-#### (show as chapters first #### to last ####, even though it may skip some chapters)
         case true:
-            // scan for ##x##v#-##x##v#
-            $result = matchTitle6_1($ti, $seps);
+            // scan for ##x##v?-##x##v? (batch range)
+            $result = matchTitleBatchRange($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -20,7 +20,7 @@ function matchTitle6_($ti, $seps, $wereQualitiesDetected = false) {
             }
         case true:
             // isolated E1 E2 E3 E4 E5 E6
-            $result = matchTitle6_3($ti, $seps);
+            $result = matchTitleSequential($ti, $seps, 6);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -36,20 +36,14 @@ function matchTitle5_($ti, $seps, $wereQualitiesDetected = false) {
     switch (true) {
         //TODO ####-#### as v####-#### + #### (show as chapters first #### to last ####, even though it may skip some chapters)
         case true:
-            // ##x## - ##x##v#
-            $result = matchTitle5_1($ti, $seps);
-            if (isset($result['matFnd'])) {
-                break;
-            }
-        case true:
-            // ##x##v# - ##x##
-            $result = matchTitle5_2($ti, $seps);
+            // ##x##v? - ##x##v? (batch range)
+            $result = matchTitleBatchRange($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true:
             // isolated E1 E2 E3 E4 E5
-            $result = matchTitle5_3($ti, $seps);
+            $result = matchTitleSequential($ti, $seps, 5);
             if (isset($result['matFnd'])) {
                 break;
             }
@@ -77,13 +71,13 @@ function matchTitle4_($ti, $seps, $wereQualitiesDetected = false) {
             }
         case true:
             // scan for ##x##-##x##
-            $result = matchTitle4_3($ti, $seps);
+            $result = matchTitleBatchRange($ti, $seps);
             if (isset($result['matFnd'])) {
                 break;
             }
         case true:
             // isolated E1 E2 E3 E4
-            $result = matchTitle4_4($ti, $seps);
+            $result = matchTitleSequential($ti, $seps, 4);
             if (isset($result['matFnd'])) {
                 break;
             }

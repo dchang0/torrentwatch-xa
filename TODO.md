@@ -1,41 +1,107 @@
 TODO List
 ===============
 
+Next Version
+
+Functional Changes
+
+IN PROGRESS
+
+- use a single curl_init() for as many curl_exec() calls as possible to improve performance
+- strip down CURL options to bare minimum needed for Transmission RPC
+- add some kind of error handler for multiple timed-out CURL requests in a row
+
+- merge Javascript-side's #clientError div and showClientError() into #twError div and $.fn.showErrorPanel()
+- maybe merge PHP-side's #errorDialog div into #twError div
+
+- Add Favorite and Hide Item in client buttons bar don't go away if the item is already in favorites or already hidden, respectively
+
+- if Transmission list is empty and cookie is older than 1 hour, switch to the All filter
+
+- fix vertical alignment of title line in Transmission filter on iPhone (first line of text sits too low and is too close to the progress bar)
+
+- fix slow timeout on first processClientData update of active torrent items after browser refresh (may be related to window.gotAllData)
+
+- change reload button so that it doesn't clear the Filter textbox OR add Lock checkbox to the filter
+
+- Started downloading item with Download button in web UI, then Trashed it completely, switched to Client = "Save .torrent/magnet: Files In Folder", and item switched from st_inCacheNotActive to st_downloading state; it switches back to st_downloading if Client is changed back to Transmission, even though the item is clearly not being downloaded
+
+- check if st_noURL item state can be used when item is missing any URL
+
+- History file dl_history is deleted when clearing Torrent cache
+  (clear_cache('torrents') uses glob "dl_*" which matches dl_history)
+  Fix: rename to just "history" in getDownloadHistoryFile()
+
+Code Changes
+
+IN PROGRESS
+
+- combine more pattern detectors
+  - word ## -|through|thru|to ##
+  - word ## - word ##
+  - ## - word ## (could be difficult)
+  - word ## (including Month YYYY)
+
+- after switching pattern detectors to word-based patterns, move Volume|, Chapter|, Season|, Episode| word matches to functions
+
+- whatever is highlighted should stay highlighted even when the mouse moves; use lighter highlight for mouseover, darker for selected--same as in torrent list
+
+- refactor old Add Favorites PHP functions to wrap addFavoriteFromParams()
+
+- rewrite check_cache() and check_cache_episode() so that they are inverted; use check_cache() in processFeed()
+
+- getBestTorrentOrMagnetLinks() only needs to be called once, when the feed is parsed and not in show_feed_item(); major rewrite to refer to feed cache unless cache is disabled
+
+- rename $output to $result when appropriate: $result is typically a boolean result returned by a function; $output is typically a string returned by a function
+- modify PicoFeed to provide getDescription for each RSS feed item description or each Atom feed item summary
+- continue adding filter_input() in some reads (not writes) of $_GET or $_SERVER
+- move set_client_passwd() and set_smtp_passwd() calls outside of writejSONConfigFile() so that they are only run when needed
+- add function that detects errors in $config_values
+- figure out window.gotAllData logic, maybe merge window.gotAllData into window.updatingClientData or remove one
+  - setting window.gotAllData = 0 at end of processClientData causes progressBar to disappear from active torrents in #torrentlist_container
+- continue cleaning up CSS with csslint.net
+
+- use PicoFeed's Curl class where appropriate
+
+RECENTLY DONE (1.9.6)
+
+- used SEASON_WORDS constants across some pattern matching functions
+- consolidated some matching functions in twxa_parse_match4.php through twxa_parse_match6.php
+- fixed date validation bug in matchTitle6_2() (MM DD YYYY vs DD MM YYYY end-date not validated)
+- gave all Update and Delete buttons in Favorites and Super-Favorites dialogs unique ids
+- performance-tuned JQuery .each loops with updateMatchCounts and processTransmissionData
+- removed empty CSS rulesets, added missing user-select property
+
+
 ## Validating files
 
 These files have been completely validated (no functions inside them need improvement):
 
-- twxa_cache.php
 - twxa_html.php
 - twxa_parse_match*.php
 - twxa_test_parser.php
 
 All other files have functions that need improvement or rewrites or validation.
 
+NOTE: twxa_cache.php was previously listed as validated but has been removed pending review
+of the clear_cache() / delete_cache_files() glob collision with dl_history.
+
 ## Throughout all versions
 
-- improve performance
-- improve debugging and commenting
-- refactor when reasonable
 - conform all names to Zend naming convention detailed at: http://framework.zend.com/manual/1.12/en/coding-standard.naming-conventions.html
-
-## Testing tasks
-
-- what is the purpose of getClient()'s `clientId`, `clientId_`, and `client_id` and the difference between them? `clientId_` is how torrentwatch-xa.js keeps track of items in #transmission_list, but what does `client_id` do? client_id seems to be needed in .processSelected()
 
 ## Code cleanup tasks
 
 - fix collision between ul#torrentlist and ul.torrentlist in phone.css and twxa_html.php
 - move $items assignment from inside process_feed() up to process_all_feeds()
-- simplify/performance-tune JQuery code, especially implicit .each loops
+- continue simplifying/performance-tuning JQuery .each loops
 - apply JQuery Best Practices from: http://lab.abhinayrathore.com/jquery-standards/
 
 ## Bugfixes
 
-- if torrent item is removed from another browser session, this browser doesn't figure it out
 - with the episode filter it also ignores all the batches regardless of the setting to ignore batches
 - adding a selected line as a favorite should toggle off the Favorites "heart" button in button bar and drop-down menu
-- "Error connecting to Transmission" Javascript alert stays open even after successful connection to Transmission and often occurs even if the problem is some unrelated PHP Fatal error
+
 - handle resolution and quality 1080p60
 - check setupCacheDir() to see if file_exists() check fails even if download cache dir exists but permissions are wrong
 - fix main UI Responsive Design especially for phones in portrait mode
@@ -77,7 +143,7 @@ All other files have functions that need improvement or rewrites or validation.
 - add toggle to config for local/remote Transmission and disable features like Deep Directories for remote Transmission
 
 - allow user to create Favorites from items in the History list
-- convert event.keyCode to event.which in torrentwatch-xa.js per https://api.jquery.com/event.which/
+- convert event.keyCode to vanilla Javascript equivalent
 - add error handling to the Transmission functions
 - add config option "Videos Only" beneath "Require Episode Info" to only show items with at least one video quality
 - add auto-refresh of entire list at regular intervals to show new feed items in web UI
@@ -89,7 +155,6 @@ All other files have functions that need improvement or rewrites or validation.
 - reduce use of global variables
   - $config_values['Global'] appears to be a crappy way of globally passing some data, maybe convert to $GLOBALS or replace with singleton Config object
   - $html_out (can't use passing by value because performance suffers badly as $html_out gets very large, so use passing by reference, but definitely do not return $html_out if passing by reference because of poor performance)
-  - $twxa_version
 
 - rework History panel (and probably all other panels) so that it resizes according to Responsive Design
 - allow user to clear individual items from the cache

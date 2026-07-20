@@ -4,6 +4,19 @@
 // twxa_feed.php calls this file
 
 $seps = '\s\.\_'; // separator chars: - and () were formerly also separators but caused problems; we need - for some Season and Episode notations
+
+// shared word list constants for regex alternation groups
+// season words include languages and abbreviations
+define('SEASON_WORDS', 'Season|Saison|Seizoen|Sezona|\bSeas\.|\bSeas|\bSais\.|\bSea\.|\bSea|\bSe\.|\bSe|\bS\.|\bS|Temporada|\bTemp\.|\bTemp|\bT\.|\bT');
+// episode words include languages and abbreviations
+define('EPISODE_WORDS', 'Episode|Episodes|Epizode|Epizodes|\bEpis\.|\bEpis|\bEpi\.|\bEpi|\bEps\.|\bEps|\bEp\.|\bEp|\bE\.|\bE');
+// volume words include languages and abbreviations
+define('VOLUME_WORDS', 'Volumes|Volume|Volumen|Volumens|Vols\.|Vols|Vol\.|Vol|\bV\.|\bV');
+// chapter words include languages and abbreviations
+define('CHAPTER_WORDS', 'Chapters|Chapter|Capitulos|Capitulo|Chapitres|Chapitre|\bChap\.|\bChap|\bCh\.|\bCh|\bC\.|\bC');
+// part words
+define('PART_WORDS', 'Parts|Part|Pt\.|Pt');
+
 // load matchTitle function files
 require_once("twxa_parse_match.php");
 require_once("twxa_parse_match0.php");
@@ -925,4 +938,15 @@ function episode_filter($item, $filter) {
         // $item['episode'] evaluates to false; should only happen for debugMatch of 0_, 1_, and so on
         return false;
     }
+}
+
+function isWordSeason($word) {
+    // checks if input word is "Season" in multiple languages or an abbrevation thereof
+    
+    return true;
+}
+
+function isWordEpisode($word) {
+    
+    return true;
 }
