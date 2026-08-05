@@ -1,7 +1,8 @@
 'use strict';
 // NOTE: These functions do not need to wait for document ready
 Math.roundWithPrecision = function (floatnum, precision) {
-    return Math.round(floatnum * Math.pow(10, precision)) / Math.pow(10, precision);
+    var factor = Math.pow(10, precision);
+    return Math.round(floatnum * factor) / factor;
 };
 Math.formatBytes = function (bytes) {
     var size;
@@ -35,7 +36,10 @@ Math.formatBytes = function (bytes) {
 function convertEta(eta) {
     // convert numeric eta in seconds to human-friendly string
     var etaString = '';
-    if (isNaN(eta) || eta >= 86400) {
+    if (isNaN(eta) || eta < 0) {
+        return 'Remaining: unknown';
+    }
+    if (eta >= 86400) {
         var days = Math.floor(eta / 86400);
         var hours = Math.floor((eta / 3600) - (days * 24));
         var minutes = Math.round((eta / 60) - (days * 1440) - (hours * 60));

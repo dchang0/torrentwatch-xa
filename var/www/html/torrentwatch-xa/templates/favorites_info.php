@@ -75,7 +75,7 @@ if (isset($style)) {
     </div>
     <div class="favorite_seed_and_episode">
         <div class="left" <?php
-        if ($config_values['Settings']['Client'] == "folder") {
+        if ($config_values['Settings']['Client'] === "folder") {
             echo 'style="display: none"';
         }
         ?>>
@@ -83,12 +83,12 @@ if (isset($style)) {
         </div>
         <div class="right">
             <input type="text" class="seedratio text" <?php
-            if ($config_values['Settings']['Client'] == "folder") {
+            if ($config_values['Settings']['Client'] === "folder") {
                 echo 'style="display: none"';
             }
             ?> name="seedratio" id="favorite_<?php echo $key; ?>_seedratio" value="<?php echo getArrayValueByKey($item, 'seedRatio'); ?>">
             <label class="lastSeason item" title="SSxEE or YYYYMMDD notation only" <?php
-            if ($config_values['Settings']['Client'] == "folder") {
+            if ($config_values['Settings']['Client'] === "folder") {
                 echo 'style="padding-left: 137px"';
             }
             ?>>Last Download:</label>

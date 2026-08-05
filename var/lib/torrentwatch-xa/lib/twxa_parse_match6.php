@@ -16,8 +16,8 @@ function matchTitle6_2($ti, $seps) {
     if (preg_match($re, $ti, $mat)) {
         if (validateYYYYMMDD($mat[1] . $mat[2] . $mat[3]) && validateYYYYMMDD($mat[4] . $mat[5] . $mat[6])) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 0,
                 'seasEd' => 0,
                 'episSt' => $mat[1] . $mat[2] . $mat[3],
@@ -28,8 +28,8 @@ function matchTitle6_2($ti, $seps) {
             ];
         } else if (validateYYYYMMDD($mat[3] . $mat[1] . $mat[2]) && validateYYYYMMDD($mat[6] . $mat[4] . $mat[5])) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 0,
                 'seasEd' => 0,
                 'episSt' => $mat[3] . $mat[1] . $mat[2],
@@ -40,8 +40,8 @@ function matchTitle6_2($ti, $seps) {
             ];
         } else if (validateYYYYMMDD($mat[3] . $mat[2] . $mat[1]) && validateYYYYMMDD($mat[6] . $mat[5] . $mat[4])) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 0,
                 'seasEd' => 0,
                 'episSt' => $mat[3] . $mat[2] . $mat[1],

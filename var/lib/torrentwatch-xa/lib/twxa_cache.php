@@ -43,6 +43,10 @@ function setupDownloadCacheDir() {
     } else {
         writeToLog("Download Cache Dir does not exist or does not have correct permissions, creating: $downloadCacheDir\n", 1);
         if (mkdir($downloadCacheDir, 0775, true)) {
+            if (!is_dir($downloadCacheDir) || !is_writeable($downloadCacheDir)) {
+                writeToLog("Download Cache Dir already exists but is not accessible: $downloadCacheDir\n", -1);
+                return false;
+            }
             writeToLog("Successfully set up Download Cache Dir: $downloadCacheDir\n", 2);
             return true;
         } else {
@@ -201,22 +205,3 @@ function check_cache($ti) {
         return false;
     }
 }
-
-//function checkCache($ti, $exactMatchOnly = false) {
-//    //TODO this function is the inverse of check_cache() and should replace it someday for logical clarity
-//    if (isset($ti) && $ti !== '') {
-//        $cacheFile = getDownloadCacheDir() . '/dl_' . sanitizeFilename($ti);
-//        if (file_exists($cacheFile)) {
-//            if ($exactMatchOnly === false) {
-//                return !check_cache_episode($ti); //TODO invert this when check_cache_episode() is inverted
-//            } else {
-//                return true;
-//            }
-//        } else {
-//            return false;
-//        }
-//    } else {
-//        // $ti is blank, cannot check cache
-//        return false;
-//    }
-//}

@@ -6,7 +6,6 @@ html {
 }
 
 body {
-    /* font: 85% "lucida grande", Tahoma, Verdana, Arial, Helvetica, sans-serif; */
     font: 85% Arial, Helvetica, sans-serif;
     color: #323232;
     text-align: left;
@@ -59,7 +58,7 @@ div.right {
     text-align: left;
 }
 
-label.category {
+.category {
     display: block;
     font-size: 1.0em;
     margin: 1em 0 1em 1em;
@@ -98,7 +97,7 @@ label.category {
 }
 
 #mainoptions li {
-    list-style:	none inside none;
+    list-style:	none;
     display: block;
     float: left;
     padding-top: 3px;
@@ -123,22 +122,22 @@ label.category {
     background: #ccc;
 }
 
-#mainoptions #webui {
+#mainoptions #torrentClientButton {
     display: none;
     float: right;
     margin-right: 10px;
 }
 
-#mainoptions #webui .icon {
+#mainoptions #torrentClientButton .icon {
     display: block;
-    height: 16px;
-    width: 16px;
-    margin-right: 2px;
+    height: 10px;
+    width: 10px;
+    margin: 2px 0 0 2px;
     background-repeat: no-repeat;
-    float: left;
-    background-image: url(../images/webui.png);
+    float: right;
+    background-image: url(../images/weblink10x10.png);
 }
-#mainoptions #webui .altIcon {
+#mainoptions #torrentClientButton .altIcon {
     background-image: url(../images/ajax-loader-small.gif);
 }
 
@@ -195,9 +194,7 @@ label.category {
     border: 1px solid #999;
     border-right: 1px solid #ccc;
     border-bottom: 1px solid #d3d3d3;
-    -moz-border-radius-bottomleft: 1px;
     border-bottom-left-radius: 1px;
-    -moz-border-radius-bottomright: 1px;
     border-bottom-right-radius: 1px;
     height: 18px;
 }
@@ -219,9 +216,7 @@ label.category {
 #filterbar_container li.filter_left:hover,
 #filterbar_container li.filter_left {
     border-left: 1px solid #e3e3e3;
-    -moz-border-radius-topleft: 1px;
     border-top-left-radius: 1px;
-    -moz-border-radius-bottomleft: 1px;
     border-bottom-left-radius: 1px;
 }
 
@@ -230,10 +225,8 @@ label.category {
     border-left: 2px solid #ccc;
 }
 
-#filterbar_container li.filter_right {
-    -moz-border-radius-topright: 1px;
+#filterbar_container .filter_right {
     border-top-right-radius: 1px;
-    -moz-border-radius-bottomright: 1px;
     border-bottom-right-radius: 1px;
 }
 
@@ -285,7 +278,6 @@ label.category {
     height: 17px;
     width: 200px;
     border: 1px solid #5D80A1;
-    -moz-border-radius: 2px;
     border-radius: 2px;
     background: #FFF url('../images/search_32x32.png') top left no-repeat;
     background-size: 14px 14px;
@@ -306,7 +298,6 @@ label.category {
     background: #ddd;
     opacity: .90;
     border: 1px solid #aaa;
-    -moz-border-radius: 2px;
     border-radius: 2px;
     z-index: 3;
 }
@@ -333,6 +324,7 @@ label.category {
     cursor: pointer;
     margin-top: 3px;
     margin-right: 5px;
+    clear: none;
 }
 
 #clientButtons li img {
@@ -347,7 +339,6 @@ label.category {
 
 #clientButtons li.move_data input {
     border: 1px solid #aaa;
-    -moz-border-radius: 2px;
     border-radius: 2px;
     font-size: 12px;
     height: 20px;
@@ -359,7 +350,6 @@ label.category {
 #clientButtons li.button {
     height: 20px;
     border: 1px solid #aaa;
-    -moz-border-radius: 3px;
     border-radius: 3px;
     text-align: center;
     text-decoration: none;
@@ -398,11 +388,11 @@ label.category {
     background: #F8F8F8;
 }
 
-ul.show_legend {
+.show_legend {
     border: 1px solid #979797;
 }
 
-ul.show_legend li {
+.show_legend li {
     padding: 5px 5px 5px 5px;
     font-size: 12px;
 }
@@ -414,7 +404,6 @@ ul.show_legend li {
     display: none;
     position: absolute;
     overflow: auto;
-    width: 100%;
     top: 60px;
     bottom: 0;
     left: 0;
@@ -425,12 +414,11 @@ ul.show_legend li {
     user-select: none;
 }
 
-#torrentlist_container div.errorHeader {
+#torrentlist_container .errorHeader {
     font-size: 14px;
     text-align: center;
     padding-bottom: 3px;
-    background: #fdd; /* was #C1E0C1 */
-    /*color: #D6001A;*/
+    background: #fdd;
     border-bottom: 1px solid #ddd;
 }
 
@@ -447,7 +435,7 @@ ul.show_legend li {
     color: #999;
 }
 
-#torrentlist_container div.header td.hide_feed {
+#torrentlist_container div.header .hide_feed {
     text-align: center;
     width: 18px;
 }
@@ -475,7 +463,7 @@ ul.torrentlist li.torrent {
     min-height: 15px;
 }
 
-#transmission_list td.torrent_name {
+#torrentClientList td.torrent_name {
     padding-left: 5px;
 }
 
@@ -484,7 +472,7 @@ ul.torrentlist li.torrent {
 }
 
 #torrentlist_container li.torrent:hover,
-#transmission_list li.alt td.torrent_name:hover {
+#torrentClientList li.alt td.torrent_name:hover {
     background-color: #E1E9F5;
 }
 
@@ -496,9 +484,6 @@ ul.torrentlist li.torrent {
     color: #FFFFFF;
 }
 
-li.torrent.hidden_bytext {
-    display: none;
-}
 
 ul.torrentlist td.identifier {
     width: 5px;
@@ -535,41 +520,47 @@ ul.torrentlist li.st_favReady td.identifier {
 /* Waiting (transient state) */
 #show_legend li.legend.st_waitTorCheck,
 ul.torrentlist li.st_waitTorCheck td.identifier,
-#transmission_list li.torrent.tc_waiting .tr_identifier {
+#torrentClientList .torrent.tc_waiting .tr_identifier {
     background-color: #ffffbb;
 }
 
 /* Downloading */
 #show_legend li.legend.st_downloading,
 ul.torrentlist li.st_downloading td.identifier,
-#transmission_list li.torrent.tc_downloading .tr_identifier {
+#torrentClientList .torrent.tc_downloading .tr_identifier {
     background-color: #a1e8c8;
 }
 
 /* Downloaded / Seeding */
 #show_legend li.legend.st_downloaded,
 ul.torrentlist li.st_downloaded td.identifier,
-ul.torrentlist li.st_transmission td.tr_identifier,
-#transmission_list li.torrent.tc_seeding .tr_identifier {
+ul.torrentlist .st_torrentClient td.tr_identifier,
+#torrentClientList .torrent.tc_seeding .tr_identifier {
     background-color: #49dded;
 }
 
 /* Previously Downloaded */
 #show_legend li.legend.st_inCacheNotActive,
-ul.torrentlist li.st_inCacheNotActive td.identifier,
-ul.torrentlist li.st_inCache td.identifier {
+ul.torrentlist .st_inCacheNotActive td.identifier,
+ul.torrentlist .st_inCache td.identifier {
     background-color: #bbb;
 }
 
+/* No URL */
+ul.torrentlist li.st_noURL td.torrent_name {
+    color: #555;
+    text-decoration: line-through;
+}
+
 /* Verifying */
-#transmission_list li.torrent.tc_verifying .tr_identifier {
+#torrentClientList .torrent.tc_verifying .tr_identifier {
     background-color: #d8a8d8;
 }
 
 /* Paused (place this last to override other ul.torrentlist states) */
 #show_legend li.legend.tc_paused,
 ul.torrentlist li.tc_paused td.identifier,
-#transmission_list li.torrent.tc_paused .tr_identifier {
+#torrentClientList li.torrent.tc_paused .tr_identifier {
     background-color: #FBBFBF;
 }
 
@@ -583,7 +574,7 @@ ul.torrentlist li.st_notAMatch td.torrent_name {
     height: 15px;
 }
 
-ul.torrentlist td.torrent_name.tor_client {
+ul.torrentlist .torrent_name.tor_client {
     padding: 2px 8px 0 0;
 }
 
@@ -614,14 +605,13 @@ ul.torrentlist .torInfoErr {
     margin: 1px 0 1px 0;
 }
 
-div.torrent_name a.contextButton {
+div.torrent_name .contextButton {
     background: #F8F8F8;
     background-image: url('../images/dropdown.png');
     background-repeat: no-repeat;
     background-position: 0 2px;
     float: left;
     border: 1px solid #ddd;
-    -moz-border-radius: 1px;
     border-radius: 1px;
     padding: 0;
     margin: 2px 5px 0 0;
@@ -634,7 +624,6 @@ div.contextMenu {
     position: absolute;
     margin: 1px 0 0 0;
     border: 1px solid #aaa;
-    -moz-border-radius: 1px;
     border-radius: 1px;
     background: #fafafa;
     font-size: 0.9em;
@@ -700,49 +689,30 @@ td.torrent_name {
     padding-left: 5px;
 }
 
-td.progressRow {
-    background: #C1E0C1;
-}
-
-div.progressBarContainer {
+.progressBarContainer {
     display: block;
     border: 1px solid #BFCEE3;
     background: #DFE3E8;
     margin-top: 2px;
 }
 
-div.progressBarContainer.init {
+.progressBarContainer.init {
     border: none;
     background: none;
 }
 
-div.progressDiv {
+.progressDiv {
     height: 3px;
     background: #91A4BD;
 }
 
-td.feed_info {
-    float: right;
-    text-align: right;
-    padding-right: 2px;
-    margin-top: 5px;
-    vertical-align: middle;
-}
-
-div.tr_bar {
-    float: right;
-    padding: 4px 30px 0 0;
-    vertical-align: middle;
-}
-
-div.feed_info p {
-    padding: 0;
-}
 
 div.torrent_name {
     display: block;
     padding: 0;
-    height: 15px;
+    /*height: 15px;*/
+    min-height: 15px;
+    height: auto;
     width: 100%;
 }
 
@@ -758,28 +728,23 @@ span.feed_name {
 }
 
 .debugLabel {
-    color: #000;
     color: rgba(0, 0, 0, 0.3);
     font-size: 9px;
     padding: 0 0 0 1em;
 }
 
-span.episodeNum {
+.episodeNum {
     padding: 0 0 0 1em;
 }
 
-span.pubDate {
+.pubDate {
     padding: 0 0 0 1em;
 }
 
-span.torrent_pubDate {
+.torrent_pubDate {
     float: right;
     padding-top: 2px;
     font-size: 10px;
-}
-
-span.hide_item img {
-    border: 1px solid #b0b0b0;
 }
 
 div.header span.hide_feed_left,
@@ -817,45 +782,18 @@ div.header_hidden span.hide_feed_right {
 /*-----------------------------
  * T O R R E N T   C L I E N T
  * ----------------------------*/
-#transmissionDialog {
-    display: inline;
-}
-
-#transmissionDialog .dialogTitle {
-    padding-top: 2px;
-    top: 50px;
-    width: 800px;
-    margin-left: -400px;
-}
-
-#transmissionWindow {
-    width: 800px;
-    height: 550px;
-    top: 71px;
-    margin-left: -400px;
-    padding: 0;
-    border: 1px solid #979797;
-}
-
-#transmissionFrame {
-    width: 800px;
-    height: 550px;
-}
-
 
 /*--------------------------
  * D I A L O G S
  * ---------------------*/
 
-div.dialog {
+.dialog {
     display: none;
     position: fixed;
     left: 0;
     right: 0;
     top: 29px;
     bottom: 0;
-    background: transparent;
-    /*zoom: 1;*/
     transform: scale(1);
     transform-origin: 0 0;
     background-color: #bbb;
@@ -866,22 +804,20 @@ div.dialog {
     z-index: 4;
 }
 
-div.dialog.confirm {
+.dialog.confirm {
     top: 0;
 }
 
-div.dialog_window {
+.dialog_window {
     position: fixed;
-    margin-right: auto;
     left: 50%;
     background-color: #DDD;
-    margin: -0.2em auto 0 auto;
+    margin-top: -0.2em;
+    margin-left: -230px;
     border-left: 1px solid #979797;
     border-right: 1px solid #979797;
     border-bottom: 1px solid #979797;
-    -moz-border-radius-bottomleft: 2px;
     border-bottom-left-radius: 2px;
-    -moz-border-radius-bottomright: 2px;
     border-bottom-right-radius: 2px;
     top: 140px;
     width: 460px;
@@ -891,7 +827,7 @@ div.dialog_window {
     z-index: 5;
 }
 
-.dialogTitle a.button {
+.dialogTitle .button {
     float: left;
     height: 9px;
     width: 9px;
@@ -899,16 +835,15 @@ div.dialog_window {
     margin: 1px 3px 2px 3px;
     background: #b99;
     -webkit-border-radius: 8px;
-    -moz-border-radius: 8px;
     border-radius: 8px;
     cursor: default;
 }
 
-.dialogTitle a.button:hover {
+.dialogTitle .button:hover {
     background: #faa;
 }
 
-div.dialog .dialogTitle {
+.dialog .dialogTitle {
     position: fixed;
     font-size: 8pt;
     padding: 2px 0 2px 0;
@@ -916,9 +851,7 @@ div.dialog .dialogTitle {
     margin-left: -230px;
     background-color: #aaa;
     border: 1px solid #979797;
-    -moz-border-radius-topleft: 2px;
     border-top-left-radius: 2px;
-    -moz-border-radius-topright: 2px;
     border-top-right-radius: 2px;
     color: #000;
     text-shadow: #bbb 0 1px 0;
@@ -937,7 +870,7 @@ div.dialog .dialogTitle {
     background: #DDD;
 }
 
-#clear_cache a.toggleDialog {
+#clear_cache .toggleDialog {
     margin-right: 20px;
 }
 
@@ -950,7 +883,6 @@ div.dialog .dialogTitle {
     text-align: center;
     border: 1px solid #979797;
     -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     border-radius: 2px;
     background: #DDD;
 }
@@ -970,17 +902,13 @@ div.dialog .dialogTitle {
     width: 330px;
 }
 
-h2.dialog_heading {
-    font-size: 1.3em;
-    text-align: center;
-}
 
-div.buttonContainer {
+.buttonContainer {
     margin-top: 2px;
     float: right;
 }
 
-a.button,
+.button,
 input[type=submit] {
     float: right;
     margin: 5px 0 0 6px;
@@ -993,23 +921,22 @@ input[type=submit] {
     cursor: pointer;
 }
 
-a.button {
+.button {
     width: 50px;
     text-align: center;
     text-decoration: none;
     -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
     border-radius: 3px;
     background:	#ccc;
     color: #030303;
 }
 
-a.button:hover{
+.button:hover{
     background: #9DACC1;
 }
 
-a.disabled,
-a.disabled:hover {
+.disabled,
+.disabled:hover {
     background: #9DACC1;
     color: #ddd;
 }
@@ -1018,7 +945,7 @@ input[type=submit] {
     height: 28px;
 }
 
-div.legend input {
+.legend input {
     clear: left;
 }
 
@@ -1103,8 +1030,6 @@ div.legend input {
 }
 
 .progress_full {
-    background:transparent;
-    /*zoom: 1;*/
     transform: scale(1);
     transform-origin: 0 0;
     background-color: #000;
@@ -1115,9 +1040,7 @@ div.legend input {
 #progressbar {
     background: #DBDBDB url('../images/ajaxload.gif') no-repeat center bottom;
     border-top: 1px solid #979797;
-    -moz-border-radius-topleft: 2px;
     border-top-left-radius:     2px;
-    -moz-border-radius-topright: 2px;
     border-top-right-radius:    2px;
     display: block;
     height: 14px;
@@ -1137,7 +1060,7 @@ div.legend input {
 }
 
 #configTabs ul {
-    margin: 0 0 0 0;
+    margin: 0;
     padding: 2px 0 2px 0;
     text-align: center;
 }
@@ -1147,11 +1070,9 @@ div.legend input {
     color: #030303;
 }
 
-#configTabs li.selTab {
+#configTabs .selTab {
     background: #9DACC1;
-    -moz-border-radius-topleft: 5px;
     border-top-left-radius: 	5px;
-    -moz-border-radius-topright: 5px;
     border-top-right-radius: 	5px;
     border-right: 1px solid #979797;
     height: 16px;
@@ -1186,13 +1107,11 @@ div.legend input {
 }
 
 #configTabs .left {
-    -moz-border-radius-topleft: 5px;
     border-top-left-radius: 	5px;
 }
 
 #configTabs .right {
     border-right: 1px solid #979797;
-    -moz-border-radius-topright: 5px;
     border-top-right-radius: 	5px;
 }
 
@@ -1208,8 +1127,6 @@ div.legend input {
     width: 463px;
 }
 
-#configuration .config_form_container input.text,
-#configuration .config_form_container input.password,
 #configuration .config_form_container input[type=text],
 #configuration .config_form_container input[type=password] {
     width: 270px;
@@ -1229,7 +1146,7 @@ div.legend input {
     border-top: 0;
     background-color: #eee;
     padding: 0;
-    margin: 0 0 0 0;
+    margin: 0;
 }
 
 .config_form_container .left {
@@ -1240,7 +1157,7 @@ div.legend input {
     min-height: 22px;
 }
 
-#config_form div.configTab {
+#config_form .configTab {
     padding: 5px 0 5px 0;
 }
 
@@ -1260,7 +1177,7 @@ div.legend input {
     overflow-x: hidden;
 }
 
-#config_feeds div.feedURLName {
+#config_feeds .feedURLName {
     display: table-cell;
     width: 325px;
 }
@@ -1269,21 +1186,21 @@ div.legend input {
     padding-left: 5px;
 }
 
-#config_feeds div.feedOn {
+#config_feeds .feedOn {
     width: 30px;
     display: table-cell;
     text-align: center;
     vertical-align: text-top;
 }
 
-#config_feeds div.seedRatio {
+#config_feeds .seedRatio {
     width: 40px;
     display: table-cell;
     text-align: center;
     vertical-align: text-top;
 }
 
-#config_feeds div.feedDelete {
+#config_feeds .feedDelete {
     width: 40px;
     display: table-cell;
     text-align: center;
@@ -1299,27 +1216,27 @@ div.legend input {
     font-size: 0.9em;
 }
 
-#config_feeds div.feeditem input.feed_url[type=text],
+#config_feeds div.feeditem .feed_url[type=text],
 #config_feeds div.feeditem input.feed_name[type=text],
-#config_feeds div.feeditem input.feed_website[type=text] {
+#config_feeds div.feeditem .feed_website[type=text] {
     width: 308px;
     margin: 4px 5px 0 5px;
 }
 
-input.feed_on_off {
-    margin: 0 0 0 0;
+.feed_on_off {
+    margin: 0;
 }
 
-#config_feeds div.feeditem input.seed_ratio[type=text] {
+#config_feeds div.feeditem .seed_ratio[type=text] {
     width: 2em;
-    margin: 0 0 0 0;
+    margin: 0;
 }
 
-input.feed_delete {
-    margin: 0 0 0 0;
+.feed_delete {
+    margin: 0;
 }
 
-#configuration .config_form_container input#hideSearchText {
+#configuration .config_form_container #hideSearchText {
     border: 0;
     border-top: 1px solid #979797;
     width: 438px;
@@ -1354,11 +1271,11 @@ input.feed_delete {
     padding-top: 5px;
 }
 
-div.smtpTestLeft {
+.smtpTestLeft {
     vertical-align: top;
 }
 
-div.smtpTestRight {
+.smtpTestRight {
     width: 277px;
     padding: 10px 0 3px 3px;
     font-size: 0.9em;
@@ -1407,11 +1324,11 @@ div.superfavinfo {
     background-color: #eee;
 }
 
-div.superfavinfo .right {
+.superfavinfo .right {
     vertical-align: top;
 }
 
-div.superfavinfo .left {
+.superfavinfo .left {
     width: 90px;
     vertical-align: top;
 }
@@ -1454,7 +1371,7 @@ form.superfavinfo div {
 }
 
 form.superfavinfo #mode,
-form.superfavinfo input#idx {
+form.superfavinfo #idx {
     display: none;
 }
 
@@ -1462,12 +1379,11 @@ form.superfavinfo select {
     width: 272px;
 }
 
-form.superfavinfo input.text,
 form.superfavinfo input[type=text] {
     width: 270px;
 }
 
-form.superfavinfo div.superfavorite_seed {
+form.superfavinfo .superfavorite_seed {
     float: right;
     width: 380px;
 }
@@ -1477,7 +1393,7 @@ form.superfavinfo input.seedratio[type=text] {
     text-align: center;
 }
 
-div.superfavinfo div.buttonContainer {
+.superfavinfo .buttonContainer {
     position: absolute;
     top: 230px;
     right: 82px;
@@ -1529,11 +1445,11 @@ div.favinfo {
     background-color: #eee;
 }
 
-div.favinfo .right {
+.favinfo .right {
     vertical-align: top;
 }
 
-div.favinfo .left {
+.favinfo .left {
     width: 90px;
     vertical-align: top;
 }
@@ -1576,7 +1492,7 @@ form.favinfo div {
 }
 
 form.favinfo #mode,
-form.favinfo input#idx {
+form.favinfo #idx {
     display: none;
 }
 
@@ -1584,12 +1500,11 @@ form.favinfo select {
     width: 272px;
 }
 
-form.favinfo input.text,
 form.favinfo input[type=text] {
     width: 270px;
 }
 
-form.favinfo div.favorite_seed_and_episode {
+form.favinfo .favorite_seed_and_episode {
     float: right;
     width: 380px;
 }
@@ -1624,7 +1539,7 @@ form.favinfo input.lastEpisode[type=text] {
     text-align: center;
 }
 
-div.favinfo div.buttonContainer {
+.favinfo .buttonContainer {
     position: absolute;
     top: 230px;
     right: 82px;

@@ -23,12 +23,11 @@ Common setups:
 Status
 ===============
 
-I've posted 1.9.6 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.10.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-I've finally started fixing some of the bugs in my long TODO list. For now, I'm focusing on a mix of low-risk UI bug fixes with improvements to some of the core title parser functions.
-Small changes will be made cautiously and scattered in a way that it will be easy to determine which changes went awry.
+Another huge batch of low-risk bugs have been fixed, along with a few medium-risk bugs. The biggest change is to the detection of valid torrent and magnet links in feed items. I first noticed an issue where magnet links in EZTV were being overlooked and took the opportunity to simplify and streamline the detection process. This is a big-enough change to warrant a minor version number increment. 
 
-Also, I plan on leaving the Ubuntu ecosystem due to their major release schedule being a bit too fast for me; I prefer Debian's slower major release schedule for my server builds. For now, the only change is that I am dropping Ubuntu 22 (PHP 8.1) as a testing target.
+The second-biggest change is switching the Transmission UI button at the top right corner from popping up a modal dialog framing the Transmission UI to opening it in a new browser tab. The former behavior hasn't worked for quite a long time due to browser security features.
 
 Please report any bugs using Github Issues.
 

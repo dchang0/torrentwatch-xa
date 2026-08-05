@@ -4,6 +4,14 @@ $(document).ready(function () {
     $(document).on("click", "a.toggleDialog", function () {
         $(this).toggleDialog();
     });
+    // set href for the Web UI button; hide the button if no valid web UI URL is available
+    $.get('torrentwatch-xa.php', {get_web_ui_url: 1}, function (url) {
+        window.twxaWebUiUrl = url;
+        if (url) {
+            $('#torrentClientWebUi').attr('href', url);
+        }
+        adjustWebUIButton();
+    });
     // binding for Filter Bar buttons
     $("#filterbar_container li:not(#filter_bytext)").on("click", function () {
         if ($(this).is('.selected')) {
@@ -28,8 +36,8 @@ $(document).ready(function () {
                 case 'filter_downloaded':
                     displayFilter('downloaded');
                     break;
-                case 'filter_transmission':
-                    displayFilter('transmission');
+                case 'filterTorrentClient':
+                    displayFilter('torrentClient');
             }
         });
     });
@@ -66,48 +74,58 @@ $(document).ready(function () {
         // if browser loses focus, reset Mac Cmd key toggle to partially block Cmd-Tab
         window.ctrlKey = 0;
     });
-    $(document).on("keyup", function (e) {
-        if (e.keyCode === 27) {
-            if ($('.dialog').length) {
-                $('.dialog .close').trigger("click");
-                $('div.contextMenu').hide();
-            } else if ($('#clientButtons .move_data').is(":visible")) {
-                $('#clientButtons .close').trigger("click");
-            } else if ($('#torrentlist_container li.torrent.selected').length) {
-                $('#torrentlist_container li.torrent.selected').removeClass('selected');
-                updateClientButtons();
+    document.addEventListener("keyup", function (e) {
+        if (e.key === "Escape") {
+            var dialog = document.querySelector('.dialog');
+            if (dialog) {
+                dialog.querySelector('.close')?.click();
+                var ctx = document.querySelector('div.contextMenu');
+                if (ctx) ctx.style.display = 'none';
+            } else {
+                var moveData = document.querySelector('#clientButtons .move_data');
+                if (moveData && moveData.offsetParent !== null) {
+                    document.querySelector('#clientButtons .close')?.click();
+                } else if (document.querySelectorAll('#torrentlist_container li.torrent.selected').length) {
+                    document.querySelectorAll('#torrentlist_container li.torrent.selected')
+                        .forEach(function (el) { el.classList.remove('selected'); });
+                    updateClientButtons();
+                }
             }
         }
-        if (e.keyCode === 13) {
-            if ($('.dialog .confirm').length) {
-                $('.dialog .confirm').trigger("click");
-            } else if ($('#clientButtons .move_data').is(":visible")) {
-                $('#clientButtons #Move').trigger("click");
+        if (e.key === "Enter") {
+            var confirmBtn = document.querySelector('.dialog .confirm');
+            if (confirmBtn) {
+                confirmBtn.click();
+            } else {
+                var moveData = document.querySelector('#clientButtons .move_data');
+                if (moveData && moveData.offsetParent !== null) {
+                    document.querySelector('#clientButtons #Move')?.click();
+                }
             }
         }
-        if (e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93 || e.keyCode === 224) { // Mac Cmd key
+        if (e.key === "Control" || e.key === "Meta") {
             window.ctrlKey = 0;
         }
     });
-    $(document).on("keydown", function (e) {
-        if (e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93 || e.keyCode === 224) { // Mac Cmd key
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Control" || e.key === "Meta") {
             window.ctrlKey = 1;
         }
-        if (window.ctrlKey && e.keyCode === 65) {
-            if ($('#torrentlist_container li.torrent.selected').length === $('#torrentlist_container li.torrent').length) {
-                $('#torrentlist_container li.torrent').removeClass('selected');
+        if (window.ctrlKey && e.key.toLowerCase() === "a") {
+            var allTors = document.querySelectorAll('#torrentlist_container li.torrent');
+            var selTors = document.querySelectorAll('#torrentlist_container li.torrent.selected');
+            if (selTors.length === allTors.length) {
+                allTors.forEach(function (el) { el.classList.remove('selected'); });
             } else {
-                $('#torrentlist_container li.torrent').addClass('selected');
+                allTors.forEach(function (el) { el.classList.add('selected'); });
             }
             updateClientButtons();
-            return false;
+            e.preventDefault();
         }
     });
-    document.addEventListener("keypress", function (evt) {
-        var evt = (evt) ? evt : ((event) ? event : null);
-        var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
-        if ((evt.keyCode === 13) && (node.type === "text")) {
-            return false;
+    document.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && e.target && e.target.type === "text") {
+            e.preventDefault();
         }
     });
     // Ajax progress bar bindings
@@ -132,14 +150,15 @@ $(document).ready(function () {
         $('#progress').fadeOut('fast');
         $('#clientButtonsBusy').remove();
         if (window.hideButtonHolder) {
-            clearTimeout(hideButtonHolder);
+            clearTimeout(window.hideButtonHolder);
         }
         if (window.visibleButtons) {
             $(window.visibleButtons).show();
+            window.visibleButtons = null;
         }
         updateClientButtons();
         setTimeout(function () {
-            $('#transmission_list li.torrent').markAlt();
+            $('#torrentClientList li.torrent').markAlt();
         }, 500);
     });
     // set timeout for all Ajax queries

@@ -127,7 +127,7 @@
                             </div>
                             <div class="right">
                                 <select name="client" id="client" onchange="changeClient(this.options[this.selectedIndex].value);">
-                                    <option value="Transmission" <?php echo $transmission; ?>>Transmission</option>
+                                    <option value="Transmission" <?php echo $torrentclient; ?>>Transmission</option>
                                     <option value="folder" <?php echo $folderclient; ?>>Save .torrent/magnet: Files In Folder</option>
                                 </select>
                             </div>
@@ -140,7 +140,7 @@
                                 <input type="text" class="text" name="downdir" value="<?php echo $config_values['Settings']['Download Dir']; ?>"/>
                             </div>
                         </div>
-                        <div id="config_tr_host" title="Hostname">
+                        <div id="config_tc_host" title="Hostname">
                             <div class="left">
                                 <label class="item textinput">Hostname:</label>
                             </div>
@@ -148,7 +148,7 @@
                                 <input type="text" class="text" name="trhost" value="<?php echo $config_values['Settings']['Transmission Host']; ?>"/>
                             </div>
                         </div>
-                        <div id="config_tr_port" title="Port">
+                        <div id="config_tc_port" title="Port">
                             <div class="left">
                                 <label class="item textinput">Port:</label>
                             </div>
@@ -156,7 +156,7 @@
                                 <input type="text" class="text" name="trport" value="<?php echo $config_values['Settings']['Transmission Port']; ?>"/>
                             </div>
                         </div>
-                        <div id="config_tr_user" title="Username">
+                        <div id="config_tc_user" title="Username">
                             <div class="left">
                                 <label class="item textinput">Username:</label>
                             </div>
@@ -164,7 +164,7 @@
                                 <input type="text" class="text" name="truser" value="<?php echo $config_values['Settings']['Transmission Login']; ?>"/>
                             </div>
                         </div>
-                        <div id="config_tr_password" title="Password">
+                        <div id="config_tc_password" title="Password">
                             <div class="left">
                                 <label class="item textinput">Password:</label>
                             </div>
@@ -401,7 +401,7 @@
                                 <label class="item">SMTP Password:</label>
                             </div>
                             <div class="right">
-                                <input type="password" class="password" name="smtpPassword" class="text" value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
+                                <input type="password" name="smtpPassword" value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
                             </div>
                         </div>
                         <div id="helo_override" title="Optional HELO override; leave blank for default. If provided, must be a valid FQDN">
@@ -409,7 +409,7 @@
                                 <label class="item">HELO Override:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="hELOOverride" class="text" value="<?php echo $config_values['Settings']['HELO Override']; ?>"/>
+                                <input type="text" name="hELOOverride" value="<?php echo $config_values['Settings']['HELO Override']; ?>"/>
                             </div>
                         </div>
                         <div id="smtp_test" title="Tests current SMTP settings">
@@ -478,7 +478,7 @@
                     </div>
                     <div class="buttonContainer">
                         <a class='toggleDialog button close' href='#'>Close</a>
-                        <a class="submitForm button" id="Save" href="#" name="Save">Save</a>
+                        <a class="submitForm button" id="SaveFeeds" href="#" name="Save">Save</a>
                     </div>
             </form>
         </div>

@@ -85,6 +85,10 @@ Also, see **Item Says It's an Old Favorite but is Actually New and Should Be Dow
 
 Remember, you can always manually download any item you see in the feed list by highlighting it and clicking the Download (Play) button.
 
+#### A Favorite that worked fine stopped working at some point
+
+I've seen this happen a few times when the fansubbing crew shortened or changed the name of the series mid-season. Sometimes it might be dropping a few words from the very long title, or dropping an entire subtitle, or swapping the entire title for the popular nickname/abbreviation. Fix it by adjusting the Favorite's filter. Sadly, you may have missed a few episodes before catching the name change.
+
 #### Some items have obviously-incorrect detected sequential-item-numbering (wrong Season/Episode or Volume/Chapter)
 
 The detection engine is good but not perfect. There are some cases where it misreads an item's sequential-item-numbering. There are some steps you can take to help me quickly fix this kind of bug:

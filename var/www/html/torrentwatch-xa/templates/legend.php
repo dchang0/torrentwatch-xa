@@ -4,7 +4,7 @@
         Legend
     </div>
     <div class="dialog_window" id="show_legend">
-        <ul id='torrentlist' class='show_legend'>
+        <ul class='show_legend'>
             <li class='legend st_notAMatch'>
                 <span class='torrent_name'><b>Not a Match</b><br>Not a favorite nor in download cache. Okay to download manually.</span></li>
             <li class='legend st_ignoredFavBatch'>
@@ -23,6 +23,8 @@
                 <span class='torrent_name'><b>Previously Downloaded</b><br>Seen in download cache but no longer active in the torrent client.</span></li>
             <li class='legend tc_paused'>
                 <span class='torrent_name'><b>Paused</b><br>Download paused; can be resumed.</span></li>
+            <li class='legend st_noURL'>
+                <span class='torrent_name'><b>No URL</b><br>Item has no torrent or magnet link available.</span></li>
         </ul>
         <a class="toggleDialog button close" href="#">Close</a>
     </div>

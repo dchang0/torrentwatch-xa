@@ -19,7 +19,7 @@ function getDownloadCacheDir() {
 }
 
 function getDownloadHistoryFile() {
-    return get_baseDir() . "/dl_cache/dl_history";
+    return get_baseDir() . "/dl_cache/history";
 }
 
 function getTransmissionSessionIdFile() {
@@ -144,6 +144,8 @@ function writeDefaultConfigFile() {
         ]
     ];
     setpHPTimeZone($config_values['Settings']['Time Zone']);
+    set_client_passwd($config_values['Settings']['Transmission Password']);
+    set_smtp_passwd();
     return writejSONConfigFile();
 }
 
@@ -336,9 +338,7 @@ function writejSONConfigFile() {
 
     writeToLog("Writing config file: $configFile\n", 2);
 
-    set_client_passwd($config_values['Settings']['Transmission Password']); //TODO this should happen outside this function
-    set_smtp_passwd(); //TODO this should happen outside this function
-    // copy everything but $config_values['Global'] so that it doesn't pollute the config file
+    // strip any stray runtime data before serializing to JSON
     $configOut = $config_values;
     unset($configOut['Global']);
 
@@ -381,6 +381,8 @@ function writejSONConfigFile() {
 
 function updateGlobalConfig() {
     global $config_values;
+
+    $oldTimezone = $config_values['Settings']['Time Zone'] ?? '';
 
     /* Receives HTTP input from the Configure panels into $config_values
      * Do not put settings that are only accessible by editing the config file
@@ -434,7 +436,14 @@ function updateGlobalConfig() {
     foreach ($input as $key => $data) {
         $config_values['Settings'][$key] = filter_input(INPUT_GET, $data);
     }
-    return(writejSONConfigFile());
+    set_client_passwd($config_values['Settings']['Transmission Password']);
+    set_smtp_passwd();
+    setpHPTimeZone($config_values['Settings']['Time Zone']);
+    $result = writejSONConfigFile();
+    if ($oldTimezone !== $config_values['Settings']['Time Zone']) {
+        clear_cache('feeds');
+    }
+    return $result;
 }
 
 function updateSuperFavoriteFromgET() {
@@ -747,101 +756,119 @@ function addFavoriteFromSuperFavoriteMatch(
     return $return;
 }
 
-function addFavoriteFromgET() { //TODO rewrite this as wrapper to addFavoriteFromParams()
-    global $config_values;
+function addFavoriteFromgET() {
+    // extract and parse params from $_GET, then delegate to addFavoriteFromParams()
+    $name = isset($_GET['name']) ? $_GET['name'] : null;
+    $filter = isset($_GET['filter']) ? $_GET['filter'] : null;
 
-    // $favInfo is returned all the way to Javascript for updating Favorite in web UI dynamically
-    // Theoretically we could use $_GET or $config_values['Favorites'][$idx] to return, but $favInfo has error info
-    $favInfo['type'] = "favorite";
-    $favInfo['idx'] = null;
-    $favInfo['errorCode'] = 0;
-    $favInfo['errorMessage'] = "";
-
-    if (empty($_GET['filter'])) {
-        $favInfo['errorCode'] = 1;
-        $favInfo['errorMessage'] = "Error: Missing Filter, cannot add Favorite";
-        return(json_encode($favInfo));
-    }
-    if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
-        foreach ($config_values['Favorites'] as $fav) {
-            if ($_GET['name'] == $fav['Name']) {
-                $favInfo['errorCode'] = 1;
-                $favInfo['errorMessage'] = "Error: \"" . $_GET['name'] . "\" already exists in Favorites.";
-                return(json_encode($favInfo));
-            }
-        }
-    }
-    if (isset($_GET['idx']) && $_GET['idx'] != 'new') {
-        $idx = $_GET['idx'];
-    } else if (isset($_GET['name'])) {
-        $config_values['Favorites'][]['Name'] = $_GET['name'];
-        $arrayKeys = array_keys($config_values['Favorites']);
-        $idx = end($arrayKeys);
-        $_GET['idx'] = $idx; // so display_favorite_info() can see it
-    } else {
-        $favInfo['errorCode'] = 1;
-        $favInfo['errorMessage'] = "Error: Missing index or Name, cannot add Favorite";
-        return(json_encode($favInfo));
-    }
-    $favInfo['idx'] = $idx;
-
-    $list = [
-        "name" => "Name",
-        "filter" => "Filter",
-        "not" => "Not",
-        "downloaddir" => "Download Dir",
-        "alsosavedir" => "Also Save Dir",
-        "episodes" => "Episodes",
-        "quality" => "Quality",
-        "seedratio" => "seedRatio",
-        "season" => "Season",
-        "episode" => "Episode"
-    ];
-    foreach ($list as $key => $data) {
-        if (isset($_GET[$key])) {
-            $favInfo[$key] = $config_values['Favorites'][$idx][$data] = $_GET[$key];
-        } else {
-            $favInfo[$key] = $config_values['Favorites'][$idx][$data] = "";
-        }
-    }
-    if (isset($_GET['feed'])) {
-        $config_values['Favorites'][$idx]['Feed'] = urldecode($_GET['feed']);
-        $favInfo['feed'] = $_GET['feed'];
-    }
-    //$favInfo['title'] = $favInfo['name']; // this was for Add Favorites button
-    // split single field for new Favorite's Season x Episode into separate Season x Episode
-    if ($config_values['Favorites'][$idx]['Season'] == '' && $config_values['Favorites'][$idx]['Episode'] != '') {
+    // parse SxE notation from episode field into separate season/episode
+    $episode = isset($_GET['episode']) ? $_GET['episode'] : null;
+    $season = isset($_GET['season']) ? $_GET['season'] : null;
+    if (empty($season) && !empty($episode)) {
         $tempMatches = [];
-        if (preg_match('/(\d+)\s*[xX]\s*(\d+|FULL)/', $config_values['Favorites'][$idx]['Episode'], $tempMatches)) { // we ignore S##E## notation and version number
-            $favInfo['episode'] = $config_values['Favorites'][$idx]['Episode'] = $tempMatches[2];
-            $favInfo['season'] = $config_values['Favorites'][$idx]['Season'] = $tempMatches[1];
-        } else if (preg_match('/^(\d{8})$/', $config_values['Favorites'][$idx]['Episode'])) {
-            $favInfo['season'] = $config_values['Favorites'][$idx]['Season'] = 0; // for date notation, Season = 0
+        if (preg_match('/(\d+)\s*[xX]\s*(\d+|FULL)/', $episode, $tempMatches)) {
+            $season = $tempMatches[1];
+            $episode = $tempMatches[2];
+        } else if (preg_match('/^(\d{8})$/', $episode)) {
+            $season = 0;
         }
     }
-    $config_values['Favorites'][$idx]['lastUpdated'] = time();
-    writejSONConfigFile();
-    return(json_encode($favInfo));
+
+    $result = addFavoriteFromParams(
+            $name,
+            $filter,
+            isset($_GET['feed']) ? urldecode($_GET['feed']) : null,
+            isset($_GET['quality']) ? $_GET['quality'] : null,
+            isset($_GET['not']) ? $_GET['not'] : null,
+            isset($_GET['episodes']) ? $_GET['episodes'] : null,
+            isset($_GET['seedratio']) ? $_GET['seedratio'] : null,
+            $season,
+            $episode,
+            isset($_GET['downloaddir']) ? $_GET['downloaddir'] : null,
+            isset($_GET['alsosavedir']) ? $_GET['alsosavedir'] : null,
+            isset($_GET['idx']) ? $_GET['idx'] : null
+    );
+
+    if ($result['errorCode'] === 0) {
+        $_GET['idx'] = $result['index'];
+    }
+
+    $favInfo = [
+        'type' => 'favorite',
+        'idx' => $result['index'],
+        'errorCode' => $result['errorCode'],
+        'errorMessage' => $result['errorMessage'],
+        'name' => $name,
+        'filter' => $filter,
+        'not' => isset($_GET['not']) ? $_GET['not'] : '',
+        'downloaddir' => isset($_GET['downloaddir']) ? $_GET['downloaddir'] : '',
+        'alsosavedir' => isset($_GET['alsosavedir']) ? $_GET['alsosavedir'] : '',
+        'episodes' => isset($_GET['episodes']) ? $_GET['episodes'] : '',
+        'feed' => isset($_GET['feed']) ? $_GET['feed'] : '',
+        'quality' => isset($_GET['quality']) ? $_GET['quality'] : '',
+        'seedratio' => isset($_GET['seedratio']) ? $_GET['seedratio'] : '',
+        'season' => $season,
+        'episode' => $episode,
+    ];
+    return json_encode($favInfo);
 }
 
 function deleteSuperFavoriteFromgET() {
     global $config_values;
+    $response = [
+        'type' => 'superfavorite',
+        'idx' => null,
+        'errorCode' => 0,
+        'errorMessage' => ''
+    ];
     $index = filter_input(INPUT_GET, 'idx');
-    if ($index !== false && isset($config_values['Super-Favorites'][$index])) {
-        unset($config_values['Super-Favorites'][$index]);
-        writejSONConfigFile();
+    if ($index === false) {
+        $response['errorCode'] = 1;
+        $response['errorMessage'] = 'Error: Missing index, cannot delete Super-Favorite';
+        return json_encode($response);
     }
-    //TODO add error handling and return a response, either error or JSON with empty favorite fields
+    if (!isset($config_values['Super-Favorites'][$index])) {
+        $response['errorCode'] = 1;
+        $response['errorMessage'] = "Error: Super-Favorite with index '$index' not found";
+        return json_encode($response);
+    }
+    unset($config_values['Super-Favorites'][$index]);
+    if (!writejSONConfigFile()) {
+        $response['errorCode'] = 1;
+        $response['errorMessage'] = 'Error: Failed to write config file';
+        return json_encode($response);
+    }
+    $response['idx'] = $index;
+    return json_encode($response);
 }
 
 function deleteFavoriteFromgET() {
     global $config_values;
+    $response = [
+        'type' => 'favorite',
+        'idx' => null,
+        'errorCode' => 0,
+        'errorMessage' => ''
+    ];
     $index = filter_input(INPUT_GET, 'idx');
-    if ($index !== false && isset($config_values['Favorites'][$index])) {
-        unset($config_values['Favorites'][$index]);
-        writejSONConfigFile();
+    if ($index === false) {
+        $response['errorCode'] = 1;
+        $response['errorMessage'] = 'Error: Missing index, cannot delete Favorite';
+        return json_encode($response);
     }
-    //TODO add error handling and return a response, either error or JSON with empty favorite fields
+    if (!isset($config_values['Favorites'][$index])) {
+        $response['errorCode'] = 1;
+        $response['errorMessage'] = "Error: Favorite with index '$index' not found";
+        return json_encode($response);
+    }
+    unset($config_values['Favorites'][$index]);
+    if (!writejSONConfigFile()) {
+        $response['errorCode'] = 1;
+        $response['errorMessage'] = 'Error: Failed to write config file';
+        return json_encode($response);
+    }
+    $response['idx'] = $index;
+    return json_encode($response);
 }
 
 function updateFavoriteEpisode(&$fav, $ti) {
@@ -899,7 +926,8 @@ function addFeed($feedItem) {
     global $config_values;
     if (filter_var($feedItem['feedLink'], FILTER_VALIDATE_URL)) {
         writeToLog("Checking feed: " . $feedItem['feedLink'] . "\n", 2);
-        if (parseOneFeed(['Link' => $feedItem['feedLink']], true)) { // 2nd parameter forces update
+        $parsedFeed = parseOneFeed(['Link' => $feedItem['feedLink']], true);
+        if ($parsedFeed !== false) { // 2nd parameter forces update
             writeToLog("Adding feed: " . $feedItem['feedLink'] . "\n", 1);
             $config_values['Feeds'][]['Link'] = $feedItem['feedLink'];
             $arrayKeys = array_keys($config_values['Feeds']);
@@ -917,21 +945,21 @@ function addFeed($feedItem) {
                 $config_values['Feeds'][$idx]['enabled'] = '';
             }
             if ($feedItem['feedName'] === '') {
-                $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
+                $config_values['Feeds'][$idx]['Name'] = $parsedFeed['feed']['title'];
             } else {
                 $config_values['Feeds'][$idx]['Name'] = $feedItem['feedName'];
             }
             // feed website
             if (
                     (
-                    !isset($config_values['Feeds'][$idx]['Website']) || $$config_values['Feeds'][$idx]['Website'] === ''
+                    !isset($config_values['Feeds'][$idx]['Website']) || $config_values['Feeds'][$idx]['Website'] === ''
                     ) &&
                     (
-                    isset($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website']) &&
-                    $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'] !== ''
+                    isset($parsedFeed['feed']['website']) &&
+                    $parsedFeed['feed']['website'] !== ''
                     )
             ) {
-                $config_values['Feeds'][$idx]['Website'] = filter_var($config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['website'], FILTER_VALIDATE_URL);
+                $config_values['Feeds'][$idx]['Website'] = filter_var($parsedFeed['feed']['website'], FILTER_VALIDATE_URL);
             }
             $config_values['Feeds'][$idx]['lastUpdated'] = time();
         } else {
@@ -1000,8 +1028,9 @@ function updateFeed() {
                             if ($config_values['Feeds'][$idx]['Name'] !== $feedItem['feedName']) {
                                 // if the new feed name is blank, get the official feed name from the feed
                                 if ($feedItem['feedName'] === false || $feedItem['feedName'] === '') {
-                                    if (parseOneFeed(['Link' => $feedItem['feedLink']])) {
-                                        $config_values['Feeds'][$idx]['Name'] = $config_values['Global']['Feeds'][$feedItem['feedLink']]['feed']['title']; //TODO get rid of ['feed']
+                                    $parsedFeed = parseOneFeed(['Link' => $feedItem['feedLink']]);
+                                    if ($parsedFeed !== false) {
+                                        $config_values['Feeds'][$idx]['Name'] = $parsedFeed['feed']['title'];
                                         $feedItemChanged = true;
                                     } else {
                                         writeToLog("Could not connect to and parse feed: " . $feedItem['feedLink'] . "\n", -1);

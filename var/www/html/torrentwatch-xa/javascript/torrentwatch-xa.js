@@ -1,4 +1,4 @@
-//'use strict';
+'use strict';
 $(document).ready(function () { // first binding to document ready (while torrentwatch-xa.js is called before other Javascript files)
     // define hideMe function by browser/userAgent/device (once on page load)
     if (navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) {
@@ -16,112 +16,96 @@ $(document).ready(function () { // first binding to document ready (while torren
             $(this).slideDown();
         };
     }
-    displayFilter = function (filter, empty) {
+    window.displayFilter = function (filter, empty) {
         // draw the item list based on selected filter/view
         var timeOut = (empty === true || navigator.userAgent.toLowerCase().search('(iphone|ipod|android)') > -1) ? 0 : 400;
         clearInterval(window.filterInterval); // stop the timer window.filterInterval
         window.Cookies.remove('TWXAFILTER', {sameSite: 'lax'});
-        window.Cookies.set('TWXAFILTER', filter, {expires: 30, sameSite: 'lax', path: ''}); // store the selected filter in cookie to survive browser refresh
+        window.Cookies.set('TWXAFILTER', JSON.stringify({filter: filter, ts: Date.now()}), {expires: 30, sameSite: 'lax', path: ''}); // store the selected filter in cookie to survive browser refresh
         window.activeFilter = filter; // store the selected filter for use in updateMatchCounts
-        switch (filter) {
-            case 'matching':
-                if ($('.transmission').is(":visible")) {
-                    $('.transmission').hideMe();
-                    $('.header.combined').showMe();
-                    $('#torrentlist_container li.torrent.selected').removeClass('selected');
-                } else {
-                    $('.feed').hideMe();
-                }
-                setTimeout(function () {
-                    var tor = $(".feed li.torrent").filter(".st_notAMatch");
-                    $(tor).hide();
-                    tor = $(".feed li.torrent").not(".st_notAMatch");
-                    $(tor).show();
-                    $('.feed').showMe();
-                    tor.markAlt().closest(".feed div.feed");
-                    updateMatchCounts();
-                }, timeOut);
-                break;
-            case 'downloading':
-                if ($('.transmission').is(":visible")) {
-                    $('.transmission').hideMe();
-                    $('.header.combined').showMe();
-                    $('#torrentlist_container li.torrent.selected').removeClass('selected');
-                } else {
-                    $('.feed').hideMe();
-                }
-                var showFilter = function () {
-                    var tor = $(".feed li.torrent").not('.st_downloading');
-                    $(tor).hide();
-                    tor = $(".feed li.torrent").filter('.st_downloading');
-                    $(tor).show();
-                    $('.feed').showMe();
-                    tor.markAlt().closest(".feed div.feed");
-                    updateMatchCounts();
-                };
-                break;
-            case 'downloaded':
-                if ($('.transmission').is(":visible")) {
-                    $('.transmission').hideMe();
-                    $('.header.combined').showMe();
-                    $('#torrentlist_container li.torrent.selected').removeClass('selected');
-                } else {
-                    $('.feed').hideMe();
-                }
-                var showFilter = function () {
-                    var tor = $(".feed li.torrent").not('.st_downloaded, .st_inCacheNotActive');
-                    $(tor).hide();
-                    tor = $(".feed li.torrent").filter('.st_downloaded, .st_inCacheNotActive');
-                    $(tor).show();
-                    $('.feed').showMe();
-                    tor.markAlt().closest(".feed div.feed");
-                    updateMatchCounts();
-                };
-                break;
-            case 'transmission':
-                if ($('.feed').is(':visible')) {
-                    $('.feed').hideMe();
-                    $('.header.combined').hideMe();
-                    $('#torrentlist_container li.torrent.selected').removeClass('selected');
-                }
-                setTimeout(function () {
-                    $('.transmission').showMe();
-                    $("#transmission_list").find("li.torrent").markAlt();
-                    updateMatchCounts();
-                }, timeOut);
-                break;
-            case 'all':
-            default:
-                if ($('.transmission').is(":visible")) {
-                    $('.transmission').hideMe();
-                    $('.header.combined').showMe();
-                    $('#torrentlist_container li.torrent.selected').removeClass('selected');
-                } else {
-                    $('.feed').hideMe();
-                }
-                setTimeout(function () {
-                    var tor = $(".feed li.torrent").not(".hiddenFeed");
-                    $(tor).show();
-                    $('.feed').showMe();
-                    tor.markAlt().closest(".feed div.feed");
-                    updateMatchCounts();
-                }, timeOut);
-        }
-        if (showFilter) {
-            // restart the timer window.filterInterval (so that Downloading and Downloaded can dynamically update faster)
-            window.filterInterval = setInterval(function () {
-                showFilter();
-            }, 500);
+
+        if (filter === 'torrentClient') {
+            if ($('.feed').is(':visible')) {
+                $('.feed').hideMe();
+                $('.header.combined').hideMe();
+                $('#torrentlist_container li.torrent.selected').removeClass('selected');
+            }
+            setTimeout(function () {
+                $('#torrentClientFilterView').showMe();
+                $("#torrentClientList").find("li.torrent").markAlt();
+                updateMatchCounts();
+            }, timeOut);
+        } else {
+            if ($('#torrentClientFilterView').is(":visible")) {
+                $('#torrentClientFilterView').hideMe();
+                $('.header.combined').showMe();
+                $('#torrentlist_container li.torrent.selected').removeClass('selected');
+            } else {
+                $('.feed').hideMe();
+            }
+
+            var showFilter;
+            switch (filter) {
+                case 'matching':
+                    setTimeout(function () {
+                        var tor = $(".feed li.torrent").filter(".st_notAMatch");
+                        $(tor).hide();
+                        tor = $(".feed li.torrent").not(".st_notAMatch");
+                        $(tor).show();
+                        $('.feed').showMe();
+                        tor.markAlt().closest(".feed div.feed");
+                        updateMatchCounts();
+                    }, timeOut);
+                    break;
+                case 'downloading':
+                    showFilter = function () {
+                        var tor = $(".feed li.torrent").not('.st_downloading');
+                        $(tor).hide();
+                        tor = $(".feed li.torrent").filter('.st_downloading');
+                        $(tor).show();
+                        $('.feed').showMe();
+                        tor.markAlt().closest(".feed div.feed");
+                        updateMatchCounts();
+                    };
+                    break;
+                case 'downloaded':
+                    showFilter = function () {
+                        var tor = $(".feed li.torrent").not('.st_downloaded, .st_inCacheNotActive');
+                        $(tor).hide();
+                        tor = $(".feed li.torrent").filter('.st_downloaded, .st_inCacheNotActive');
+                        $(tor).show();
+                        $('.feed').showMe();
+                        tor.markAlt().closest(".feed div.feed");
+                        updateMatchCounts();
+                    };
+                    break;
+                case 'all':
+                default:
+                    setTimeout(function () {
+                        var tor = $(".feed li.torrent").not(".hiddenFeed");
+                        $(tor).show();
+                        $('.feed').showMe();
+                        tor.markAlt().closest(".feed div.feed");
+                        updateMatchCounts();
+                    }, timeOut);
+                    break;
+            }
+            if (showFilter) {
+                // restart the timer window.filterInterval (so that Downloading and Downloaded can dynamically update faster)
+                window.filterInterval = setInterval(showFilter, 500);
+            }
         }
         setTimeout(updateClientButtons, timeOut); // update the clientButtons button bar in timeOut ms
         $.checkHiddenFeeds(1); // check the hidden (rolled-up) feeds
-        $('#filter_' + filter).addClass('selected').siblings().removeClass("selected"); // this filter is selected, the others are deselected
+        var filterTab = (filter === 'torrentClient') ? '#filterTorrentClient' : '#filter_' + filter;
+        $(filterTab).addClass('selected').siblings().removeClass("selected"); // this filter is selected, the others are deselected
         document.querySelector('#filter_search_input').value = ''; // clear the search input field
     };
-    processSearchInput = function () {
+    window.processSearchInput = function () {
         // process search input including clearing
         var filterText = this.value.toLowerCase();
-        $("li.torrent").hide().each(function () { //TODO replace hide() with style.display = 'none'
+        document.querySelectorAll("li.torrent").forEach(function (el) { el.style.display = 'none'; });
+        $("li.torrent").each(function () {
             if ($(this).find(".torrent_name").text().toLowerCase().match(filterText)) {
                 this.style.display = '';
             }
@@ -131,14 +115,11 @@ $(document).ready(function () { // first binding to document ready (while torren
     $("#filter_search_input").on("keyup", processSearchInput);
     // on search binding for Filter Bar search input key and click events
     $("#filter_search_input").on("search", processSearchInput);
-    updateMatchCounts = function () {
+    window.updateMatchCounts = function () {
         var feed = $('.feed');
         // update filter and feed headers with total match counts
-        var activeTorrents = $('#transmission_list li').length;
+        var activeTorrents = $('#torrentClientList li').length;
         $('#activeTorrents').html("(" + activeTorrents + ")");
-        if (!activeTorrents) {
-            window.gotAllData = true; //TODO true when Transmission list is empty (but transmission-daemon might not really be empty)
-        }
         var totalMatching = feed.find('li.torrent').not('.st_notAMatch').length;
         var totalDownloaded = feed.find('li.st_downloaded, li.st_inCacheNotActive').length;
         var totalDownloading = feed.find('li.st_downloading').length;
@@ -180,24 +161,24 @@ $(document).ready(function () { // first binding to document ready (while torren
                     el.querySelector('span.matches').textContent = '(' + el.querySelectorAll('li.torrent:not(.st_notAMatch)').length + ')';
                 });
         }
-        listSelector();
+        //listSelector();
         updateClientButtons();
     };
     // toggle visible web UI elements for different torrent clients
-    changeClient = function (client) {
+    window.changeClient = function (client) {
         switch (client) {
             case "folder":
-                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_downloading, #filter_transmission, #tabTor, #config_alsosavetorrentfiles, #config_alsosavedir").css("display", "none");
-                $("#filter_transmission").removeClass('filter_right');
+                $("#config_tc_user, #config_tc_password, #config_tc_host, #config_tc_port, #filter_downloading, #filterTorrentClient, #tabTor, #config_alsosavetorrentfiles, #config_alsosavedir").css("display", "none");
+                $("#filterTorrentClient").removeClass('filter_right');
                 $("#filter_downloaded").addClass('filter_right');
                 window.client = "folder";
                 $("#rates").html("");
                 adjustWebUIButton();
                 break;
             case 'Transmission':
-                $("#config_tr_user, #config_tr_password, #config_tr_host, #config_tr_port, #filter_downloading, #filter_transmission, #tabTor, #config_alsosavetorrentfiles, #config_alsosavedir").css("display", "block");
+                $("#config_tc_user, #config_tc_password, #config_tc_host, #config_tc_port, #filter_downloading, #filterTorrentClient, #tabTor, #config_alsosavetorrentfiles, #config_alsosavedir").css("display", "block");
                 $("#filter_downloaded").removeClass('filter_right');
-                $("#filter_transmission").addClass('filter_right');
+                $("#filterTorrentClient").addClass('filter_right');
                 window.client = 'Transmission';
                 adjustWebUIButton();
         }
@@ -206,23 +187,22 @@ $(document).ready(function () { // first binding to document ready (while torren
     // perform the first load of the dynamic information
     $.get('torrentwatch-xa.php', '', $.loadDynamicData, 'html');
     // toggle between Resume or Pause in context menu based on current state
-    toggleTorResumePause = function (torHash) {
-        var curObject = $('li.item_' + torHash + ' div.torResume');
-        if (curObject.css('display') === 'block') {
-            curObject.hide();
+    window.toggleTorResumePause = function (torHash) {
+        var curEl = document.querySelector('li.item_' + torHash + ' div.torResume');
+        if (getComputedStyle(curEl).display === 'block') {
+            curEl.style.display = 'none';
         } else {
-            curObject.show();
+            curEl.style.display = 'block';
         }
-        curObject = $('li.item_' + torHash + ' div.torPause');
-        if (curObject.css('display') === 'block') {
-            curObject.hide();
+        curEl = document.querySelector('li.item_' + torHash + ' div.torPause');
+        if (getComputedStyle(curEl).display === 'block') {
+            curEl.style.display = 'none';
         } else {
-            curObject.show();
+            curEl.style.display = 'block';
         }
-        curObject = null;
     };
     // hides or shows Move button in button bar
-    toggleTorMove = function (torHash) {
+    window.toggleTorMove = function (torHash) {
         var curObject = $('#clientButtons li.move_data, #clientButtons li#Move');
         if (curObject.is(":visible")) {
             curObject.fadeOut('fast', updateClientButtons); // fadeOut('fast') doesn't set width and height to 0 like hide() does
@@ -232,9 +212,9 @@ $(document).ready(function () { // first binding to document ready (while torren
         curObject = null;
     };
     // assemble html for item in only the Transmission filter list
-    getClientItem = function (item, clientData, liClass, percentage, eta) {
-        var transmissionItem =
-                '<li id="clientId_' + item.id + '" class="torrent item_' + item.hashString + ' clientId_' + item.id + ' st_transmission ' + liClass + '">' +
+    window.getClientItem = function (item, clientData, liClass, percentage, eta) {
+        var torrentClientItem =
+                '<li id="clientId_' + item.id + '" class="torrent item_' + item.hashString + ' clientId_' + item.id + ' st_torrentClient ' + liClass + '">' +
                 '<table width="100%" cellspacing="0"><tr><td class="tr_identifier"></td>' +
                 '<td class="torrent_name tor_client">' +
                 '<div class="torrent_name"><span class="torrent_title">' + item.name + '</span></div>' +
@@ -245,10 +225,10 @@ $(document).ready(function () { // first binding to document ready (while torren
                 '<span class="torEta">' + eta + '</span></div>' +
                 '<input type="hidden" class="path" value="' + item.downloadDir + '"></input>' +
                 '</td></tr></table></li>';
-        return (transmissionItem);
+        return (torrentClientItem);
     };
     // show #clientError div (not the same as #twError div shown by $.fn.showErrorPanel())
-    showClientError = function (error) {
+    window.showClientError = function (error) {
         $('#clientError p').html(error);
         $('#clientError').slideDown();
     };
@@ -261,14 +241,14 @@ $(document).ready(function () { // first binding to document ready (while torren
             window.clientErrorCount++;
             $('.torInfo').html(error);
             $('div.feed .torInfo').addClass('torInfoErr');
-            $('li#filter_transmission a').addClass('error');
+            $('li#filterTorrentClient a').addClass('error');
             if (window.clientErrorCount >= 3) {
                 showClientError(error);
                 window.errorActive = true;
             }
         }
     });
-    getClientData = function () {
+    window.getClientData = function () {
         if (window.ajaxActive) {
             return; // quit if ajax request is active
         }
@@ -276,7 +256,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         window.hideProgressBar = true; // prevents recurring progress bar in Configure dialog
         $.get('torrentwatch-xa.php', {getDisableHideList: 1}, function (rsp) {
             // do not put this inside toggleClientButtons or updateClientButtons as it will slow down the browser
-            if (rsp) {
+            if (rsp === "1") {
                 window.disableHideList = true;
             } else {
                 window.disableHideList = false; // need this to avoid undefined
@@ -289,7 +269,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             // set timeout to add spinning busy icon in 1500ms if still updatingClientData
             setTimeout(function () {
                 if (window.updatingClientData) {
-                    $('li#webui a span').addClass('altIcon'); // adds spinning busy icon
+                    $('li#torrentClientButton a span').addClass('altIcon'); // adds spinning busy icon
                 }
             }, 1500);
             // get torrent list from transmission-daemon via PHP
@@ -306,7 +286,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                     window.errorActive = true;
                     $('.torInfo').html(error);
                     $('div.feed .torInfo').addClass('torInfoErr');
-                    $('li#filter_transmission a').addClass('error');
+                    $('li#filterTorrentClient a').addClass('error');
                     return;
                 }
 
@@ -330,25 +310,25 @@ $(document).ready(function () { // first binding to document ready (while torren
 
                 // reset error counter to 0 (error dialog pops up on 3rd error)
                 window.clientErrorCount = 0;
-                $('li#filter_transmission a').removeClass('error');
+                $('li#filterTorrentClient a').removeClass('error');
                 $('div.feed .torInfo').removeClass('torInfoErr');
 //TODO end simplify JSON error handling
 
                 processTransmissionData(json);
-                $('li#webui a span').removeClass('altIcon'); // remove the spinning busy icon
+                $('li#torrentClientButton a span').removeClass('altIcon'); // remove the spinning busy icon
             });
             window.hideProgressBar = false; // setting this to false turns on progress bar via ajaxStart
         } // end window.client === "Transmission"
     };
-    processTransmissionData = function (json) {
+    window.processTransmissionData = function (json) {
         var upSpeed = 0;
         var downSpeed = 0;
-        var transmissionItemIds = []; // for later removal of items not in the array
-        var transmissionList = $("#transmission_list");
+        var torrentClientItemIds = []; // for later removal of items not in the array
+        var torrentClientList = $("#torrentClientList");
         // loop through each torrent in transmission-daemon
         $.each(json['arguments']['torrents'],
                 function (i, item) {
-                    transmissionItemIds.push("clientId_" + item.id);
+                    torrentClientItemIds.push("clientId_" + item.id);
                     ///// compile torrent item for Transmission filter list
 
                     // remap Transmission pre-2.4 status codes to 2.4
@@ -423,13 +403,13 @@ $(document).ready(function () { // first binding to document ready (while torren
                         clientData = item.errorString;
                     }
 
-                    ///// find matching item in current li#transmission_list (not div#transmission_data) by item.hashString or item.id
+                    ///// find matching item in current li#torrentClientList (not div#torrentClientFilterView) by item.hashString or item.id
                     var torListElmt; // torrent list element
-                    var found = transmissionList.find("li.item_" + item.hashString);
+                    var found = torrentClientList.find("li.item_" + item.hashString);
                     if (found.length) {
                         torListElmt = found;
                     } else {
-                        found = transmissionList.find("li.clientId_" + item.id);
+                        found = torrentClientList.find("li.clientId_" + item.id);
                         if (found.length) {
                             torListElmt = $("li.clientId_" + item.id); // note that we use class="clientId_" and not id="clientId_" so all filters are affected
                         }
@@ -454,21 +434,21 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 torListElmt.find("div.progressBarContainer").hide();
                             } else if (percentage < 100) {
                                 ///// paused, not yet completely downloaded
-                                torListElmt.not(".st_transmission")
+                                torListElmt.not(".st_torrentClient")
                                         .removeClass("st_favTooOld st_downloaded st_favReady st_waitTorCheck st_inCacheNotActive")
                                         .addClass("st_downloading");
                             } else {
                                 ///// paused, completed download but not completed seeding
-                                torListElmt.not(".st_transmission")
+                                torListElmt.not(".st_torrentClient")
                                         .removeClass("st_favTooOld st_downloading st_favReady st_waitTorCheck st_inCacheNotActive")
                                         .addClass("st_downloaded");
                             }
                         }
 
                         // set the item's torrent_title text in only the Transmission filter (all other filters will already have correct title)
-                        if (transmissionList.find(torListElmt).find(".torrent_title").text() === item.hashString &&
+                        if (torrentClientList.find(torListElmt).find(".torrent_title").text() === item.hashString &&
                                 item.name !== item.hashString) {
-                            transmissionList.find(torListElmt).find(".torrent_title").text(item.name);
+                            torrentClientList.find(torListElmt).find(".torrent_title").text(item.name);
                         }
                         // update progress bar for item in all filters
                         torListElmt.find("div.progressBarContainer").show(); // must use item.hashString as other filters don't have clientId_
@@ -478,7 +458,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                         for (var i = 0; i < tds.length; i++) {
                             var td = tds[i];
                             /* loop through each item that matches the identifier
-                             * We do this because on a browser refresh, the item in #transmission_list matches and already has div.infoDiv
+                             * We do this because on a browser refresh, the item in #torrentClientList matches and already has div.infoDiv
                              * AND the item in the other filters does not have div.infoDiv. Adding infoDiv using implicit iterator results
                              * in multiple infoDivs in one item */
                             if (!td.querySelector('div.infoDiv')) {
@@ -507,21 +487,21 @@ $(document).ready(function () { // first binding to document ready (while torren
                         switch (item.status) {
                             case 1:
                             case 2:
-                                torListElmt.not(".st_transmission")
+                                torListElmt.not(".st_torrentClient")
                                         .removeClass("st_favTooOld st_downloaded st_favReady st_waitTorCheck st_inCacheNotActive");
                                 // .addClass("tc_verifying") is handled earlier
                                 break;
                             case 3:
                             case 4:
                                 // switch to st_downloading in all filters
-                                torListElmt.not(".st_transmission")
+                                torListElmt.not(".st_torrentClient")
                                         .removeClass("st_favTooOld st_downloaded st_favReady st_waitTorCheck st_inCacheNotActive")
                                         .addClass("st_downloading");
                                 break;
                             case 5:
                             case 6:
                                 // switch from st_downloading to st_downloaded in all filters
-                                torListElmt.not(".st_transmission")
+                                torListElmt.not(".st_torrentClient")
                                         .removeClass("st_favTooOld st_downloading st_favReady st_waitTorCheck st_inCacheNotActive")
                                         .addClass("st_downloaded");
                                 break;
@@ -553,13 +533,25 @@ $(document).ready(function () { // first binding to document ready (while torren
                     } // end torListElmt !== undefined
                     else {
                         ///// if not in list, add it
-                        transmissionList.prepend(getClientItem(item, clientData, liClass, percentage, convertedEta)); // gets Transmission item html
+                        torrentClientList.prepend(getClientItem(item, clientData, liClass, percentage, convertedEta)); // gets Transmission item html
                         /* add class="clientId_" to all items in filters including Transmission
                          * item in Transmission filter will already have the class from getClientItem above
                          * must use "li.item_" because "clientId_" doesn't exist yet
                          * we're counting on the PHP side to put the hash into the item for the next line to work */
                         $("li.item_" + item.hashString).addClass("clientId_" + item.id);
-                        //TODO optional: add update of progress bar, infoDiv, torInfo, and torEta from prior block here, just without identifier
+                        // update progress bar, infoDiv, torInfo, and torEta for feed-filter items on first call
+                        $("li.item_" + item.hashString).each(function () {
+                            if (!$(this).find("div.infoDiv").length) {
+                                var td = $(this).find("td.torrent_name")[0];
+                                if (td) {
+                                    td.insertAdjacentHTML('beforeend', '<div class="infoDiv"><span class="torInfo"></span><span class="torEta"></span></div>');
+                                }
+                            }
+                            $(this).find("div.progressBarContainer").show();
+                            $(this).find("div.progressDiv").width(percentage + "%").height(3);
+                            $(this).find(".torInfo").text(clientData);
+                            $(this).find("span.torEta").text(convertedEta);
+                        });
                     }
                 }); // end $.each(json['arguments']['torrents']
 
@@ -568,11 +560,11 @@ $(document).ready(function () { // first binding to document ready (while torren
             $("#rates").html("D: " + Math.formatBytes(downSpeed) + "/s&nbsp;&nbsp;</br>U: " + Math.formatBytes(upSpeed) + "/s");
         }
 
-        ///// remove torrents in #transmission_list that are not in the transmission-daemon
-        $.each(transmissionList.find("li"),
+        ///// remove torrents in #torrentClientList that are not in the transmission-daemon
+        $.each(torrentClientList.find("li"),
                 function (i, item) {
-                    // search through transmissionItemIds array
-                    if (jQuery.inArray(item.id, transmissionItemIds) === -1) { // relies on id="clientId_" instead of class="clientId_"
+                    // search through torrentClientItemIds array
+                    if (jQuery.inArray(item.id, torrentClientItemIds) === -1) { // relies on id="clientId_" instead of class="clientId_"
                         // item in Transmission filter is not found in transmission-daemon
                         // first, remove the class="clientId_###" from items in all filters using item.id, which is also "clientId_###"
                         $("li." + item.id).removeClass(item.id);
@@ -583,7 +575,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                         $("li." + item.id + " div.infoDiv").remove();
                         $("li." + item.id + " div.progressBarContainer").hide();
                         $("li." + item.id + " div.torStart").show().removeClass("hidden");
-                        $("li." + item.id + " div.torDelete, li." + item.id + " div.torTrash, li." + item.id + " div.torPause, li." + item.id + " div.torResume").hide().addClass("hidden");
+                        document.querySelectorAll("li." + item.id + " div.torDelete, li." + item.id + " div.torTrash, li." + item.id + " div.torPause, li." + item.id + " div.torResume").forEach(function (el) { el.style.display = 'none'; el.classList.add('hidden'); });
                         // then, remove the item from the Transmission filter
                         item.remove(); // essentially removes item from Transmission filter by id="clientId_" not class="clientId_"
                     }
@@ -592,7 +584,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         ///// process items not in Transmission across all filters other than Transmission
 
         // loop through in #torrentlist_container that have st_waitTorCheck
-        // NOTE: #torrentlist_container is parent of #transmission_list
+        // NOTE: #torrentlist_container is parent of #torrentClientList
         $.each($("#torrentlist_container").find(".st_waitTorCheck, .tc_downloading"), function () { //TODO test .tc_downloading; might need to separate from .st_waitTorCheck
             // check if it does not have a class starting with "clientId_"
             var classList = $(this).prop("className").split(/\s+/);
@@ -631,12 +623,12 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
         });
         setTimeout(updateMatchCounts(), 100); // update match counts in UI
-        $("#transmission_list>li").tsort("span.dateAdded", {order: "desc"}); // sort the items in the Transmission filter
-        $("#transmission_list").find("li.torrent").markAlt();
+        $("#torrentClientList>li").tsort("span.dateAdded", {order: "desc"}); // sort the items in the Transmission filter
+        $("#torrentClientList").find("li.torrent").markAlt();
         window.gotAllData = true;
     }; // end processTransmissionData
 
-    listSelector = function () {
+    /*listSelector = function () {
         // handles event bindings for selecting/highlighting items in the list
         var torrentlistcontainer = $('#torrentlist_container').find('li.torrent').not('.selActive');
         torrentlistcontainer.addClass('selActive');
@@ -646,8 +638,8 @@ $(document).ready(function () { // first binding to document ready (while torren
         var litorrent = $('li.torrent');
         litorrent.find('a').off("mousedown");
         litorrent.find('div.contextItem').off("mousedown");
-    };
-    toggleSelect = function (item) {
+    };*/
+    window.toggleSelect = function (item) {
         if ($(item).hasClass('selected')) {
             $(item).removeClass('selected');
         } else {
@@ -663,18 +655,22 @@ $(document).ready(function () { // first binding to document ready (while torren
             //document.querySelector('#moveTo').value = ''; //TODO test the switch from .val() to .value
         }
     };
-    updateClientButtons = function (fast) {
+    window.updateClientButtons = function (fast) {
         var obj;
         var tor = [];
-        if ($('#transmission_data').is(":visible")) {
-            $('#clientButtons .add_fav, #clientButtons .start, #clientButtons .hide_item').hide();
-            $('#clientButtons .move_button').show();
+        if ($('#torrentClientFilterView').is(":visible")) {
+            document.querySelectorAll('#clientButtons .add_fav, #clientButtons .start, #clientButtons .hide_item').forEach(function (el) { el.style.display = 'none'; });
+            document.querySelectorAll('#clientButtons .move_button').forEach(function (el) { el.style.display = ''; });
         } else {
-            $('#clientButtons .add_fav, #clientButtons .start, #clientButtons .hide_item').show();
-            $('#clientButtons .move_button').hide();
+            document.querySelectorAll('#clientButtons .add_fav, #clientButtons .start, #clientButtons .hide_item').forEach(function (el) { el.style.display = ''; });
+            document.querySelectorAll('#clientButtons .move_button').forEach(function (el) { el.style.display = 'none'; });
         }
 
-        if ($('#torrentlist_container .feed  li.torrent.selected').length) {
+        if (window.client !== "folder") {
+            document.querySelectorAll('#clientButtons .resume, #clientButtons .pause, #clientButtons .delete, #clientButtons .trash').forEach(function (el) { el.style.display = ''; });
+        }
+
+        if ($('#torrentlist_container .feed  li.torrent.selected').not('.st_favReady').length) {
             tor['fav'] = 1;
         }
         if ($('#torrentlist_container .feed  li.torrent.selected.st_notAMatch').length && window.disableHideList !== true) {
@@ -690,22 +686,22 @@ $(document).ready(function () { // first binding to document ready (while torren
                 tor['resume'] = 1;
                 tor['del'] = 1;
                 tor['trash'] = 1;
-                if ($('#transmission_data').is(':visible')) {
+                if ($('#torrentClientFilterView').is(':visible')) {
                     tor['move'] = 1;
                 }
             }
             if ($('#torrentlist_container li.selected.st_downloading:not(.tc_paused),' +
                     '#torrentlist_container li.selected.st_downloaded:not(.tc_paused),' +
-                    '#torrentlist_container li.selected.st_transmission:not(.tc_paused)').length) {
+                    '#torrentlist_container li.selected.st_torrentClient:not(.tc_paused)').length) {
                 tor['pause'] = 1;
                 tor['del'] = 1;
                 tor['trash'] = 1;
-                if ($('#transmission_data').is(':visible')) {
+                if ($('#torrentClientFilterView').is(':visible')) {
                     tor['move'] = 1;
                 }
             }
         } else {
-            $('#clientButtons .resume, #clientButtons .pause, #clientButtons .trash, #clientButtons .delete, #clientButtons .move_data, #clientButtons .move_button').hide();
+            document.querySelectorAll('#clientButtons .resume, #clientButtons .pause, #clientButtons .trash, #clientButtons .delete, #clientButtons .move_data, #clientButtons .move_button').forEach(function (el) { el.style.display = 'none'; });
         }
         var buttons = '';
         for (obj in tor) {
@@ -740,7 +736,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         $(buttons).removeClass('disabled');
         toggleClientButtons(fast);
     };
-    toggleClientButtons = function (fast) {
+    window.toggleClientButtons = function (fast) {
         if (navigator.userAgent.toLowerCase().search('(iphone|ipod|ipad|android)') > -1) {
             fast = 1;
         }
@@ -786,9 +782,16 @@ $(document).ready(function () { // first binding to document ready (while torren
     var supportsOrientationChange = "onorientationchange" in window,
             orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
     window.addEventListener(orientationEvent, toggleClientButtons, false);
+    // delegated mousedown binding covers all li.torrent including dynamically-added Transmission items
+    $(document).on("mousedown", "#torrentlist_container li.torrent", function (e) {
+        if ($(e.target).closest('a, .contextItem, .contextButtonContainer').length) {
+            return;
+        }
+        toggleSelect(this);
+    });
     var waitForDynData = setInterval(function () {
         if ($('#dynamicdata').length) {
-            listSelector();
+            //listSelector();
             clearInterval(waitForDynData);
         }
     }, 500);
@@ -808,32 +811,40 @@ $(document).ready(function () { // first binding to document ready (while torren
             dynamic.find("ul.favorite > li").initFavorites().end().find("form").initForm().end().initConfigDialog().appendTo("body");
             setTimeout(function () {
                 var container = $("#torrentlist_container");
-                var filter = window.Cookies.get('TWXAFILTER');
+                var filter;
+                var cookieRaw = window.Cookies.get('TWXAFILTER');
+                try {
+                    var parsed = JSON.parse(cookieRaw);
+                    filter = parsed.filter;
+                    window.twxaFilterTs = parsed.ts;
+                } catch (e) {
+                    filter = cookieRaw; // backward compat: old cookie was just a filter name
+                }
                 window.activeFilter = filter;
-                $('li.torrent:not(.st_waitTorCheck) div.progressBarContainer').hide(); // hides progressBarContainer on all items but st_waitTorCheck
-                $("li.torrent.st_waitTorCheck div.progressBarContainer").hide(); // hide progressBarContainer even on waitTorCheck
+                document.querySelectorAll('li.torrent:not(.st_waitTorCheck) div.progressBarContainer').forEach(function (el) { el.style.display = 'none'; }); // hides progressBarContainer on all items but st_waitTorCheck
+                document.querySelectorAll("li.torrent.st_waitTorCheck div.progressBarContainer").forEach(function (el) { el.style.display = 'none'; }); // hide progressBarContainer even on waitTorCheck
                 if (!(filter)) {
                     filter = 'all';
                 }
-                if ($('#transmission_data').length) {
-                    $('a#torClient ').show().html('Transmission');
+                if ($('#torrentClientFilterView').length) {
+                    $('a#torrentClientLabel').show().html('Transmission');
                 } else {
-                    $('a#torClient').hide();
+                    $('a#torrentClientLabel').hide();
                     $('div.activeTorrent.torDelete').hide();
                     $('div.activeTorrent.torTrash').hide();
-                    if (filter === 'transmission') {
+                    if (filter === 'torrentClient') {
                         filter = 'all';
                     }
                 }
-                if (filter === 'transmission') {
+                if (filter === 'torrentClient') {
                     $('#torrentlist_container .feed').hide();
                 } else {
-                    $('.transmission').hide();
+                    $('#torrentClientFilterView').hide();
                 }
                 $("#torrentlist_container li").hide();
                 container.show(0, function () {
                     displayFilter(filter, true);
-                    $('#dynamicdata').css('height', $(window).height() - ($('#topmenu').css('height') + 1));
+                    $('#dynamicdata').css('height', $(window).height() - (parseInt($('#topmenu').css('height')) + 1));
                     if ('ontouchmove' in document.documentElement && navigator.userAgent.toLowerCase().search('android') === -1) {
                         $('#torrentlist_container').bind('touchstart', function () {
                             $('#torrentlist_container').bind('touchmove', function () {
@@ -856,6 +867,12 @@ $(document).ready(function () { // first binding to document ready (while torren
                 var initGetData = setInterval(function () {
                     if (window.gotAllData) {
                         clearInterval(initGetData);
+                        if (window.activeFilter === 'torrentClient' &&
+                            window.twxaFilterTs &&
+                            $('#torrentClientList li').length === 0 &&
+                            Date.now() - window.twxaFilterTs > 86400000) {
+                            displayFilter('all', true);
+                        }
                         $('div.progressBarContainer').removeClass('init');
                         if (window.getDataLoop) {
                             clearInterval(window.getDataLoop);
@@ -901,21 +918,25 @@ $(document).ready(function () { // first binding to document ready (while torren
         }
         if (button.id === "Delete" || button.id.endsWith("_Delete")) {
             // Delete button is only in the Favorites and Super-Favorites dialogs
-            $.get(form.get(0).action, form.buildDataString(button));
-            //TODO handle error message in json response with $.fn.showErrorPanel()
-            if (button.href.match(/#superfavorite/)) {
-                var id = button.href.match(/#superfavorite_(\d+)/)[1];
-                $("#superfavorite_" + id).toggleSuperFavorite();
-                $("#superfavorite_" + id).remove();
-                $("#superfav_" + id).remove();
-                window.dialog = 1;
-            } else if (button.href.match(/#favorite/)) {
-                var id = button.href.match(/#favorite_(\d+)/)[1];
-                $("#favorite_" + id).toggleFavorite();
-                $("#favorite_" + id).remove();
-                $("#fav_" + id).remove();
-                window.dialog = 1;
-            }
+            $.get(form.get(0).action, form.buildDataString(button), function (rsp) {
+                if (rsp.errorCode) {
+                    $.fn.showErrorPanel(rsp.errorMessage);
+                    return;
+                }
+                if (button.href.match(/#superfavorite/)) {
+                    var id = button.href.match(/#superfavorite_(\d+)/)[1];
+                    $("#superfavorite_" + id).toggleSuperFavorite();
+                    $("#superfavorite_" + id).remove();
+                    $("#superfav_" + id).remove();
+                    window.dialog = 1;
+                } else if (button.href.match(/#favorite/)) {
+                    var id = button.href.match(/#favorite_(\d+)/)[1];
+                    $("#favorite_" + id).toggleFavorite();
+                    $("#favorite_" + id).remove();
+                    $("#fav_" + id).remove();
+                    window.dialog = 1;
+                }
+            }, 'json');
         } else if (button.id === "Update" || button.id.endsWith("_Update")) {
             // Update button is only in the Favorites and Super-Favorites dialogs
             $.get(form.get(0).action, form.buildDataString(button), function (rsp) {
@@ -1095,11 +1116,12 @@ $(document).ready(function () { // first binding to document ready (while torren
         var errorMessageString = errorMessage.toString();
         if (errorMessageString !== "") {
             var errorID = new Date().getTime();
-            $('#twError').show().append('<p id="error_' + errorID + '">' + errorMessage + '</p>');
+            document.getElementById('twError').style.display = 'block';
+            $('#twError').append('<p id="error_' + errorID + '">' + errorMessage + '</p>');
             setTimeout(function () {
                 $('#twError p#error_' + errorID).remove();
                 if (!$('#twError p').length) {
-                    $('#twError').hide();
+                    document.getElementById('twError').style.display = 'none';
                 }
             }, 5000);
         }
@@ -1292,15 +1314,23 @@ $(document).ready(function () { // first binding to document ready (while torren
                 $.fn.showErrorPanel(rsp.errorMessage);
             } else {
                 // find all items that match the name, quality, feed and
-                $.each($("ul#torrentlist li"), function (i, item) {
-                    //if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(rsp.title.toLowerCase()) &&
-                    if ($('li#' + item.id + ' input.show_title').val().toLowerCase().match(rsp.name.toLowerCase()) &&
-                            $('li#' + item.id + ' input.show_quality').val().toLowerCase().match(rsp.quality.toLowerCase()) &&
-                            ($.urlencode($('li#' + item.id + ' input.feed_link').val()).match(rsp.feed) ||
+                var items = document.querySelectorAll("#torrentlist_container .feed ul.torrentlist li");
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    if (item.querySelector('input.show_title').value.toLowerCase().match(rsp.name.toLowerCase()) &&
+                            item.querySelector('input.show_quality').value.toLowerCase().match(rsp.quality.toLowerCase()) &&
+                            ($.urlencode(item.querySelector('input.feed_link').value).match(rsp.feed) ||
                                     rsp.feed === 'All')) {
-                        $('li#' + item.id).removeClass('st_notAMatch').addClass('st_favReady');
+                        item.classList.remove('st_notAMatch');
+                        item.classList.add('st_favReady');
+                        var favDiv = item.querySelector('div.addFavorite');
+                        if (favDiv) {
+                            favDiv.style.display = 'none';
+                            favDiv.classList.add('hidden');
+                        }
                     }
-                });
+                }
+                updateClientButtons();
             }
             window.favving = 0;
             //}, 'html');
@@ -1397,8 +1427,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                             for (var i = 0; i < torHashes.length; i++) {
                                 if ($('li.item_' + torHashes[i]).length) {
                                     $('li.item_' + torHashes[i] + ' div.infoDiv').remove();
-                                    $('li.item_' + torHashes[i] + ' div.progressBarContainer').hide();
-                                    $('li.item_' + torHashes[i] + ' div.activeTorrent').hide();
+                                    document.querySelector('li.item_' + torHashes[i] + ' div.progressBarContainer').style.display = 'none';
+                                    document.querySelector('li.item_' + torHashes[i] + ' div.activeTorrent').style.display = 'none';
                                     $('li.item_' + torHashes[i] + ' div.torStart').show();
                                     $('li.item_' + torHashes[i] + ' div.torStart').removeClass("hidden");
                                     $('li.item_' + torHashes[i])
@@ -1418,8 +1448,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                                     }
                                 }
                                 // completely remove the item from the Transmission filter
-                                if ($('#transmission_data li.item_' + torHashes[i]).length) {
-                                    $('#transmission_data li.item_' + torHashes[i]).remove();
+                                if ($('#torrentClientFilterView li.item_' + torHashes[i]).length) {
+                                    $('#torrentClientFilterView li.item_' + torHashes[i]).remove();
                                 }
                                 //TODO double-check to make sure the list length is reduced by 1
                             }
@@ -1523,29 +1553,30 @@ $(document).ready(function () { // first binding to document ready (while torren
     $.toggleConfigTab = function (tab, button) {
         $(".toggleConfigTab").removeClass("selTab");
         $(button).addClass("selTab");
-        $(".configTab").hide();
-        $("#configuration form").hide();
+        document.querySelectorAll(".configTab").forEach(function (el) { el.style.display = 'none'; });
+        document.querySelectorAll("#configuration form").forEach(function (el) { el.style.display = 'none'; });
         if (tab === "#config_feeds") {
-            $("#configuration .feedform").show();
+            document.querySelector("#configuration .feedform").style.display = 'block';
         } else if (tab === "#config_hideList") {
-            $("#hidelist_form").show();
+            document.querySelector("#hidelist_form").style.display = 'block';
         } else {
-            $("#config_form").show();
+            document.querySelector("#config_form").style.display = 'block';
         }
         $(tab).animate({opacity: "toggle"}, 500);
     };
     $.toggleContextMenu = function (item_id, id) {
         // do NOT use slideUp() or slideDown() in this function as they are too slow and get interrupted
         if ($("div.contextMenu").not(item_id).is(":visible")) {
-            $("div.contextMenu").hide();
+            document.querySelectorAll("div.contextMenu").forEach(function (el) { el.style.display = 'none'; });
         }
+        var menuEl = document.querySelector(item_id);
         if ($(item_id).is(":visible")) {
-            $(item_id).hide();
+            menuEl.style.display = 'none';
         } else {
-            $(item_id).show();
+            menuEl.style.display = 'block';
             $("div.contextMenu, a.contextButton").on("mouseleave", function () {
                 var contextTimeout = setTimeout(function () {
-                    $(item_id).hide();
+                    menuEl.style.display = 'none';
                 }, 500);
                 $("div.contextMenu, a#contextButton_" + id).on("mouseenter", function () {
                     clearTimeout(contextTimeout);

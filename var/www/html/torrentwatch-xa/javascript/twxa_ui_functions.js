@@ -2,21 +2,27 @@
 function adjustWebUIButton() {
     switch (window.client) {
         case "Transmission" :
+            // hide the button entirely when there's no valid web UI URL
+            if (!window.twxaWebUiUrl) {
+                $("#torrentClientButton").hide();
+                $("#torrentClientButtonLabel").hide();
+                break;
+            }
             // shrink/expand/hide/show Web UI button to fit window
             if ($(window).width() < 635) {
-                $("#webui").hide();
-                $("#webuiLabel").hide();
+$("#torrentClientButton").hide();
+$("#torrentClientButtonLabel").hide();
             } else if ($(window).width() < 710) { // was 620 before Super-Favorites
-                $("#webui").show();
-                $("#webuiLabel").hide();
+$("#torrentClientButton").show();
+$("#torrentClientButtonLabel").hide();
             } else {
-                $("#webui").show();
-                $("#webuiLabel").show();
+                $("#torrentClientButton").show();
+$("#torrentClientButtonLabel").show();
             }
             break;
         case "folder" :
         default :
-            $("li#webui").hide();
+            $("li#torrentClientButton").hide();
     }
 }
 function adjustUIElements() {

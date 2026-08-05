@@ -1,18 +1,6 @@
 <?php
 
-function show_feed_lists_container(&$html_out) {
-    $html_out .= "<div id='torrentlist_container'>\n";
-}
-
-function close_feed_lists_container(&$html_out) {
-    $html_out .= "</div>\n";
-}
-
-function show_transmission_div(&$html_out) {
-    $html_out .= '<div id="transmission_data" class="transmission"><ul id="transmission_list" class="torrentlist"></div>';
-}
-
-function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id) {
+function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id, $ulink, $linkType) {
     global $config_values, $html_out;
     $guess = detectMatch($item['title']);
 
@@ -34,10 +22,6 @@ function show_feed_item($item, $feed, $feedName, $alt, $torHash, $itemState, $id
 
     $ti = $item['title'];
     // Copy feed cookies to item
-    $itemLinks = getBestTorrentOrMagnetLinks($item);
-    $ulink = $itemLinks['link'];
-    $linkType = $itemLinks['type'];
-    $magnetLink = $itemLinks['magnetLink'];
     if (($pos = strpos($feed, ':COOKIE:')) !== false) {
         $ulink .= substr($feed, $pos);
     }
@@ -59,39 +43,39 @@ function show_feed_list($idx) {
         $html_out .= "<div class=\"header\">\n";
         $html_out .= "<table width=\"100%\" cellspacing=\"0\"><tr><td class='hide_feed'>\n";
         $html_out .= "<span class=\"hide_feed_left\">\n";
-        $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . $idx . ", 0)\">\n";
+        $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . intval($idx) . ", 0)\">\n";
         $html_out .= "<img height='14' src=\"images/blank.gif\"></a></span></td>\n";
         if (isset($config_values['Feeds'][$idx]['Name']) && $config_values['Feeds'][$idx]['Name'] !== '') {
-            $ti = $config_values['Feeds'][$idx]['Name'];
+            $ti = htmlspecialchars($config_values['Feeds'][$idx]['Name'], ENT_QUOTES, 'UTF-8');
         } else {
-            $ti = $config_values['Feeds'][$idx]['Link'];
+            $ti = htmlspecialchars($config_values['Feeds'][$idx]['Link'], ENT_QUOTES, 'UTF-8');
         }
         if (isset($config_values['Feeds'][$idx]['Website']) && $config_values['Feeds'][$idx]['Website'] !== '') {
-            $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank"><img src="images/weblink10x10.png" alt="feed website"/></a>';
+            $ti = $ti . '&nbsp;<a href="' . htmlspecialchars($config_values['Feeds'][$idx]['Website'], ENT_QUOTES, 'UTF-8') . '" target="_blank"><img src="images/weblink10x10.png" alt="feed website"/></a>';
         }
-        $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Link'] . '" target="_blank"><img src="images/feedlink10x10.png" alt="feed link"/></a>';
+        $ti = $ti . '&nbsp;<a href="' . htmlspecialchars($config_values['Feeds'][$idx]['Link'], ENT_QUOTES, 'UTF-8') . '" target="_blank"><img src="images/feedlink10x10.png" alt="feed link"/></a>';
 
         $html_out .= "<td class='feed_title'><span>$ti</span><span class='matches'></span></td>\n";
         $html_out .= "<td class='hide_feed'>\n";
         $html_out .= "<span class=\"hide_feed_right\">\n";
-        $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . $idx . ", 0)\">\n";
+        $html_out .= "<a href=\"#\" title=\"Hide this feed\" onclick=\"$.toggleFeed(" . intval($idx) . ", 0)\">\n";
         $html_out .= "<img height='14' src=\"images/blank.gif\"></a></span></td>\n";
         $html_out .= "</tr></table></div>\n";
     }
-    $html_out .= "<ul id='torrentlist' class='torrentlist'>";
+    $html_out .= "<ul class='torrentlist'>";
 }
 
 function show_feed_down_header($idx) {
     global $config_values, $html_out;
     if (!$config_values['Feeds'][$idx]['Name']) {
-        $ti = $config_values['Feeds'][$idx]['Link'];
+        $ti = htmlspecialchars($config_values['Feeds'][$idx]['Link'], ENT_QUOTES, 'UTF-8');
     } else {
-        $ti = $config_values['Feeds'][$idx]['Name'];
+        $ti = htmlspecialchars($config_values['Feeds'][$idx]['Name'], ENT_QUOTES, 'UTF-8');
     }
     if (isset($config_values['Feeds'][$idx]['Website']) && $config_values['Feeds'][$idx]['Website'] !== '') {
-        $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Website'] . '" target="_blank"><img src="images/weblink10x10.png" alt="feed website"/></a>';
+        $ti = $ti . '&nbsp;<a href="' . htmlspecialchars($config_values['Feeds'][$idx]['Website'], ENT_QUOTES, 'UTF-8') . '" target="_blank"><img src="images/weblink10x10.png" alt="feed website"/></a>';
     }
-    $ti = $ti . '&nbsp;<a href="' . $config_values['Feeds'][$idx]['Link'] . '" target="_blank"><img src="images/feedlink10x10.png" alt="feed link"/></a>';
+    $ti = $ti . '&nbsp;<a href="' . htmlspecialchars($config_values['Feeds'][$idx]['Link'], ENT_QUOTES, 'UTF-8') . '" target="_blank"><img src="images/feedlink10x10.png" alt="feed link"/></a>';
     $html_out .= "<div class=\"errorHeader\">$ti&nbsp;&nbsp;is not available.</div>\n";
 }
 

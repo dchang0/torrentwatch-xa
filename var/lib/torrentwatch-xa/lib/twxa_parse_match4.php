@@ -17,8 +17,8 @@ function matchTitle4_1($ti, $seps) {
             if ($mat[1] == "") {
                 // print Chapter - Chapter
                 $result = [
-                    'medTyp' => 4,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_PRINT,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[4],
                     'seasEd' => $mat[5],
                     'episSt' => $mat[2],
@@ -29,8 +29,8 @@ function matchTitle4_1($ti, $seps) {
             } else {
                 // print Volume - Volume
                 $result = [
-                    'medTyp' => 4,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_PRINT,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[2],
                     'seasEd' => $mat[3],
                     'episSt' => 1,
@@ -51,8 +51,8 @@ function matchTitle4_2($ti, $seps) {
     $re = "/\b(\d{1,4})[$seps]?\-[$seps]?(\d{1,4}) as v\.?(\d{1,4})[$seps]?\-[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 4,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_PRINT,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[3],
             'seasEd' => $mat[4],
             'episSt' => 1,
@@ -79,8 +79,8 @@ function matchTitleBatchRange($ti, $seps) {
             $itemVr = $mat[3];
         }
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[4],
             'episSt' => $mat[2],
@@ -108,8 +108,8 @@ function matchTitleSequential($ti, $seps, $count) {
             }
         }
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
             'episSt' => $mat[1],

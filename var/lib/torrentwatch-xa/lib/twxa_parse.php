@@ -17,6 +17,23 @@ define('CHAPTER_WORDS', 'Chapters|Chapter|Capitulos|Capitulo|Chapitres|Chapitre|
 // part words
 define('PART_WORDS', 'Parts|Part|Pt\.|Pt');
 
+// media type constants
+define('MEDTYP_UNKNOWN', 0);
+define('MEDTYP_VIDEO', 1);
+define('MEDTYP_AUDIO', 2);
+define('MEDTYP_PRINT', 4);
+
+// numbering sequence constants
+define('NUMSEQ_NONE', 0);
+define('NUMSEQ_SEASON_EPISODE', 1);
+define('NUMSEQ_DATE', 2);
+define('NUMSEQ_SEASON_VOLUME', 4);
+define('NUMSEQ_PREVIEW', 8);
+define('NUMSEQ_SPECIAL', 16);
+define('NUMSEQ_OVA', 32);
+define('NUMSEQ_MOVIE', 64);
+define('NUMSEQ_DISC_PART', 128);
+
 // load matchTitle function files
 require_once("twxa_parse_match.php");
 require_once("twxa_parse_match0.php");
@@ -272,7 +289,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'BluRay',
         'Blu-ray',
         'BD',
-        'HR.HDTV',
+        'HR\.HDTV',
         'HDTVRip',
         'HDTV',
         'HDrip',
@@ -306,7 +323,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'DSR',
         'SVCD',
         'WEB-DL',
-        'WEB.DL',
+        'WEB\.DL',
         'HTML5',
         'iTunes',
         // codecs--could be high or low quality, who knows?
@@ -332,8 +349,8 @@ function detectQualities($ti, $seps = '\s\.\_') {
         //'AVI',
         //'MP4',
         //'MKV',
-        'BT.709',
-        'BT.601',
+        'BT\.709',
+        'BT\.601',
         // colorspaces
         'YUV420p10',
         'YUV444p10',
@@ -387,8 +404,8 @@ function detectAudioCodecs($ti) {
         '320K',
         'MP3',
         'M4A',
-        '5.1ch',
-        '5.1',
+        '5\.1ch',
+        '5\.1',
         '2ch'
     ];
     foreach ($audioCodecList as $audioCodecListItem) {
@@ -464,7 +481,7 @@ function detectMatch($ti) {
 
     // detect qualities
     $detQualitiesOutput = detectQualities(simplifyTitle($ti));
-    $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']); //TODO is it really necessary to avoid using count?
+    $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']);
     if ($config_values['Settings']['Resolutions Only'] == "yes") {
         $detQualities = $detQualitiesOutput['detectedResolutions'];
     } else {
@@ -583,29 +600,13 @@ function detectMatch($ti) {
 function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // our numbering style is 1x2v2-2x3v3
     // $wereQualitiesDetected is a param because some manga use "Vol. ##" notation
-    // $medTyp state table
-    // 0 = Unknown
-    // 1 = Video
-    // 2 = Audio
-    // 4 = Print media
-    // $numSeq allows for parallel numbering sequences
-    // like Movie 1, Movie 2, Movie 3 alongside Episode 1, Episode 2, Episode 3
-    // 0 = None/unknown
-    // 1 = Video: Season x Episode or FULL, Print Media: Volume x Chapter or FULL, Audio: Season x Episode or FULL
-    // 2 = Video: Date, Print Media: Date, Audio: Date (all these get Season = 0)
-    // 4 = Video: Season x Volume (x Episode), Print Media: N/A, Audio: N/A
-    // 8 = Video: Preview, Print Media: N/A, Audio: Opening songs
-    // 16 = Video: Special, Print Media: N/A, Audio: Ending songs
-    // 32 = Video: OVA episode sequence, Print Media: N/A, Audio: Character songs
-    // 64 = Video: Movie sequence (Season = 0), Print Media: N/A, Audio: OST
-    // 128 = Video: (Season x) Volume x Disc/Part sequence, Print Media: N/A, Audio: N/A
     // IMPORTANT NOTES:
     // treat anime notation as Season 1
     // treat date-based episodes as Season 0 EXCEPT...
     // ...when YYYY-##, use year as the Season and ## as the Episode
     // because of PHP left-to-right matching order, (Season|Seas|Se|S) works but (S|Se|Seas|Season) will match S and move on
-    //TODO decode HTML and URL encoded characters to reduce number of extraneous numerals
     $ti = html_entity_decode($ti, ENT_QUOTES);
+    $ti = rawurldecode($ti);
 
     // bucket the matches of all numbers of different lengths
     $matNums = [];
@@ -658,7 +659,7 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
                 }
             case 1:
                 $result = matchTitle1_($ti, $seps, $wereQualitiesDetected);
-                if (!is_null($result) && $result['matFnd'] !== "1_") {
+                if ($result['matFnd'] !== "1_") {
                     if ($numbersDetected !== 1) {
                         $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
                     }
@@ -911,13 +912,12 @@ function episode_filter($item, $filter) {
                     $stopEpisode += 0;
                 }
 
-                // check if item/range is in this filter set
-                // add zeros to convert to numbers
+                // check if item/range overlaps with this filter set
+                // use overlap check so that batch items are not wrongly blocked before
+                // checkItemNumberingMatchesFavorite() can evaluate the Ignore Batches setting
                 if (
-                        ($item['seasBatStart'] >= $startSeason && $item['seasBatStart'] <= $stopSeason) &&
-                        ($item['seasBatEnd'] >= $startSeason && $item['seasBatEnd'] <= $stopSeason) &&
-                        ($item['episBatStart'] >= $startEpisode && $item['episBatStart'] <= $stopEpisode) &&
-                        ($item['episBatEnd'] >= $startEpisode && $item['episBatEnd'] <= $stopEpisode)
+                        ($item['seasBatStart'] <= $stopSeason && $item['seasBatEnd'] >= $startSeason) &&
+                        ($item['episBatStart'] <= $stopEpisode && $item['episBatEnd'] >= $startEpisode)
                 ) {
                     if ($item['itemVersion'] && ($startEpisodeVersion !== '' || $stopEpisodeVersion !== '')) {
                         if (
@@ -941,12 +941,9 @@ function episode_filter($item, $filter) {
 }
 
 function isWordSeason($word) {
-    // checks if input word is "Season" in multiple languages or an abbrevation thereof
-    
-    return true;
+    return (bool) preg_match("/^(?:" . SEASON_WORDS . ")$/i", $word);
 }
 
 function isWordEpisode($word) {
-    
-    return true;
+    return (bool) preg_match("/^(?:" . EPISODE_WORDS . ")$/i", $word);
 }

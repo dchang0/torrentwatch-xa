@@ -87,148 +87,68 @@ function detectAllTorrentLinks($item) {
     ) {
         $links[] = $item['URL'];
     }
-//    ///// search the feed item's contents (this section slows performance dramatically)
-//    $itemContentsHrefs = detectahrefsInString($fi['content']); // finds all the <a href= values in this item's contents
-//    // search $fi['content'] for .torrent and magnet:
-//    foreach ($itemContentsHrefs as $href) {
-//        if (
-//                isset($href) &&
-//                (
-//                strpos($href, '.torrent', -8) !== false ||
-//                strpos($href, 'magnet:') === 0
-//                )
-//        ) {
-//            $links[] = $href;
-//        }
-//    }
-//    // search $fi['content'] for .torrent.gz
-//    foreach ($itemContentsHrefs as $href) {
-//        if (isset($href) && strpos($href, '.torrent.gz', -11) !== false) {
-//            $links[] = $href;
-//        }
-//    }
-//    //TODO search all for infoHash and convert to magnet link
-    // make links unique in the array
+    // extract torrent:magnetURI from namespaced RSS elements (e.g. EZTV feeds)
+    if (isset($item['torrent_magnetURI']) && !empty($item['torrent_magnetURI'])) {
+        $links[] = $item['torrent_magnetURI'];
+    }
+// make links unique in the array
     $uniqueLinks = array_unique($links, SORT_STRING);
     //TODO validate URLs in array using filter_var($url, FILTER_VALIDATE_URL);
     return $uniqueLinks;
 }
 
 function getBestTorrentOrMagnetLinks($item) {
-    // returns the first (assumed to be best) torrent file link in the item
-    // can include gzipped torrent file links
-    // tries to minimize computations and downloads for best performance
+    // returns the best available torrent/magnet link from a feed item
     $bestLink = "";
     $bestLinkType = "";
-    $bestMagnetLink = "";
     $links = detectAllTorrentLinks($item);
-    $linkCount = count($links);
-    if ($linkCount > 1) {
-        // categorize the links
+
+    if (count($links) > 0) {
         $endInDotTorrentLinks = [];
         $otherDotTorrentLinks = [];
-        $unknownLinks = [];
         $endInDotTorrentGzLinks = [];
         $validMagnetLinks = [];
-        $invalidMagnetLinks = [];
 
         foreach ($links as $link) {
-            switch (true) {
-                case true: // magnet link; this must be first since magnet links can contain ".torrent"
-                    if (strpos($link, 'magnet:') === 0) {
-                        // check that the magnet link has an xt (Exact Topic) with a valid Bittorrent Info Hash
-                        if (preg_match('/xt=urn:btih:[a-fA-F0-9]{40}/', $links[$i])) {
-                            $validMagnetLinks[] = $link;
-                            break;
-                        } else {
-                            $invalidMagnetLinks[] = $link;
-                        }
-                    }
-                case true: // link ends in .torrent
-                    if (strpos($link, '.torrent', -8) !== false) {
-                        $endInDotTorrentLinks[] = $link;
-                        break;
-                    }
-                case true: // link ends in .torrent.gz
-                    if (strpos($link, '.torrent.gz', -11) !== false) {
-                        $endInDotTorrentGzLinks[] = $link;
-                        break;
-                    }
-                case true: // link contains .torrent
-                    if (strpos($link, '.torrent') !== false) {
-                        $otherDotTorrentLinks[] = $link;
-                        break;
-                    }
-                default:
-                    $unknownLinks[] = $link;
+            if (strpos($link, 'magnet:') === 0) {
+                if (preg_match('/xt=urn:btih:[a-fA-F0-9]{40}/', $link)) {
+                    $validMagnetLinks[] = $link;
+                }
+            } elseif (strpos($link, '.torrent.gz', -11) !== false) {
+                $endInDotTorrentGzLinks[] = $link;
+            } elseif (strpos($link, '.torrent', -8) !== false) {
+                $endInDotTorrentLinks[] = $link;
+            } elseif (strpos($link, '.torrent') !== false) {
+                $otherDotTorrentLinks[] = $link;
             }
         }
-        // select the best link overall
-        switch (true) {
-            case true: // if only one ended in .torrent, use it
-                if (count($endInDotTorrentLinks) === 1) {
-                    $bestLink = $endInDotTorrentLinks[0];
-                    $bestLinkType = "torrent";
-                    break;
-                }
-            case true: // if there's one or more valid magnet links, use the first one
-                if (count($validMagnetLinks) > 0) {
-                    $bestLink = $validMagnetLinks[0];
-                    $bestLinkType = "magnet";
-                    break;
-                }
-            case true: // if at least one ends with .torrent.gz, use the first one
-                if (count($endInDotTorrentGzLinks) > 0) {
-                    $bestLink = $endInDotTorrentGzLinks[0];
-                    $bestLinkType = "torrent.gz";
-                    break;
-                }
-            default: // combine all the non-magnet and non-torrent.gz links, download the Content-Type, and pick the first one that has the right Content-Type
-                $nonMagnetLinks = array_merge($endInDotTorrentLinks, $otherDotTorrentLinks, $unknownLinks);
-                foreach ($nonMagnetLinks as $link) {
-                    $opts = [
-                        'http' => ['timeout' => 10]
-                    ];
-                    stream_context_get_default($opts);
-                    $headers = get_headers($link, 1);
-                    if (
-                            (
-                            isset($headers['Content-Disposition']) &&
-                            preg_match('/filename=.+\.torrent/i', $headers['Content-Disposition'])
-                            ) ||
-                            (
-                            isset($headers['Content-Type']) &&
-                            $headers['Content-Type'] == 'application/x-bittorrent'
-                            )
-                    ) {
-                        $bestLink = $link;
-                        $bestLinkType = "torrent";
-                        break;
-                    }
-                }
-        }
-        // select the best valid magnet link
-        if (count($validMagnetLinks) > 0) {
-            $bestMagnetLink = $validMagnetLinks[0];
-        }
-    } else if ($linkCount === 1) {
-        $bestLink = $links[0];
-        if (strpos($bestLink, 'magnet:') === 0) {
-            $bestMagnetLink = $bestLink;
-            $bestLinkType = "magnet";
-        } else if (strpos($bestLink, '.torrent.gz', -11) !== false) {
-            $bestLinkType = "torrent.gz";
-        } else {
+
+        if (count($endInDotTorrentLinks) > 0) {
+            $bestLink = $endInDotTorrentLinks[0];
             $bestLinkType = "torrent";
+        } elseif (count($validMagnetLinks) > 0) {
+            $bestLink = $validMagnetLinks[0];
+            $bestLinkType = "magnet";
+        } elseif (count($endInDotTorrentGzLinks) > 0) {
+            $bestLink = $endInDotTorrentGzLinks[0];
+            $bestLinkType = "torrent.gz";
+        } elseif (count($otherDotTorrentLinks) > 0) {
+            $bestLink = $otherDotTorrentLinks[0];
+            $bestLinkType = "torrent";
+        } else {
+            $bestLink = $links[0];
+            if (strpos($bestLink, '.torrent.gz', -11) !== false) {
+                $bestLinkType = "torrent.gz";
+            } else {
+                $bestLinkType = "torrent";
+            }
         }
     } else {
-        // no links
         writeToLog("Array of links is empty--skipping this item...\n", 2);
     }
     return [
         'link' => $bestLink,
-        'type' => $bestLinkType,
-        'magnetLink' => $bestMagnetLink
+        'type' => $bestLinkType
     ];
 }
 
@@ -585,6 +505,7 @@ function processMatchedItemDownload(
         &$itemState,
         &$fav,
         $item,
+        $bestLink,
         $feedUrl,
         $clientType,
         $globalDownloadDir,
@@ -599,8 +520,7 @@ function processMatchedItemDownload(
     // item should be downloaded; figure out if it is already downloaded and start the download using the correct Client if not
     $startedDownload = false;
     if (check_cache($item['title'])) { // check_cache() is false if title is or title and episode and version are found in cache
-        $bestLink = getBestTorrentOrMagnetLinks($item);
-        if (isset($bestLink['link'])) {
+        if (!empty($bestLink['link'])) {
             $response = clientAddTorrent(
                     $bestLink['link'],
                     $bestLink['type'],
@@ -632,7 +552,7 @@ function processMatchedItemDownload(
             }
         } else {
             writeToLog("Unable to find URL for " . $item['title'] . " from feed: " . $fav['Feed'] . "\n", -1);
-            $itemState = "st_noURL"; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic; use it to disable buttons
+            $itemState .= ' st_noURL'; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic; use it to disable buttons
         }
     } else {
         writeToLog("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1); // could be exact or equiv. but we say equiv.
@@ -664,16 +584,16 @@ function parseOneFeed($feed, $update = false) {
         $cacheExpires = 0;
     }
     $feed_parser = new FeedParserWrapper($feed['Link'], getDownloadCacheDir(), 'M d, H:i', $config_values['Settings']['Time Zone'], $cacheExpires);
-    if (!$config_values['Global']['Feeds'][$feed['Link']] = $feed_parser->getParsedData()) {
+    $data = $feed_parser->getParsedData();
+    if (!$data) {
         writeToLog("Error creating feed parser for " . $feed['Link'] . "\n", -1);
         return false;
-    } else {
-        $config_values['Global']['Feeds'][$feed['Link']]['URL'] = $feed['Link'];
-        return true;
     }
+    $data['URL'] = $feed['Link'];
+    return $data;
 }
 
-function processOneFeed($feed, $idx, $feedName, $feedLink) {
+function processOneFeed($feed, $idx, $feedName, $feedLink, $renderHTML = false) {
     global $config_values;
     // store some settings in temp variables
     $matchStyle = getArrayValueByKey($config_values['Settings'], 'Match Style');
@@ -693,7 +613,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
 
     writeToLog("Started processing feed: $feedName\n", 2);
     if (isset($feed['feed']) && isset($feed['feed']['entry']) && count($feed['feed']['entry']) > 0) {
-        if (isset($config_values['Global']['HTMLOutput'])) {
+        if ($renderHTML) {
             if ($config_values['Settings']['Combine Feeds'] == 0) {
                 show_feed_list($idx);
             }
@@ -707,6 +627,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
             } else {
                 $item['title'] = "";
             }
+            $bestLink = getBestTorrentOrMagnetLinks($item);
             $torHash = "";
             $itemState = "st_notAMatch"; // assign initial state to each item, to be overwritten if a match; $itemState is not used above this function
             if (isset($config_values['Settings']['Enable Super-Favorites']) && $config_values['Settings']['Enable Super-Favorites'] == 1) {
@@ -761,6 +682,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                             $itemState,
                             $config_values['Favorites'][$favKey],
                             $item,
+                            $bestLink,
                             $feedLink,
                             $clientType,
                             $globalDownloadDir,
@@ -785,8 +707,14 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                     $itemState = 'st_inCache'; // not a Favorite but is seen in cache--probably a manual download or a deleted Favorite
                 }
             }
+            // check for items without any usable URL
+            if (!in_array($itemState, ['st_downloading', 'st_inCacheNotActive', 'st_inCache'])) {
+                if (empty($bestLink['link']) && strpos($itemState, 'st_noURL') === false) {
+                    $itemState .= ' st_noURL';
+                }
+            }
             // prepare and add item to item list for HTML output
-            if (isset($config_values['Global']['HTMLOutput'])) {
+            if ($renderHTML) {
                 // assemble id using feed index and a sequential number
                 if (!isset($rsnr)) {
                     $rsnr = 1;
@@ -805,7 +733,9 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                     'alt' => $alt,
                     'torHash' => $torHash,
                     'itemState' => $itemState,
-                    'id' => $id
+                    'id' => $id,
+                    'link' => $bestLink['link'],
+                    'linkType' => $bestLink['type']
                 ];
                 // toggle alternating row background for HTML output
                 if ($alt === 'alt') {
@@ -815,10 +745,10 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
                 }
             }
         } // END loop through every item in this feed
-        if (isset($config_values['Global']['HTMLOutput'])) {
+        if ($renderHTML) {
             $htmlList = array_reverse($htmlList, true);
             foreach ($htmlList as $item) {
-                show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['itemState'], $item['id']);
+                show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['itemState'], $item['id'], $item['link'], $item['linkType']);
             }
             if ($config_values['Settings']['Combine Feeds'] == 0) {
                 close_feed_list();
@@ -828,38 +758,44 @@ function processOneFeed($feed, $idx, $feedName, $feedLink) {
         writeToLog("Processed feed: $feedName\n", 1);
     } else {
         writeToLog("Empty feed: $feedName\n", 0);
-        show_feed_down_header($idx);
+        if ($renderHTML) {
+            show_feed_down_header($idx);
+        }
     }
 }
 
-function process_all_feeds($feeds) {
+function process_all_feeds($feeds, $feedCache, $renderHTML = false) {
     // processes all enabled feeds after loadAllFeeds()
     global $config_values;
-    if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
+    if ($renderHTML && $config_values['Settings']['Combine Feeds'] == 1) {
         show_feed_list(0);
     }
-    setupDownloadCacheDir();
     foreach ($feeds as $key => $feed) {
-        if (isset($config_values['Global']['Feeds'][$feed['Link']]) && $feed['enabled'] == 1) {
-            processOneFeed($config_values['Global']['Feeds'][$feed['Link']], $key, $feed['Name'], $feed['Link']);
+        if (isset($feedCache[$feed['Link']]) && $feed['enabled'] == 1) {
+            processOneFeed($feedCache[$feed['Link']], $key, $feed['Name'], $feed['Link'], $renderHTML);
         } else if ($feed['enabled'] != 1) {
             writeToLog("Feed disabled, not processed: " . $feed['Name'] . "\n", 1);
         } else {
             writeToLog("Feed inaccessible, not processed: " . $feed['Name'] . "\n", 1);
         }
     }
-    if (isset($config_values['Global']['HTMLOutput']) && $config_values['Settings']['Combine Feeds'] == 1) {
+    if ($renderHTML && $config_values['Settings']['Combine Feeds'] == 1) {
         close_feed_list();
     }
 }
 
 function loadAllFeeds($feeds, $update = false) {
-    // loads and parses all enabled feeds
+    // loads and parses all enabled feeds, returns feed cache array keyed by feed URL
+    $feedCache = [];
     foreach ($feeds as $feed) {
         if (isset($feed['enabled']) && $feed['enabled'] == 1) {
-            parseOneFeed($feed, $update);
+            $parsedData = parseOneFeed($feed, $update);
+            if ($parsedData !== false) {
+                $feedCache[$feed['Link']] = $parsedData;
+            }
         } else {
             writeToLog("Feed disabled, not loaded: " . $feed['Name'] . "\n", 2);
         }
     }
+    return $feedCache;
 }

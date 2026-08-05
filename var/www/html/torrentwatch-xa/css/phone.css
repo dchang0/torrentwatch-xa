@@ -1,33 +1,33 @@
 html {
-overflow:scroll
+overflow:auto;
 }
 
 body {
-overflow:scroll
+overflow:auto;
 }
 
 #topmenu {
-/*zoom:130%;*/
-transform: scale(1.3);
+	-webkit-transform: scale(1.3);
+	transform: scale(1.3);
 transform-origin: 0 0;
-height:29px
+height:29px;
 }
 
 #mainoptions {
-display:none
+display:none;
 }
 
 #filterbar_container {
 top:2px;
-padding-left:6px
+padding-left:6px;
 }
 
 #filter_downloading {
-display:none
+display:none;
 }
 
 #filter_downloaded {
-display:none
+display:none;
 }
 
 #filterbar_container li:hover {
@@ -35,102 +35,102 @@ height:18px;
 background:#CCC;
 border-top:1px solid #f5f5f5;
 border-right:1px solid #999;
-border-left:1px solid #999!important;
+border-left:1px solid #999;
 border-bottom:1px solid #999;
-color:#111
+color:#111;
 }
 
-#filter_all {
-width:20px!important
+#filterbar_container #filter_all {
+width:20px;
 }
 
-#filter_matching {
-width:57px!important
+#filterbar_container #filter_matching {
+width:57px;
 }
 
 #filter_matching span {
-display:none
+display:none;
 }
 
-#filter_transmission {
-max-width:82px!important
+#filterbar_container #filterTorrentClient {
+max-width:82px;
 }
 
-#filter_transmission span {
-display:none
+#filterTorrentClient span {
+display:none;
 }
 
-#rates {
-display:none!important
+#filterbar_container #rates {
+display:none;
 }
 
 #clientButtons {
-height:34px
+height:34px;
 }
 
 .add_fav {
-display:none!important
+display:none;
 }
 
-#filter_bytext {
-display:none!important
+#filterbar_container #filter_bytext {
+display:none;
 }
 
 #torrentlist_container {
 position:static;
-margin-top:38px
+margin-top:38px;
 }
 
 #torrentlist_container div.header,#torrentlist_container div.header td.feed_title span.matches {
 overflow:hidden;
 font-size:10px;
-/*zoom:120%;*/
-transform: scale(1.2);
-transform-origin: 0 0;
+	-webkit-transform: scale(1.2);
+	transform: scale(1.2);
+	transform-origin: 0 0;
 }
 
-ul#torrentlist li.torrent {
-min-height:22px
+ul.torrentlist li.torrent {
+	min-height:22px;
 }
 
 ul.torrentlist li.torrent td {
-height:22px
+height:22px;
 }
 
 ul.torrentlist td.torrent_name {
 border-top:1px solid #ddd;
-padding-top:1px
+padding-top:1px;
 }
 
 .torrent_pubDate {
-display:none
+display:none;
 }
 
 .torEta {
-display:none
+display:none;
 }
 
 .contextButtonContainer {
-display:none
+display:none;
 }
 
 #clientButtonsHolder {
-right:5px
+right:5px;
 }
 
 #clientButtons {
 height:34px;
-padding:0 0 0 5px
+padding:0 0 0 5px;
 }
 
 #clientButtons li {
-/*zoom:120%;*/
+-webkit-transform: scale(1.2);
 transform: scale(1.2);
 transform-origin: 0 0;
 }
 
 #clientButtons li.move_data input {
-width:320px
+width:320px;
 }
 
 .torrent_title {
@@ -140,85 +140,85 @@ padding-bottom:1px;
 height:18px;
 overflow:hidden;
 word-wrap:break-word;
-width:100%!important
+width:100%;
 }
 
-#transmission_list .torrent_title,ul.torrentlist .st_downloaded .torrent_title,ul.torrentlist .st_downloading .torrent_title {
+#torrentClientList .torrent_title,ul.torrentlist .st_downloaded .torrent_title,ul.torrentlist .st_downloading .torrent_title {
 padding-top:1px;
 padding-bottom:1px;
 font-size:12px;
-height:14px
+height:14px;
 }
 
 .torInfo {
 overflow:hidden;
-height:12px
+height:12px;
 }
 
 #trash_tor_data {
 margin-top:50px;
 font-size:.4em;
 width:280px;
-margin-left:-145px
+margin-left:-145px;
 }
 
 #trash_tor_data .buttonContainer {
 font-size:.8em;
-margin-right:4px
+margin-right:4px;
 }
 
 #trash_tor_data .buttonContainer a {
-width:20px
+width:20px;
 }
 
 #trash_tor_data .buttonContainer a.wide {
-width:50px
+width:50px;
 }
 
 .dialog_window {
-top:40px
+top:40px;
 }
 
 #twError,#newVersion,#clientError {
-border-top:0!important;
-border-left:0!important;
-border-right:0!important;
-border-top-left-radius:0!important;
-border-top-right-radius:0!important;
+border-top:0;
+border-left:0;
+border-right:0;
+border-top-left-radius:0;
+border-top-right-radius:0;
 background:#bbb;
-top:28px!important;
-font-size:.8em!important;
+top:28px;
+font-size:.8em;
 margin-left:-172px;
 width:333px;
-z-index:100
+z-index:100;
 }
 
 @media only screen and (orientation:portrait) {
 #torrentlist_container div.header,#torrentlist_container div.header td.feed_title span.matches {
 height:16px;
 font-size:10px;
-/*zoom:120%;*/
-transform: scale(1.2);
-transform-origin: 0 0;
+	-webkit-transform: scale(1.2);
+	transform: scale(1.2);
+	transform-origin: 0 0;
 }
 
 #clientButtons li.move_data input {
-width:189px
+width:189px;
 }
 
 #trash_tor_data {
 left:315px;
-margin-left:-300px
+margin-left:-300px;
 }
 
 #progressbar {
 width:240px;
-margin-left:-126px
+margin-left:-126px;
 }
 
 #twError,#newVersion,#clientError {
-top:31px!important;
+top:31px;
 margin-left:-128px;
-width:247px
+width:247px;
 }
 }

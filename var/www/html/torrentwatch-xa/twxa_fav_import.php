@@ -106,43 +106,21 @@ if (is_readable($argv[1])) {
 }
 
 function addFavoriteFromImport($name, $filter, $not = "", $quality = "") {
-    global $config_values;
-
-    if (isset($name)) {
-        foreach ($config_values['Favorites'] as $fav) {
-            if ($name === $fav['Name']) {
-                return("Error: \"" . $name . "\" already exists in Favorites.");
-            }
-        }
-
-        $config_values['Favorites'][]['Name'] = urldecode($name);
-        $arrayKeys = array_keys($config_values['Favorites']);
-        $idx = end($arrayKeys);
-
-        $config_values['Favorites'][$idx]['Filter'] = urldecode($filter);
-        $config_values['Favorites'][$idx]['Not'] = urldecode($not);
-        $config_values['Favorites'][$idx]['Quality'] = urldecode($quality);
-        $config_values['Favorites'][$idx]['Feed'] = 'All';
-
-        $list = [
-            //"name" => "Name",
-            //"filter" => "Filter",
-            //"not" => "Not",
-            "downloaddir" => "Download Dir",
-            "alsosavedir" => "Also Save Dir",
-            "episodes" => "Episodes",
-            //"feed" => "Feed",
-            //"quality" => "Quality",
-            "seedratio" => "seedRatio",
-            "season" => "Season",
-            "episode" => "Episode"
-        ];
-        foreach ($list as $key => $data) {
-            $config_values['Favorites'][$idx][$data] = "";
-        }
-    } else {
-        // Name is not set, quit
-        return("Name not supplied, skipping.");
+    if (!isset($name)) {
+        return "Name not supplied, skipping.";
     }
-    return("Successfully added.");
+    $result = addFavoriteFromParams(
+            urldecode($name),
+            urldecode($filter),
+            'All',
+            urldecode($quality),
+            urldecode($not)
+    );
+    if ($result['errorCode'] === 2) {
+        return "Error: \"" . urldecode($name) . "\" already exists in Favorites.";
+    }
+    if ($result['errorCode'] !== 0) {
+        return $result['errorMessage'];
+    }
+    return "Successfully added.";
 }

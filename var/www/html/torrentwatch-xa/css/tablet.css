@@ -1,13 +1,17 @@
 #topmenu {
 height:55px;
-/*zoom:120%;*/
+-webkit-transform: scale(1.2);
 transform: scale(1.2);
 transform-origin: 0 0;
 }
 
 #torrentlist_container {
 position:static;
-margin-top:56px
+margin-top:56px;
+top:30px;
+-webkit-transform: scale(1.2);
+transform: scale(1.2);
+transform-origin: 0 0;
 }
 
 #filterbar_container li:hover {
@@ -15,135 +19,109 @@ height:18px;
 background:#e8e8e8;
 border-top:1px solid #f5f5f5;
 border-right:1px solid #999;
-border-left:1px solid #999!important;
+border-left:1px solid #999 !important;
 border-bottom:1px solid #999;
-color:#111
+color:#111;
 }
 
 #filterbar_container {
-padding-left:6px
+padding-left:6px;
 }
 
 #filterbar_container li.tab:hover {
-width:100px
+width:100px;
 }
 
-#filterbar_container .selected:hover,#filterbar_container li.tab {
-width:101px
+#filterbar_container .selected:hover,
+#filterbar_container li.tab {
+width:101px;
 }
 
 #filterbar_container li {
-padding-top:1px
+padding-top:1px;
 }
 
 #rates {
-display:none
+display:none;
 }
 
 #filter_bytext {
-display:none
+display:none;
 }
 
 .contextButtonContainer {
-display:none
+display:none;
 }
 
 #clientButtons {
-height:34px
+height:34px;
 }
 
 #clientButtonsHolder {
 position:fixed;
-right:5px
+right:5px;
 }
 
 #clientButtons li {
-/*zoom:130%;*/
+-webkit-transform: scale(1.3);
 transform: scale(1.3);
 transform-origin: 0 0;
 }
 
 #clientButtons li.move_data input {
-width:515px
+width:515px;
 }
 
 .dialogTitle {
-display:none
+display:none;
 }
 
-.dialog_window:not(#trash_tor_data):not(#transmissionWindow) {
+.dialog_window:not(#trash_tor_data) {
 border-radius:5px;
-top:50px
-}
-
-#torrentlist_container {
-position:static;
-top:30px
-}
-
-#torrentlist_container {
-/*zoom:120%;*/
-transform: scale(1.2);
-transform-origin: 0 0;
+top:50px;
 }
 
 .torInfo {
 overflow:hidden;
-height:12px
+height:12px;
 }
 
 .torrent_title {
 overflow:hidden;
 height:18px;
-width:700px
+width:700px;
 }
 
 #trash_tor_data {
 margin-left:-300px;
-width:600px
+width:600px;
 }
 
 #trash_tor_data div {
-/*zoom:200%;*/
+-webkit-transform: scale(2);
 transform: scale(2);
 transform-origin: 0 0;
 }
 
 @media only screen and (orientation:portrait) {
-div.dialog_window:not(#trash_tor_data):not(#transmissionWindow) {
-top:130px
+
+div.dialog_window:not(#trash_tor_data) {
+top:130px;
 }
 
 #superfavorites {
-left:294px
+left:294px;
 }
 
 #favorites {
-left:294px
+left:294px;
 }
 
 .torrent_title {
-width:480px
+width:480px;
 }
 
 #clientButtons li.move_data input {
-width:310px
-}
-
-#transmissionDialog .dialogTitle {
-padding-top:2px;
-width:650px;
-margin-left:-325px
-}
-
-#transmissionWindow {
-width:650px;
-height:750px;
-margin-left:-325px
-}
-
-#transmissionFrame {
-width:650px;
-height:750px
+width:310px;
 }
 }

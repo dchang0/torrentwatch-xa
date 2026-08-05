@@ -1,7 +1,6 @@
 <?php
 
-define('TWXA_VERSION', '1.9.6');
-define('TWXA_PLATFORM', php_uname("s") . " " . php_uname("r") . " " . php_uname("m"));
+define('TWXA_VERSION', '1.10.0');
 
 global $config_values;
 
@@ -18,7 +17,6 @@ require_once("twxa_parse.php");
 require_once("twxa_feed.php");
 require_once("twxa_html.php");
 
-$config_values['Global'] = []; // initialize collection of global arrays
 
 function getArrayValueByKey($array, $key, $default = '') {
     // checks array: if a key is set, return value or default
@@ -50,7 +48,7 @@ function fillCurlOptions($curlOptions = null) {
     } else {
         $userAgent = filter_input(INPUT_SERVER, "HTTP_USER_AGENT");
         if ($userAgent === false || $userAgent === null || $userAgent === '') {
-            $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION . " (" . TWXA_PLATFORM . ")";
+            $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION;
         } else {
             $curlOptions[CURLOPT_USERAGENT] = $userAgent;
         }
@@ -58,7 +56,7 @@ function fillCurlOptions($curlOptions = null) {
     return($curlOptions);
 }
 
-function getCurl($url, $curlOptions = null) {
+function getCurl($url, $curlOptions = null, $skipDefaults = false, &$curlErrno = null) {
     // use PHP curl to request the resource at $url and return the contents
     // overwrite the URL with $url if $url is set
     if (isset($url) && is_string($url)) {
@@ -70,11 +68,18 @@ function getCurl($url, $curlOptions = null) {
         if ($curlHandle === false) {
             writeToLog("Unable to init curl handle\n", -1);
         } else {
-            if (curl_setopt_array($curlHandle, fillCurlOptions($curlOptions))) {
+            if ($skipDefaults) {
+                $setOptions = $curlOptions;
+            } else {
+                $setOptions = fillCurlOptions($curlOptions);
+            }
+            if (curl_setopt_array($curlHandle, $setOptions)) {
                 $response = curl_exec($curlHandle);
+                $curlError = curl_error($curlHandle);
+                $curlErrno = curl_errno($curlHandle);
                 curl_close($curlHandle);
                 if ($response === false) {
-                    writeToLog("curl got no response from " . $curlOptions[CURLOPT_URL] . " with error: " . curl_error($curlHandle) . "\n", -1);
+                    writeToLog("curl got no response from " . $curlOptions[CURLOPT_URL] . " with error: " . $curlError . "\n", -1);
                 } else if ($response === true) {
                     $result = '';
                 } else {
@@ -122,10 +127,6 @@ function writeToLog($string, $lvl = -1) {
             $errLabel = "DBG:";
     }
     if (!isset($config_values['Settings']['Log Level']) || (int) $config_values['Settings']['Log Level'] >= $lvl) {
-        /* if ($lvl === -1 && isset($config_values['Global']['HTMLOutput'])) {
-          $string = trim(strtr($string, ["'" => "\\'"]));
-          $debug_output = "<script type='text/javascript'>alert('$string');</script>"; //TODO append errors to some global that will be echoed to the HTML output buffer just once
-          } */
         // write plain text to log file
         if (file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND) === false) {
             //TODO failed to write, send error to HTML

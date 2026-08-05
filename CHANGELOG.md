@@ -976,3 +976,76 @@ Code Changes
 - defined .showMe() and .hideMe() once per page load
 - changed $twxa_version from global to define
 
+1.10.0
+
+Functional Changes
+
+- automatically switch to the All filter if the Transmission list has been empty for over a day
+- fixed a state bug where trashed items incorrectly reverted to a downloading state after switching the client type
+- renamed dl_history to history so the cache clearing function no longer also clears the download history
+- now matches resolution followed by framerate, e.g. 1080p60
+- fixed bug where the Add to Favorites heart button and context menu remained visible after favoriting an item
+- fixed iPhone layout bug where torrent names overflowed into the progress bar
+- `st_noURL` now appends to an item's existing state instead of replacing it, so unmatched items without URLs are correctly hidden by the Matching filter
+- fixed episode filter blocking all batch items before the Ignore Batches setting could be evaluated
+- activated the `st_noURL` item state for all feed items with strikethrough styling and a legend entry
+- fixed slow initial update after browser refresh by preventing the polling loop from switching to the slow interval before Transmission data arrives; feed-filter items now show progress and info on the first data call
+- replaced direct mousedown with event delegation so dynamically-added Transmission items get the selected highlight and context-menu clicks no longer toggle selection
+- fixed client buttons stacking vertically instead of horizontally
+- removed global `box-sizing: border-box` that broke layout on content-box-based elements
+- fixed forms inheriting unwanted container styles from parent rules
+- fixed a CSS selector collision between ul#torrentlist and ul.torrentlist
+- moved directory setup earlier in the startup process so first-run errors no longer appear in the web UI
+- fixed scrollbar white-region bug, missing HTML tags, height calculation, and unused CSS classes in the torrent list
+- feed list timestamps now update immediately when the Time Zone setting is changed instead of waiting for the next cron run
+- fixed decimal episode numbers being incorrectly stored in the season field in matchTitle3_12 and matchTitle3_13
+- fixed unescaped dots in regex patterns so audio codecs and quality labels like 5.1 and WEB.DL are matched correctly
+- implemented isWordSeason() and isWordEpisode() to properly validate season and episode keywords instead of always returning true
+- fixed a missing closing `</div>` in the torrent list container
+- fixed a typo that broke feed website fallback detection
+- extracted `<torrent:magnetURI>` from RSS namespace elements for feeds that use this format
+- added support for magnet links provided via the `torrent:` RSS namespace (used by EZTV and others)
+- fixed extraneous numerals from percent-encoded characters (`%23`, `%31`, etc.) confusing season/episode detection by adding `rawurldecode()` after `html_entity_decode`
+- replaced the embedded iframe dialog for the Transmission web UI with a menu button that opens the web UI in a new browser tab; the button is hidden unless a valid web UI URL can be built from the Transmission settings
+
+Code Changes
+
+- fixed duplicate `id="Save"` in the feed form so `$("#Save")` no longer only matches the config form button
+- fixed duplicate `class` attributes in SMTP Password and HELO Override fields that produced invalid HTML
+- quoted unquoted `id` and `name` attributes on feed list items to prevent HTML breakage on special characters
+- fixed `$torHash` undefined-variable notice on first load
+- escaped feed-sourced display text (`$description`, `$pubDate`, `$feedName`, `$debugMatch`, `$ti`) against XSS in title attributes and HTML body
+- simplified and unified link selection logic, removing an HTTP request fallback and a special case
+- stripped CURL options for Transmission RPC calls to the bare minimum
+- fixed curl_error() being called after curl_close()
+- added in-memory session ID caching to avoid redundant file reads between RPC requests
+- moved CURL optimization notes to a separate planning document
+- removed a dead CSS border rule
+- fixed almost all CSS lint warnings
+- replaced magic numbers with named constants
+- replaced a jQuery loop with vanilla JavaScript
+- replaced jQuery keyboard handlers with vanilla JavaScript
+- consolidated displayFilter by extracting duplicated code from the switch-case
+- enabled `'use strict';` by explicitly qualifying 13 global function assignments
+- refactored addFavoriteFromImport() to remove duplicate Favorite-creation logic
+- moved password encoding out of the config file writer so it only runs when passwords are actually set
+- moved link detection to parse time so it runs once per item instead of multiple times
+- fixed XSS vulnerabilities by sanitizing feed output and onclick handlers
+- fixed wrong labels in matchTitle1_1_17 debug output
+- removed an unnecessary null check in detectItem()
+- added guard clauses to twxa_test_parser.php so it fails gracefully when run incorrectly
+- removed dead parameters and fixed a buffer leak in display functions
+- moved runtime configuration out of the config array into function parameters and local variables
+- removed unused config initialization
+- removed the unused TWXA_PLATFORM constant
+- rewrote getBestTorrentOrMagnetLinks() with a simpler priority chain and removed dead code
+- renamed several classes and functions from "transmission" to "torrentClient" in preparation for future support for other torrent clients
+- fixed Transmission buttons disappearing after network reconnect by having `updateClientButtons` explicitly show them and clearing stale `window.visibleButtons` in `ajaxStop`
+- added error handling and JSON response to `deleteSuperFavoriteFromgET` and `deleteFavoriteFromgET`; wired the Delete button's AJAX callback to `$.fn.showErrorPanel` on failure
+- changed some Jquery .hide() calls to vanilla display: none where safe
+- added a circuit breaker to Transmission RPC calls that skips the remaining RPCs for the current run after 3 consecutive curl failures, and stopped re-fetching the Transmission session ID after a failed fetch
+- consolidated `$html_out` handling: removed the never-called `close_feed_lists_container()` function, inlined the single-call `show_feed_lists_container()` and `showTorrentClientDiv()` functions at their call sites, and deleted both, eliminating the last `&$html_out` reference-parameter functions from twxa_html.php
+- fixed a `closehTML()`/`closeHtml()` naming-casing mismatch at a call site
+- simplified the bad-parameter error path in `parse_options()` to echo directly instead of round-tripping through `$html_out`, and removed a dead `is_array` branch
+- removed `$html_out` from `parse_options()`'s global declaration and dropped a stale comment in `display_global_config()`
+

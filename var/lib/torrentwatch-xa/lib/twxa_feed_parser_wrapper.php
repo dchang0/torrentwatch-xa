@@ -148,6 +148,11 @@ class FeedParserWrapper {
             $feedArray['feed']['entry'][$i]['author'] = $feedObject->items[$i]->getAuthor(); // Item author
             $feedArray['feed']['entry'][$i]['enclosure']['url'] = $feedObject->items[$i]->getEnclosureUrl(); // Enclosure url
             $feedArray['feed']['entry'][$i]['enclosure']['type'] = $feedObject->items[$i]->getEnclosureType(); // Enclosure mime-type (audio/mp3, image/png...)
+            // Extract torrent:magnetURI from namespaced RSS elements (e.g. EZTV feeds)
+            $magnetTag = $feedObject->items[$i]->getTag('torrent:magnetURI');
+            if ($magnetTag !== false && isset($magnetTag[0])) {
+                $feedArray['feed']['entry'][$i]['torrent_magnetURI'] = $magnetTag[0];
+            }
             $feedArray['feed']['entry'][$i]['content'] = $feedObject->items[$i]->getContent(); // Item content (filtered or raw)
             $feedArray['feed']['entry'][$i]['pubDate'] = $this->convertDateTimeToString($feedObject->items[$i]->getPublishedDate(), $this->dateFormat);
             //TODO where is the item description?

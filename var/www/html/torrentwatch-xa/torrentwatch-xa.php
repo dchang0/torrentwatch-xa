@@ -11,7 +11,7 @@ require_once("twxa_tools.php");
 
 // parses commands sent from web UI (usually torrentwatch-xa.js)
 function parse_options() {
-    global $html_out, $config_values;
+    global $config_values;
 
     array_keys($_GET);
     $commands = array_keys($_GET);
@@ -151,11 +151,21 @@ function parse_options() {
                 unlink($downloadHistoryFile);
             }
             display_history();
-            closeHtml($html_out);
+            closehTML($html_out);
             exit(0);
         case 'get_client':
             global $config_values;
             echo $config_values['Settings']['Client'];
+            exit;
+        case 'get_web_ui_url':
+            $webUiUrl = getTransmissionWebuRL();
+            if (
+                    $webUiUrl !== '' &&
+                    filter_var($webUiUrl, FILTER_VALIDATE_URL) !== false &&
+                    preg_match('#^https?://[^/\s:]+(:\d{1,5})?/.*#i', $webUiUrl) === 1
+            ) {
+                echo $webUiUrl;
+            }
             exit;
         case 'get_autodel':
             global $config_values;
@@ -193,10 +203,10 @@ function parse_options() {
         case 'get_dialog_data':
             switch (filter_input(INPUT_GET, 'get_dialog_data')) {
                 case '#superfavorites':
-                    display_superfavorites($html_out);
+                    echo display_superfavorites();
                     exit;
                 case '#favorites':
-                    display_favorites($html_out);
+                    echo display_favorites();
                     exit;
                 case '#configuration':
                     display_global_config();
@@ -209,9 +219,6 @@ function parse_options() {
                     exit;
                 case '#clear_cache':
                     display_clearCache();
-                    exit;
-                case '#show_transmission':
-                    display_transmission();
                     exit;
                 default:
                     exit;
@@ -227,12 +234,7 @@ function parse_options() {
     }
 
     if (isset($output)) {
-        if (is_array($output)) {
-            $output = implode("<br>", $output);
-        }
-        $html_out .= str_replace("\n", "<br>", "<div class='execoutput'>$output</div>");
-        echo $html_out;
-        $html_out = "";
+        echo str_replace("\n", "<br>", "<div class='execoutput'>$output</div>");
     }
 }
 
@@ -270,10 +272,10 @@ function display_global_config() {
     }
 
     // Client tab
-    $transmission = $folderclient = $alsosavetorrentfiles = '';
+    $torrentclient = $folderclient = $alsosavetorrentfiles = '';
     switch ($config_values['Settings']['Client']) {
         case "Transmission":
-            $transmission = 'selected="selected"';
+            $torrentclient = 'selected="selected"';
             break;
         case "folder":
             $folderclient = 'selected="selected"';
@@ -363,7 +365,6 @@ function display_global_config() {
             $smtpEncSSL = 'selected="selected"';
     }
 
-    // Include the templates and append the results to html_out
     ob_start();
     require('templates/global_config.php');
     return ob_get_contents();
@@ -419,18 +420,18 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
     require('templates/favorites_info.php');
 }
 
-function display_superfavorites(&$html_out) {
+function display_superfavorites() {
     global $config_values;
     ob_start();
     require('templates/superfavorites.php');
-    return ob_get_contents();
+    return ob_get_clean();
 }
 
-function display_favorites(&$html_out) {
+function display_favorites() {
     global $config_values;
     ob_start();
     require('templates/favorites.php');
-    return ob_get_contents();
+    return ob_get_clean();
 }
 
 function update_hidelist() {
@@ -462,13 +463,6 @@ function display_history() {
 function display_legend() {
     ob_start();
     require('templates/legend.php');
-    return ob_get_contents();
-}
-
-function display_transmission() {
-    $url = getTransmissionWebuRL();
-    ob_start();
-    require('templates/transmission.php');
     return ob_get_contents();
 }
 
@@ -665,7 +659,7 @@ function checkPathReadableAndWriteable($path, $description, $uID) {
 
 function checkVersion() {
     if (!isset($_COOKIE['VERSION-CHECK'])) { //TODO replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
-        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION . " (" . TWXA_PLATFORM . ")";
+        $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION;
         $latestFromWebsite = getCurl('https://raw.githubusercontent.com/dchang0/torrentwatch-xa/refs/heads/master/VERSION.txt', $curlOptions);
         if (preg_match('/^\d+\.\d+\.\d+$/', $latestFromWebsite)) {
             $isLatestHigher = false;
@@ -723,31 +717,32 @@ function outputErrorDialog($message) {
 $main_timer = getElapsedMicrotime(0);
 readjSONConfigFile();
 
-$config_values['Global']['HTMLOutput'] = 1;
 $html_out = "";
 
 parse_options();
 if (checkpHPRequirements()) {
     return;
 }
+setupConfigCacheDir();
+setupDownloadCacheDir();
 checkFilesAndDirs();
 closehTML($html_out);
 
 writeToLog("=====torrentwatch-xa.php started running at $main_timer\n", 2); // cannot put this line any earlier
 
-loadAllFeeds($config_values['Feeds']);
-show_feed_lists_container($html_out);
-process_all_feeds($config_values['Feeds']);
+$feedCache = loadAllFeeds($config_values['Feeds']);
+$html_out .= "<div id='torrentlist_container'>\n";
+process_all_feeds($config_values['Feeds'], $feedCache, true);
 
-echo "<div id='clientType' class='hidden'>" . $config_values['Settings']['Client'] . "</div>"; // this must precede show_transmission_div();
+echo "<div id='clientType' class='hidden'>" . $config_values['Settings']['Client'] . "</div>"; // this must precede #torrentClientFilterView;
 if ($config_values['Settings']['Client'] == "Transmission") {
-    show_transmission_div($html_out);
+    $html_out .= '<div id="torrentClientFilterView"><ul id="torrentClientList" class="torrentlist"></ul></div>';
 }
 closehTML($html_out);
 
 echo "<div id=\"footer\">Thank you for enjoying <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\"><img id=\"footerLogo\" src=\"images/torrentwatch-xa-logo16@2x.png\" alt=\"torrentwatch-xa logo\" width=\"16\" height=\"16\"/></a> <a href=\"https://github.com/dchang0/torrentwatch-xa/\" target=\"_blank\">" . TWXA_VERSION . "</a>!&nbsp;Please <a href=\"https://github.com/dchang0/torrentwatch-xa/issues\" target=\"_blank\">report bugs here</a> or <a href=\"https://coindrop.to/dchang0\" target=\"_blank\">buy me a coffee</a> to support this project&mdash;thanks!</div>";
 
-close_feed_lists_container($html_out);
+echo "</div>\n";
 
 writeToLog("=====torrentwatch-xa.php finished running in " . getElapsedMicrotime($main_timer) . "s\n", 2);
 exit(0);

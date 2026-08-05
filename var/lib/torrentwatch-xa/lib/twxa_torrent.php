@@ -45,6 +45,14 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
     if (count($idsArray) >= 1) { //TODO maybe test || $checkCache === false too
         $request = ['arguments' => ['delete-local-data' => $toTrash, 'ids' => $idsArray], 'method' => 'torrent-remove'];
         $response = transmission_rpc($request);
+        if ($toTrash && $response !== null && $response['result'] === 'success') {
+            foreach ($idsArray as $hash) {
+                $cacheFile = check_cache_for_torHash($hash);
+                if ($cacheFile !== '') {
+                    @unlink(getDownloadCacheDir() . '/' . $cacheFile);
+                }
+            }
+        }
         return json_encode($response);
     } else {
         return "{\"result\":\"nothing to delete\"}"; // fake error message because Transmission RPC returns success even when there's nothing to delete
@@ -121,10 +129,12 @@ function transmission_sessionId() {
 
         $curlOptions = [
             CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 20,
+            CURLOPT_TIMEOUT => 30,
             CURLOPT_USERPWD => "$tr_user:$tr_pass"
         ];
         $ID = [];
-        preg_match("/X-Transmission-Session-Id:\s(\w+)/", getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions), $ID);
+        preg_match("/X-Transmission-Session-Id:\s(\w+)/", getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions, true), $ID);
 
         if (isset($ID[1])) {
             $handle = fopen($sessionIdFile, "w");
@@ -148,6 +158,12 @@ function transmission_rpc($request) {
         return;
     }
 
+    static $consecutiveTimeouts = 0;
+    static $circuitOpen = false;
+    if ($circuitOpen) {
+        return null;
+    }
+
     $tr_user = $config_values['Settings']['Transmission Login'];
     $tr_pass = get_client_passwd($config_values['Settings']['Transmission Password']);
     $tr_host = $config_values['Settings']['Transmission Host'];
@@ -156,26 +172,48 @@ function transmission_rpc($request) {
     $requestjSON = json_encode($request);
     $reqLen = strlen($requestjSON);
 
+    static $sessionId = null;
+    static $sessionIdFetchFailed = false;
+    if ($sessionId === null && !$sessionIdFetchFailed) {
+        $sessionId = transmission_sessionId();
+        if ($sessionId === null) {
+            $sessionIdFetchFailed = true;
+        }
+    }
+
     $run = 1;
     while ($run) {
-        $SessionId = transmission_sessionId();
         $curlOptions = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 20,
+            CURLOPT_TIMEOUT => 30,
             CURLOPT_USERPWD => "$tr_user:$tr_pass",
             CURLOPT_HTTPHEADER => [
                 "Host: $tr_host:$tr_port",
-                "X-Transmission-Session-Id: $SessionId",
+                "X-Transmission-Session-Id: $sessionId",
                 'Connection: Close',
                 "Content-Length: $reqLen",
                 'Content-Type: application/json'
             ],
             CURLOPT_POSTFIELDS => "$requestjSON"
         ];
-        $raw = getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions);
+        $curlErrno = 0;
+        $raw = getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions, true, $curlErrno);
         if (preg_match('/409:? Conflict/', $raw)) {
             if (file_exists($sessionIdFile)) {
                 unlink($sessionIdFile);
             }
+            $sessionId = transmission_sessionId();
         } else {
+            if ($curlErrno !== 0) {
+                $consecutiveTimeouts++;
+                if ($consecutiveTimeouts >= 3) {
+                    $circuitOpen = true;
+                    writeToLog("Transmission unreachable: $consecutiveTimeouts consecutive curl failures. Skipping remaining RPC calls in this run.\n", -1);
+                }
+            } else {
+                $consecutiveTimeouts = 0;
+            }
             $run = 0;
         }
     }

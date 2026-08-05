@@ -12,8 +12,8 @@ function matchTitle3_1($ti, $seps) {
             if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
                 // only match YYYY EE - EE
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[1], // Half date notation and half episode: let Season = YYYY
                     'seasEd' => $mat[1],
                     'episSt' => $mat[2],
@@ -40,8 +40,8 @@ function matchTitle3_2($ti, $seps) {
         if (validateYYYYMMDD($mat[1] . $mat[2] . $mat[3])
         ) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 2,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_DATE,
                 'seasSt' => 0,
                 'seasEd' => 0,
                 'episSt' => $mat[1] . $mat[2] . $mat[3],
@@ -52,8 +52,8 @@ function matchTitle3_2($ti, $seps) {
             ];
         } else if (validateYYYYMMDD($mat[3] . $mat[1] . $mat[2])) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 2,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_DATE,
                 'seasSt' => 0,
                 'seasEd' => 0,
                 'episSt' => $mat[3] . $mat[1] . $mat[2],
@@ -64,8 +64,8 @@ function matchTitle3_2($ti, $seps) {
             ];
         } else if (validateYYYYMMDD($mat[3] . $mat[2] . $mat[1])) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 2,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_DATE,
                 'seasSt' => 0,
                 'seasEd' => 0,
                 'episSt' => $mat[3] . $mat[2] . $mat[1],
@@ -84,8 +84,8 @@ function matchTitle3_3($ti, $seps) {
     $re = "/(\d{1,2})(st|nd|rd|th)[$seps]?(Season|Saison|Seizoen|Sezona)[\-$seps]{0,3}(\d{1,4})[\-$seps]{0,3}(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[4],
@@ -104,8 +104,8 @@ function matchTitle3_4($ti, $seps) {
     $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?[\,\-\(]?[$seps]?(" . EPISODE_WORDS . ")[$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\)?\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[2],
             'seasEd' => $mat[2],
             'episSt' => $mat[4],
@@ -123,8 +123,8 @@ function matchTitle3_5($ti, $seps) {
     $re = "/\b[Ss](\d{1,2})[\-$seps]{0,3}[Ee](\d{1,4})[\-$seps]{0,3}[Ee](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[2],
@@ -142,8 +142,8 @@ function matchTitle3_6($ti, $seps) {
     $re = "/\b[Ss](\d{1,2})[$seps]?\-[$seps]?(\d{1,4}\.\d)\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[2],
@@ -164,8 +164,8 @@ function matchTitle3_7($ti, $seps) {
             // isolated S# - EE - EE
             // probably range of Episodes within one Season
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[1],
                 'seasEd' => $mat[1],
                 'episSt' => $mat[2],
@@ -178,8 +178,8 @@ function matchTitle3_7($ti, $seps) {
             // isolated S# - EE, extra ##
             // not sure what it is, probably extra number on end
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[1],
                 'seasEd' => $mat[1],
                 'episSt' => $mat[2],
@@ -204,8 +204,8 @@ function matchTitle3_8($ti, $seps) {
             $mat[4] = "0" . $mat[4];
         }
         return [
-            'medTyp' => 4,
-            'numSeq' => 2,
+            'medTyp' => MEDTYP_PRINT,
+            'numSeq' => NUMSEQ_DATE,
             'seasSt' => 0,
             'seasEd' => 0,
             'episSt' => $mat[2] . $mat[3] . $mat[4],
@@ -223,8 +223,8 @@ function matchTitle3_9($ti, $seps) {
     $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?[\,\-]?[$seps]?(" . EPISODE_WORDS . "|[$seps])[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[2],
             'seasEd' => $mat[2],
             'episSt' => $mat[4],
@@ -243,8 +243,8 @@ function matchTitle3_10($ti, $seps) {
     $thisYear = getdate()['year'];
     if (preg_match($re, $ti, $mat) && (int)$mat[1] <= $thisYear && (int)$mat[1] > 1895) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[2],
             'seasEd' => $mat[2],
             'episSt' => $mat[3],
@@ -263,8 +263,8 @@ function matchTitle3_11($ti, $seps) {
     $re = "/\b(\d{1,2})[$seps](Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[3],
@@ -283,11 +283,11 @@ function matchTitle3_12($ti, $seps) {
     $re = "/(Episodes|Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4}\.\d)[\(\)$seps]?\-[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
-            'episSt' => $mat[3],
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
+            'seasSt' => 1,
+            'seasEd' => 1,
+            'episSt' => $mat[2],
             'episEd' => $mat[3],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
@@ -303,11 +303,11 @@ function matchTitle3_13($ti, $seps) {
     $re = "/(Episodes|Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4})[\(\)$seps]?\-[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
-            'episSt' => $mat[3],
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
+            'seasSt' => 1,
+            'seasEd' => 1,
+            'episSt' => $mat[2],
             'episEd' => $mat[3],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
@@ -322,8 +322,8 @@ function matchTitle3_14($ti, $seps) {
     $re = "/\b(\d{1,4})[$seps]?(through|thru|to)[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat) && (int)$mat[1] <= (int)$mat[3]) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
             'episSt' => $mat[1],
@@ -341,8 +341,8 @@ function matchTitle3_15($ti, $seps) {
     $re = "/\b(\d{1,4}\.\d)[$seps]?(through|thru|to)[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat) && (int)$mat[1] <= (int)$mat[3]) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
             'episSt' => $mat[1],
@@ -361,8 +361,8 @@ function matchTitle3_16($ti, $seps) {
     if (preg_match($re, $ti, $mat)) {
         if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[1], // Half date notation and half episode: let Season = YYYY
                 'seasEd' => $mat[1],
                 'episSt' => $mat[2],
@@ -377,8 +377,8 @@ function matchTitle3_16($ti, $seps) {
                 if ((int)$mat[2] >= (int)$mat[3] || substr($mat[3], 0, 1) === "0") {
                     // very probably (####) SS - EEE
                     return [
-                        'medTyp' => 1,
-                        'numSeq' => 1,
+                        'medTyp' => MEDTYP_VIDEO,
+                        'numSeq' => NUMSEQ_SEASON_EPISODE,
                         'seasSt' => $mat[2],
                         'seasEd' => $mat[2],
                         'episSt' => $mat[3],
@@ -390,8 +390,8 @@ function matchTitle3_16($ti, $seps) {
                 } else {
                     // probably (####) EE - EEE
                     return [
-                        'medTyp' => 1,
-                        'numSeq' => 1,
+                        'medTyp' => MEDTYP_VIDEO,
+                        'numSeq' => NUMSEQ_SEASON_EPISODE,
                         'seasSt' => 1,
                         'seasEd' => 1,
                         'episSt' => $mat[2],
@@ -404,8 +404,8 @@ function matchTitle3_16($ti, $seps) {
             } else if (strlen($mat[2]) > strlen($mat[3])) {
                 // very probably (####) EE - # or (####) EEE - ##; not likely to ever see (####) SSS - EE
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => 1,
                     'seasEd' => 1,
                     'episSt' => $mat[2],
@@ -417,8 +417,8 @@ function matchTitle3_16($ti, $seps) {
             } else if ($mat[2] < $mat[3]) {
                 // probably (####) EE - EE
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => 1,
                     'seasEd' => 1,
                     'episSt' => $mat[2],
@@ -439,8 +439,8 @@ function matchTitle3_17($ti, $seps) {
     if (preg_match($re, $ti, $mat)) {
         if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[1], // Half date notation and half episode: let Season = YYYY
                 'seasEd' => $mat[1],
                 'episSt' => $mat[2],
@@ -452,8 +452,8 @@ function matchTitle3_17($ti, $seps) {
         } else {
             // (####) is probably part of the title, assume (####) - SS (EEE)
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[2],
                 'seasEd' => $mat[2],
                 'episSt' => $mat[3],
@@ -472,8 +472,8 @@ function matchTitle3_18($ti, $seps) {
     $re = "/\b[Ss](\d{1,2})[\-$seps]{1,3}(\d{1,4})[\-$seps]{0,3}(v|V)(\d{1,2})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[2],
@@ -491,8 +491,8 @@ function matchTitle3_19($ti, $seps) {
     $re = "/\b(\d{1,2})[\-$seps]{1,3}(\d{1,4})[\-$seps]{0,3}(v|V)(\d{1,2})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[2],
@@ -510,8 +510,8 @@ function matchTitle3_20($ti, $seps) {
     $re = "/\b(\d{1,2})[$seps]?[xX][$seps]?(\d{1,4})[$seps]?\((v|V|v\.|V\.)[$seps]?(\d{1,2})\).*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
             'episSt' => $mat[2],
@@ -533,8 +533,8 @@ function matchTitle3_21($ti, $seps) {
             if (strlen($mat[1]) > 2) {
                 // first ### is probably not a season and is probably part of the title
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => 1,
                     'seasEd' => 1,
                     'episSt' => $mat[2],
@@ -546,8 +546,8 @@ function matchTitle3_21($ti, $seps) {
             } else {
                 // assume SS (EE - EE)
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[1],
                     'seasEd' => $mat[1],
                     'episSt' => $mat[2],
@@ -560,8 +560,8 @@ function matchTitle3_21($ti, $seps) {
         } else {
             // probably ## (SS - EE), and first ## is probably part of the title
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[2],
                 'seasEd' => $mat[2],
                 'episSt' => $mat[3],
@@ -583,8 +583,8 @@ function matchTitle3_22($ti, $seps) {
             if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
                 // probably YYYY Ep EE - EE
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[1], // Half date notation and half episode: let Season = YYYY
                     'seasEd' => $mat[1],
                     'episSt' => $mat[3],
@@ -596,8 +596,8 @@ function matchTitle3_22($ti, $seps) {
             } else if (strlen($mat[1]) > 2) {
                 // first ### is probably not a season and is probably part of the title
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => 1,
                     'seasEd' => 1,
                     'episSt' => $mat[3],
@@ -609,8 +609,8 @@ function matchTitle3_22($ti, $seps) {
             } else {
                 // assume SS Ep EE - EE
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[1],
                     'seasEd' => $mat[1],
                     'episSt' => $mat[3],
@@ -635,8 +635,8 @@ function matchTitle3_23($ti, $seps) {
             if ((int)$mat[1] <= getdate()['year'] && (int)$mat[1] > 1895) {
                 // probably YYYY EE - EE
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[1], // Half date notation and half episode: let Season = YYYY
                     'seasEd' => $mat[1],
                     'episSt' => $mat[2],
@@ -648,8 +648,8 @@ function matchTitle3_23($ti, $seps) {
             } else if (strlen($mat[1]) > 2) {
                 // first ### is probably not a season and is probably part of the title
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => 1,
                     'seasEd' => 1,
                     'episSt' => $mat[2],
@@ -661,8 +661,8 @@ function matchTitle3_23($ti, $seps) {
             } else {
                 // assume SS EE - EE (not the same as S2 EE - EE handled far above, because letter S is not specified)
                 return [
-                    'medTyp' => 1,
-                    'numSeq' => 1,
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
                     'seasSt' => $mat[1],
                     'seasEd' => $mat[1],
                     'episSt' => $mat[2],
@@ -675,8 +675,8 @@ function matchTitle3_23($ti, $seps) {
         } else {
             // probably ## SS - EE, and first ## is probably part of the title
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[2],
                 'seasEd' => $mat[2],
                 'episSt' => $mat[3],
@@ -699,8 +699,8 @@ function matchTitle3_24($ti, $seps) {
     if (preg_match($re, $ti, $mat)) {
         if ((int)$mat[3] <= getdate()['year'] && (int)$mat[3] > 1895) {
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => $mat[3], // Half date notation and half episode: let Season = YYYY
                 'seasEd' => $mat[3],
                 'episSt' => $mat[1],
@@ -724,8 +724,8 @@ function matchTitle3_25($ti, $seps) {
         ) {
             // almost certainly sequence of episodes
             return [
-                'medTyp' => 1,
-                'numSeq' => 1,
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 1,
                 'seasEd' => 1,
                 'episSt' => $mat[1],
@@ -745,8 +745,8 @@ function matchTitle3_26($ti, $seps) {
     if (preg_match($re, $ti, $mat)) {
         return [
             // print Volume x Chapter
-            'medTyp' => 4,
-            'numSeq' => 1,
+            'medTyp' => MEDTYP_PRINT,
+            'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[5],
             'seasEd' => $mat[5],
             'episSt' => $mat[2],

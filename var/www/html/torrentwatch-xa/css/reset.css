@@ -19,7 +19,7 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 }
 /* remember to define focus styles! */
 :focus {
-    outline: 0;
+    outline: thin dotted;
 }
 body {
     line-height: 1;

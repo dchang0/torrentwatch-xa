@@ -8,8 +8,8 @@ function matchTitle0_1($ti, $seps) {
     $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 16,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_SPECIAL,
             'seasSt' => 1, // assume Season 1
             'seasEd' => 1,
             'episSt' => 1, // assume Special Episode 1
@@ -27,8 +27,8 @@ function matchTitle0_2($ti, $seps) {
     $re = "/\b(OVA|OAV)\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 32,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_OVA,
             'seasSt' => 1, // assume Season 1
             'seasEd' => 1,
             'episSt' => 1, // assume OVA 1
@@ -46,8 +46,8 @@ function matchTitle0_3($ti, $seps) {
     $re = "/\b(Preview|Prev\.|Prev|PV)\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
-            'medTyp' => 1,
-            'numSeq' => 8,
+            'medTyp' => MEDTYP_VIDEO,
+            'numSeq' => NUMSEQ_PREVIEW,
             'seasSt' => 1, // assume Season 1
             'seasEd' => 1,
             'episSt' => 1, // assume PV 1
