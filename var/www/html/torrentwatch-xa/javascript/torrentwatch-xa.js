@@ -145,20 +145,29 @@ $(document).ready(function () { // first binding to document ready (while torren
             case 'downloaded':
                 feed.each(function () {
                     var el = this;
-                    el.querySelector('span.matches').textContent = '(' + el.querySelectorAll('li.st_downloaded, li.st_inCacheNotActive').length + ')';
+                    var matches = el.querySelector('span.matches');
+                    if (matches) {
+                        matches.textContent = '(' + el.querySelectorAll('li.st_downloaded, li.st_inCacheNotActive').length + ')';
+                    }
                 });
                 break;
             case 'downloading':
                 feed.each(function () {
                     var el = this;
-                    el.querySelector('span.matches').textContent = '(' + el.querySelectorAll('li.st_downloading').length + ')';
+                    var matches = el.querySelector('span.matches');
+                    if (matches) {
+                        matches.textContent = '(' + el.querySelectorAll('li.st_downloading').length + ')';
+                    }
                 });
                 break;
             case 'matching':
             default: // All
                 feed.each(function () {
                     var el = this;
-                    el.querySelector('span.matches').textContent = '(' + el.querySelectorAll('li.torrent:not(.st_notAMatch)').length + ')';
+                    var matches = el.querySelector('span.matches');
+                    if (matches) {
+                        matches.textContent = '(' + el.querySelectorAll('li.torrent:not(.st_notAMatch)').length + ')';
+                    }
                 });
         }
         //listSelector();
@@ -188,17 +197,17 @@ $(document).ready(function () { // first binding to document ready (while torren
     $.get('torrentwatch-xa.php', '', $.loadDynamicData, 'html');
     // toggle between Resume or Pause in context menu based on current state
     window.toggleTorResumePause = function (torHash) {
-        var curEl = document.querySelector('li.item_' + torHash + ' div.torResume');
-        if (getComputedStyle(curEl).display === 'block') {
-            curEl.style.display = 'none';
+        var curEl = $('li.item_' + torHash + ' div.torResume');
+        if (curEl.css('display') === 'block') {
+            curEl.hide();
         } else {
-            curEl.style.display = 'block';
+            curEl.show();
         }
-        curEl = document.querySelector('li.item_' + torHash + ' div.torPause');
-        if (getComputedStyle(curEl).display === 'block') {
-            curEl.style.display = 'none';
+        curEl = $('li.item_' + torHash + ' div.torPause');
+        if (curEl.css('display') === 'block') {
+            curEl.hide();
         } else {
-            curEl.style.display = 'block';
+            curEl.show();
         }
     };
     // hides or shows Move button in button bar
@@ -217,13 +226,13 @@ $(document).ready(function () { // first binding to document ready (while torren
                 '<li id="clientId_' + item.id + '" class="torrent item_' + item.hashString + ' clientId_' + item.id + ' st_torrentClient ' + liClass + '">' +
                 '<table width="100%" cellspacing="0"><tr><td class="tr_identifier"></td>' +
                 '<td class="torrent_name tor_client">' +
-                '<div class="torrent_name"><span class="torrent_title">' + item.name + '</span></div>' +
+                '<div class="torrent_name"><span class="torrent_title">' + Math.escapeHtml(item.name) + '</span></div>' +
                 '<div style="width: 100%; margin-top: 2px; border: 1px solid #BFCEE3; background: #DFE3E8;">' +
                 '<div class="progressDiv" style="width: ' + percentage + '%; height: 3px;"></div></div>' +
                 '<span class="dateAdded hidden">' + item.addedDate + '</span>' +
-                '<div class="infoDiv"><span id=tor_' + item.id + ' class="torInfo tor_' + item.hashString + '">' + clientData + '</span>' +
-                '<span class="torEta">' + eta + '</span></div>' +
-                '<input type="hidden" class="path" value="' + item.downloadDir + '"></input>' +
+                '<div class="infoDiv"><span id=tor_' + item.id + ' class="torInfo tor_' + item.hashString + '">' + Math.escapeHtml(clientData) + '</span>' +
+                '<span class="torEta">' + Math.escapeHtml(eta) + '</span></div>' +
+                '<input type="hidden" class="path" value="' + Math.escapeHtml(item.downloadDir) + '"></input>' +
                 '</td></tr></table></li>';
         return (torrentClientItem);
     };
@@ -622,7 +631,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 $(this).removeClass("st_waitTorCheck");
             }
         });
-        setTimeout(updateMatchCounts(), 100); // update match counts in UI
+        setTimeout(updateMatchCounts, 100); // update match counts in UI
         $("#torrentClientList>li").tsort("span.dateAdded", {order: "desc"}); // sort the items in the Transmission filter
         $("#torrentClientList").find("li.torrent").markAlt();
         window.gotAllData = true;
@@ -732,7 +741,7 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
         }
         buttons = buttons.slice(0, buttons.length - 1);
-        $('#clientButtons li.button:not(buttons)').addClass('disabled');
+        $('#clientButtons li.button').not(buttons).addClass('disabled');
         $(buttons).removeClass('disabled');
         toggleClientButtons(fast);
     };
@@ -1427,8 +1436,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                             for (var i = 0; i < torHashes.length; i++) {
                                 if ($('li.item_' + torHashes[i]).length) {
                                     $('li.item_' + torHashes[i] + ' div.infoDiv').remove();
-                                    document.querySelector('li.item_' + torHashes[i] + ' div.progressBarContainer').style.display = 'none';
-                                    document.querySelector('li.item_' + torHashes[i] + ' div.activeTorrent').style.display = 'none';
+                                    $('li.item_' + torHashes[i] + ' div.progressBarContainer').css('display', 'none');
+                                    $('li.item_' + torHashes[i] + ' div.activeTorrent').css('display', 'none');
                                     $('li.item_' + torHashes[i] + ' div.torStart').show();
                                     $('li.item_' + torHashes[i] + ' div.torStart').removeClass("hidden");
                                     $('li.item_' + torHashes[i])
@@ -1471,9 +1480,12 @@ $(document).ready(function () { // first binding to document ready (while torren
         $.getJSON('torrentwatch-xa.php', param,
                 function (json) {
                     if (json.result === "success") {
-                        $('li.item_' + torHash + ' div.torStart').hide();
-                        $('li.item_' + torHash + ' div.torStart').addClass("hidden");
-                        toggleTorResumePause(torHash);
+                        var torHashes = torHash.split(",");
+                        for (var i = 0; i < torHashes.length; i++) {
+                            $('li.item_' + torHashes[i] + ' div.torStart').hide();
+                            $('li.item_' + torHashes[i] + ' div.torStart').addClass("hidden");
+                            toggleTorResumePause(torHashes[i]);
+                        }
                         setTimeout(getClientData, 10);
                     } else {
                         $.fn.showErrorPanel("Failed to " + stopStart + " torrent.");
@@ -1502,8 +1514,9 @@ $(document).ready(function () { // first binding to document ready (while torren
             if (rsp.match(/^twxa-ERROR:/)) {
                 $.fn.showErrorPanel(rsp.match(/^twxa-ERROR:(.*)/)[1]);
             } else {
-                $.each($('#torrentlist_container li'), function () {
-                    if (this.querySelector('input.show_title').value === rsp) {
+                $.each($('#torrentlist_container .feed li'), function () {
+                    var showTitle = this.querySelector('input.show_title');
+                    if (showTitle && showTitle.value === rsp) {
                         $(this).removeClass('selected').remove();
                     }
                 });
