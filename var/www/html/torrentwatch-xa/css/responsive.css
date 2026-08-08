@@ -1,0 +1,156 @@
+/* ============================================================
+ * Responsive dialogs
+ * Minimal, additive override so the existing dialogs become
+ * usable on phones/narrow tablets WITHOUT touching markup or JS.
+ * Loaded AFTER phone.css / tablet.css so these rules win at
+ * <=767px. Desktop (>=768px) appearance is intentionally unchanged.
+ * ============================================================ */
+
+@media screen and (max-width: 767px) {
+
+    /* ---- A. Fluid dialog shell ----------------------------- */
+    .dialog_window,
+    #clear_cache,
+    #trash_tor_data,
+    #show_legend {
+        left: 0;
+        right: 0;
+        width: auto;
+        max-width: 100%;
+        margin-left: 0;
+        float: none;
+        top: 4px;
+        max-height: calc(100vh - 8px);
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+
+    .dialog .dialogTitle,
+    #configDialog .dialogTitle,
+    #favDialog .dialogTitle,
+    #superfavDialog .dialogTitle,
+    #historyDialog .dialogTitle,
+    #legendDialog .dialogTitle,
+    #cacheDialog .dialogTitle {
+        left: 0;
+        right: 0;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* ---- B. Inner content blocks --------------------------- */
+    #configuration,
+    #favorites,
+    #superfavorites,
+    #history {
+        width: 100%;
+        margin-left: 0;
+        float: none;
+    }
+
+    /* ---- C. Fixed heights -> auto + internal scroll -------- */
+    #historyItems,
+    div.favorite,
+    div.superfavorite,
+    div.favinfo,
+    div.superfavinfo,
+    ul.favorite,
+    ul.superfavorite {
+        height: auto;
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+
+    /* ---- D. Stack the two panes --------------------------- */
+    div.favorite,
+    div.superfavorite,
+    div.favinfo,
+    div.superfavinfo,
+    form.favinfo,
+    form.superfavinfo {
+        float: none;
+        clear: both;
+        width: 100%;
+        height: auto;
+    }
+
+    .favinfo .buttonContainer,
+    .superfavinfo .buttonContainer {
+        position: static;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    /* ---- E. Stack label/control rows ---------------------- */
+    .config_form_container .left,
+    .config_form_container .right,
+    .favinfo .left,
+    .favinfo .right,
+    .superfavinfo .left,
+    .superfavinfo .right {
+        display: block;
+        width: auto;
+        text-align: left;
+    }
+
+    /* ---- F. Full-width controls --------------------------- */
+    #configuration .config_form_container input[type=text],
+    #configuration .config_form_container input[type=password],
+    #configuration .config_form_container select,
+    form.favinfo input[type=text],
+    form.favinfo select,
+    form.superfavinfo input[type=text],
+    form.superfavinfo select,
+    #configuration .config_form_container #hideSearchText {
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        display: block;
+    }
+
+    #configuration .config_form_container input[type=checkbox] {
+        left: 0;
+    }
+
+    /* ---- G. Config tabs ------------------------------------ */
+    #configTabs {
+        overflow-x: auto;
+        float: none;
+    }
+
+    #configTabs ul {
+        width: max-content;
+    }
+
+    #configTabs .toggleConfigTab {
+        float: none;
+        display: inline-block;
+    }
+
+    /* ---- H. Feeds tabs ------------------------------------ */
+    #config_feeds #feedItemTitles {
+        display: none;
+    }
+
+    #config_feeds div.feeditem {
+        display: block;
+        height: auto;
+        padding: 4px 0;
+        border-bottom: 1px solid #979797;
+    }
+
+    #config_feeds .feedURLName,
+    #config_feeds .feedOn,
+    #config_feeds .seedRatio,
+    #config_feeds .feedDelete {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    #config_feeds div.feeditem input[type=text] {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+}
