@@ -4,6 +4,14 @@ Math.roundWithPrecision = function (floatnum, precision) {
     var factor = Math.pow(10, precision);
     return Math.round(floatnum * factor) / factor;
 };
+Math.escapeHtml = function (string) {
+    return String(string)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+};
 Math.formatBytes = function (bytes) {
     var size;
     var unit;
