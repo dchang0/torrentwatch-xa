@@ -23,11 +23,13 @@ Common setups:
 Status
 ===============
 
-I've posted 1.10.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.11.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-Another huge batch of low-risk bugs have been fixed, along with a few medium-risk bugs. The biggest change is to the detection of valid torrent and magnet links in feed items. I first noticed an issue where magnet links in EZTV were being overlooked and took the opportunity to simplify and streamline the detection process. This is a big-enough change to warrant a minor version number increment. 
+Yet another huge batch of low-risk and medium-risk bugs have been fixed, including a small bug with the progress bar introduced in 1.9.6.
 
-The second-biggest change is switching the Transmission UI button at the top right corner from popping up a modal dialog framing the Transmission UI to opening it in a new browser tab. The former behavior hasn't worked for quite a long time due to browser security features.
+The per-item context menu has been removed (commented-out) since it was redundant and just takes up space.
+
+Download cache files are now stored in .json format with far more information inside to help with tracking downloads through the different states. You should clear your old download cache files as they are now ignored.
 
 Please report any bugs using Github Issues.
 
