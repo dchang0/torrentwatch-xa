@@ -305,8 +305,8 @@ div.right {
 #clientButtons {
     height: 100%;
     background: #ddd;
-    padding-left: 10px;
-    padding-right: 5px;
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 #clientButtonsBusy {
@@ -323,7 +323,7 @@ div.right {
     float: left;
     cursor: pointer;
     margin-top: 3px;
-    margin-right: 5px;
+    margin-right: 3px;
     clear: none;
 }
 
@@ -356,7 +356,7 @@ div.right {
     background-color: transparent;
     font-size: 11px;
     color: #323232;
-    padding: 0 5px 0 5px;
+    padding: 0 3px 0 3px;
 }
 
 #clientButtons li.disabled,
@@ -605,6 +605,7 @@ ul.torrentlist .torInfoErr {
     margin: 1px 0 1px 0;
 }
 
+/* context menu removed:
 div.torrent_name .contextButton {
     background: #F8F8F8;
     background-image: url('../images/dropdown.png');
@@ -682,6 +683,7 @@ div.contextMenu .torMove {
     background-size: 10px 10px;
     background-position: 2px 3px;
 }
+*/
 
 td.torrent_name {
     font-size: 12px;

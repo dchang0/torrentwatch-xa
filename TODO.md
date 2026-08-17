@@ -1,6 +1,11 @@
 TODO List
 ===============
 
+Next Up
+-------
+
+- `twxa_parse.php:200` — [Bug] handle BD1280x720p: `detectResolution()`'s `$bDHRegEx` matches the `BD1280` part (1280 is not in the allowed list), and because the standalone-BD / `###p|i` / `WxH` checks form an `if/else if` chain, the `720p` inside `BD1280x720p` is never detected. Convert the chain into sequential `if ($resolution === "")` blocks so a non-matching BD number falls through to `$hRegEx`, which catches `720p`; verify BD720p/BD1080p/BD### still work and that no resolution is double-detected
+
 Source TODO Comments
 --------------------
 
@@ -30,8 +35,17 @@ Source TODO Comments
 
 ### `torrentwatch-xa.php`
 
+- `torrentwatch-xa.php:16` — [Cleanup] `array_keys($_GET);` is a no-op statement
+- `torrentwatch-xa.php:195` — [Cleanup] guard access to `$config_values['Settings']['Check for Updates']` instead of relying on raw array access
+- `torrentwatch-xa.php:141` — [Cleanup] `display_history()`, `display_global_config()`, `display_legend()`, and `display_clearCache()` discard their return values; the output survives only because the abandoned `ob_start()` buffer flushes at `exit()`. Use `ob_get_clean()` and echo the return value consistently, like `display_superfavorites()` (see call sites at lines 146, 208, 211, 214, 217)
+- `torrentwatch-xa.php:226` — [Bug] unescaped `$phpSelf`/`$requestuRI` interpolated into a JS alert string; a crafted URL containing a quote breaks the JavaScript or enables self-XSS
+- `torrentwatch-xa.php:727` — [Cleanup] `writeToLog()` logs a raw float `$main_timer` as the start time; use a formatted `date()` timestamp instead
 - `torrentwatch-xa.php:641` — [Bug] check all Also Save Dir paths in all Favorites
 - `torrentwatch-xa.php:667` — [Cleanup] replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
+
+### `twxa_cli.php`
+
+- `twxa_cli.php:6` — [Cleanup] error_reporting excludes E_NOTICE, so the `$config_values['Settings']['Log Level']` write in parse_args (line 27) can silently auto-vivify an undefined `$config_values` if readjSONConfigFile() failed to populate it (corrupt config JSON)
 
 ### `templates/feed_item.php`
 
@@ -52,6 +66,13 @@ Source TODO Comments
 ### `lib/twxa_cache.php`
 
 - `twxa_cache.php:147` — [Feature] does Ignore Batches need to be implemented here?
+- `twxa_cache.php` — [Feature] implement the periodic cache-sync pass that populates the client-metadata fields currently reserved (as `null`) in the `dl_*.json` schema introduced in 1.11.0, so the download cache tracks progress and seeding over time (the "seeded amounts" extensibility goal). Today the cache is write-only at download time: `add_cache()` (`twxa_cache.php:104`) and `transmission_add_torrent()` (`twxa_torrent.php:383`) store only what is available then (`torHash`, `torId`, `downloadDir`, `seedRatio`, plus the `parsed` block and provenance), leaving `addedDate`, `totalSize`, `doneDate`, `status`, `name`, `uploadRatio`, `percentDone`, and `leftUntilDone` permanently `null`
+  - proposed approach: add a new function, e.g. `syncCacheWithClientData($torrents)`, to `twxa_cache.php` and call it from `auto_del_seeded_torrents()` (`twxa_torrent.php:62`), which already fetches the complete torrent list every run via `getClientData(false)` (`twxa_torrent.php:5`); build a `hashString → torrent` map, then for each `dl_*.json` entry that has a `torHash`, merge the live fields into the cache file with `updateCacheData()`
+  - fields to persist (stable/progress data drawn from the `getClientData()` field list): `addedDate`, `doneDate`, `uploadRatio`, `percentDone`, `leftUntilDone`, `totalSize`, `status`, `name`, and optionally `seedRatioLimit` and `errorString`; do not persist transient rates (`rateDownload`, `rateUpload`, `eta`, peer counts)
+  - matching: Transmission `hashString` equals the cache entry's `torHash`; skip cache entries without a `torHash` (folder-client items) and skip torrents not present in the cache
+  - failure handling: if `getClientData()` returns an RPC error (non-`success` result), skip the sync for that run entirely so an unreachable or failing Transmission never wipes or stales the cached values; mirror the guard style already used in `auto_del_seeded_torrents()`
+  - concurrency: reuse `updateCacheData()` (read-merge-write under `LOCK_EX`) so the sync writer and the add-time writers cannot clobber each other; skip the rewrite when no field value actually changed so `dateAdded`/file mtimes are not touched on every run
+  - after implementing, update the 1.11.0 CHANGELOG Functional Changes entry that currently describes these fields as "reserved" to say they are now populated by the sync pass
 
 ### `lib/twxa_config_lib.php`
 
@@ -75,11 +96,11 @@ Source TODO Comments
 
 ### `lib/twxa_parse.php`
 
-- `twxa_parse.php:200` — [Bug] handle BD1280x720p
 - `twxa_parse.php:414` — [Bug] cascade down through, removing immediately-surrouding dashes
 - `twxa_parse.php:431` — [Question] why do these HTML entities make it into our $ti in the first place?
 - `twxa_parse.php:441` — [Cleanup] maybe switch to (C\d\d) regex
 - `twxa_parse.php:508` — [Feature] detect video-related words like Sub and Dub
+- `twxa_parse.php:523,577-580` — [Bug] FIXED in 1.11.0: `detectMatch()`'s `favTitle` is not guaranteed to be a literal prefix of the raw title (it is post-processed by `removeEmptyParens()` line 523, `collapseExtraSeparators()`, and crew-name reattachment lines 577-580). `check_cache_episode()` previously relied on `favTitle` being a prefix of the cache filename (`dl_` + `sanitizeFilename($title)`) and extracted that prefix with `substr($file, 3, strlen($guess['favTitle']))`; when `favTitle` was transformed relative to the raw title the match failed, causing duplicate downloads. The download cache now stores the parsed metadata in `dl_*.json` and `check_cache_episode()` compares the stored `favTitle` directly, so the comparison no longer depends on `favTitle` being a filename prefix
 - `twxa_parse.php:592` — [Cleanup] replace this with mediaType
 
 ### `lib/twxa_parse_match.php`
@@ -125,7 +146,7 @@ Source TODO Comments
 ### `lib/twxa_torrent.php`
 
 - `twxa_torrent.php:45` — [Bug] maybe test || $checkCache === false too
-- `twxa_torrent.php:112` — [Cleanup] does this errorDialog work? Replace it with outputErrorDialog()
+- `twxa_torrent.php:112` — [Cleanup] does this errorDialog work? Replace it with outputErrorDialog() (also, this echo pollutes stdout when reached from twxa_cli.php/cron)
 - `twxa_torrent.php:154` — [Cleanup] break this out into a small function
 - `twxa_torrent.php:156` — [Cleanup] does this errorDialog work? Replace it with outputErrorDialog()
 - `twxa_torrent.php:413` — [Feature] if $fav is null, then loop through the Favorites to see if the title matches a Favorite and get the Favorite's Download Dir
@@ -134,6 +155,7 @@ Source TODO Comments
 ### `lib/twxa_tools.php`
 
 - `twxa_tools.php:135` — [Bug] failed to write, send error to HTML
+- `twxa_tools.php:152` — [Bug] writeToLog called with 3 args (message, rc."\n", 2) but it only takes 2; the "\n" and level are discarded, so the message is logged at the wrong level
 
 Bugfixes
 --------
@@ -228,5 +250,8 @@ These files have been completely validated:
 - twxa_parse.php
 - twxa_parse_match*.php
 - twxa_test_parser.php
+- twxa_cli.php
+- config.php
+- twxa_fav_import.php
 
 All other files have functions that need improvement or rewrites or validation.

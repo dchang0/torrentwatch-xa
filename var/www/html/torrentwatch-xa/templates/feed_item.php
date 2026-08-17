@@ -5,6 +5,13 @@ $description = null; // to contain HTML code of description of the item
 $infoDiv = null; // to contain HTML code of each item's div.infoDiv
 $hideItem = null; // to contain HTML code of div for Hide Show button on drop-down menu
 $epiDiv = null; // to contain HTML code of div for Episode Info
+// context menu state vars (kept defined to avoid PHP notices while context menu code is commented out)
+$addFavHidden = null;
+$torStart = null;
+$torResume = null;
+$torPause = null;
+$torDelete = null;
+$torTrash = null;
 $progressBar = null; // to contain HTML code of div.progressBarContainer
 $feedItem = null; // to contain HTML code of span containing the feed name if Combine Feeds = true
 $showEpisodeNumber = null; // to contain HTML code of the show episode number, etc.
@@ -39,15 +46,15 @@ if ($config_values['Settings']['Combine Feeds'] == 1) {
     $feedItem = "<span class=\"feed_name\">" . htmlspecialchars($feedName ?? '', ENT_QUOTES, 'UTF-8') . "</span>";
 }
 
-if (!$config_values['Settings']['Disable Hide List'] && $itemState === "st_notAMatch") {
+/* if (!$config_values['Settings']['Disable Hide List'] && $itemState === "st_notAMatch") {
     $hideItem = "<div class='contextItem hideItem' onclick='$.hideItem(\"$utitle\")' title='Hide show'>Hide show</div>"; // adds Hide Show button to drop-down menu
-}
+} */
 
 if ($config_values['Settings']['Client'] != "folder") {
     $progressBar = "<div class='progressBarContainer init'><div class='progressDiv' style='width: 0.07%; height: 3px; '></div></div>";
 }
 
-// hide or show choices in contextMenu
+/* // hide or show choices in contextMenu
 switch ($itemState) {
     case "st_favReady":
     case "st_waitTorCheck":
@@ -67,7 +74,7 @@ switch ($itemState) {
         $torPause = "torPause hidden";
         $torDelete = "torDelete hidden";
         $torTrash = "torTrash hidden";
-}
+} */
 
 $showTitle = $guess['favTitle'];
 $showQuality = $guess['qualities'];
@@ -101,20 +108,20 @@ print <<< EOH
 <td class="identifier"></td>
 <td class="torrent_name">
 <div class='torrent_name'>
-<span class="contextButtonContainer"><a id="contextButton_$id" class="contextButton" onclick='$.toggleContextMenu("#divContext_$id", "$id");'></a></span>
+<!-- <span class="contextButtonContainer"><a id="contextButton_$id" class="contextButton" onclick='$.toggleContextMenu("#divContext_$id", "$id");'></a></span> -->
 <span class="$titleClasses" title="$description">$ti</span>
 <span class='torrent_pubDate'>$feedItem $showEpisodeNumber $pubDate</span>
 </div>
-<div id="divContext_$id" class="contextMenu">
+<!-- <div id="divContext_$id" class="contextMenu">
 <div class='contextItem addFavorite <?= $addFavHidden ?>' onclick='javascript:$.addFavorite("$feed","$utitle")' title="Add this show to favorites">Add to favorites</div>
 <div class='contextItem $torStart' onclick='javascript:$.dlTorrent("$utitle","$ulink","$linkType","$feed","$id")' title="Download this torrent">Download</div>
 <div class="contextItem activeTorrent $torResume" onclick='javascript:$.stopStartTorrent("start", "$torHash")' title="Resume download">Resume transfer</div>
 <div class="contextItem activeTorrent $torPause" onclick='javascript:$.stopStartTorrent("stop", "$torHash")' title="Pause download">Pause transfer</div>
 <div class="contextItem activeTorrent $torDelete" onclick='javascript:$.delTorrent("$torHash", false, false)' title="Delete torrent but keep data">Remove from client</div>
-<div class="contextItem activeTorrent $torTrash" onclick='javascript:$.delTorrent("$torHash", true, false)' title="Delete torrent and its data">Remove & trash data</div>
+<div class="contextItem activeTorrent $torTrash" onclick='javascript:$.delTorrent("$torHash", true, false)' title="Delete torrent and its data">Remove &amp; trash data</div>
 $hideItem
 $epiDiv
-</div>
+</div> -->
 $progressBar
 <span class='debugMatch hidden' id='debugMatch_$id'>$debugMatch</span>
 <span class='unixTime hidden' id='unixTime_$id'>$unixTime</span>

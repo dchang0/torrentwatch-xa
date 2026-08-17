@@ -79,8 +79,8 @@ $(document).ready(function () {
             var dialog = document.querySelector('.dialog');
             if (dialog) {
                 dialog.querySelector('.close')?.click();
-                var ctx = document.querySelector('div.contextMenu');
-                if (ctx) ctx.style.display = 'none';
+                // var ctx = document.querySelector('div.contextMenu'); // context menu removed
+                // if (ctx) ctx.style.display = 'none';
             } else {
                 var moveData = document.querySelector('#clientButtons .move_data');
                 if (moveData && moveData.offsetParent !== null) {

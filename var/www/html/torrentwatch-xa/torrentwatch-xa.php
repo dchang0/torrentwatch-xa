@@ -73,35 +73,26 @@ function parse_options() {
             updateGlobalConfig();
             break;
         case 'addFavorite':
-            if (($tmp = detectMatch(html_entity_decode($_GET['title'])))) {
-                $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
-                switch ($config_values['Settings']['Match Style']) {
-                    case "simple":
-                        $_GET['filter'] = trim($tmp['favTitle']);
-                        $_GET['quality'] = $tmp['qualities']; // Add to Favorites uses the qualities from the item for the new Favorite
-                        break;
-                    case "glob":
-                        $_GET['filter'] = trim(strtr($tmp['favTitle'], " ._", "???"));
-                        $_GET['filter'] .= '*';
-                        $_GET['quality'] = 'All'; // Add to Favorites makes the new Favorite accept all qualities
-                        break;
-                    case "regexp":
-                        $_GET['filter'] = trim($tmp['favTitle']);
-                        $_GET['quality'] = $tmp['qualitiesRegEx']; // Add to Favorites uses the detected qualities as a regex or .* if no qualities detected
-                }
-                $_GET['button'] = 'Add';
-                $_GET['downloaddir'] = '';
-                $_GET['alsosavedir'] = '';
-                $_GET['seedratio'] = "";
-            } else {
-                $_GET['name'] = $_GET['title'];
-                $_GET['filter'] = $_GET['title'];
-                $_GET['quality'] = 'All';
-                $_GET['button'] = 'Add';
-                $_GET['downloaddir'] = '';
-                $_GET['alsosavedir'] = '';
-                $_GET['seedratio'] = "";
+            $tmp = detectMatch(html_entity_decode($_GET['title']));
+            $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
+            switch ($config_values['Settings']['Match Style']) {
+                case "simple":
+                    $_GET['filter'] = trim($tmp['favTitle']);
+                    $_GET['quality'] = $tmp['qualities']; // Add to Favorites uses the qualities from the item for the new Favorite
+                    break;
+                case "glob":
+                    $_GET['filter'] = trim(strtr($tmp['favTitle'], " ._", "???"));
+                    $_GET['filter'] .= '*';
+                    $_GET['quality'] = 'All'; // Add to Favorites makes the new Favorite accept all qualities
+                    break;
+                case "regexp":
+                    $_GET['filter'] = trim($tmp['favTitle']);
+                    $_GET['quality'] = $tmp['qualitiesRegEx']; // Add to Favorites uses the detected qualities as a regex or .* if no qualities detected
             }
+            $_GET['button'] = 'Add';
+            $_GET['downloaddir'] = '';
+            $_GET['alsosavedir'] = '';
+            $_GET['seedratio'] = "";
             if ($config_values['Settings']['Default Feed All'] && $tmp['numberSequence'] > 0) { // set default feed to all only if serialized
                 $_GET['feed'] = 'All';
             }
@@ -137,10 +128,19 @@ function parse_options() {
                     getArrayValueByKey($config_values['Settings'], 'Default Seed Ratio')
             );
             if ($r['errorCode'] === 0) {
-                $torHash = get_torHash(add_cache(filter_input(INPUT_GET, 'title')));
-            }
-            if (isset($torHash)) {
-                echo $torHash;
+                $torHash = get_torHash(add_cache(
+                        filter_input(INPUT_GET, 'title'),
+                        [
+                            'feedUrl' => filter_input(INPUT_GET, 'feed'),
+                            'link' => filter_input(INPUT_GET, 'link'),
+                            'downloadType' => filter_input(INPUT_GET, 'linkType')
+                        ]
+                ));
+                if (is_string($torHash) && $torHash !== '') {
+                    echo $torHash;
+                } else {
+                    echo 'Success'; // torrent added, but no torrent hash is available (e.g. folder client)
+                }
             } else {
                 echo $r['errorMessage'];
             }
@@ -187,6 +187,9 @@ function parse_options() {
             $smtpEncryption = filter_input(INPUT_GET, 'smtpEncryption');
             $smtpUser = filter_input(INPUT_GET, 'smtpUser');
             $smtpPassword = filter_input(INPUT_GET, 'smtpPassword');
+            if ($smtpPassword === false) {
+                $smtpPassword = '';
+            }
             $hiddensMTPPassword = str_repeat('*', strlen(decryptsMTPPassword($smtpPassword)));
             $hELOOverride = filter_input(INPUT_GET, 'hELOOverride');
             $subject = "Test email from torrentwatch-xa";
@@ -227,10 +230,11 @@ function parse_options() {
             $phpSelf = filter_input(INPUT_SERVER, 'PHP_SELF');
             $requestuRI = filter_input(INPUT_SERVER, 'REQUEST_URI');
             if ($phpSelf !== false && $requestuRI !== false) {
-                $output = "<script type='text/javascript'>alert('Bad parameters passed to $phpSelf:  $requestuRI');</script>";
+                $msg = "Bad parameters passed to $phpSelf:  $requestuRI";
             } else {
-                $output = "<script type='text/javascript'>alert('Bad parameters');</script>";
+                $msg = "Bad parameters";
             }
+            $output = "<script type='text/javascript'>alert(" . json_encode($msg) . ");</script>";
     }
 
     if (isset($output)) {
@@ -661,7 +665,7 @@ function checkVersion() {
     if (!isset($_COOKIE['VERSION-CHECK'])) { //TODO replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
         $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION;
         $latestFromWebsite = getCurl('https://raw.githubusercontent.com/dchang0/torrentwatch-xa/refs/heads/master/VERSION.txt', $curlOptions);
-        if (preg_match('/^\d+\.\d+\.\d+$/', $latestFromWebsite)) {
+        if (is_string($latestFromWebsite) && preg_match('/^\d+\.\d+\.\d+$/', $latestFromWebsite)) {
             $isLatestHigher = false;
             $thisVersion = explode(".", TWXA_VERSION);
             $latestVersion = explode(".", $latestFromWebsite);
@@ -719,12 +723,12 @@ readjSONConfigFile();
 
 $html_out = "";
 
+setupConfigCacheDir();
+setupDownloadCacheDir();
 parse_options();
 if (checkpHPRequirements()) {
     return;
 }
-setupConfigCacheDir();
-setupDownloadCacheDir();
 checkFilesAndDirs();
 closehTML($html_out);
 

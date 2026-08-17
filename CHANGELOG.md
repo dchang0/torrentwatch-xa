@@ -1049,3 +1049,49 @@ Code Changes
 - simplified the bad-parameter error path in `parse_options()` to echo directly instead of round-tripping through `$html_out`, and removed a dead `is_array` branch
 - removed `$html_out` from `parse_options()`'s global declaration and dropped a stale comment in `display_global_config()`
 
+1.11.0
+
+Functional Changes
+
+- removed the per-item context menu (dropdown button, `div.contextMenu`, and its `$.toggleContextMenu()` handler); all of its actions are still available from the client button bar, so no functionality is lost
+- tightened the client button bar so it is narrower and fits comfortably on smartphone screens
+- the download cache now stores each download's parsed metadata in a `dl_*.json` file instead of a bare torrent hash, so downloads are matched against the originally parsed data rather than re-parsing the cache filename; this fixes duplicate downloads for titles containing characters that `sanitizeFilename()` rewrites (e.g. `*`, `=`, `^`)
+- the previous download cache files (without a `.json` extension) are ignored
+- cache files now record provenance (`feedName`/`feedUrl`, `link`, `downloadType`) and client metadata (`torHash`, `torId`, `downloadDir`, `seedRatio`) at download time, and reserve fields for future seeding/progress data
+
+Code Changes
+
+- fixed the writeToLog() call in notifyByEmail(), which passed three arguments (message, rc, level) to a two-argument function, so the return code is now appended to the log message and logged at the intended debug level instead of being discarded
+- fixed a self-XSS in the "Bad parameters" alert by JSON-encoding the PHP_SELF/REQUEST_URI values before embedding them in the JavaScript alert string, so a crafted URL containing a quote can no longer break the script
+- fixed date episode detection (matchTitle3_2) so single-digit months and days are padded with leading zeros, producing a consistent 8-digit YYYYMMDD episode number (e.g. "2012 1 5" is now 20120105 instead of being misread or rejected)
+- the Favorites panel now mirrors the favorites template's logic when adding a new Favorite with a season, so date-based episodes (8-digit YYYYMMDD) no longer get a bogus "season x episode" layout
+- a downloaded item is no longer marked as downloading/in-cache when the download cache write fails, so a failed cache write no longer claims a download succeeded
+- fixed minor bugs in twxa_cli.php
+- fixed minor bugs in config.php
+- fixed PHP 8 fatal error when the version check fails to reach GitHub, by guarding the version comparison against a non-string curl result
+- fixed a potential PHP 8 fatal error in the SMTP test-email form when the password parameter is missing
+- moved cache directory setup before command handling so the first request after a fresh install no longer fails to write the torrent hash to the download cache
+- fixed the download-torrent response so it returns the torrent hash only when one is available, an explicit success marker for the folder client, and a proper error when Transmission reports success without a hash
+- the bulk Favorites importer now errors and exits non-zero when the config file cannot be written, instead of reporting success for every row
+- the bulk Favorites importer now warns when it cannot determine the config file's owner instead of silently skipping the ownership restore
+- the bulk Favorites importer now sets the config file to 0640 instead of 0775, and fixed the "chown" wording in the chmod-failure log
+- the bulk Favorites importer now refuses to run from the web and validates the favorites file argument, printing usage instead of PHP warnings when it is missing
+- the bulk Favorites importer now requires a regular readable file, reports failures to open it, and skips blank lines
+- the bulk Favorites importer now passes an explicit escape parameter to fgetcsv() to avoid a PHP 8.4 deprecation warning, and guards against a non-array response from addFavoriteFromParams()
+- hardened add_history() so a missing or corrupt download-history file no longer causes a PHP warning or wipes the existing history on write
+- get_torHash() now guards against missing/unreadable cache files, always returns a string instead of null, and closes its file handle
+- fixed file-descriptor leaks by closing directory handles in check_cache_for_torHash() and check_cache_episode()
+- delete_cache_files() no longer emits a PHP warning when glob() returns false
+- add_cache() now checks the result of touch() and logs when the cache file cannot be created
+- the episode and season batch boundary checks in check_cache_episode() now guard their operands with is_numeric() so an empty detected value is never coerced to 0 in the comparison
+- the cache title-prefix match in check_cache_episode() now runs the favorite title through sanitizeFilename() so characters that sanitizeFilename maps to an underscore in the cache filename compare equal, preventing duplicate downloads of titles containing such characters
+- add_history() now holds an exclusive lock across the read-modify-write of the history file so concurrent processes no longer clobber each other's entries, and logs when the write fails
+- get_torHash() now detects a failed read and trims the hash, so cache files with trailing whitespace or a failed read no longer return a hash that can never match
+- check_cache_for_torHash() now guards against a missing/unreadable download cache directory instead of emitting a PHP warning, and the misnamed $dowloadCacheDir variable was renamed to $downloadCacheDir
+- check_cache_for_torHash() no longer logs an ERR line for every empty cache file on every scan, so folder-client items and failed hash writes no longer flood the log; the unused logMissingHash parameter was removed from get_torHash()
+- the version comparison in check_cache_episode() now treats a missing item version as v1 instead of relying on an empty string coercing to 0
+- converted the download cache to versioned `dl_*.json` files that store the full detectMatch() output plus provenance and client metadata, adding the getCacheFile(), getCacheData(), and updateCacheData() helpers
+- check_cache_episode() now compares the stored parsed fields from the cache JSON instead of re-parsing the sanitized cache filename, which fixes matching for titles containing characters that sanitizeFilename() rewrites and removes the sanitizeFilename() normalization from the title-prefix match
+- transmission_add_torrent() and add_cache() both write to the cache through updateCacheData(), so the torrent hash and the parsed metadata merge regardless of write order
+- add_cache() now records provenance (feed name/URL, link, download type) from its call sites
+- fixed the Transmission (torrent client) item matcher in processTransmissionData() so items in all filters (not just the Transmission filter) keep receiving live progress, statistics, and downloading/downloaded status updates; this bug, introduced in 1.9.6, caused a scoped selector to only update the Transmission-filter copy after the first poll

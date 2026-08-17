@@ -37,39 +37,46 @@ function matchTitle3_2($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{1,4})[$seps\-\/](\d{1,4})[$seps\-\/](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        if (validateYYYYMMDD($mat[1] . $mat[2] . $mat[3])
-        ) {
+        // YYYY MM DD
+        if (checkdate((int)$mat[2], (int)$mat[3], (int)$mat[1])) {
+            $date = $mat[1] . str_pad($mat[2], 2, "0", STR_PAD_LEFT) . str_pad($mat[3], 2, "0", STR_PAD_LEFT);
             return [
                 'medTyp' => MEDTYP_VIDEO,
                 'numSeq' => NUMSEQ_DATE,
                 'seasSt' => 0,
                 'seasEd' => 0,
-                'episSt' => $mat[1] . $mat[2] . $mat[3],
-                'episEd' => $mat[1] . $mat[2] . $mat[3],
+                'episSt' => $date,
+                'episEd' => $date,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "3_2-1"
             ];
-        } else if (validateYYYYMMDD($mat[3] . $mat[1] . $mat[2])) {
+        }
+        // MM DD YYYY
+        if (checkdate((int)$mat[1], (int)$mat[2], (int)$mat[3])) {
+            $date = $mat[3] . str_pad($mat[1], 2, "0", STR_PAD_LEFT) . str_pad($mat[2], 2, "0", STR_PAD_LEFT);
             return [
                 'medTyp' => MEDTYP_VIDEO,
                 'numSeq' => NUMSEQ_DATE,
                 'seasSt' => 0,
                 'seasEd' => 0,
-                'episSt' => $mat[3] . $mat[1] . $mat[2],
-                'episEd' => $mat[3] . $mat[1] . $mat[2],
+                'episSt' => $date,
+                'episEd' => $date,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "3_2-2"
             ];
-        } else if (validateYYYYMMDD($mat[3] . $mat[2] . $mat[1])) {
+        }
+        // DD MM YYYY
+        if (checkdate((int)$mat[2], (int)$mat[1], (int)$mat[3])) {
+            $date = $mat[3] . str_pad($mat[2], 2, "0", STR_PAD_LEFT) . str_pad($mat[1], 2, "0", STR_PAD_LEFT);
             return [
                 'medTyp' => MEDTYP_VIDEO,
                 'numSeq' => NUMSEQ_DATE,
                 'seasSt' => 0,
                 'seasEd' => 0,
-                'episSt' => $mat[3] . $mat[2] . $mat[1],
-                'episEd' => $mat[3] . $mat[2] . $mat[1],
+                'episSt' => $date,
+                'episEd' => $date,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "3_2-3"

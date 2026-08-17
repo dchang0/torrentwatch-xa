@@ -371,14 +371,23 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
     if (isset($response1['result'])) {
         if ($response1['result'] === 'success') {
             if (isset($response1['arguments']['torrent-added'])) {
-                $cache = getDownloadCacheDir() . "/dl_" . sanitizeFilename($ti);
                 $torHash = $response1['arguments']['torrent-added']['hashString'];
                 if (!isset($torHash) || $torHash === "") {
                     writeToLog("Empty torrent hash for: $ti\n", 0);
+                    return [
+                        'errorCode' => 1,
+                        'errorMessage' => "Error: Transmission did not return a torrent hash for: $ti"
+                    ];
                 }
-                // write torrent hash to item's cache file
-                if (file_put_contents($cache, $torHash) === false) {
-                    writeToLog("Failed writing $torHash into: $cache\n", -1);
+                // write torrent hash and client metadata to item's cache file
+                $torId = isset($response1['arguments']['torrent-added']['id']) ? $response1['arguments']['torrent-added']['id'] : null;
+                if (updateCacheData($ti, [
+                        'torHash' => $torHash,
+                        'torId' => $torId,
+                        'downloadDir' => $dest,
+                        'seedRatio' => $seedRatio
+                ]) === false) {
+                    writeToLog("Failed writing $torHash into: " . getCacheFile($ti) . "\n", -1);
                 }
                 // set seed ratio
                 if ($seedRatio >= 0) {

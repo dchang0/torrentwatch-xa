@@ -65,7 +65,7 @@ display:none;
 }
 
 #clientButtons {
-height:34px;
+height:26px;
 }
 
 .add_fav {
@@ -110,22 +110,24 @@ display:none;
 display:none;
 }
 
+/* context menu removed:
 .contextButtonContainer {
 display:none;
 }
+*/
 
 #clientButtonsHolder {
 right:5px;
 }
 
 #clientButtons {
-height:34px;
-padding:0 0 0 5px;
+height:26px;
+padding:0 0 0 2px;
 }
 
 #clientButtons li {
--webkit-transform: scale(1.2);
-transform: scale(1.2);
+-webkit-transform: scale(1.0);
+transform: scale(1.0);
 transform-origin: 0 0;
 }
 

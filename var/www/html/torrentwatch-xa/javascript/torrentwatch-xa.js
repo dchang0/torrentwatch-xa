@@ -416,7 +416,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                     var torListElmt; // torrent list element
                     var found = torrentClientList.find("li.item_" + item.hashString);
                     if (found.length) {
-                        torListElmt = found;
+                        torListElmt = $("li.item_" + item.hashString); // global selector so all filters are affected, not just the Transmission filter
                     } else {
                         found = torrentClientList.find("li.clientId_" + item.id);
                         if (found.length) {
@@ -793,7 +793,8 @@ $(document).ready(function () { // first binding to document ready (while torren
     window.addEventListener(orientationEvent, toggleClientButtons, false);
     // delegated mousedown binding covers all li.torrent including dynamically-added Transmission items
     $(document).on("mousedown", "#torrentlist_container li.torrent", function (e) {
-        if ($(e.target).closest('a, .contextItem, .contextButtonContainer').length) {
+        //if ($(e.target).closest('a, .contextItem, .contextButtonContainer').length) { // context menu removed
+        if ($(e.target).closest('a').length) {
             return;
         }
         toggleSelect(this);
@@ -1094,7 +1095,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $clone.find("#favorite_new_quality").attr("id", "favorite_" + rsp.idx + "_quality").attr("value", rsp.quality);
                                 $clone.find("#favorite_new_seedratio").attr("id", "favorite_" + rsp.idx + "_seedratio").attr("value", rsp.seedratio);
                                 // insert in the season input raw text using .before, not .insertBefore; sizing is handled by CSS
-                                if (rsp.season !== 0) { //TODO also needs to handle episode with length > 8 chars
+                                if (rsp.season !== 0 && rsp.episode && !/^\d{8}$/.test(rsp.episode)) { // mirror favorites_info.php which only shows "SSxEE" for non-8-digit episodes
                                     $clone.find("#favorite_new_episode").before("<input class='lastSeason text' type=\"text\" name=\"season\" id=\"favorite_" + rsp.idx + "_season\" value=\"" + rsp.season + "\"> <label class=\"lastEpisode item\">x</label> ");
                                 }
                                 $clone.find("#favorite_new_episode").attr("id", "favorite_" + rsp.idx + "_episode").attr("value", rsp.episode);
@@ -1363,10 +1364,11 @@ $(document).ready(function () { // first binding to document ready (while torren
                         $('li#id_' + id)
                                 .removeClass('st_favTooOld tc_paused tc_downloading tc_seeding tc_verifying tc_waiting st_downloading st_favReady st_waitTorCheck st_inCacheNotActive')
                                 .addClass('st_downloaded');
-                        $('li#id_' + id + ' div.hideItem').hide();
-                        $('li#id_' + id + ' div.hideItem').addClass("hidden");
-                        $('li#id_' + id + ' div.torStart').hide();
-                        $('li#id_' + id + ' div.torStart').addClass("hidden");
+                        // context menu removed:
+                        // $('li#id_' + id + ' div.hideItem').hide();
+                        // $('li#id_' + id + ' div.hideItem').addClass("hidden");
+                        // $('li#id_' + id + ' div.torStart').hide();
+                        // $('li#id_' + id + ' div.torStart').addClass("hidden");
 //                        $('li#id_' + id + ' div.torResume').hide();
 //                        $('li#id_' + id + ' div.torResume').addClass("hidden");
 //                        $('li#id_' + id + ' div.torPause').hide();
@@ -1385,18 +1387,19 @@ $(document).ready(function () { // first binding to document ready (while torren
                                             'Waiting for client data...</span><span class="torEta"></span></div>');
                         }
                         $('li#id_' + id + ' div.progressBarContainer').show();
-                        $('li#id_' + id + ' div.hideItem').hide();
-                        $('li#id_' + id + ' div.hideItem').addClass("hidden");
-                        $('li#id_' + id + ' div.torStart').hide();
-                        $('li#id_' + id + ' div.torStart').addClass("hidden");
-                        $('li#id_' + id + ' div.torResume').hide();
-                        $('li#id_' + id + ' div.torResume').addClass("hidden");
-                        $('li#id_' + id + ' div.torPause').show();
-                        $('li#id_' + id + ' div.torPause').removeClass("hidden");
-                        $('li#id_' + id + ' div.torTrash').show();
-                        $('li#id_' + id + ' div.torTrash').removeClass("hidden");
-                        $('li#id_' + id + ' div.torDelete').show();
-                        $('li#id_' + id + ' div.torDelete').removeClass("hidden");
+                        // context menu removed:
+                        // $('li#id_' + id + ' div.hideItem').hide();
+                        // $('li#id_' + id + ' div.hideItem').addClass("hidden");
+                        // $('li#id_' + id + ' div.torStart').hide();
+                        // $('li#id_' + id + ' div.torStart').addClass("hidden");
+                        // $('li#id_' + id + ' div.torResume').hide();
+                        // $('li#id_' + id + ' div.torResume').addClass("hidden");
+                        // $('li#id_' + id + ' div.torPause').show();
+                        // $('li#id_' + id + ' div.torPause').removeClass("hidden");
+                        // $('li#id_' + id + ' div.torTrash').show();
+                        // $('li#id_' + id + ' div.torTrash').removeClass("hidden");
+                        // $('li#id_' + id + ' div.torDelete').show();
+                        // $('li#id_' + id + ' div.torDelete').removeClass("hidden");
                         $('li#id_' + id).removeClass('item_###torHash###').addClass('item_' + torHash);
                         var item = $('li#id_' + id);
                         item.html(item.html().replace(/###torHash###/g, torHash));
@@ -1577,7 +1580,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         }
         $(tab).animate({opacity: "toggle"}, 500);
     };
-    $.toggleContextMenu = function (item_id, id) {
+    /* $.toggleContextMenu = function (item_id, id) {
         // do NOT use slideUp() or slideDown() in this function as they are too slow and get interrupted
         if ($("div.contextMenu").not(item_id).is(":visible")) {
             document.querySelectorAll("div.contextMenu").forEach(function (el) { el.style.display = 'none'; });
@@ -1605,7 +1608,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 });
             });
         }
-    };
+    }; */
     $.processSelected = function (action) {
         if (!$('#torrentlist_container .torrent.selected').length) {
             return;

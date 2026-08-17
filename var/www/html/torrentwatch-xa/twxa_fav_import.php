@@ -23,29 +23,48 @@ function parse_args($argc, $argv) {
             case '-h':
             case '--help':
                 usage();
-                exit(1);
+                exit(0);
         }
     }
 }
 
 /// main
-$main_timer = getElapsedMicrotime(0);
-readjSONConfigFile();
+if (PHP_SAPI !== 'cli') {
+    print(__FILE__ . " is a command-line tool and cannot be run from the web.\n");
+    exit(1);
+}
 
 parse_args($argc, $argv);
+
+if ($argc < 2 || $argv[1] === '') {
+    usage();
+    exit(1);
+}
+
+$main_timer = getElapsedMicrotime(0);
+readjSONConfigFile();
 
 // get the owner of the current config file
 $configFile = getConfigFile();
 $configOwner = fileowner($configFile);
+if ($configOwner === false) {
+    print("Unable to determine owner of config file: $configFile\n");
+    writeToLog("Unable to determine owner of config file: $configFile\n", 0);
+}
 
 // check if favorites file is specified and exists
-if (is_readable($argv[1])) {
+if (is_file($argv[1])) {
     writeToLog("=====Start twxa_fav_import.php\n", 2);
 
     // loop through favorites file, creating a new favorite for each Name and Filter
     $row = 1;
     if (($handle = fopen($argv[1], "r")) !== false) {
-        while (($data = fgetcsv($handle, 1000, "\t")) !== false) {
+        while (($data = fgetcsv($handle, 0, "\t", "\"", "\\")) !== false) {
+            // skip blank lines; fgetcsv returns a single null field for an empty line
+            if (!isset($data[0])) {
+                $row++;
+                continue;
+            }
             $return = null;
             if (count($data) === 1) {
                 // first field is only field provided, use it as Name and Filter
@@ -78,31 +97,43 @@ if (is_readable($argv[1])) {
             $row++;
         }
         fclose($handle);
+    } else {
+        print("Unable to open file: " . $argv[1] . "\n");
+        writeToLog("Unable to open file: " . $argv[1] . "\n", 0);
     }
 
-    if (is_writable($configFile) && is_numeric($configOwner)) {
-        if (writejSONConfigFile()) {
-            // IMPORTANT: must change ownership on new config file to the user Apache2 is running as
+    if (is_writable($configFile)) {
+        if (!writejSONConfigFile()) {
+            print("Failed to write config file: $configFile\n");
+            writeToLog("Failed to write config file: $configFile\n", -1);
+            exit(1);
+        }
+        // IMPORTANT: must change ownership on new config file to the user Apache2 is running as
+        if ($configOwner !== false) {
             if (chown($configFile, $configOwner)) {
                 // try chmod here, but chown would have failed if insufficient permissions
-                if (chmodPath($configFile, 0775)) {
+                if (chmodPath($configFile, 0640)) {
                     // success
                 } else {
-                    print("Failed to chmod config file $configFile to 0775\n");
-                    writeToLog("Failed to chown config file $configFile to 0775\n", -1);
+                    print("Failed to chmod config file $configFile to 0640\n");
+                    writeToLog("Failed to chmod config file $configFile to 0640\n", -1);
                 }
             } else {
                 print("Failed to chown config file $configFile with UID $configOwner\n");
                 writeToLog("Failed to chown config file $configFile with UID $configOwner\n", -1);
             }
         }
+    } else {
+        print("Config file is not writable: $configFile\n");
+        writeToLog("Config file is not writable: $configFile\n", 0);
+        exit(1);
     }
 
     writeToLog("=====End twxa_fav_import.php: processed in " . getElapsedMicrotime($main_timer) . "s\n", 2);
 } else {
-    // file is not readable
-    print("File not readable: " . $argv[1] . "\n");
-    writeToLog("File not readable: " . $argv[1] . "\n", 0);
+    // file is not a regular readable file
+    print("File not found or not a regular file: " . $argv[1] . "\n");
+    writeToLog("File not found or not a regular file: " . $argv[1] . "\n", 0);
 }
 
 function addFavoriteFromImport($name, $filter, $not = "", $quality = "") {
@@ -116,6 +147,9 @@ function addFavoriteFromImport($name, $filter, $not = "", $quality = "") {
             urldecode($quality),
             urldecode($not)
     );
+    if (!is_array($result)) {
+        return "Unexpected error while adding Favorite: " . (is_string($result) ? $result : var_export($result, true));
+    }
     if ($result['errorCode'] === 2) {
         return "Error: \"" . urldecode($name) . "\" already exists in Favorites.";
     }

@@ -10,8 +10,9 @@ function get_baseDir() {
 }
 
 // torrentwatch-xa web UI installation directory
+// NOTE: this value is informational only and is not referenced by the application
 function get_webDir() {
-    return "/var/www/html/torrentwatch-xa"; // if you change this, be sure to change it in torrentwatch-xa too
+    return "/var/www/html/torrentwatch-xa";
 }
 
 // torrentwatch-xa log file path
@@ -24,8 +25,20 @@ function get_logFile() {
 $twxaIncludePaths = [get_baseDir() . "/lib"];
 $includePath = get_include_path();
 foreach ($twxaIncludePaths as $twxaIncludePath) {
-    if (strpos($includePath, $twxaIncludePath) === false) {
+    if (!is_dir($twxaIncludePath)) {
+        continue;
+    }
+    $found = false;
+    foreach (explode(PATH_SEPARATOR, $includePath) as $entry) {
+        if (rtrim($entry, "/\\") === $twxaIncludePath) {
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) {
         $includePath .= PATH_SEPARATOR . $twxaIncludePath;
     }
 }
-set_include_path($includePath);
+if (set_include_path($includePath) === false) {
+    error_log("torrentwatch-xa config.php: failed to set include path: $includePath");
+}

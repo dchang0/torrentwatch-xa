@@ -1,6 +1,6 @@
 <?php
 
-define('TWXA_VERSION', '1.10.0');
+define('TWXA_VERSION', '1.11.0');
 
 global $config_values;
 
@@ -149,7 +149,7 @@ function notifyByEmail($body, $subject) {
     $hELOOverride = $config_values['Settings']['HELO Override'];
 
     $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
-    writeToLog($output['message'], $output['rc'] . "\n", 2);
+    writeToLog($output['message'] . $output['rc'] . "\n", 2);
 }
 
 function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body) {

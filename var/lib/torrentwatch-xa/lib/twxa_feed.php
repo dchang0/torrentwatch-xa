@@ -538,13 +538,18 @@ function processMatchedItemDownload(
                     $defaultSeedRatio
             );
             if ($response['errorCode'] === 0) {
-                $startedDownload = true; // download started successfully
-                add_cache($item['title']); //TODO also tie $startedDownload to successful write to cache
-                if ($clientType === "folder") {
-                    //$itemState = "st_downloaded";
-                    $itemState = "st_inCacheNotActive";
-                } else {
-                    $itemState = "st_downloading";
+                if (add_cache($item['title'], [
+                            'feedName' => $fav['Feed'],
+                            'link' => $bestLink['link'],
+                            'downloadType' => $bestLink['type']
+                        ]) !== false) {
+                    $startedDownload = true; // download started successfully
+                    if ($clientType === "folder") {
+                        //$itemState = "st_downloaded";
+                        $itemState = "st_inCacheNotActive";
+                    } else {
+                        $itemState = "st_downloading";
+                    }
                 }
             } else {
                 // leave $itemState alone
@@ -698,7 +703,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink, $renderHTML = false) 
             }
             // check every item, regardless of whether it matches a Favorite
             // get $torHash after download has started for $htmlList
-            $cache_file = getDownloadCacheDir() . '/dl_' . sanitizeFilename($item['title']);
+            $cache_file = getCacheFile($item['title']);
             if (file_exists($cache_file)) {
                 if ($clientType !== 'folder') {
                     $torHash = get_torHash($cache_file);

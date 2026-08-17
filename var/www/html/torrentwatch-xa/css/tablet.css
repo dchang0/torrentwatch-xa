@@ -49,12 +49,14 @@ display:none;
 display:none;
 }
 
+/* context menu removed:
 .contextButtonContainer {
 display:none;
 }
+*/
 
 #clientButtons {
-height:34px;
+height:29px;
 }
 
 #clientButtonsHolder {
