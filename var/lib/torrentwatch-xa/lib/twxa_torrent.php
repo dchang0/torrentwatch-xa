@@ -42,7 +42,7 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
         }
         $idsArray = $deleteHashes;
     }
-    if (count($idsArray) >= 1) { //TODO maybe test || $checkCache === false too
+    if (count($idsArray) >= 1) {
         $request = ['arguments' => ['delete-local-data' => $toTrash, 'ids' => $idsArray], 'method' => 'torrent-remove'];
         $response = transmission_rpc($request);
         if ($toTrash && $response !== null && $response['result'] === 'success') {
@@ -61,7 +61,7 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
 
 function auto_del_seeded_torrents() {
     $response = getClientData(false); // request torrents to look for deletable torrents; 0 was chosen by watching both 0 and 1 output
-    if ($response['result'] === "success") {
+    if (isset($response['result']) && $response['result'] === "success") {
         $torrents = $response['arguments']['torrents'];
         $deleted = false;
         foreach ($torrents as $torrent) {
@@ -92,6 +92,10 @@ function moveTorrent($location, $torHash) {
     $idsArray = explode(',', $torHash);
     $request1 = ['arguments' => ['fields' => ['leftUntilDone', 'totalSize'], 'ids' => $idsArray], 'method' => 'torrent-get'];
     $response1 = transmission_rpc($request1);
+    if ($response1 === null || !isset($response1['arguments']['torrents']['0'])) {
+        writeToLog("Failed getting torrent info for move: $torHash\n", -1);
+        return json_encode(null);
+    }
     $totalSize = $response1['arguments']['torrents']['0']['totalSize'];
     $leftUntilDone = $response1['arguments']['torrents']['0']['leftUntilDone'];
     if (isset($totalSize) && isset($leftUntilDone) && $totalSize > $leftUntilDone) {
@@ -104,22 +108,31 @@ function moveTorrent($location, $torHash) {
     return json_encode($response2);
 }
 
-function transmission_sessionId() {
-    global $config_values;
+function checkSessionIdFileWritable() {
     $sessionIdFile = getTransmissionSessionIdFile();
     if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) {
         $myuid = posix_getuid();
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work? Replace it with outputErrorDialog()
+        outputError("$sessionIdFile is not writable for uid: $myuid");
         writeToLog("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
-        return;
+        return false;
+    }
+    return true;
+}
+
+function transmission_sessionId() {
+    global $config_values;
+    $sessionIdFile = getTransmissionSessionIdFile();
+    if (!checkSessionIdFileWritable()) {
+        return null;
     }
 
     if (file_exists($sessionIdFile)) {
         if (filesize($sessionIdFile) > 0) {
             $handle = fopen($sessionIdFile, 'r');
             $sessionId = trim(fread($handle, filesize($sessionIdFile)));
+            fclose($handle);
         } else {
-            unlink($sessionIdFile);
+            @unlink($sessionIdFile);
         }
     } else {
         $tr_user = $config_values['Settings']['Transmission Login'];
@@ -134,34 +147,44 @@ function transmission_sessionId() {
             CURLOPT_USERPWD => "$tr_user:$tr_pass"
         ];
         $ID = [];
-        preg_match("/X-Transmission-Session-Id:\s(\w+)/", getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions, true), $ID);
+        $curlResult = getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions, true);
+        if (is_string($curlResult)) {
+            preg_match("/X-Transmission-Session-Id:\s(\w+)/", $curlResult, $ID);
+        }
 
         if (isset($ID[1])) {
             $handle = fopen($sessionIdFile, "w");
             fwrite($handle, $ID[1]);
             fclose($handle);
             $sessionId = $ID[1];
+        } else {
+            writeToLog("Transmission session ID not found in response from $tr_host:$tr_port\n", -1);
         }
     }
     if (isset($sessionId)) {
         return $sessionId;
     }
+    return null;
 }
 
 function transmission_rpc($request) {
     global $config_values;
-    $sessionIdFile = getTransmissionSessionIdFile();
-    if (file_exists($sessionIdFile) && !is_writable($sessionIdFile)) { //TODO break this out into a small function
-        $myuid = posix_getuid();
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$sessionIdFile is not writable for uid: $myuid</div>"; //TODO does this errorDialog work?  Replace it with outputErrorDialog()
-        writeToLog("Transmission session ID file: $sessionIdFile is not writable for uid: $myuid\n", -1);
-        return;
+    if (!checkSessionIdFileWritable()) {
+        return null;
     }
 
     static $consecutiveTimeouts = 0;
-    static $circuitOpen = false;
-    if ($circuitOpen) {
-        return null;
+    static $circuitOpenTime = 0;
+    $circuitResetDelay = 60; // seconds before circuit breaker resets
+    if ($circuitOpenTime > 0) {
+        if ((time() - $circuitOpenTime) < $circuitResetDelay) {
+            writeToLog("Transmission circuit breaker open, retrying in " . ($circuitResetDelay - (time() - $circuitOpenTime)) . "s\n", -1);
+            return null;
+        }
+        // TTL expired, reset circuit breaker
+        writeToLog("Transmission circuit breaker reset after {$circuitResetDelay}s\n", -1);
+        $circuitOpenTime = 0;
+        $consecutiveTimeouts = 0;
     }
 
     $tr_user = $config_values['Settings']['Transmission Login'];
@@ -171,13 +194,14 @@ function transmission_rpc($request) {
 
     $requestjSON = json_encode($request);
     $reqLen = strlen($requestjSON);
+    $sessionIdFile = getTransmissionSessionIdFile();
 
     static $sessionId = null;
-    static $sessionIdFetchFailed = false;
-    if ($sessionId === null && !$sessionIdFetchFailed) {
+    if ($sessionId === null) {
         $sessionId = transmission_sessionId();
         if ($sessionId === null) {
-            $sessionIdFetchFailed = true;
+            writeToLog("Transmission session ID fetch failed\n", -1);
+            return null;
         }
     }
 
@@ -199,17 +223,21 @@ function transmission_rpc($request) {
         ];
         $curlErrno = 0;
         $raw = getCurl("http://$tr_host:$tr_port" . getTransmissionrPCPath(), $curlOptions, true, $curlErrno);
-        if (preg_match('/409:? Conflict/', $raw)) {
+        if (is_string($raw) && preg_match('/409:? Conflict/', $raw)) {
             if (file_exists($sessionIdFile)) {
-                unlink($sessionIdFile);
+                @unlink($sessionIdFile);
             }
             $sessionId = transmission_sessionId();
+            if ($sessionId === null) {
+                writeToLog("Transmission session ID re-fetch failed after 409\n", -1);
+                $run = 0;
+            }
         } else {
             if ($curlErrno !== 0) {
                 $consecutiveTimeouts++;
                 if ($consecutiveTimeouts >= 3) {
-                    $circuitOpen = true;
-                    writeToLog("Transmission unreachable: $consecutiveTimeouts consecutive curl failures. Skipping remaining RPC calls in this run.\n", -1);
+                    $circuitOpenTime = time();
+                    writeToLog("Transmission unreachable: $consecutiveTimeouts consecutive curl failures. Circuit breaker open for {$circuitResetDelay}s.\n", -1);
                 }
             } else {
                 $consecutiveTimeouts = 0;
@@ -217,7 +245,7 @@ function transmission_rpc($request) {
             $run = 0;
         }
     }
-    return json_decode($raw, true);
+    return is_string($raw) ? json_decode($raw, true) : null;
 }
 
 function get_deep_dir($dest, $tor_name, $deepDirs = '0') {
@@ -400,7 +428,7 @@ function transmission_add_torrent($tor, $dest, $ti, $seedRatio) {
                         ]
                     ];
                     $response2 = transmission_rpc($request2);
-                    if ($response2['result'] !== 'success') {
+                    if ($response2 === null || !isset($response2['result']) || $response2['result'] !== 'success') {
                         writeToLog("Failed setting seed ratio limit for $ti\n", 0);
                     }
                 }

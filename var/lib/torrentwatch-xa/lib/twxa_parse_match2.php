@@ -24,16 +24,16 @@ function matchTitle2_0($ti, $seps) {
 function matchTitle2_1($ti, $seps) {
     // S01v2 or S01.v2
     $mat = [];
-    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?v[$seps]?(\d{1,2})\b.*/i";
+    $re = "/(?:" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?v[$seps]?(\d{1,2})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
+            'seasSt' => $mat[1],
+            'seasEd' => $mat[1],
             'episSt' => 1,
             'episEd' => "",
-            'itemVr' => $mat[3],
+            'itemVr' => $mat[2],
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "2_1"
         ];
@@ -47,15 +47,15 @@ function matchTitle2_2($ti, $seps) {
     // Seas 2, Epis 3
     // S3 - E6
     $mat = [];
-    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[\,\-$seps]{0,3}(" . EPISODE_WORDS . ")[$seps]?(\d{1,4})\b.*/i";
+    $re = "/(?:" . SEASON_WORDS . ")[$seps]?(\d{1,2})[\,\-$seps]{0,3}(?:" . EPISODE_WORDS . ")[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
-            'episSt' => $mat[4],
-            'episEd' => $mat[4],
+            'seasSt' => $mat[1],
+            'seasEd' => $mat[1],
+            'episSt' => $mat[2],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "2_2"
@@ -98,7 +98,7 @@ function matchTitle2_1000($ti, $seps) {
 function matchTitle2_3($ti, $seps) {
     // ## - v# (Episode ## Version #)
     $mat = [];
-    $re = "/-?[$seps]?(\d{1,4})[\-$seps]{0,3}(v|V)(\d{1,2})\b.*/";
+    $re = "/-?[$seps]?(\d{1,4})[\-$seps]{0,3}(?:v|V)(\d{1,2})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
@@ -107,7 +107,7 @@ function matchTitle2_3($ti, $seps) {
             'seasEd' => 1,
             'episSt' => $mat[1],
             'episEd' => $mat[1],
-            'itemVr' => $mat[3],
+            'itemVr' => $mat[2],
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "2_3"
         ];
@@ -139,20 +139,20 @@ function matchTitle2_4($ti, $seps, $detVid = false) {
             case 'seizoen' :
             case 'sezona' :
             case 'seas.' :
-            //case 'seas' :
+            case 'seas' :
             case 'sais.' :
             case 'sais' :
             case 'sea.' :
-            //case 'sea' :
+            case 'sea' :
             case 'se.' :
             case 'se' :
             case 's.' :
             case 's' :
             case 'temporada' :
             case 'temp.' :
-            //case 'temp' :
+            case 'temp' :
             case 't.' :
-                //case 't' :
+            case 't' :
                 // Season, Temporada ### - EEE
                 $result = [
                     'medTyp' => MEDTYP_VIDEO,
@@ -245,15 +245,15 @@ function matchTitle2_4($ti, $seps, $detVid = false) {
 function matchTitle2_5($ti, $seps) {
     // short-circuit EP## - EP##
     $mat = [];
-    $re = "/(Episode|Epis\.|Epis|\bEP\.|\bEP|\bE\.|\bE)[$seps]?(\d{1,4})[$seps]?\-[$seps]?(Episode|Epis\.|Epis|\bEP\.|\bEP|\bE\.|\bE|)[$seps]?(\d{1,4})\b.*/i";
+    $re = "/(?:Episode|Epis\.|Epis|\bEP\.|\bEP|\bE\.|\bE)[$seps]?(\d{1,4})[$seps]?\-[$seps]?(?:Episode|Epis\.|Epis|\bEP\.|\bEP|\bE\.|\bE|)[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
-            'episSt' => $mat[2],
-            'episEd' => $mat[4],
+            'episSt' => $mat[1],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "2_5"
@@ -264,15 +264,15 @@ function matchTitle2_5($ti, $seps) {
 function matchTitle2_6($ti, $seps) {
     // (Season, Temporada ##) - ###
     $mat = [];
-    $re = "/\([$seps]?(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?\)[\-$seps]{0,3}(\d{1,4}).*/i";
+    $re = "/\([$seps]?(?:" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?\)[\-$seps]{0,3}(\d{1,4}).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
-            'episSt' => $mat[3],
-            'episEd' => $mat[3],
+            'seasSt' => $mat[1],
+            'seasEd' => $mat[1],
+            'episSt' => $mat[2],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "2_6"
@@ -283,15 +283,15 @@ function matchTitle2_6($ti, $seps) {
 function matchTitle2_7($ti, $seps) {
     // 1st|2nd|3rd Season ##
     $mat = [];
-    $re = "/(\d{1,2})(st|nd|rd|th)[$seps]?(Season|Saison|Seizoen|Sezona)[\-$seps]{0,3}(\d{1,4})\b.*/i";
+    $re = "/(\d{1,2})(?:st|nd|rd|th)[$seps]?(?:Season|Saison|Seizoen|Sezona)[\-$seps]{0,3}(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
-            'episSt' => $mat[4],
-            'episEd' => $mat[4],
+            'episSt' => $mat[2],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "2_7"
@@ -439,16 +439,16 @@ function matchTitle2_12($ti, $seps, $detVid = false) {
             case 'sais.' :
             case 'sais' :
             case 'sea.' :
-            //case 'sea' :
+            case 'sea' :
             case 'se.' :
             case 'se' :
             case 's.' :
             case 's' :
             case 'temporada' :
             case 'temp.' :
-            //case 'temp' :
+            case 'temp' :
             case 't.' :
-                //case 't' :
+            case 't' :
                 $result = [
                     'medTyp' => MEDTYP_VIDEO,
                     'numSeq' => NUMSEQ_SEASON_EPISODE,
@@ -589,20 +589,20 @@ function matchTitle2_14($ti, $seps, $detVid = false) {
             case 'seizoen' :
             case 'sezona' :
             case 'seas.' :
-            //case 'seas' :
+            case 'seas' :
             case 'sais.' :
             case 'sais' :
             case 'sea.' :
-            //case 'sea' :
+            case 'sea' :
             case 'se.' :
             case 'se' :
             case 's.' :
             case 's' :
             case 'temporada' :
             case 'temp.' :
-            //case 'temp' :
+            case 'temp' :
             case 't.' :
-                //case 't' :
+            case 't' :
                 $result = [
                     'medTyp' => MEDTYP_VIDEO,
                     'numSeq' => NUMSEQ_SEASON_EPISODE,
@@ -1070,18 +1070,31 @@ function matchTitle2_23($ti, $seps, $detVid = false) {
             }
         } else {
             // #### is probably part of the title
-            //TODO add $detVid since we have it already
-            return [
-                'medTyp' => MEDTYP_VIDEO,
-                'numSeq' => NUMSEQ_SEASON_EPISODE,
-                'seasSt' => 1,
-                'seasEd' => 1,
-                'episSt' => $mat[2],
-                'episEd' => $mat[2],
-                'itemVr' => 1,
-                'favTi' => preg_replace($re, "$1", $ti),
-                'matFnd' => "2_23-3"
-            ];
+            if ($detVid) {
+                return [
+                    'medTyp' => MEDTYP_VIDEO,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
+                    'seasSt' => 1,
+                    'seasEd' => 1,
+                    'episSt' => $mat[2],
+                    'episEd' => $mat[2],
+                    'itemVr' => 1,
+                    'favTi' => preg_replace($re, "$1", $ti),
+                    'matFnd' => "2_23-3-1"
+                ];
+            } else {
+                return [
+                    'medTyp' => MEDTYP_PRINT,
+                    'numSeq' => NUMSEQ_SEASON_EPISODE,
+                    'seasSt' => 1,
+                    'seasEd' => 1,
+                    'episSt' => $mat[2],
+                    'episEd' => $mat[2],
+                    'itemVr' => 1,
+                    'favTi' => preg_replace($re, "$1", $ti),
+                    'matFnd' => "2_23-3-2"
+                ];
+            }
         }
     }
 }

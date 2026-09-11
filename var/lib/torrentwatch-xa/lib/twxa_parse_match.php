@@ -194,6 +194,12 @@ function matchTitle3_($ti, $seps, $wereQualitiesDetected = false) {
                 break;
             }
         case true :
+            // VOLUME_WORDS ### - ### - (YYYY)
+            $result = matchTitle3_27($ti, $seps);
+            if (isset($result['matFnd'])) {
+                break;
+            }
+        case true :
             // isolated S## ##v# (Season ## Episode ## Version #) (must precede isolated SS ##v#)
             $result = matchTitle3_18($ti, $seps);
             if (isset($result['matFnd'])) {
@@ -531,7 +537,7 @@ function matchTitle2_($ti, $seps, $wereQualitiesDetected = false) {
 
 function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
     // only one integer found, probably anime-style episode number, but look for preceding words
-    $result = null;
+    $result = [];
     preg_match("/(\d+)/u", $ti, $matNum);
     $matNumLen = strlen($matNum[1]);
 
@@ -729,7 +735,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                             $result['favTi'] = $ti;
                             $result['matFnd'] = "1_1_30";
                     }
-                    if (is_null($result)) {
+                    if (!isset($result['matFnd'])) {
                         $result['favTi'] = $ti;
                         $result['matFnd'] = "1_1";
                     }

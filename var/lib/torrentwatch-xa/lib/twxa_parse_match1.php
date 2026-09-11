@@ -5,13 +5,13 @@
 function matchTitle1_1_1($ti, $seps) {
     // Season, Temporada; should also catch Season ## Complete
     $mat = [];
-    $re = "/(" . SEASON_WORDS . ")[$seps]?S?(\d+)\b.*/i";
+    $re = "/(?:" . SEASON_WORDS . ")[$seps]?S?(\d+)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO, // assume Video Media
             'numSeq' => NUMSEQ_SEASON_VOLUME, // video Season x Volume/Part numbering
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
+            'seasSt' => $mat[1],
+            'seasEd' => $mat[1],
             'episSt' => 1,
             'episEd' => "",
             'itemVr' => 1,
@@ -221,15 +221,15 @@ function matchTitle1_1_11($ti, $seps) {
     // Episode ##
     // should not be any mention of Season ## before Episode ## because only one ## found
     $mat = [];
-    $re = "/(Episode|Epis\.|Epis|Epi\.|Epi|\bEp\.|\bEp|\bE\.|\bE)[$seps]?(\d+).*/i";
+    $re = "/(?:Episode|Epis\.|Epis|Epi\.|Epi|\bEp\.|\bEp|\bE\.|\bE)[$seps]?(\d+).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
-            'episSt' => $mat[2],
-            'episEd' => $mat[2],
+            'episSt' => $mat[1],
+            'episEd' => $mat[1],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "1_1_11"

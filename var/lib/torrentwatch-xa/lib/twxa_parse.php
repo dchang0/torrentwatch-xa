@@ -34,6 +34,9 @@ define('NUMSEQ_OVA', 32);
 define('NUMSEQ_MOVIE', 64);
 define('NUMSEQ_DISC_PART', 128);
 
+// known valid vertical resolution heights (used by detectResolution)
+define('RESOLUTION_HEIGHTS', [240, 360, 400, 480, 544, 576, 720, 768, 800, 900, 1024, 1050, 1080, 1200, 1440, 2160]);
+
 // load matchTitle function files
 require_once("twxa_parse_match.php");
 require_once("twxa_parse_match0.php");
@@ -194,26 +197,51 @@ function simplifyTitle($ti) {
     return collapseExtraSeparators($ti);
 }
 
+function resolveAspectRatio($w, $h) {
+    $ratios = [[16,9], [4,3], [16,10], [3,2], [5,4], [19,10], [256,135], [21,9]];
+    foreach ($ratios as list($numer, $denom)) {
+        if ($w * $denom == $h * $numer) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function qualityLabelFromHeight($h) {
+    if ($h == 720 || $h == 1080 || $h == 1440 || $h == 2160) {
+        return ["HD", "HDTV"];
+    } else if ($h == 576) {
+        return ["ED", "EDTV"];
+    } else if ($h == 240 || $h == 360 || $h == 480) {
+        return ["SD", "SDTV"];
+    }
+    return [];
+}
+
 function detectResolution($ti, $seps = '\s\.\_') {
-    $wByHRegEx = "/(\d{3,4})[$seps]*[xX][$seps]*((\d{3,4})[iIpP]?)/";
-    $hRegEx = "/\b(\d{3,4})[iIpP]\b/"; // added \b to end to block YUV444P10
-    $bDHRegEx = "/\bBD(\d{3,4})([iIpP]?)\b/"; //TODO handle BD1280x720p
+    // patterns ordered: ###p|i (~65%), BD### (~4%), BD WxH (~1%), WxH (~20%)
+    // BD patterns before WxH so BD1280x720p isn't caught by plain WxH regex
+    $hRegEx = "/\b(\d{3,4})[iIpP]\b/"; // ###p or ###i
+    $bDHRegEx = "/\bBD(\d{3,4})([iIpP]?)\b/"; // BD###
+    $bDWxHRegEx = "/\bBD(\d{3,4})[$seps]*[xX][$seps]*(\d{3,4})[iIpP]?\b/"; // BD####x####p
+    $wByHRegEx = "/(\d{3,4})[$seps]*[xX][$seps]*((\d{3,4})[iIpP]?)/"; // ####x####p
     $resolution = "";
     $matchedResolution = "";
     $verticalLines = "";
     $detQualities = [];
     $matches = [];
 
-    if (preg_match($bDHRegEx, $ti, $matches)) {
-        // standalone resolutions in BD### format
-        // shouldn't be more than one resolution in title
-        if (
-                $matches[1] == 576 ||
-                $matches[1] == 720 ||
-                $matches[1] == 1076 || // some people are forcing 1920x1076
-                $matches[1] == 1080 ||
-                $matches[1] == 1200
-        ) {
+    // 1. ###p or ###i (most common)
+    if ($resolution === "" && preg_match($hRegEx, $ti, $matches)) {
+        $matchedResolution = $matches[0];
+        $resolution = strtolower($matchedResolution);
+        $verticalLines = $matches[1];
+    }
+
+    // 2. BD### (historical)
+    if ($resolution === "" && preg_match($bDHRegEx, $ti, $matches)) {
+        $h = (int) $matches[1];
+        if (in_array($h, RESOLUTION_HEIGHTS)) {
             $matchedResolution = $matches[0];
             $verticalLines = $matches[1];
             if ($matches[2] === "") {
@@ -222,35 +250,22 @@ function detectResolution($ti, $seps = '\s\.\_') {
                 $resolution = strtolower($matches[1] . $matches[2]);
             }
         }
-    } else if (preg_match($hRegEx, $ti, $matches)) {
-        // standalone resolutions in ###p or ###i format
-        // shouldn't be more than one resolution in title
-        $matchedResolution = $matches[0];
-        $resolution = strtolower($matchedResolution);
-        $verticalLines = $matches[1];
-    } else if (preg_match($wByHRegEx, $ti, $matches)) {
-        // search arbitrarily for #### x #### (might also be Season x Episode or YYYY x MMDD)
-        // check aspect ratios
-        if (
-                $matches[1] * 9 == $matches[3] * 16 || // 16:9 aspect ratio
-                $matches[1] * 0.75 == $matches[3] || // 4:3 aspect ratio
-                $matches[1] * 5 == $matches[3] * 8 || // 16:10 aspect ratio
-                $matches[1] * 2 == $matches[3] * 3 || // 3:2 aspect ratio
-                $matches[1] * 0.8 == $matches[3] || // 5:4 aspect ratio
-                $matches[1] * 10 == $matches[3] * 19 || // 19:10 4K aspect ratio
-                $matches[1] * 135 == $matches[3] * 256 || // 256:135 4K aspect ratio
-                $matches[1] * 3 == $matches[3] * 7 || // 21:9 4K aspect ratio
-                $matches[3] == 576 ||
-                $matches[3] == 720 ||
-                $matches[3] == 1040 || // some people are forcing 1920x1040
-                $matches[3] == 1076 || // some people are forcing 1920x1076
-                $matches[3] == 1080 ||
-                $matches[3] == 1200 ||
-                ($matches[1] == 720 && ($matches[3] == 406 || $matches[3] == 544)) || // some people are forcing 720x406 or 720x544
-                ($matches[3] == 480 && $matches[1] >= 848 && $matches[1] <= 864) || // some people are forcing 848x480p or 852x480p
-                ($matches[1] == 704 && $matches[3] == 400) || // some people are forcing 704x400
-                ($matches[1] == 744 && $matches[3] == 418) // some people are forcing 744x418
-        ) {
+    }
+
+    // 3. BD####x####p (rare, the former BD1280x720p bug)
+    if ($resolution === "" && preg_match($bDWxHRegEx, $ti, $matches)) {
+        $h = (int) $matches[2];
+        if (in_array($h, RESOLUTION_HEIGHTS) || resolveAspectRatio((int) $matches[1], $h)) {
+            $matchedResolution = $matches[0];
+            $verticalLines = $matches[2];
+            $resolution = $matches[2] . "p";
+        }
+    }
+
+    // 4. ####x####p (common in raws and non-English groups)
+    if ($resolution === "" && preg_match($wByHRegEx, $ti, $matches)) {
+        $h = (int) $matches[3];
+        if (in_array($h, RESOLUTION_HEIGHTS) || resolveAspectRatio((int) $matches[1], $h)) {
             $matchedResolution = $matches[0];
             $resolution = strtolower($matches[2]);
             $verticalLines = $matches[3];
@@ -259,14 +274,11 @@ function detectResolution($ti, $seps = '\s\.\_') {
             }
         }
     }
+
     $ti = str_replace($matchedResolution, "", $ti);
-    if ($verticalLines == 720 || $verticalLines == 1080) {
-        $detQualities = ["HD", "HDTV"];
-    } else if ($verticalLines == 576) {
-        $detQualities = ["ED", "EDTV"];
+    $detQualities = qualityLabelFromHeight((int) $verticalLines);
+    if ($verticalLines == 576) {
         $ti = preg_replace("/SD(TV)?/i", "", $ti); // remove SD also (ED will be removed by detectQualities())
-    } else if ($verticalLines == 480) {
-        $detQualities = ["SD", "SDTV"];
     }
     if ($resolution !== "") {
         $detQualities[] = $resolution;
@@ -411,8 +423,10 @@ function detectAudioCodecs($ti) {
     foreach ($audioCodecList as $audioCodecListItem) {
         if (preg_match("/\b" . $audioCodecListItem . "\b/i", $ti)) {
             $detAudioCodecs[] = $audioCodecListItem;
-            //TODO cascade down through, removing immediately-surrouding dashes
             $ti = preg_replace("/\b" . $audioCodecListItem . "\b/i", "", $ti);
+            // remove dashes that were surrounding the codec
+            $ti = preg_replace("/-([.\s])/", "$1", $ti);
+            $ti = preg_replace("/([.\s])-/", "$1", $ti);
         }
     }
     return [
@@ -426,32 +440,28 @@ function detectNumericCrew($ti, $seps = '\s\.\_') {
     // assume crew name is always at the beginning of the title and is often in parentheses or brackets
     $rmCrewName = "";
     $mat = [];
-    $crewNameList = [
-        "(C72)",
-        "&#40;C72&#41;", //TODO why do these HTML entities make it into our $ti in the first place?
-        "(C85)",
-        "&#40;C85&#41;",
-        "(C88)",
-        "&#40;C88&#41;",
-        "(C91)",
-        "&#40;C91&#41;",
-        "Doujinshi (C91)",
-        "(C92)",
-        "&#40;C92&#41;",
-        //TODO maybe switch to (C\d\d) regex
-        "Al3asq",
-        "F4A-MDS",
-        "blad761",
-        "bonkai77",
-        "Ch4" // Channel 4 documentaries
-    ];
-    foreach ($crewNameList as $crewName) {
-        $quotedCrewName = preg_quote($crewName);
-        if (preg_match("/^" . $quotedCrewName . "[" . $seps . "]*/", $ti, $mat)) { // can't use strpos because we need $mat
-            // found it at the beginning, now remove it to be re-added later
-            $ti = preg_replace("/" . $quotedCrewName . "[" . $seps . "]*/", "", $ti);
-            $rmCrewName = $mat[0];
-            break;
+    // match convention codes like (C72) or &#40;C72&#41; (HTML entities)
+    $conventionCodeRe = "/^(\(C\d\d\)|&#40;C\d\d&#41;)[" . $seps . "]*/";
+    if (preg_match($conventionCodeRe, $ti, $mat)) {
+        $ti = preg_replace($conventionCodeRe, "", $ti);
+        $rmCrewName = $mat[0];
+    } else {
+        $crewNameList = [
+            "Doujinshi (C91)",
+            "Al3asq",
+            "F4A-MDS",
+            "blad761",
+            "bonkai77",
+            "Ch4" // Channel 4 documentaries
+        ];
+        foreach ($crewNameList as $crewName) {
+            $quotedCrewName = preg_quote($crewName);
+            if (preg_match("/^" . $quotedCrewName . "[" . $seps . "]*/", $ti, $mat)) {
+                // found it at the beginning, now remove it to be re-added later
+                $ti = preg_replace("/" . $quotedCrewName . "[" . $seps . "]*/", "", $ti);
+                $rmCrewName = $mat[0];
+                break;
+            }
         }
     }
     return [
@@ -589,7 +599,6 @@ function detectMatch($ti) {
         'seasBatStart' => $detItemOutput['seasBatStart'],
         'episBatEnd' => $detItemOutput['episBatEnd'],
         'episBatStart' => $detItemOutput['episBatStart'],
-        'isVideo' => $wereQualitiesDetected, //TODO replace this with mediaType
         'mediaType' => $detItemOutput['mediaType'],
         'itemVersion' => $detItemOutput['itemVersion'],
         'numberSequence' => $detItemOutput['numberSequence'],
@@ -614,57 +623,39 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // is there at least one number? can't have an episode otherwise (except in case of PV preview episode)
     $numbersDetected = count($matNums);
     if (isset($matNums[0])) {
+        // helper: try a match level and annotate matFnd on success
+        $tryLevel = function ($level, $ti, $seps, $wereQualitiesDetected, $numbersDetected) {
+            $func = "matchTitle{$level}_";
+            $result = $func($ti, $seps, $wereQualitiesDetected);
+            if ($result['matFnd'] !== "{$level}_") {
+                if ($numbersDetected !== $level) {
+                    $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
+                }
+                return $result;
+            }
+            return null;
+        };
         switch ($numbersDetected) {
             case 8:
             case 7:
             case 6:
-                $result = matchTitle6_($ti, $seps);
-                if ($result['matFnd'] !== "6_") {
-                    if ($numbersDetected !== 6) {
-                        $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
-                    }
-                    break;
-                }
+                $result = $tryLevel(6, $ti, $seps, $wereQualitiesDetected, $numbersDetected);
+                if ($result) break;
             case 5:
-                $result = matchTitle5_($ti, $seps);
-                if ($result['matFnd'] !== "5_") {
-                    if ($numbersDetected !== 5) {
-                        $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
-                    }
-                    break;
-                }
+                $result = $tryLevel(5, $ti, $seps, $wereQualitiesDetected, $numbersDetected);
+                if ($result) break;
             case 4:
-                $result = matchTitle4_($ti, $seps);
-                if ($result['matFnd'] !== "4_") {
-                    if ($numbersDetected !== 4) {
-                        $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
-                    }
-                    break;
-                }
+                $result = $tryLevel(4, $ti, $seps, $wereQualitiesDetected, $numbersDetected);
+                if ($result) break;
             case 3:
-                $result = matchTitle3_($ti, $seps);
-                if ($result['matFnd'] !== "3_") {
-                    if ($numbersDetected !== 3) {
-                        $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
-                    }
-                    break;
-                }
+                $result = $tryLevel(3, $ti, $seps, $wereQualitiesDetected, $numbersDetected);
+                if ($result) break;
             case 2:
-                $result = matchTitle2_($ti, $seps, $wereQualitiesDetected);
-                if ($result['matFnd'] !== "2_") {
-                    if ($numbersDetected !== 2) {
-                        $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
-                    }
-                    break;
-                }
+                $result = $tryLevel(2, $ti, $seps, $wereQualitiesDetected, $numbersDetected);
+                if ($result) break;
             case 1:
-                $result = matchTitle1_($ti, $seps, $wereQualitiesDetected);
-                if ($result['matFnd'] !== "1_") {
-                    if ($numbersDetected !== 1) {
-                        $result['matFnd'] = $numbersDetected . "_ (" . $result['matFnd'] . ")";
-                    }
-                    break;
-                }
+                $result = $tryLevel(1, $ti, $seps, $wereQualitiesDetected, $numbersDetected);
+                if ($result) break;
             default:
                 $result['matFnd'] = $numbersDetected . "_"; // didn't find any match
                 $result['favTi'] = $ti;

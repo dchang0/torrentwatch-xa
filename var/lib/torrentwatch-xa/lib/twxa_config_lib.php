@@ -318,7 +318,11 @@ function setupConfigCacheDir() {
         }
     } else {
         writeToLog("Config Cache Dir does not exist or does not have correct permissions, attempting to create: $configCacheDir\n", 1);
-        //TODO make sure $configCacheDir looks like a path
+        // validate path: must be non-empty and must not contain null bytes
+        if ($configCacheDir === '' || strpos($configCacheDir, "\0") !== false) {
+            writeToLog("Config Cache Dir path is invalid: $configCacheDir\n", -1);
+            return false;
+        }
         if (mkdir($configCacheDir, 0775, true)) {
             writeToLog("Successfully set up Config Cache Dir: $configCacheDir\n", 2);
             return true;
@@ -610,7 +614,16 @@ function addFavoriteFromParams(
                     // name is useful, check for index
                     //TODO should we check if name is unique in list of Favorites?
                     if (isset($idx) && $idx != 'new') {
-                        // idx is set and not 'new', will update
+                        // idx is set and not 'new', will update; check name is unique among other favorites
+                        foreach ($config_values['Favorites'] as $favKey => $favValue) {
+                            if ($favKey != $idx && $trimmedname == $favValue['Name']) {
+                                return [
+                                    'index' => $favKey,
+                                    'errorCode' => 2,
+                                    'errorMessage' => "\"$trimmedname\" already exists in Favorites at index \"$favKey\"."
+                                ];
+                            }
+                        }
                         $targetidx = $idx;
                     } else {
                         // idx is not set or is 'new', try add by name

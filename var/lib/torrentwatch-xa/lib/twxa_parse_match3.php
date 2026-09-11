@@ -33,7 +33,6 @@ function matchTitle3_1($ti, $seps) {
 
 function matchTitle3_2($ti, $seps) {
     // isolated YYYY MM DD or MM DD YYYY or DD MM YYYY
-    //TODO make sure MM and DD have leading zeros if needed
     $mat = [];
     $re = "/\b(\d{1,4})[$seps\-\/](\d{1,4})[$seps\-\/](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
@@ -88,15 +87,15 @@ function matchTitle3_2($ti, $seps) {
 function matchTitle3_3($ti, $seps) {
     // 1st|2nd|3rd Season ## - ##
     $mat = [];
-    $re = "/(\d{1,2})(st|nd|rd|th)[$seps]?(Season|Saison|Seizoen|Sezona)[\-$seps]{0,3}(\d{1,4})[\-$seps]{0,3}(\d{1,4})\b.*/i";
+    $re = "/(\d{1,2})(?:st|nd|rd|th)[$seps]?(?:Season|Saison|Seizoen|Sezona)[\-$seps]{0,3}(\d{1,4})[\-$seps]{0,3}(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
-            'episSt' => $mat[4],
-            'episEd' => $mat[5],
+            'episSt' => $mat[2],
+            'episEd' => $mat[3],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "3_3"
@@ -108,15 +107,15 @@ function matchTitle3_4($ti, $seps) {
     // explicit S## E### - ### or S## ( E### - ### )
     // must have minus or space between E### or E## will match
     $mat = [];
-    $re = "/(" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?[\,\-\(]?[$seps]?(" . EPISODE_WORDS . ")[$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\)?\b.*/i";
+    $re = "/(?:" . SEASON_WORDS . ")[$seps]?(\d{1,2})[$seps]?[\,\-\(]?[$seps]?(?:" . EPISODE_WORDS . ")[$seps]?(\d{1,4})[\-$seps]{1,3}(\d{1,4})[$seps]?\)?\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
-            'seasSt' => $mat[2],
-            'seasEd' => $mat[2],
-            'episSt' => $mat[4],
-            'episEd' => $mat[5],
+            'seasSt' => $mat[1],
+            'seasEd' => $mat[1],
+            'episSt' => $mat[2],
+            'episEd' => $mat[3],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "3_4"
@@ -267,15 +266,15 @@ function matchTitle3_11($ti, $seps) {
     // ## Episode ###.# but not ##E##.#
     // (no mention of Season, as that would have matched earlier, must have space to block checksum matches)
     $mat = [];
-    $re = "/\b(\d{1,2})[$seps](Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4}\.\d)\b.*/i";
+    $re = "/\b(\d{1,2})[$seps](?:Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => $mat[1],
             'seasEd' => $mat[1],
-            'episSt' => $mat[3],
-            'episEd' => $mat[3],
+            'episSt' => $mat[2],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "3_11"
@@ -287,15 +286,15 @@ function matchTitle3_12($ti, $seps) {
     // Episode ##.# - ##
     // (no mention of Season, as that would have matched earlier)
     $mat = [];
-    $re = "/(Episodes|Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4}\.\d)[\(\)$seps]?\-[$seps]?(\d{1,4})\b.*/i";
+    $re = "/(?:Episodes|Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4}\.\d)[\(\)$seps]?\-[$seps]?(\d{1,4})\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
-            'episSt' => $mat[2],
-            'episEd' => $mat[3],
+            'episSt' => $mat[1],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "3_12"
@@ -307,15 +306,15 @@ function matchTitle3_13($ti, $seps) {
     // Episode ## - ##.#
     // (no mention of Season, as that would have matched earlier)
     $mat = [];
-    $re = "/(Episodes|Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4})[\(\)$seps]?\-[$seps]?(\d{1,4}\.\d)\b.*/i";
+    $re = "/(?:Episodes|Episode|Epis\.|Epis|Epi\.|Epi|Ep\.|Ep|E\.|E)[$seps]?(\d{1,4})[\(\)$seps]?\-[$seps]?(\d{1,4}\.\d)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
             'seasSt' => 1,
             'seasEd' => 1,
-            'episSt' => $mat[2],
-            'episEd' => $mat[3],
+            'episSt' => $mat[1],
+            'episEd' => $mat[2],
             'itemVr' => 1,
             'favTi' => preg_replace($re, "", $ti),
             'matFnd' => "3_13"
@@ -696,7 +695,26 @@ function matchTitle3_23($ti, $seps) {
     }
 }
 
-//TODO v### - ### - (YYYY) but it currently gets handled by v###-###, ignoring (YYYY)
+function matchTitle3_27($ti, $seps) {
+    // VOLUME_WORDS ### - ### - (YYYY)
+    $mat = [];
+    $re = "/\b(" . VOLUME_WORDS . ")[$seps]?(\d{1,4})[$seps]?-[$seps]?(\d{1,4})[$seps]?-[$seps]?\((\d{4})\).*/i";
+    if (preg_match($re, $ti, $mat)) {
+        if ((int)$mat[4] <= getdate()['year'] && (int)$mat[4] > 1895) {
+            return [
+                'medTyp' => MEDTYP_VIDEO,
+                'numSeq' => NUMSEQ_SEASON_VOLUME,
+                'seasSt' => $mat[4],
+                'seasEd' => $mat[4],
+                'episSt' => $mat[2],
+                'episEd' => $mat[3],
+                'itemVr' => 1,
+                'favTi' => preg_replace($re, "", $ti),
+                'matFnd' => "3_27"
+            ];
+        }
+    }
+}
 
 function matchTitle3_24($ti, $seps) {
     // EEE - EEE - (YYYY)

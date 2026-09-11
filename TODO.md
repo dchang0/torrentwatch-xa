@@ -4,29 +4,25 @@ TODO List
 Next Up
 -------
 
-- `twxa_parse.php:200` — [Bug] handle BD1280x720p: `detectResolution()`'s `$bDHRegEx` matches the `BD1280` part (1280 is not in the allowed list), and because the standalone-BD / `###p|i` / `WxH` checks form an `if/else if` chain, the `720p` inside `BD1280x720p` is never detected. Convert the chain into sequential `if ($resolution === "")` blocks so a non-matching BD number falls through to `$hRegEx`, which catches `720p`; verify BD720p/BD1080p/BD### still work and that no resolution is double-detected
-
 Source TODO Comments
 --------------------
 
 ### `javascript/torrentwatch-xa.js`
 
-- `torrentwatch-xa.js:106` — [Performance] replace hide() with style.display = 'none'
 - `torrentwatch-xa.js:142` — [Performance] maybe move this block outside the .each loop
 - `torrentwatch-xa.js:280` — [Cleanup] simplify JSON error handling (start)
 - `torrentwatch-xa.js:314` — [Cleanup] simplify JSON error handling (end)
 - `torrentwatch-xa.js:391` — [Feature] detect if item is in download cache (is managed by torrentwatch-xa) and change appearance somehow
 - `torrentwatch-xa.js:530` — [Feature] possibly update button bar for items in filters other than Transmission
-- `torrentwatch-xa.js:587` — [Bug] test .tc_downloading; might need to separate from .st_waitTorCheck
+- `torrentwatch-xa.js:597` — [Bug] test .tc_downloading; might need to separate from .st_waitTorCheck
 - `torrentwatch-xa.js:612` — [Bug] we might need to do this only for .tc_downloading
 - `torrentwatch-xa.js:614` — [Bug] might need to set .torInfo text to nothing
-- `torrentwatch-xa.js:650` — [Bug] didn't work when querySelector returns null (commented-out code)
-- `torrentwatch-xa.js:654` — [Cleanup] test the switch from .val() to .value (commented-out code)
+- `torrentwatch-xa.js:660` — [Bug] didn't work when querySelector returns null (commented-out code)
+- `torrentwatch-xa.js:664` — [Cleanup] test the switch from .val() to .value (commented-out code)
 - `torrentwatch-xa.js:678` — [Bug] maybe block other interim states (do not show start button on st_waitTorCheck, etc.)
 - `torrentwatch-xa.js:882` — [Info] lowering this value causes getClientData to update faster
 - `torrentwatch-xa.js:958` — [Feature] maybe scroll to the newly-added name and highlight it
 - `torrentwatch-xa.js:1033` — [Feature] maybe scroll to the newly-added name and highlight it
-- `torrentwatch-xa.js:1083` — [Bug] also needs to handle episode with length > 8 chars
 - `torrentwatch-xa.js:1104` — [Feature] finish code to "pin open" Feeds panel when Save button is pressed
 - `torrentwatch-xa.js:1137` — [Cleanup] does this really need #show_legend and #clear_cache?
 - `torrentwatch-xa.js:1300` — [Cleanup] may not need window.favving any more after changing addFavoriteFromgET()
@@ -35,13 +31,7 @@ Source TODO Comments
 
 ### `torrentwatch-xa.php`
 
-- `torrentwatch-xa.php:16` — [Cleanup] `array_keys($_GET);` is a no-op statement
-- `torrentwatch-xa.php:195` — [Cleanup] guard access to `$config_values['Settings']['Check for Updates']` instead of relying on raw array access
-- `torrentwatch-xa.php:141` — [Cleanup] `display_history()`, `display_global_config()`, `display_legend()`, and `display_clearCache()` discard their return values; the output survives only because the abandoned `ob_start()` buffer flushes at `exit()`. Use `ob_get_clean()` and echo the return value consistently, like `display_superfavorites()` (see call sites at lines 146, 208, 211, 214, 217)
-- `torrentwatch-xa.php:226` — [Bug] unescaped `$phpSelf`/`$requestuRI` interpolated into a JS alert string; a crafted URL containing a quote breaks the JavaScript or enables self-XSS
-- `torrentwatch-xa.php:727` — [Cleanup] `writeToLog()` logs a raw float `$main_timer` as the start time; use a formatted `date()` timestamp instead
-- `torrentwatch-xa.php:641` — [Bug] check all Also Save Dir paths in all Favorites
-- `torrentwatch-xa.php:667` — [Cleanup] replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
+- `torrentwatch-xa.php:638` — [Bug] check all Also Save Dir paths in all Favorites
 
 ### `twxa_cli.php`
 
@@ -65,7 +55,7 @@ Source TODO Comments
 
 ### `lib/twxa_cache.php`
 
-- `twxa_cache.php:147` — [Feature] does Ignore Batches need to be implemented here?
+- `twxa_cache.php:222` — [Feature] does Ignore Batches need to be implemented here?
 - `twxa_cache.php` — [Feature] implement the periodic cache-sync pass that populates the client-metadata fields currently reserved (as `null`) in the `dl_*.json` schema introduced in 1.11.0, so the download cache tracks progress and seeding over time (the "seeded amounts" extensibility goal). Today the cache is write-only at download time: `add_cache()` (`twxa_cache.php:104`) and `transmission_add_torrent()` (`twxa_torrent.php:383`) store only what is available then (`torHash`, `torId`, `downloadDir`, `seedRatio`, plus the `parsed` block and provenance), leaving `addedDate`, `totalSize`, `doneDate`, `status`, `name`, `uploadRatio`, `percentDone`, and `leftUntilDone` permanently `null`
   - proposed approach: add a new function, e.g. `syncCacheWithClientData($torrents)`, to `twxa_cache.php` and call it from `auto_del_seeded_torrents()` (`twxa_torrent.php:62`), which already fetches the complete torrent list every run via `getClientData(false)` (`twxa_torrent.php:5`); build a `hashString → torrent` map, then for each `dl_*.json` entry that has a `torHash`, merge the live fields into the cache file with `updateCacheData()`
   - fields to persist (stable/progress data drawn from the `getClientData()` field list): `addedDate`, `doneDate`, `uploadRatio`, `percentDone`, `leftUntilDone`, `totalSize`, `status`, `name`, and optionally `seedRatioLimit` and `errorString`; do not persist transient rates (`rateDownload`, `rateUpload`, `eta`, peer counts)
@@ -76,13 +66,7 @@ Source TODO Comments
 
 ### `lib/twxa_config_lib.php`
 
-- `twxa_config_lib.php:321` — [Cleanup] make sure $configCacheDir looks like a path
-- `twxa_config_lib.php:611` — [Feature] should we check if name is unique in list of Favorites?
-
 ### `lib/twxa_feed.php`
-
-- `twxa_feed.php:117` — [Cleanup] validate URLs in array using filter_var($url, FILTER_VALIDATE_URL)
-- `twxa_feed.php:563` — [Bug] also tie $startedDownload to successful write to cache
 
 ### `lib/twxa_feed_parser_wrapper.php`
 
@@ -92,16 +76,11 @@ Source TODO Comments
 
 ### `lib/twxa_html.php`
 
-- `twxa_html.php:28` — [Cleanup] remove this if PHP side is capable of verifying completed downloads
+- `twxa_html.php:16` — [Cleanup] remove this if PHP side is capable of verifying completed downloads
 
 ### `lib/twxa_parse.php`
 
-- `twxa_parse.php:414` — [Bug] cascade down through, removing immediately-surrouding dashes
-- `twxa_parse.php:431` — [Question] why do these HTML entities make it into our $ti in the first place?
-- `twxa_parse.php:441` — [Cleanup] maybe switch to (C\d\d) regex
-- `twxa_parse.php:508` — [Feature] detect video-related words like Sub and Dub
-- `twxa_parse.php:523,577-580` — [Bug] FIXED in 1.11.0: `detectMatch()`'s `favTitle` is not guaranteed to be a literal prefix of the raw title (it is post-processed by `removeEmptyParens()` line 523, `collapseExtraSeparators()`, and crew-name reattachment lines 577-580). `check_cache_episode()` previously relied on `favTitle` being a prefix of the cache filename (`dl_` + `sanitizeFilename($title)`) and extracted that prefix with `substr($file, 3, strlen($guess['favTitle']))`; when `favTitle` was transformed relative to the raw title the match failed, causing duplicate downloads. The download cache now stores the parsed metadata in `dl_*.json` and `check_cache_episode()` compares the stored `favTitle` directly, so the comparison no longer depends on `favTitle` being a filename prefix
-- `twxa_parse.php:592` — [Cleanup] replace this with mediaType
+- `twxa_parse.php:506` — [Feature] detect video-related words like Sub and Dub
 
 ### `lib/twxa_parse_match.php`
 
@@ -135,27 +114,16 @@ Source TODO Comments
 
 - `twxa_parse_match2.php:71` — [Feature] switch to handle these patterns
 - `twxa_parse_match2.php:78` — [Feature] add S01 PART2 as part of word##word##
-- `twxa_parse_match2.php:1073` — [Cleanup] add $detVid since we have it already
 - `twxa_parse_match2.php:1168` — [Bug] use smaller threshold for videos, larger one for print media
 
 ### `lib/twxa_parse_match3.php`
 
-- `twxa_parse_match3.php:36` — [Bug] make sure MM and DD have leading zeros if needed
-- `twxa_parse_match3.php:692` — [Bug] v### - ### - (YYYY) but it currently gets handled by v###-###, ignoring (YYYY)
-
 ### `lib/twxa_torrent.php`
 
-- `twxa_torrent.php:45` — [Bug] maybe test || $checkCache === false too
-- `twxa_torrent.php:112` — [Cleanup] does this errorDialog work? Replace it with outputErrorDialog() (also, this echo pollutes stdout when reached from twxa_cli.php/cron)
-- `twxa_torrent.php:154` — [Cleanup] break this out into a small function
-- `twxa_torrent.php:156` — [Cleanup] does this errorDialog work? Replace it with outputErrorDialog()
-- `twxa_torrent.php:413` — [Feature] if $fav is null, then loop through the Favorites to see if the title matches a Favorite and get the Favorite's Download Dir
-- `twxa_torrent.php:500` — [Feature] search through the retrieved content itself using detectahrefsInString()
+- `twxa_torrent.php:446` — [Feature] if $fav is null, then loop through the Favorites to see if the title matches a Favorite and get the Favorite's Download Dir
+- `twxa_torrent.php:533` — [Feature] search through the retrieved content itself using detectahrefsInString()
 
 ### `lib/twxa_tools.php`
-
-- `twxa_tools.php:135` — [Bug] failed to write, send error to HTML
-- `twxa_tools.php:152` — [Bug] writeToLog called with 3 args (message, rc."\n", 2) but it only takes 2; the "\n" and level are discarded, so the message is logged at the wrong level
 
 Bugfixes
 --------

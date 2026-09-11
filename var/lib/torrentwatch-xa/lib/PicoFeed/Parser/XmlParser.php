@@ -201,6 +201,10 @@ class XmlParser
                 return $matches[0];
             }
 
+            if (!isset($ns[$matches[1]])) {
+                return $matches[0];
+            }
+
             return '*[namespace-uri()="'.$ns[$matches[1]].'" and local-name()="'.$matches[2].'"]';
         },
         $query);

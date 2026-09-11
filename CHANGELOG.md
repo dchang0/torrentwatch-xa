@@ -1095,3 +1095,41 @@ Code Changes
 - transmission_add_torrent() and add_cache() both write to the cache through updateCacheData(), so the torrent hash and the parsed metadata merge regardless of write order
 - add_cache() now records provenance (feed name/URL, link, download type) from its call sites
 - fixed the Transmission (torrent client) item matcher in processTransmissionData() so items in all filters (not just the Transmission filter) keep receiving live progress, statistics, and downloading/downloaded status updates; this bug, introduced in 1.9.6, caused a scoped selector to only update the Transmission-filter copy after the first poll
+
+1.12.0
+
+Code Changes
+
+- **Full rewrite of `detectResolution()`** in `twxa_parse.php`: extracted `resolveAspectRatio()` and `qualityLabelFromHeight()` helpers, added `BD####x####p` pattern (fixes the BD1280x720p bug), switched from else-if chain to sequential `if ($resolution === "")` blocks, expanded valid heights via `RESOLUTION_HEIGHTS` constant (adds 240, 360, 768, 800, 900, 1024, 1050, 1440, 2160), and reordered patterns (###p|i first, then BD###, BD WxH, WxH) so BD-prefixed formats are caught by their specific patterns before the general WxH regex
+- fixed `checkConfigCacheDir()` path validation: `FILTER_VALIDATE_PATH` does not exist in PHP (causes fatal error in PHP 8), replaced with null-byte check
+- fixed `matchTitle3_27()` regex: missing second dash separator between volume range and year, so `Vol.3 - 5 - (2024)` never matched
+- converted unused regex capture groups to non-capturing groups (Phase 0d) in `matchTitle2_1`, `matchTitle2_2`, `matchTitle2_3`, `matchTitle2_5`, `matchTitle2_6`, `matchTitle2_7`, `matchTitle1_1_1`, `matchTitle1_1_11`, `matchTitle3_3`, `matchTitle3_4`, `matchTitle3_11`, `matchTitle3_12`, `matchTitle3_13`, reducing unnecessary capture overhead and shifting `$mat[N]` indices accordingly
+
+- fixed `writeToLog` call in `notifyByEmail()`: removed trailing `"\n"` from the message string, changed log level from DBG (2) to INF (1), and improved return code formatting for readability
+- fixed a potential XSS vulnerability in the bad-parameter error path by adding `JSON_HEX_TAG` to `json_encode()` so user-controlled values like `$phpSelf` and `$requestuRI` cannot break out of the script tag via `</script>`
+- added `outputError()` to `twxa_tools.php` for context-aware error output (writes to stderr in CLI, echoes HTML in web), and replaced the inline `echo` error dialogs in `twxa_torrent.php` with calls to it
+- `writeToLog()` now surfaces log-file write failures to the user via `outputError()` instead of silently swallowing them
+- removed the unused `isVideo` field from `detectMatch()` output; `mediaType` already provides the same information
+- extracted the duplicated Transmission session-ID-file writability check into `checkSessionIdFileWritable()` in `twxa_torrent.php`
+- `detectAudioCodecs()` now removes dashes that immediately surrounded a removed codec, so titles like `Show.Name.-.FLAC.Episode` no longer leave orphaned dashes after codec stripping
+- removed a dead `array_keys($_GET)` call in `parse_options()`
+- `checkVersion()` now uses `filter_input(INPUT_COOKIE, 'VERSION-CHECK')` instead of direct `$_COOKIE` access
+- `detectNumericCrew()` now matches convention codes like `(C72)` or `&#40;C72&#41;` with a single `(C\d\d)` regex instead of listing each code individually
+- removed stale TODO from `processMatchedItemDownload()` in `twxa_feed.php`: `$startedDownload` was already correctly tied to a successful `add_cache()` write
+- `checkConfigCacheDir()` in `twxa_config_lib.php` now validates the path (non-empty, no null bytes) before attempting `mkdir()`, preventing invalid paths from being passed to the filesystem
+- `matchTitle2_23()` in `twxa_parse_match2.php` now branches on `$detVid` for the "#### is probably part of the title" case, returning `MEDTYP_VIDEO` when video is detected and `MEDTYP_PRINT` otherwise (previously hardcoded to `MEDTYP_VIDEO` regardless)
+- `detectAllTorrentLinks()` in `twxa_feed.php` now validates extracted URLs with `filter_var(FILTER_VALIDATE_URL)`, discarding invalid entries while preserving `magnet:` links
+- `updateFavoriteFromGET()` in `twxa_config_lib.php` now checks that the updated name is unique among other Favorites before saving, preventing duplicate display names
+- un-commented bare season-word switch cases (`seas`, `sea`, `temp`, `t`) in `matchTitle2_4()`, `matchTitle2_12()`, and `matchTitle2_14()` in `twxa_parse_match2.php` so the switch labels match the regex patterns in `SEASON_WORDS`
+- extracted the repeated match-level fall-through block in `detectItem()` (`twxa_parse.php`) into a `$tryLevel` closure, reducing ~50 lines of duplicated switch logic to ~20
+- added `matchTitle3_27()` in `twxa_parse_match3.php` to match `VOLUME_WORDS ### - ### - (YYYY)` (e.g. "Vol.3 - 5 - (2024)") before the level-2 `v###-###` pattern can consume it and drop the year
+- replaced static `$circuitOpen` boolean in `transmission_rpc()` with timestamp-based circuit breaker (`$circuitOpenTime`) that auto-resets after 60 seconds, preventing permanent Apache worker lockout after transient connection failures (e.g. AWS maintenance windows)
+- removed static `$sessionIdFetchFailed` flag in `transmission_rpc()` so session ID can be re-fetched after transmission-daemon restarts instead of permanently locking out the worker
+- added `is_string()` guards before `preg_match` on curl results in `transmission_rpc()` and `transmission_sessionId()` to prevent TypeError when curl returns `false` on connection failure
+- added null checks on `transmission_rpc()` return values in `moveTorrent()` and `transmission_add_torrent()` to prevent fatal errors when transmission-daemon is unreachable
+- added logging for circuit breaker open/reset events and session ID fetch failures in `transmission_rpc()` and `transmission_sessionId()`
+- fixed file handle leak in `transmission_sessionId()`: added `fclose()` after `fopen`/`fread`, and suppressed `unlink()` warning on deletion failure with `@`
+- `transmission_sessionId()` and `transmission_rpc()` now return `null` explicitly on failure instead of implicit null
+- fixed `matchTitle1_()` in `twxa_parse_match.php`: changed `$result = null` to `$result = []` and updated the guard from `is_null($result)` to `!isset($result['matFnd'])`, preventing undefined index crash when no sub-pattern matches (introduced in v1.10.0 when `!is_null` guard was removed during `$tryLevel` refactor)
+- fixed `DateParser.php` in PicoFeed: added null check on `DateTime::getLastErrors()` return value (returns `false` in PHP 8.1+), preventing "Trying to access array offset on false" warning on every feed item parse
+- fixed `XmlParser.php` in PicoFeed: added `isset()` guard on namespace prefix lookup in `replaceXPathPrefixWithNamespaceURI()`, preventing "Undefined array key" warning when RSS/Atom feeds use namespace prefixes not present in the declared namespaces

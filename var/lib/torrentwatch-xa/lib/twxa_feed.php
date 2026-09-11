@@ -93,7 +93,10 @@ function detectAllTorrentLinks($item) {
     }
 // make links unique in the array
     $uniqueLinks = array_unique($links, SORT_STRING);
-    //TODO validate URLs in array using filter_var($url, FILTER_VALIDATE_URL);
+    // validate URLs; keep magnet: links (not valid under FILTER_VALIDATE_URL) and discard the rest if invalid
+    $uniqueLinks = array_filter($uniqueLinks, function ($url) {
+        return strpos($url, 'magnet:') === 0 || filter_var($url, FILTER_VALIDATE_URL) !== false;
+    });
     return $uniqueLinks;
 }
 

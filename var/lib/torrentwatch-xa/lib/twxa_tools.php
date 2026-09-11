@@ -1,6 +1,6 @@
 <?php
 
-define('TWXA_VERSION', '1.11.0');
+define('TWXA_VERSION', '1.12.0');
 
 global $config_values;
 
@@ -17,6 +17,13 @@ require_once("twxa_parse.php");
 require_once("twxa_feed.php");
 require_once("twxa_html.php");
 
+function outputError($message) {
+    if (php_sapi_name() === 'cli') {
+        fwrite(STDERR, "ERROR: $message\n");
+    } else {
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$message</div>";
+    }
+}
 
 function getArrayValueByKey($array, $key, $default = '') {
     // checks array: if a key is set, return value or default
@@ -129,7 +136,7 @@ function writeToLog($string, $lvl = -1) {
     if (!isset($config_values['Settings']['Log Level']) || (int) $config_values['Settings']['Log Level'] >= $lvl) {
         // write plain text to log file
         if (file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND) === false) {
-            //TODO failed to write, send error to HTML
+            outputError("Failed to write to log file: " . get_logFile());
         }
     }
 }
@@ -149,7 +156,7 @@ function notifyByEmail($body, $subject) {
     $hELOOverride = $config_values['Settings']['HELO Override'];
 
     $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
-    writeToLog($output['message'] . $output['rc'] . "\n", 2);
+    writeToLog($output['message'] . " (rc=" . $output['rc'] . ")", 1);
 }
 
 function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body) {

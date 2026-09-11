@@ -23,13 +23,13 @@ Common setups:
 Status
 ===============
 
-I've posted 1.11.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.12.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-Yet another huge batch of low-risk and medium-risk bugs have been fixed, including a small bug with the progress bar introduced in 1.9.6.
+The biggest improvement is to the resolution detection mechanism, followed by improvements to the logging functions.
 
-The per-item context menu has been removed (commented-out) since it was redundant and just takes up space.
+Some bugs introduced since 1.9.5 have been fixed including a rarely-triggered bug in 1.11.0 that blocked Apache2 from contacting transmission-daemon.
 
-Download cache files are now stored in .json format with far more information inside to help with tracking downloads through the different states. You should clear your old download cache files as they are now ignored.
+I also started to work on medium-risk bugs, now that the low-risk bugs have all largely been fixed.
 
 Please report any bugs using Github Issues.
 

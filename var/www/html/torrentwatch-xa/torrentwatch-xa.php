@@ -13,7 +13,6 @@ require_once("twxa_tools.php");
 function parse_options() {
     global $config_values;
 
-    array_keys($_GET);
     $commands = array_keys($_GET);
     if (empty($commands)) {
         return false;
@@ -234,7 +233,7 @@ function parse_options() {
             } else {
                 $msg = "Bad parameters";
             }
-            $output = "<script type='text/javascript'>alert(" . json_encode($msg) . ");</script>";
+            $output = "<script type='text/javascript'>alert(" . json_encode($msg, JSON_HEX_TAG) . ");</script>";
     }
 
     if (isset($output)) {
@@ -662,7 +661,7 @@ function checkPathReadableAndWriteable($path, $description, $uID) {
 }
 
 function checkVersion() {
-    if (!isset($_COOKIE['VERSION-CHECK'])) { //TODO replace with filter_input(INPUT_COOKIE, 'VERSION-CHECK')
+    if (filter_input(INPUT_COOKIE, 'VERSION-CHECK') === null) {
         $curlOptions[CURLOPT_USERAGENT] = "torrentwatch-xa/" . TWXA_VERSION;
         $latestFromWebsite = getCurl('https://raw.githubusercontent.com/dchang0/torrentwatch-xa/refs/heads/master/VERSION.txt', $curlOptions);
         if (is_string($latestFromWebsite) && preg_match('/^\d+\.\d+\.\d+$/', $latestFromWebsite)) {
