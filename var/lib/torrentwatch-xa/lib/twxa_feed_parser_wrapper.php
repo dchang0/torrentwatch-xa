@@ -63,7 +63,15 @@ class FeedParserWrapper {
             $this->dateFormat = $dateFormat;
         }
         if ($timeZone !== '') {
-            $this->timeZone = $timeZone;
+            // validate now: convertDateTimeToString() runs per feed-date and an uncaught
+            // DateTimeZone exception there is fatal for the whole parse/cron run
+            try {
+                new DateTimeZone($timeZone);
+                $this->timeZone = $timeZone;
+            } catch (Throwable $e) {
+                writeToLog("Invalid Time Zone \"$timeZone\"; using UTC instead: " . $e->getMessage() . "\n", -1);
+                $this->timeZone = 'UTC';
+            }
         } else {
             $this->timeZone = 'UTC';
         }
@@ -73,7 +81,8 @@ class FeedParserWrapper {
                 $timeTillExpiry = filemtime($cacheFile) + $cacheExpires - time();
                 writeToLog("Feed cache expires in $timeTillExpiry" . "s, skipping refresh: $file\n", 2);
                 // cache file is new enough
-                $this->feedData = unserialize(join('', file($cacheFile)));
+                $cacheLines = @file($cacheFile);
+                $this->feedData = $cacheLines === false ? false : unserialize(join('', $cacheLines), ['allowed_classes' => false]);
                 // set 'cached' to 1 only if cached file is correct
                 if ($this->feedData) {
                     $this->feedData['cached'] = 1;
@@ -84,8 +93,14 @@ class FeedParserWrapper {
                 $this->parse($file);
                 $serialized = serialize($this->feedData);
                 if ($f = fopen($cacheFile, 'w')) {
-                    fwrite($f, $serialized, strlen($serialized));
+                    if (fwrite($f, $serialized, strlen($serialized)) !== strlen($serialized)) {
+                        writeToLog("Failed to write feed cache file: $cacheFile\n", 0);
+                    }
                     fclose($f);
+                } else {
+                    // no dir creation happens for dl_cache upstream, so a missing/unwritable
+                    // cache dir otherwise re-downloads every feed on every run with no trace
+                    writeToLog("Failed to open feed cache file for writing: $cacheFile\n", 0);
                 }
                 if ($this->feedData) {
                     $this->feedData['cached'] = 0;
@@ -116,8 +131,6 @@ class FeedParserWrapper {
                     $resource->getContent(),
                     $resource->getEncoding()
             );
-            //TODO figure out why magnet: links are filtered out by the ContentFilter even though they are supposed to be whitelisted, then re-enable content filtering
-            $parser->disableContentFiltering();
             // get a feed object
             $feed = $parser->execute();
             // print the feed properties with the magic method __toString()
@@ -165,9 +178,18 @@ class FeedParserWrapper {
     function changeDataEncoding($input, $outputEncoding) {
         if (function_exists('mb_detect_encoding')) {
             if (is_array($input)) {
-                $encoding = mb_detect_encoding(print_r($input, true));
+                if (PHP_VERSION_ID < 70200) {
+                    return $input;
+                }
+                $converted = [];
+                foreach ($input as $key => $value) {
+                    $converted[$key] = $this->changeDataEncoding($value, $outputEncoding);
+                }
+                return $converted;
             } else if (is_string($input)) {
                 $encoding = mb_detect_encoding($input);
+            } else {
+                return $input;
             }
             switch ($encoding) {
                 case 'ASCII':
@@ -190,8 +212,8 @@ class FeedParserWrapper {
 
     private function convertDateTimeToString($dateTimeObject, $dateFormat = 'M d, H:i') {
         $dateString = '';
-        if ($dateFormat !== '' && isset($dateTimeObject) && $dateTimeObject instanceof DateTime) {
-            $dateTimeObject->setTimezone(new DateTimeZone($this->timeZone));
+        if ($dateFormat !== '' && isset($dateTimeObject) && $dateTimeObject instanceof DateTimeInterface) {
+            $dateTimeObject = $dateTimeObject->setTimezone(new DateTimeZone($this->timeZone));
             $dateString = date_format($dateTimeObject, $dateFormat);
         }
         return $dateString;

@@ -6,6 +6,11 @@ header("Cache-Control: no-cache, must-revalidate");
 
 error_reporting(E_ALL);
 
+if (PHP_VERSION_ID < 70000) {
+    header('HTTP/1.1 500 Internal Server Error');
+    die('torrentwatch-xa requires PHP 7.0 or later (this server is running PHP ' . PHP_VERSION . ")\n");
+}
+
 require_once("config.php");
 require_once("twxa_tools.php");
 
@@ -26,29 +31,29 @@ function parse_options() {
             echo getClientData();
             exit;
         case 'delTorrent':
-            if (isset($_REQUEST['trash'])) {
-                if (isset($_REQUEST['checkCache'])) {
-                    $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], $_REQUEST['checkCache']);
+            if (isset($_GET['trash'])) {
+                if (isset($_GET['checkCache'])) {
+                    $response = delTorrent(getArrayValueByKey($_GET, 'delTorrent'), $_GET['trash'], $_GET['checkCache']);
                 } else {
-                    $response = delTorrent($_REQUEST['delTorrent'], $_REQUEST['trash'], false);
+                    $response = delTorrent(getArrayValueByKey($_GET, 'delTorrent'), $_GET['trash'], false);
                 }
             } else {
-                if (isset($_REQUEST['checkCache'])) {
-                    $response = delTorrent($_REQUEST['delTorrent'], false, $_REQUEST['checkCache']);
+                if (isset($_GET['checkCache'])) {
+                    $response = delTorrent(getArrayValueByKey($_GET, 'delTorrent'), false, $_GET['checkCache']);
                 } else {
-                    $response = delTorrent($_REQUEST['delTorrent'], false, false);
+                    $response = delTorrent(getArrayValueByKey($_GET, 'delTorrent'), false, false);
                 }
             }
             echo "$response";
             exit;
         case 'stopTorrent':
-            echo stopTorrent($_REQUEST['stopTorrent']);
+            echo stopTorrent(getArrayValueByKey($_GET, 'stopTorrent'));
             exit;
         case 'startTorrent':
-            echo startTorrent($_REQUEST['startTorrent']);
+            echo startTorrent(getArrayValueByKey($_GET, 'startTorrent'));
             exit;
         case 'moveTo':
-            echo moveTorrent($_REQUEST['moveTo'], $_REQUEST['torHash']);
+            echo moveTorrent(getArrayValueByKey($_GET, 'moveTo'), getArrayValueByKey($_GET, 'torHash'));
             exit;
         case 'updateSuperFavorite':
             $response = updateSuperFavoriteFromgET();
@@ -66,13 +71,13 @@ function parse_options() {
             updateFeed();
             break;
         case 'clearCache':
-            clear_cache(filter_input(INPUT_GET, 'type'));
+            clear_cache(filter_input(INPUT_GET, 'type') ?? '');
             break;
         case 'setGlobals':
             updateGlobalConfig();
             break;
         case 'addFavorite':
-            $tmp = detectMatch(html_entity_decode($_GET['title']));
+            $tmp = detectMatch(html_entity_decode(getArrayValueByKey($_GET, 'title')));
             $_GET['name'] = trim(strtr($tmp['favTitle'], "._", "  "));
             switch ($config_values['Settings']['Match Style']) {
                 case "simple":
@@ -101,7 +106,7 @@ function parse_options() {
             }
             exit;
         case 'hide':
-            addHidden($_GET['hide']);
+            addHidden(getArrayValueByKey($_GET, 'hide'));
             exit;
         case 'delHidden':
             if (!empty($_GET['unhide'])) {
@@ -111,9 +116,9 @@ function parse_options() {
         case 'dlTorrent':
             $emptyFav = null;
             $r = clientAddTorrent(
-                    filter_input(INPUT_GET, 'link'),
-                    filter_input(INPUT_GET, 'linkType'),
-                    filter_input(INPUT_GET, 'title'),
+                    filter_input(INPUT_GET, 'link') ?? '',
+                    filter_input(INPUT_GET, 'linkType') ?? '',
+                    filter_input(INPUT_GET, 'title') ?? '',
                     getArrayValueByKey($config_values['Settings'], 'Client'),
                     getArrayValueByKey($config_values['Settings'], 'Download Dir'),
                     getArrayValueByKey($config_values['Settings'], 'Deep Directories'),
@@ -122,17 +127,17 @@ function parse_options() {
                     getArrayValueByKey($config_values['Settings'], 'Also Save Torrent Files'),
                     getArrayValueByKey($config_values['Settings'], 'Also Save Dir'),
                     $emptyFav, // &$fav
-                    filter_input(INPUT_GET, 'feed'),
+                    filter_input(INPUT_GET, 'feed') ?? '',
                     $config_values['Feeds'],
                     getArrayValueByKey($config_values['Settings'], 'Default Seed Ratio')
             );
             if ($r['errorCode'] === 0) {
                 $torHash = get_torHash(add_cache(
-                        filter_input(INPUT_GET, 'title'),
+                        filter_input(INPUT_GET, 'title') ?? '',
                         [
-                            'feedUrl' => filter_input(INPUT_GET, 'feed'),
-                            'link' => filter_input(INPUT_GET, 'link'),
-                            'downloadType' => filter_input(INPUT_GET, 'linkType')
+                            'feedUrl' => filter_input(INPUT_GET, 'feed') ?? '',
+                            'link' => filter_input(INPUT_GET, 'link') ?? '',
+                            'downloadType' => filter_input(INPUT_GET, 'linkType') ?? ''
                         ]
                 ));
                 if (is_string($torHash) && $torHash !== '') {
@@ -149,7 +154,7 @@ function parse_options() {
             if (file_exists($downloadHistoryFile)) {
                 unlink($downloadHistoryFile);
             }
-            display_history();
+            echo display_history();
             closehTML($html_out);
             exit(0);
         case 'get_client':
@@ -177,22 +182,22 @@ function parse_options() {
             echo $config_values['Settings']['Disable Hide List'];
             exit;
         case 'sendTestEmail':
-            $fromName = filter_input(INPUT_GET, 'fromName');
-            $fromEmail = filter_input(INPUT_GET, 'fromEmail');
-            $toEmail = filter_input(INPUT_GET, 'toEmail');
-            $smtpServer = filter_input(INPUT_GET, 'smtpServer');
-            $smtpPort = filter_input(INPUT_GET, 'smtpPort');
-            $smtpAuthentication = filter_input(INPUT_GET, 'smtpAuthentication');
-            $smtpEncryption = filter_input(INPUT_GET, 'smtpEncryption');
-            $smtpUser = filter_input(INPUT_GET, 'smtpUser');
-            $smtpPassword = filter_input(INPUT_GET, 'smtpPassword');
+            $fromName = filter_input(INPUT_POST, 'fromName') ?? '';
+            $fromEmail = filter_input(INPUT_POST, 'fromEmail') ?? '';
+            $toEmail = filter_input(INPUT_POST, 'toEmail') ?? '';
+            $smtpServer = filter_input(INPUT_POST, 'smtpServer') ?? '';
+            $smtpPort = filter_input(INPUT_POST, 'smtpPort') ?? '';
+            $smtpAuthentication = filter_input(INPUT_POST, 'smtpAuthentication') ?? '';
+            $smtpEncryption = filter_input(INPUT_POST, 'smtpEncryption') ?? '';
+            $smtpUser = filter_input(INPUT_POST, 'smtpUser') ?? '';
+            $smtpPassword = filter_input(INPUT_POST, 'smtpPassword') ?? '';
             if ($smtpPassword === false) {
                 $smtpPassword = '';
             }
-            $hiddensMTPPassword = str_repeat('*', strlen(decryptsMTPPassword($smtpPassword)));
-            $hELOOverride = filter_input(INPUT_GET, 'hELOOverride');
+            $hiddenSMTPPassword = str_repeat('*', strlen(decryptSMTPPassword($smtpPassword)));
+            $hELOOverride = filter_input(INPUT_POST, 'hELOOverride') ?? '';
             $subject = "Test email from torrentwatch-xa";
-            $body = "Test email from torrentwatch-xa sent at " . date("c") . " with these settings:\n\nFrom: Name = $fromName\nFrom: Email = $fromEmail\nTo: Email = $toEmail\nSMTP Server = $smtpServer\nSMTP Port = $smtpPort\nSMTP Authentication = $smtpAuthentication\nSMTP Encryption = $smtpEncryption\nSMTP User = $smtpUser\nSMTP Password = $hiddensMTPPassword\nHELO Override = $hELOOverride\n\nThe Configure > Trigger > Test button does not save these settings to the config file. Remember to click the Configure > Trigger > Save button if necessary.";
+            $body = "Test email from torrentwatch-xa sent at " . date("c") . " with these settings:\n\nFrom: Name = $fromName\nFrom: Email = $fromEmail\nTo: Email = $toEmail\nSMTP Server = $smtpServer\nSMTP Port = $smtpPort\nSMTP Authentication = $smtpAuthentication\nSMTP Encryption = $smtpEncryption\nSMTP User = $smtpUser\nSMTP Password = $hiddenSMTPPassword\nHELO Override = $hELOOverride\n\nThe Configure > Trigger > Test button does not save these settings to the config file. Remember to click the Configure > Trigger > Save button if necessary.";
             $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
             echo $output['message'];
             exit;
@@ -203,7 +208,7 @@ function parse_options() {
             }
             exit;
         case 'get_dialog_data':
-            switch (filter_input(INPUT_GET, 'get_dialog_data')) {
+            switch (filter_input(INPUT_GET, 'get_dialog_data') ?? '') {
                 case '#superfavorites':
                     echo display_superfavorites();
                     exit;
@@ -211,16 +216,16 @@ function parse_options() {
                     echo display_favorites();
                     exit;
                 case '#configuration':
-                    display_global_config();
+                    echo display_global_config();
                     exit;
                 case '#history':
-                    display_history();
+                    echo display_history();
                     exit;
                 case '#show_legend':
-                    display_legend();
+                    echo display_legend();
                     exit;
                 case '#clear_cache':
-                    display_clearCache();
+                    echo display_clearCache();
                     exit;
                 default:
                     exit;
@@ -228,7 +233,7 @@ function parse_options() {
         default:
             $phpSelf = filter_input(INPUT_SERVER, 'PHP_SELF');
             $requestuRI = filter_input(INPUT_SERVER, 'REQUEST_URI');
-            if ($phpSelf !== false && $requestuRI !== false) {
+            if (is_string($phpSelf) && is_string($requestuRI)) {
                 $msg = "Bad parameters passed to $phpSelf:  $requestuRI";
             } else {
                 $msg = "Bad parameters";
@@ -370,7 +375,7 @@ function display_global_config() {
 
     ob_start();
     require('templates/global_config.php');
-    return ob_get_contents();
+    return ob_get_clean();
 }
 
 function display_superfavorites_info($item, $key) { // $key gets fed into superfavorites_info.php
@@ -384,14 +389,14 @@ function display_superfavorites_info($item, $key) { // $key gets fed into superf
     }
     if (isset($config_values['Feeds'])) {
         foreach ($config_values['Feeds'] as $feed) {
-            $feed_options .= '<option value="' . urlencode($feed['Link']) . '"';
-            if ($feed['Link'] == $item['Feed']) {
+            $feed_options .= '<option value="' . htmlspecialchars($feed['Link'], ENT_QUOTES, 'UTF-8') . '"';
+            if ($feed['Link'] === $item['Feed']) {
                 $feed_options .= ' selected="selected"';
             }
             if ($feed['enabled'] !== 1) {
                 $feed_options .= ' disabled';
             }
-            $feed_options .= '>' . $feed['Name'] . '</option>';
+            $feed_options .= '>' . htmlspecialchars($feed['Name'] ?? '', ENT_QUOTES, 'UTF-8') . '</option>';
         }
     }
     // Dont handle with object buffer, is called inside display_superfavorites ob_start
@@ -409,14 +414,14 @@ function display_favorites_info($item, $key) { // $key gets fed into favorites_i
     }
     if (isset($config_values['Feeds'])) {
         foreach ($config_values['Feeds'] as $feed) {
-            $feed_options .= '<option value="' . urlencode($feed['Link']) . '"';
-            if ($feed['Link'] == $item['Feed']) {
+            $feed_options .= '<option value="' . htmlspecialchars($feed['Link'], ENT_QUOTES, 'UTF-8') . '"';
+            if ($feed['Link'] === $item['Feed']) {
                 $feed_options .= ' selected="selected"';
             }
             if ($feed['enabled'] !== 1) {
                 $feed_options .= ' disabled';
             }
-            $feed_options .= '>' . $feed['Name'] . '</option>';
+            $feed_options .= '>' . htmlspecialchars($feed['Name'] ?? '', ENT_QUOTES, 'UTF-8') . '</option>';
         }
     }
     // Dont handle with object buffer, is called inside display_favorites ob_start
@@ -448,7 +453,7 @@ function update_hidelist() {
 function display_history() {
     $downloadHistoryFile = getDownloadHistoryFile();
     if (file_exists($downloadHistoryFile)) {
-        $historyContents = unserialize(file_get_contents($downloadHistoryFile));
+        $historyContents = unserialize(file_get_contents($downloadHistoryFile), ['allowed_classes' => false]);
         if ($historyContents === false) {
             writeToLog("Unable to unserialize history file: $downloadHistoryFile\n", 0);
             $history = [];
@@ -460,19 +465,19 @@ function display_history() {
     }
     ob_start();
     require('templates/history.php');
-    return ob_get_contents();
+    return ob_get_clean();
 }
 
 function display_legend() {
     ob_start();
     require('templates/legend.php');
-    return ob_get_contents();
+    return ob_get_clean();
 }
 
 function display_clearCache() {
     ob_start();
     require('templates/clear_cache.php');
-    return ob_get_contents();
+    return ob_get_clean();
 }
 
 function checkpHPRequirements() {
@@ -522,18 +527,27 @@ function checkFilesAndDirs() {
     } else {
         $checkAlsoSaveDir = false;
     }
+    // also check each Favorite's own Also Save Dir if Also Save Torrent Files is on (it overrides the global one)
+    if (
+            $config_values['Settings']['Client'] !== "folder" &&
+            $config_values['Settings']['Also Save Torrent Files']
+    ) {
+        $checkFavAlsoSaveDirs = true;
+    } else {
+        $checkFavAlsoSaveDirs = false;
+    }
 
     $errorMessage = false;
     // cascade through checks
     switch (true) {
         case true:
             if (!file_exists($configCacheDir)) {
-                $errorMessage .= "ConfigCacheDir <b>$configCacheDir</b> not found.<br/>";
+                    $errorMessage .= "ConfigCacheDir <b>" . htmlspecialchars($configCacheDir, ENT_QUOTES, 'UTF-8') . "</b> not found.<br/>";
                 break;
             }
         case true:
             if (!is_dir($configCacheDir)) {
-                $errorMessage .= "ConfigCacheDir <b>$configCacheDir</b> isn't a directory.<br/>";
+                    $errorMessage .= "ConfigCacheDir <b>" . htmlspecialchars($configCacheDir, ENT_QUOTES, 'UTF-8') . "</b> isn't a directory.<br/>";
                 break;
             }
         case true:
@@ -562,12 +576,12 @@ function checkFilesAndDirs() {
             }
         case true:
             if (!file_exists($downloadCacheDir)) {
-                $errorMessage .= "DownloadCacheDir <b>$downloadCacheDir</b> not found.<br/>";
+                $errorMessage .= "DownloadCacheDir <b>" . htmlspecialchars($downloadCacheDir, ENT_QUOTES, 'UTF-8') . "</b> not found.<br/>";
                 break;
             }
         case true:
             if (!is_dir($downloadCacheDir)) {
-                $errorMessage .= "DownloadCacheDir <b>$downloadCacheDir</b> isn't a directory.<br/>";
+                $errorMessage .= "DownloadCacheDir <b>" . htmlspecialchars($downloadCacheDir, ENT_QUOTES, 'UTF-8') . "</b> isn't a directory.<br/>";
                 break;
             }
         case true:
@@ -589,7 +603,7 @@ function checkFilesAndDirs() {
             // if local, check DownloadDir
             if ($checkLocalDownloadDir) {
                 if (!file_exists($downloadDir)) {
-                    $errorMessage .= "DownloadDir <b>$downloadDir</b> not found.<br/>";
+                    $errorMessage .= "DownloadDir <b>" . htmlspecialchars($downloadDir, ENT_QUOTES, 'UTF-8') . "</b> not found.<br/>";
                     break;
                 }
             }
@@ -597,7 +611,7 @@ function checkFilesAndDirs() {
             // if local, check DownloadDir
             if ($checkLocalDownloadDir) {
                 if (!is_dir($downloadDir)) {
-                    $errorMessage .= "DownloadDir <b>$downloadDir</b> isn't a directory.<br/>";
+                    $errorMessage .= "DownloadDir <b>" . htmlspecialchars($downloadDir, ENT_QUOTES, 'UTF-8') . "</b> isn't a directory.<br/>";
                     break;
                 }
             }
@@ -614,7 +628,7 @@ function checkFilesAndDirs() {
             // if Also Save Torrent Files is on, check 'Also Save Dir'
             if ($checkAlsoSaveDir) {
                 if (!file_exists($alsoSaveDir)) {
-                    $errorMessage .= "Also Save Dir <b>$alsoSaveDir</b> not found.<br/>";
+                    $errorMessage .= "Also Save Dir <b>" . htmlspecialchars($alsoSaveDir, ENT_QUOTES, 'UTF-8') . "</b> not found.<br/>";
                     break;
                 }
             }
@@ -622,7 +636,7 @@ function checkFilesAndDirs() {
             // if Also Save Torrent Files is on, check 'Also Save Dir'
             if ($checkAlsoSaveDir) {
                 if (!is_dir($alsoSaveDir)) {
-                    $errorMessage .= "Also Save Dir <b>$alsoSaveDir</b> isn't a directory.<br/>";
+                    $errorMessage .= "Also Save Dir <b>" . htmlspecialchars($alsoSaveDir, ENT_QUOTES, 'UTF-8') . "</b> isn't a directory.<br/>";
                     break;
                 }
             }
@@ -635,7 +649,30 @@ function checkFilesAndDirs() {
                     break;
                 }
             }
-        //TODO check all Also Save Dir paths in all Favorites
+        case true:
+            // if Also Save Torrent Files is on, check 'Also Save Dir' of each Favorite (overrides the global one)
+            if ($checkFavAlsoSaveDirs && isset($config_values['Favorites'])) {
+                foreach ($config_values['Favorites'] as $favorite) {
+                    $favName = $favorite['Name'] ?? '';
+                    $favAlsoSaveDir = $favorite['Also Save Dir'] ?? '';
+                    if (empty($favAlsoSaveDir) || $favAlsoSaveDir === $alsoSaveDir) {
+                        continue;
+                    }
+                    if (!file_exists($favAlsoSaveDir)) {
+                        $errorMessage .= "Favorite <b>" . htmlspecialchars($favName, ENT_QUOTES, 'UTF-8') . "</b> Also Save Dir <b>" . htmlspecialchars($favAlsoSaveDir, ENT_QUOTES, 'UTF-8') . "</b> not found.<br/>";
+                        break 2;
+                    }
+                    if (!is_dir($favAlsoSaveDir)) {
+                        $errorMessage .= "Favorite <b>" . htmlspecialchars($favName, ENT_QUOTES, 'UTF-8') . "</b> Also Save Dir <b>" . htmlspecialchars($favAlsoSaveDir, ENT_QUOTES, 'UTF-8') . "</b> isn't a directory.<br/>";
+                        break 2;
+                    }
+                    $temp = checkPathReadableAndWriteable($favAlsoSaveDir, "Favorite " . htmlspecialchars($favName, ENT_QUOTES, 'UTF-8') . " Also Save Dir", $myuID);
+                    if (!empty($temp)) {
+                        $errorMessage .= $temp;
+                        break 2;
+                    }
+                }
+            }
     }
 
     // output any errors to the web UI
@@ -647,15 +684,15 @@ function checkFilesAndDirs() {
 function checkPathReadableAndWriteable($path, $description, $uID) {
     // check if path is readable and writable
     if (!is_readable($path) && !is_writeable($path)) {
-        return "UID $uID can't read or write $description <b>$path</b><br/>";
+        return "UID $uID can't read or write $description <b>" . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . "</b><br/>";
     } else {
         // check if path is readable
         if (!is_readable($path)) {
-            return "UID $uID can't read $description <b>$path</b><br/>";
+            return "UID $uID can't read $description <b>" . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . "</b><br/>";
         }
         // check if path is writeable
         if (!is_writeable($path)) {
-            return "UID $uID can't write $description <b>$path</b><br/>";
+            return "UID $uID can't write $description <b>" . htmlspecialchars($path, ENT_QUOTES, 'UTF-8') . "</b><br/>";
         }
     }
 }
@@ -737,7 +774,7 @@ $feedCache = loadAllFeeds($config_values['Feeds']);
 $html_out .= "<div id='torrentlist_container'>\n";
 process_all_feeds($config_values['Feeds'], $feedCache, true);
 
-echo "<div id='clientType' class='hidden'>" . $config_values['Settings']['Client'] . "</div>"; // this must precede #torrentClientFilterView;
+echo "<div id='clientType' class='hidden'>" . htmlspecialchars($config_values['Settings']['Client'] ?? '', ENT_QUOTES, 'UTF-8') . "</div>"; // this must precede #torrentClientFilterView;
 if ($config_values['Settings']['Client'] == "Transmission") {
     $html_out .= '<div id="torrentClientFilterView"><ul id="torrentClientList" class="torrentlist"></ul></div>';
 }

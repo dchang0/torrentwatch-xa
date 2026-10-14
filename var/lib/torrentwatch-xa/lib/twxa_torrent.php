@@ -32,6 +32,8 @@ function stopTorrent($torHash) {
 
 function delTorrent($torHash, $toTrash = false, $checkCache = false) {
     $idsArray = explode(',', $torHash);
+    $requestedIds = $idsArray; // keep the full requested set for the inCache report below, even if $checkCache filters $idsArray down
+    $toTrash = ($toTrash === true || $toTrash === "true"); // query-string params arrive as strings; Transmission's RPC only honors a real JSON bool for delete-local-data
     if ($checkCache === true || $checkCache === "true") { // some parameter passing causes $checkCache to be a string instead of a boolean
         $deleteHashes = [];
         foreach ($idsArray as $hash) {
@@ -52,6 +54,18 @@ function delTorrent($torHash, $toTrash = false, $checkCache = false) {
                     @unlink(getDownloadCacheDir() . '/' . $cacheFile);
                 }
             }
+        }
+        // report post-delete cache membership per requested hash so the UI can decide
+        // whether each item still qualifies for st_inCacheNotActive ("seen in download cache
+        // but no longer active"): a trash delete removes the cache entry too, and some
+        // torrents were never in the cache at all, so membership must be checked after
+        // the delete/unlink above rather than assumed
+        if (is_array($response) && isset($response['result']) && $response['result'] === 'success') {
+            $inCache = [];
+            foreach ($requestedIds as $hash) {
+                $inCache[$hash] = (check_cache_for_torHash($hash) !== '');
+            }
+            $response['inCache'] = $inCache;
         }
         return json_encode($response);
     } else {
@@ -611,6 +625,11 @@ function clientAddTorrent(
             }
             // if succeeded, update Favorite if Filter is not 'any', then run Triggers
             if ($addResult['errorCode'] === 0) {
+                if ($clientType === 'folder' && file_exists(getCacheFile($ti))) {
+                    if (updateCacheData($ti, ['torHash' => '', 'torId' => '', 'downloadDir' => '', 'seedRatio' => '']) === false) {
+                        writeToLog("Failed clearing client metadata from: " . getCacheFile($ti) . "\n", -1);
+                    }
+                }
                 add_history($torName);
                 writeToLog("Started: $torName in $dest\n", 1);
                 if (isset($fav)) {

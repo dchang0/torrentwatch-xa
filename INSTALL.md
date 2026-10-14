@@ -5,7 +5,7 @@ Officially-supported OSes
 - Ubuntu 16.04 and up
 - Fedora Server 34 and up with SELINUX in Permissive mode (see below for more details on SELINUX)
 
-Other LINUX distributions and other operating systems will work as long as they provide a web server with PHP 5.6.0alpha3 and up with mbstring, xml, curl, and posix_getuid() support. PHP 5.6.0alpha3 is really only required by PHPMailer's SMTP 5.2.23 library to support TLS 1.1 and 1.2. torrentwatch-xa itself only requires PHP 5.4.0. If you are not using email triggers with TLS 1.1 or 1.2, you should be able to avoid this version requirement by downgrading PHPMailer's SMTP library.
+Other LINUX distributions and other operating systems will work as long as they provide a web server with PHP 7.0.0 and up with mbstring, xml, curl, and posix_getuid() support. torrentwatch-xa itself requires PHP 7.0.0, which also satisfies PHPMailer's SMTP 5.2.23 library's need for PHP 5.6.0alpha3 or later to support TLS 1.1 and 1.2 in email triggers.
 
 Prerequisites
 ===============

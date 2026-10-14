@@ -1,4 +1,17 @@
 /*-----------------
+ * Z - I N D E X   S C A L E
+ * ---------------
+ * Global layers (body-level stacking contexts), bottom → top:
+ *   10 — context menus (div.contextMenu)
+ *   20 — fixed chrome (#topmenu, #clientButtonsHolder)
+ *   30 — modal backdrop (.dialog)
+ *   40 — progress overlay (.progress)
+ *   50 — notifications (#clientError, #errorDialog, #successDialog, #newVersion, #twError)
+ * Decades leave room to insert layers without renumbering.
+ * Local values (inside a parent's stacking context, order within that context only):
+ *   10 — .dialog_window inside .dialog; #progressbar inside #progress
+ *-----------------*/
+/*-----------------
  * G L O B A L
  * ---------------*/
 html {
@@ -69,6 +82,12 @@ div.right {
     display: none;
 }
 
+/* search filter state; !important so the Downloading/Downloaded filter interval's
+   jQuery show()/hide() inline display styles cannot clobber an active search */
+li.torrent.searchHidden {
+    display: none !important;
+}
+
 .strikethrough {
     text-decoration: line-through;
 }
@@ -84,7 +103,7 @@ div.right {
     border: 1px solid #aaa;
     border-top: 0;
     background: #ddd;
-    z-index: 3;
+    z-index: 20; /* fixed chrome: top menu */
 }
 
 #torrentwatch-xaLogo {
@@ -213,6 +232,10 @@ div.right {
     margin-top: -1px;
 }
 
+#filterbar_container #filter_burger {
+    display: none;
+}
+
 #filterbar_container li.filter_left:hover,
 #filterbar_container li.filter_left {
     border-left: 1px solid #e3e3e3;
@@ -299,7 +322,7 @@ div.right {
     opacity: .90;
     border: 1px solid #aaa;
     border-radius: 2px;
-    z-index: 3;
+    z-index: 20; /* fixed chrome: client buttons */
 }
 
 #clientButtons {
@@ -366,6 +389,9 @@ div.right {
     background-color: transparent;
     cursor: default;
     opacity: .30;
+    /* the li's are inline onclick, not submitForm-guarded anchors; without this the
+       "disabled" styling is cosmetic and grayed-out multi-select buttons still fire */
+    pointer-events: none;
 }
 
 #clientButtons li.button:hover:not(.disabled) {
@@ -629,7 +655,7 @@ div.contextMenu {
     background: #fafafa;
     font-size: 0.9em;
     opacity: .95;
-    z-index: 2;
+    z-index: 10; /* context menus */
 }
 
 div.contextMenu div {
@@ -803,7 +829,7 @@ div.header_hidden span.hide_feed_right {
     cursor: wait;
     padding-top: 60px;
     border-top: 1px solid #000;
-    z-index: 4;
+    z-index: 30; /* modal backdrop */
 }
 
 .dialog.confirm {
@@ -826,7 +852,7 @@ div.header_hidden span.hide_feed_right {
     margin-left: -230px;
     padding: 0 5px 5px 5px;
     cursor: default;
-    z-index: 5;
+    z-index: 10; /* local: dialog window above its own .dialog backdrop */
 }
 
 .dialogTitle .button {
@@ -958,7 +984,7 @@ input[type=submit] {
     margin-left: 80px;
     color: black;
     background: #fdd;
-    z-index: 100;
+    z-index: 50; /* notifications */
     display: none;
 }
 
@@ -979,7 +1005,7 @@ input[type=submit] {
     text-align: left;
     width: 700px;
     margin-left: -350px;
-    z-index: 100;
+    z-index: 50; /* notifications */
 }
 
 #successDialog {
@@ -989,7 +1015,7 @@ input[type=submit] {
     text-align: center;
     width: 600px;
     margin-left: -310px;
-    z-index: 100;
+    z-index: 50; /* notifications */
 }
 
 #newVersion {
@@ -1000,7 +1026,7 @@ input[type=submit] {
     margin-left: 25px;
     color: green;
     background: #eee;
-    z-index: 100;
+    z-index: 50; /* notifications */
 }
 
 #newVersion a {
@@ -1013,7 +1039,7 @@ input[type=submit] {
     color: red;
     background-color: #bbb;
     text-align: center;
-    z-index: 100;
+    z-index: 50; /* notifications */
     border-color: #AAA;
 }
 
@@ -1028,7 +1054,7 @@ input[type=submit] {
     bottom: 0;
     padding-top: 60px;
     cursor: wait;
-    z-index: 99;
+    z-index: 40; /* progress overlay */
 }
 
 .progress_full {
@@ -1036,7 +1062,7 @@ input[type=submit] {
     transform-origin: 0 0;
     background-color: #000;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 99;
+    z-index: 40; /* same element as .progress (#progress carries both classes) */
 }
 
 #progressbar {
@@ -1049,7 +1075,7 @@ input[type=submit] {
     top: 148px;
     overflow: hidden;
     width: 250px;
-    z-index: 99;
+    z-index: 10; /* local: bar above its own #progress overlay */
     margin-left: -125px;
 }
 
@@ -1081,7 +1107,6 @@ input[type=submit] {
     margin-left: -5px;
     margin-right: -5px;
     color: #030303;
-    z-index: 3;
 }
 
 #configTabs #tabInt {
@@ -1357,6 +1382,10 @@ ul.superfavorite li:hover {
     background-color: #e0e0e0; /* #9DACC1; */
 }
 
+ul.superfavorite li.selected {
+    background-color: #e0e0e0; /* same as hover so the clicked entry keeps the highlight after the mouse leaves */
+}
+
 /* ul.superfavorite li:hover a {
     color: #FFF;
 } */
@@ -1476,6 +1505,10 @@ ul.favorite li a {
 
 ul.favorite li:hover {
     background-color: #e0e0e0; /* was #9DACC1; */
+}
+
+ul.favorite li.selected {
+    background-color: #e0e0e0; /* same as hover so the clicked entry keeps the highlight after the mouse leaves */
 }
 
 /* ul.favorite li:hover a {

@@ -7,16 +7,20 @@ function add_history($ti) {
     $handle = @fopen($downloadHistoryFile, 'c+');
     if ($handle) {
         // exclusive lock around the read-modify-write so concurrent processes don't clobber history
-        flock($handle, LOCK_EX);
+        if (!flock($handle, LOCK_EX)) {
+            writeToLog("Unable to lock history file: $downloadHistoryFile\n", 0);
+            fclose($handle);
+            return;
+        }
         $contents = stream_get_contents($handle);
-        $history = $contents !== false ? @unserialize($contents) : [];
+        $history = $contents !== false ? @unserialize($contents, ['allowed_classes' => false]) : [];
         if (!is_array($history)) {
             $history = [];
         }
         $history[] = ['Title' => $ti, 'Date' => date("Y.m.d H:i")];
-        if (ftruncate($handle, 0)) {
-            fseek($handle, 0);
-            if (fwrite($handle, serialize($history)) === false) {
+        $serializedHistory = serialize($history);
+        if ($serializedHistory !== false && ftruncate($handle, 0) && fseek($handle, 0) === 0) {
+            if (fwrite($handle, $serializedHistory) !== strlen($serializedHistory)) {
                 writeToLog("Unable to write history to $downloadHistoryFile\n", 0);
             }
         } else {
@@ -75,7 +79,10 @@ function getCacheData($cache_file) {
         return [];
     }
     // shared lock so we never read a cache file mid-write
-    flock($handle, LOCK_SH);
+    if (!flock($handle, LOCK_SH)) {
+        fclose($handle);
+        return [];
+    }
     $contents = stream_get_contents($handle);
     flock($handle, LOCK_UN);
     fclose($handle);
@@ -89,14 +96,20 @@ function getCacheData($cache_file) {
     return $data;
 }
 
-function updateCacheData($ti, $data) {
+function updateCacheData($ti, $data, $replace = false) {
+    if (!is_array($data)) {
+        return false;
+    }
     $cache_file = getCacheFile($ti);
     $handle = @fopen($cache_file, 'c+');
     if ($handle === false) {
         return false;
     }
     // exclusive lock across the read-modify-write so concurrent processes don't lose updates
-    flock($handle, LOCK_EX);
+    if (!flock($handle, LOCK_EX)) {
+        fclose($handle);
+        return false;
+    }
     $contents = stream_get_contents($handle);
     $existing = [];
     if ($contents !== false && $contents !== '') {
@@ -105,13 +118,26 @@ function updateCacheData($ti, $data) {
             $existing = [];
         }
     }
+    if ($replace) {
+        $preserved = [];
+        foreach (['torHash', 'torId', 'downloadDir', 'seedRatio'] as $keepKey) {
+            if (array_key_exists($keepKey, $existing)) {
+                $preserved[$keepKey] = $existing[$keepKey];
+            }
+        }
+        $existing = $preserved;
+    }
     foreach ($data as $key => $value) {
         $existing[$key] = $value;
     }
-    $json = json_encode($existing, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+    $jsonFlags = JSON_UNESCAPED_UNICODE;
+    if (PHP_VERSION_ID >= 70200) {
+        $jsonFlags |= JSON_INVALID_UTF8_SUBSTITUTE;
+    }
+    $json = json_encode($existing, $jsonFlags);
     $success = false;
-    if ($json !== false) {
-        $success = ftruncate($handle, 0) && rewind($handle) && fwrite($handle, $json) !== false;
+    if ($json !== false && ftruncate($handle, 0) && rewind($handle)) {
+        $success = fwrite($handle, $json) === strlen($json);
     }
     flock($handle, LOCK_UN);
     fclose($handle);
@@ -137,7 +163,7 @@ function add_cache($ti, $data = []) {
     foreach ($data as $key => $value) {
         $cacheData[$key] = $value;
     }
-    if (updateCacheData($ti, $cacheData) === false) {
+    if (updateCacheData($ti, $cacheData, true) === false) {
         writeToLog("Unable to create cache file: $cache_file\n", 0);
         return false;
     }
@@ -235,7 +261,7 @@ function check_cache_episode($ti) {
                             $guessVersion = is_numeric($guess['itemVersion']) ? (int)$guess['itemVersion'] : 1;
                             $cacheVersion = is_numeric($cacheguess['itemVersion']) ? (int)$cacheguess['itemVersion'] : 1;
                             if ($guessVersion > $cacheVersion) {
-                                if ($config_values['Settings']['Download Versions']) {
+                                if (getArrayValueByKey($config_values['Settings'], 'Download Versions')) {
                                     return true; // difference in item version, do download
                                 } else {
                                     writeToLog("Older version in cache: ignoring newer: $ti (" . $guess['episode'] . "v" . $guess['itemVersion'] . ")\n", 2);

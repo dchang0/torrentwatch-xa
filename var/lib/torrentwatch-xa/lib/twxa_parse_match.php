@@ -633,7 +633,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 case true :
                     // Special - 02
                     // Spec02
-                    // SP# (Special #) //TODO SP# was removed at some point in the past and just put back--figure out better way
+                    // SP# (Special #)
                     $result = matchTitle1_1_14($ti, $seps);
                     if (isset($result['matFnd'])) {
                         break;
@@ -754,9 +754,9 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                         // probably month YYYY
                         $result['numSeq'] = 2;
                         $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
-                        $result['episEd'] = $result['episSt'] = $matNum[2] . $MM;
+                        $result['episEd'] = $result['episSt'] = $matNum[1] . $MM;
                         $result['matFnd'] = "1_2-1-1";
-                        $result['favTi'] = preg_replace("/\b([A-Za-z]+)[$seps](\d{4})\b.*/", "", $ti);
+                        $result['favTi'] = preg_replace("/\b([A-Za-z]+)[$seps]?(\d{4})\b.*/", "", $ti);
                     } else {
                         // assume just YYYY
                         $result['numSeq'] = 2;
@@ -765,6 +765,13 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                         $result['matFnd'] = "1_2-1-2";
                         $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
                     }
+                } else {
+                    // no word in front of YYYY (bare "2019", "Show-2019", "2020 The Reunion"), assume just YYYY
+                    $result['numSeq'] = 2;
+                    $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
+                    $result['episEd'] = $result['episSt'] = $matNum[1];
+                    $result['matFnd'] = "1_2-1-3";
+                    $result['favTi'] = preg_replace("/\d+.*/", "", $ti);
                 }
             } else {
                 $pair1 = substr($matNum[1], 0, 2);
@@ -884,7 +891,7 @@ function matchTitle1_($ti, $seps, $wereQualitiesDetected = false) {
                 // DDMMYY
                 $result['numSeq'] = 2;
                 $result['seasEd'] = $result['seasSt'] = 0; // date notation gets Season 0
-                $result['episEd'] = $result['$episSt'] = $thisYearPair1 . $pair3 . $pair2 . $pair1;
+                $result['episEd'] = $result['episSt'] = $thisYearPair1 . $pair3 . $pair2 . $pair1;
                 $result['matFnd'] = "1_4-5";
             } else if (checkdate((int) $pair3, (int) $pair2, (int) ($thisYearPair1 . $pair1)) && (int) ($thisYearPair1 . $pair1) <= $thisYear && (int) ($thisYearPair1 . $pair1) > 1895) {
                 // YYDDMM

@@ -12,8 +12,8 @@ $(document).ready(function () {
         }
         adjustWebUIButton();
     });
-    // binding for Filter Bar buttons
-    $("#filterbar_container li:not(#filter_bytext)").on("click", function () {
+    // binding for Filter Bar buttons (the #filter_burger toggle has its own binding below)
+    $("#filterbar_container li:not(#filter_bytext):not(#filter_burger)").on("click", function () {
         if ($(this).is('.selected')) {
             return;
         }
@@ -40,6 +40,14 @@ $(document).ready(function () {
                     displayFilter('torrentClient');
             }
         });
+    });
+    // binding for the phone filter bar "burger" button that reveals the hidden filter tabs
+    $("#filter_burger").on("click", function (e) {
+        e.preventDefault();
+        $("body").toggleClass("filters_expanded");
+        // re-apply tab visibility under the new expanded state (adjustUIElements owns it)
+        adjustUIElements();
+        $(this).find("a").attr("aria-expanded", $("body").hasClass("filters_expanded") ? "true" : "false");
     });
     // binding for Configure form, Favorites form, and Super-Favorites form ajax submit
     $(document).on("click", "a.submitForm", function (e) {

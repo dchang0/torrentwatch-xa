@@ -5,7 +5,7 @@
 function matchTitle0_1($ti, $seps) {
     // bounded word Special
     $mat = [];
-    $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.)\b.*/i";
+    $re = "/\b(" . SPECIAL_WORDS . "|Sp)\b.*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,

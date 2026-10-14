@@ -11,8 +11,7 @@
     // binding for Test button on Trigger config tab
     $("a#testSMTPSettings").on("click",
             function () {
-                $.get('torrentwatch-xa.php', {
-                    sendTestEmail: 1,
+                $.post('torrentwatch-xa.php?sendTestEmail=1', {
                     fromName: $('input[name=fromName]').val(),
                     fromEmail: $('input[name=fromEmail]').val(),
                     toEmail: $('input[name=toEmail]').val(),
@@ -60,7 +59,7 @@
             </ul>
         </div>
         <div class="config_form_container">
-            <form action="torrentwatch-xa.php?setGlobals=1" id="config_form" name="config_form">
+            <form action="torrentwatch-xa.php?setGlobals=1" id="config_form" name="config_form" method="post">
                 <div id="config_interface" class="configTab">
                     <div class="int_settings">
                         <div id="config_combinefeeds" title="Combine all feeds into one list.">
@@ -101,7 +100,7 @@
                             </div>
                             <div class="right">
                                 <input type="text" name="tz" class="text"
-                                       value="<?php echo $config_values['Settings']['Time Zone']; ?>"/>
+                                       value="<?php echo htmlspecialchars($config_values['Settings']['Time Zone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_log_level">
@@ -137,7 +136,7 @@
                                 <label class="item textinput">Download Dir:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="downdir" value="<?php echo $config_values['Settings']['Download Dir']; ?>"/>
+                                <input type="text" class="text" name="downdir" value="<?php echo htmlspecialchars($config_values['Settings']['Download Dir'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_tc_host" title="Hostname">
@@ -145,7 +144,7 @@
                                 <label class="item textinput">Hostname:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="trhost" value="<?php echo $config_values['Settings']['Transmission Host']; ?>"/>
+                                <input type="text" class="text" name="trhost" value="<?php echo htmlspecialchars($config_values['Settings']['Transmission Host'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_tc_port" title="Port">
@@ -153,7 +152,7 @@
                                 <label class="item textinput">Port:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="trport" value="<?php echo $config_values['Settings']['Transmission Port']; ?>"/>
+                                <input type="text" class="text" name="trport" value="<?php echo htmlspecialchars($config_values['Settings']['Transmission Port'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_tc_user" title="Username">
@@ -161,7 +160,7 @@
                                 <label class="item textinput">Username:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="truser" value="<?php echo $config_values['Settings']['Transmission Login']; ?>"/>
+                                <input type="text" class="text" name="truser" value="<?php echo htmlspecialchars($config_values['Settings']['Transmission Login'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_tc_password" title="Password">
@@ -169,7 +168,7 @@
                                 <label class="item textinput">Password:</label>
                             </div>
                             <div class="right">
-                                <input type="password" class="password" name="trpass" value="<?php echo $config_values['Settings']['Transmission Password']; ?>"/>
+                                <input type="password" class="password" name="trpass" value="<?php echo htmlspecialchars($config_values['Settings']['Transmission Password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_alsosavetorrentfiles" title="Also save .torrent files or magnet: links as files to 'Also Save Dir.'">
@@ -185,7 +184,7 @@
                                 <label class="item textinput">Also Save Dir:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="alsosavedir" value="<?php echo $config_values['Settings']['Also Save Dir']; ?>"/>
+                                <input type="text" class="text" name="alsosavedir" value="<?php echo htmlspecialchars($config_values['Settings']['Also Save Dir'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                     </div>
@@ -209,7 +208,7 @@
                                 <label class="item textinput">Default Seed Ratio:</label>
                             </div>
                             <div class="right">
-                                <input type="text" class="text" name="defaultratio" value="<?php echo $config_values['Settings']['Default Seed Ratio']; ?>"/>
+                                <input type="text" class="text" name="defaultratio" value="<?php echo htmlspecialchars($config_values['Settings']['Default Seed Ratio'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="config_autodel" title="Automatically delete completely downloaded and seeded torrents from torrent client (does not trash the torrent's contents).">
@@ -230,6 +229,14 @@
                             </div>
                             <div class="right">
                                 <input type="checkbox" name="enablesuperfavorites" value="1" <?php echo $enablesuperfavorites; ?> />
+                            </div>
+                        </div>
+                        <div title="Days to wait before a Super-Favorite may re-add a Favorite you deleted (7-21, default 14). Re-adding the Favorite manually during this time cancels the wait.">
+                            <div class="left">
+                                <label class="item textinput">Re-add Delay (days):</label>
+                            </div>
+                            <div class="right">
+                                <input type="text" class="text" name="readdelay" value="<?php echo htmlspecialchars($config_values['Settings']['Re-add Delay (days)'] ?? '14', ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                         </div>
                         <div id="config_matchstyle" title="Type of text-matching to use">
@@ -313,7 +320,7 @@
                             </div>
                             <div class="right">
                                 <input type="text" name="script" class="text"
-                                       value="<?php echo $config_values['Settings']['Script']; ?>"/>
+                                       value="<?php echo htmlspecialchars($config_values['Settings']['Script'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="enableSMTP">
@@ -329,7 +336,7 @@
                                 <label class="item">From: Email:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="fromEmail" class="text" value="<?php echo $config_values['Settings']['From Email']; ?>"/>
+                                <input type="text" name="fromEmail" class="text" value="<?php echo htmlspecialchars($config_values['Settings']['From Email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="from_name" title="Optional From Name or Display Name">
@@ -337,7 +344,7 @@
                                 <label class="item">From: Name:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="fromName" class="text" value="<?php echo $config_values['Settings']['From Name']; ?>"/>
+                                <input type="text" name="fromName" class="text" value="<?php echo htmlspecialchars($config_values['Settings']['From Name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="to_email" title="Valid email address required">
@@ -345,7 +352,7 @@
                                 <label class="item">To: Email:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="toEmail" class="text" value="<?php echo $config_values['Settings']['To Email']; ?>"/>
+                                <input type="text" name="toEmail" class="text" value="<?php echo htmlspecialchars($config_values['Settings']['To Email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="smtp_server" title="Valid FQDN or IP address of SMTP server required">
@@ -353,7 +360,7 @@
                                 <label class="item">SMTP Server:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="smtpServer" class="text" value="<?php echo $config_values['Settings']['SMTP Server']; ?>"/>
+                                <input type="text" name="smtpServer" class="text" value="<?php echo htmlspecialchars($config_values['Settings']['SMTP Server'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="smtp_port" title="Leave blank to default to 25 or specify integer from 0-65535.">
@@ -361,7 +368,7 @@
                                 <label class="item">SMTP Port:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="smtpPort" class="text" value="<?php echo $config_values['Settings']['SMTP Port']; ?>"/>
+                                <input type="text" name="smtpPort" class="text" value="<?php echo htmlspecialchars($config_values['Settings']['SMTP Port'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="smtp_authentication" title="Only PLAIN or LOGIN are supported, not NTLM, OAUTH etc.">
@@ -393,7 +400,7 @@
                                 <label class="item">SMTP User:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="smtpUser" class="text" value="<?php echo $config_values['Settings']['SMTP User']; ?>"/>
+                                <input type="text" name="smtpUser" class="text" value="<?php echo htmlspecialchars($config_values['Settings']['SMTP User'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="smtp_password" title="Required for SMTP Authentication">
@@ -401,15 +408,15 @@
                                 <label class="item">SMTP Password:</label>
                             </div>
                             <div class="right">
-                                <input type="password" name="smtpPassword" value="<?php echo $config_values['Settings']['SMTP Password']; ?>"/>
+                                <input type="password" name="smtpPassword" value="<?php echo htmlspecialchars($config_values['Settings']['SMTP Password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
-                        <div id="helo_override" title="Optional HELO override; leave blank for default. If provided, must be a valid FQDN">
+                        <div id="helo_override" title="Optional HELO override; leave blank for default. If provided, must be a valid FQDN or IP address">
                             <div class="left">
                                 <label class="item">HELO Override:</label>
                             </div>
                             <div class="right">
-                                <input type="text" name="hELOOverride" value="<?php echo $config_values['Settings']['HELO Override']; ?>"/>
+                                <input type="text" name="hELOOverride" value="<?php echo htmlspecialchars($config_values['Settings']['HELO Override'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"/>
                             </div>
                         </div>
                         <div id="smtp_test" title="Tests current SMTP settings">
@@ -440,9 +447,9 @@
                             <?php foreach ($config_values['Feeds'] as $key => $feed): ?>
                                 <?php print("<div id=\"feedItem_" . $key . "\" class=\"feeditem\">"); ?>
                                 <div class="feedURLName">
-                                    <input class="feed_url" type="text" name="feed_url_<?php echo $key; ?>" title="Feed URL" value="<?php echo $feed['Link']; ?>" placeholder="Feed URL (required)"></input>
-                                    <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="Feed Name (optional)" value="<?php echo $feed['Name']; ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
-                                    <input class="feed_website" type="text" name="feed_website_<?php echo $key; ?>" title="Feed Website URL (optional)" value="<?php echo $feed['Website']; ?>" placeholder="Feed Website URL (leave blank for official feed website)"></input>
+                                    <input class="feed_url" type="text" name="feed_url_<?php echo $key; ?>" title="Feed URL" value="<?php echo htmlspecialchars($feed['Link'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Feed URL (required)"></input>
+                                    <input class="feed_name" type="text" name="feed_name_<?php echo $key; ?>" title="Feed Name (optional)" value="<?php echo htmlspecialchars($feed['Name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Feed Name (leave blank for official feed name)"></input>
+                                    <input class="feed_website" type="text" name="feed_website_<?php echo $key; ?>" title="Feed Website URL (optional)" value="<?php echo htmlspecialchars($feed['Website'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Feed Website URL (leave blank for official feed website)"></input>
                                 </div>
                                 <div class="feedOn">
                                     <?php if ($feed['enabled'] == 1): ?>
@@ -452,7 +459,7 @@
                                     <?php endif; ?>
                                 </div>
                                 <div class="seedRatio">
-                                    <input class="seed_ratio" type="text" name="seed_ratio_<?php echo $key; ?>" title="Set default seed ratio for this feed." value="<?php echo $feed['seedRatio']; ?>"></input>
+                                    <input class="seed_ratio" type="text" name="seed_ratio_<?php echo $key; ?>" title="Set default seed ratio for this feed." value="<?php echo htmlspecialchars($feed['seedRatio'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></input>
                                 </div>
                                 <div class="feedDelete">
                                     <input class="feed_delete" type="checkbox" name="feed_delete_<?php echo $key; ?>" value="feed_delete"></input>
@@ -494,8 +501,8 @@
                             <?php foreach ($config_values['Hidden'] as $key => $item): ?>
                                 <li>
                                     <label class="item checkbox">
-                                        <input type="checkbox" name="unhide[]" value="<?= $key ?>"/>
-                                        <span class="hiddenItem"><?php echo $item; ?></span></label>
+                                        <input type="checkbox" name="unhide[]" value="<?= htmlspecialchars($key ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+                                        <span class="hiddenItem"><?php echo htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8'); ?></span></label>
                                 </li>
                             <?php endforeach; ?>
                         <?php else: ?>

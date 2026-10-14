@@ -137,21 +137,18 @@ if (is_file($argv[1])) {
 }
 
 function addFavoriteFromImport($name, $filter, $not = "", $quality = "") {
-    if (!isset($name)) {
-        return "Name not supplied, skipping.";
-    }
     $result = addFavoriteFromParams(
-            urldecode($name),
-            urldecode($filter),
+            $name,
+            $filter,
             'All',
-            urldecode($quality),
-            urldecode($not)
+            $quality,
+            $not
     );
     if (!is_array($result)) {
         return "Unexpected error while adding Favorite: " . (is_string($result) ? $result : var_export($result, true));
     }
     if ($result['errorCode'] === 2) {
-        return "Error: \"" . urldecode($name) . "\" already exists in Favorites.";
+        return "Error: \"" . $name . "\" already exists in Favorites.";
     }
     if ($result['errorCode'] !== 0) {
         return $result['errorMessage'];

@@ -2,34 +2,16 @@
 
 require_once('twxa_parse.php');
 
-/* function detectahrefsInString($string) {
-  // detects <a href=""> tags in a string and returns the contents of the href attributes as an array
-  $hrefs = [];
-  if (isset($string) && is_string($string) && $string !== '') {
-  $aTagMatches = [];
-  preg_match_all("/<[aA]\s+?.+?>/", $string, $aTagMatches, PREG_PATTERN_ORDER);
-  for ($i = 0; $i < count($aTagMatches[0]); $i++) {
-  $aTag = $aTagMatches[0][$i];
-  $hrefMatches = [];
-  preg_match("/href=\"(.*?)\"/i", $aTag, $hrefMatches);
-  $hrefContents = $hrefMatches[1];
-  $hrefs[] = $hrefContents;
-  }
-  }
-  return $hrefs;
-  } */
-
 function detectAllTorrentLinks($item) {
     // finds every possible magnet link or link to a .torrent file in a feed item
     $links = [];
 
     // search enclosure for .torrent and magnet:
     if (
-            isset($item['enclosure']['url']) &&
             !empty($item['enclosure']['url']) &&
             (
             (isset($item['enclosure']['type']) && $item['enclosure']['type'] === 'application/x-bittorrent') ||
-            strpos($item['enclosure']['url'], '.torrent', -8) !== false ||
+            substr($item['enclosure']['url'], -8) === '.torrent' ||
             (isset($item['enclosure']['type']) && $item['enclosure']['type'] === 'x-scheme-handler/magnet') ||
             strpos($item['enclosure']['url'], 'magnet:') === 0
             )
@@ -40,7 +22,7 @@ function detectAllTorrentLinks($item) {
     if (
             isset($item['URL']) &&
             (
-            strpos($item['URL'], '.torrent', -8) !== false ||
+            substr($item['URL'], -8) === '.torrent' ||
             strpos($item['URL'], 'magnet:') === 0
             )
     ) {
@@ -48,22 +30,20 @@ function detectAllTorrentLinks($item) {
     }
     // search enclosure for .torrent.gz
     if (
-            isset($item['enclosure']['url']) &&
             !empty($item['enclosure']['url']) &&
             (
             (isset($item['enclosure']['type']) && $item['enclosure']['type'] === 'application/gzip') ||
-            strpos($item['enclosure']['url'], '.torrent.gz', -11) !== false
+            substr($item['enclosure']['url'], -11) === '.torrent.gz'
             )
     ) {
         $links[] = $item['enclosure']['url'];
     }
     // search $fi['URL'] for .torrent.gz
-    if (isset($item['URL']) && strpos($item['URL'], '.torrent.gz', -11) !== false) {
+    if (isset($item['URL']) && substr($item['URL'], -11) === '.torrent.gz') {
         $links[] = $item['URL'];
     }
     // accept the enclosure URL as long as it's not the wrong type
     if (
-            isset($item['enclosure']['url']) &&
             !empty($item['enclosure']['url']) &&
             (
             isset($item['enclosure']['type']) &&
@@ -80,24 +60,27 @@ function detectAllTorrentLinks($item) {
     }
     // last resort, trust the feed and accept the URL
     if (
-            isset($item['URL']) &&
             !empty($item['URL']) &&
-            stripos($item['URL'], '.html', -5) === false &&
-            stripos($item['URL'], '.htm', -4) === false
+            substr(strtolower($item['URL']), -5) !== '.html' &&
+            substr(strtolower($item['URL']), -4) !== '.htm'
     ) {
         $links[] = $item['URL'];
     }
     // extract torrent:magnetURI from namespaced RSS elements (e.g. EZTV feeds)
-    if (isset($item['torrent_magnetURI']) && !empty($item['torrent_magnetURI'])) {
+    if (!empty($item['torrent_magnetURI'])) {
         $links[] = $item['torrent_magnetURI'];
     }
 // make links unique in the array
     $uniqueLinks = array_unique($links, SORT_STRING);
     // validate URLs; keep magnet: links (not valid under FILTER_VALIDATE_URL) and discard the rest if invalid
     $uniqueLinks = array_filter($uniqueLinks, function ($url) {
-        return strpos($url, 'magnet:') === 0 || filter_var($url, FILTER_VALIDATE_URL) !== false;
+        if (strpos($url, 'magnet:') === 0) {
+            return true;
+        }
+        return (stripos($url, 'http://') === 0 || stripos($url, 'https://') === 0)
+                && filter_var($url, FILTER_VALIDATE_URL) !== false;
     });
-    return $uniqueLinks;
+    return array_values($uniqueLinks); // renumber: array_filter preserves keys, and getBestTorrentOrMagnetLinks() reads $links[0]
 }
 
 function getBestTorrentOrMagnetLinks($item) {
@@ -114,12 +97,12 @@ function getBestTorrentOrMagnetLinks($item) {
 
         foreach ($links as $link) {
             if (strpos($link, 'magnet:') === 0) {
-                if (preg_match('/xt=urn:btih:[a-fA-F0-9]{40}/', $link)) {
+                if (preg_match('/xt=urn:btih:(?:[a-fA-F0-9]{40}|[A-Za-z2-7]{32})/', $link)) {
                     $validMagnetLinks[] = $link;
                 }
-            } elseif (strpos($link, '.torrent.gz', -11) !== false) {
+            } elseif (substr($link, -11) === '.torrent.gz') {
                 $endInDotTorrentGzLinks[] = $link;
-            } elseif (strpos($link, '.torrent', -8) !== false) {
+            } elseif (substr($link, -8) === '.torrent') {
                 $endInDotTorrentLinks[] = $link;
             } elseif (strpos($link, '.torrent') !== false) {
                 $otherDotTorrentLinks[] = $link;
@@ -140,7 +123,7 @@ function getBestTorrentOrMagnetLinks($item) {
             $bestLinkType = "torrent";
         } else {
             $bestLink = $links[0];
-            if (strpos($bestLink, '.torrent.gz', -11) !== false) {
+            if (substr($bestLink, -11) === '.torrent.gz') {
                 $bestLinkType = "torrent.gz";
             } else {
                 $bestLinkType = "torrent";
@@ -159,8 +142,8 @@ function checkItemTitleMatchesSuperFavorite($superfav, $itemTitle, $feedUrl, $ma
     // checks if this item's title matches this Super-Favorite's title
     $itemMatchesSuperFave = false;
     if (isset($superfav)) {
-        if (isset($itemTitle) && !empty($itemTitle)) {
-            if (!isset($superfav['Feed']) || $superfav['Feed'] === '' || strtolower($superfav['Feed']) === 'all' || $superfav['Feed'] == $feedUrl) {
+        if (!empty($itemTitle)) {
+            if (!isset($superfav['Feed']) || $superfav['Feed'] === '' || strtolower($superfav['Feed']) === 'all' || $superfav['Feed'] === $feedUrl) {
                 // if Super-Favorite's Feed is unset, blank, all, or matches the item, proceed
                 switch ($matchStyle) {
                     case 'simple':
@@ -236,8 +219,8 @@ function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) 
     // checks if this item's title matches this Favorite's title
     $itemMatchesFave = false;
     if (isset($fav)) {
-        if (isset($itemTitle) && !empty($itemTitle)) {
-            if (!isset($fav['Feed']) || $fav['Feed'] === '' || strtolower($fav['Feed']) === 'all' || $fav['Feed'] == $feedUrl) {
+        if (!empty($itemTitle)) {
+            if (!isset($fav['Feed']) || $fav['Feed'] === '' || strtolower($fav['Feed']) === 'all' || $fav['Feed'] === $feedUrl) {
                 // if Favorite's Feed is unset, blank, all, or matches the item, proceed
                 switch ($matchStyle) {
                     case 'simple':
@@ -312,6 +295,8 @@ function checkItemTitleMatchesFavorite($fav, $itemTitle, $feedUrl, $matchStyle) 
 function checkItemNumberingMatchesFavorite(&$itemState, $fav, $guessItem, $dloadVersions = 0, $ignBatches = 0) {
     // checks if this item's numbering matches this Favorite's numbering
     $itemMatchesFave = false;
+    // v# regex captures are numeric strings ("1" !== 1); normalize like check_cache_episode() so explicit v1 compares as a plain first release
+    $itemVer = is_numeric($guessItem['itemVersion'] ?? null) ? (int) $guessItem['itemVersion'] : 1;
     if (is_numeric($guessItem['seasBatEnd']) && is_numeric($guessItem['seasBatStart'])) {
         if ($guessItem['seasBatEnd'] === $guessItem['seasBatStart']) {
             // within one season
@@ -326,7 +311,7 @@ function checkItemNumberingMatchesFavorite(&$itemState, $fav, $guessItem, $dload
                         // seasons match, compare episodes
                         if ($fav['Episode'] > $guessItem['episBatEnd'] || $fav['Episode'] === "FULL") {
                             // too old by episode within same season
-                            if ($guessItem['itemVersion'] === 1) {
+                            if ($itemVer === 1) {
                                 writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . ">" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . ")\n", 1);
                                 $itemState = "st_favTooOld";
                             } else if ($dloadVersions != 1) {
@@ -339,7 +324,7 @@ function checkItemNumberingMatchesFavorite(&$itemState, $fav, $guessItem, $dload
                             }
                         } else if ($fav['Episode'] == $guessItem['episBatEnd']) {
                             // same season and episode, compare itemVersion
-                            if ($guessItem['itemVersion'] === 1) {
+                            if ($itemVer === 1) {
                                 writeToLog("Ignoring: " . $fav['Name'] . " (Fav:Cur " . $fav['Season'] . "x" . $fav['Episode'] . "=" . $guessItem['seasBatEnd'] . "x" . $guessItem['episBatEnd'] . ")\n", 1);
                                 $itemState = "st_favTooOld";
                             } else if ($dloadVersions != 1) {
@@ -428,7 +413,7 @@ function checkItemNumberingMatchesFavorite(&$itemState, $fav, $guessItem, $dload
             }
         }
     } else {
-        writeToLog("Season start or end is not numeric: S" . $guessItem['seasBatStart'] . "-S" . $guessItem['seasBatStart'] . "\n", 2);
+        writeToLog("Season start or end is not numeric: S" . $guessItem['seasBatStart'] . "-S" . $guessItem['seasBatEnd'] . "\n", 2);
         $itemState = "st_notSerialized";
     }
     return $itemMatchesFave;
@@ -463,8 +448,7 @@ function checkItemMatchesFavorite(&$itemState, $fav, $item, $feedUrl, $matchStyl
     // checks if this item matches this Favorite
     $itemMatchesFave = false;
     $ti = strtolower($item['title']);
-    $isFilterAny = (isset($item['Filter']) && strtolower($item['Filter']) === "any");
-    if ($isFilterAny || checkItemTitleMatchesFavorite($fav, $ti, $feedUrl, $matchStyle)) {
+    if (checkItemTitleMatchesFavorite($fav, $ti, $feedUrl, $matchStyle)) {
         $guessItem = detectMatch($ti);
         if (
                 $reqEpisInfo != 1 ||
@@ -474,7 +458,6 @@ function checkItemMatchesFavorite(&$itemState, $fav, $item, $feedUrl, $matchStyl
                 )
         ) {
             if (
-                    !$isFilterAny &&
                     $reqEpisInfo == 1 &&
                     $onlyNewer == 1
             ) {
@@ -548,7 +531,6 @@ function processMatchedItemDownload(
                         ]) !== false) {
                     $startedDownload = true; // download started successfully
                     if ($clientType === "folder") {
-                        //$itemState = "st_downloaded";
                         $itemState = "st_inCacheNotActive";
                     } else {
                         $itemState = "st_downloading";
@@ -560,7 +542,7 @@ function processMatchedItemDownload(
             }
         } else {
             writeToLog("Unable to find URL for " . $item['title'] . " from feed: " . $fav['Feed'] . "\n", -1);
-            $itemState .= ' st_noURL'; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic; use it to disable buttons
+            $itemState = 'st_noURL'; // doesn't do anything except overwrite $itemState = "st_favReady" for future logic; use it to disable buttons
         }
     } else {
         writeToLog("Equiv. in cache; ignoring: " . $item['title'] . "\n", 1); // could be exact or equiv. but we say equiv.
@@ -620,9 +602,9 @@ function processOneFeed($feed, $idx, $feedName, $feedLink, $renderHTML = false) 
     $defaultSeedRatio = getArrayValueByKey($config_values['Settings'], 'Default Seed Ratio');
 
     writeToLog("Started processing feed: $feedName\n", 2);
-    if (isset($feed['feed']) && isset($feed['feed']['entry']) && count($feed['feed']['entry']) > 0) {
+    if (isset($feed['feed']['entry']) && count($feed['feed']['entry']) > 0) {
         if ($renderHTML) {
-            if ($config_values['Settings']['Combine Feeds'] == 0) {
+            if (getArrayValueByKey($config_values['Settings'], 'Combine Feeds', 0) == 0) {
                 show_feed_list($idx);
             }
             $htmlList = []; // init item list for HTML output
@@ -758,7 +740,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink, $renderHTML = false) 
             foreach ($htmlList as $item) {
                 show_feed_item($item['item'], $item['URL'], $item['feedName'], $item['alt'], $item['torHash'], $item['itemState'], $item['id'], $item['link'], $item['linkType']);
             }
-            if ($config_values['Settings']['Combine Feeds'] == 0) {
+            if (getArrayValueByKey($config_values['Settings'], 'Combine Feeds', 0) == 0) {
                 close_feed_list();
             }
         }
@@ -775,7 +757,7 @@ function processOneFeed($feed, $idx, $feedName, $feedLink, $renderHTML = false) 
 function process_all_feeds($feeds, $feedCache, $renderHTML = false) {
     // processes all enabled feeds after loadAllFeeds()
     global $config_values;
-    if ($renderHTML && $config_values['Settings']['Combine Feeds'] == 1) {
+    if ($renderHTML && getArrayValueByKey($config_values['Settings'], 'Combine Feeds', 0) == 1) {
         show_feed_list(0);
     }
     foreach ($feeds as $key => $feed) {
@@ -787,7 +769,7 @@ function process_all_feeds($feeds, $feedCache, $renderHTML = false) {
             writeToLog("Feed inaccessible, not processed: " . $feed['Name'] . "\n", 1);
         }
     }
-    if ($renderHTML && $config_values['Settings']['Combine Feeds'] == 1) {
+    if ($renderHTML && getArrayValueByKey($config_values['Settings'], 'Combine Feeds', 0) == 1) {
         close_feed_list();
     }
 }

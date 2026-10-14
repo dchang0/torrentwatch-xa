@@ -11,7 +11,7 @@ if (isset($style)) {
             <label class="item" title="Name of the Super-Favorite">Name:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="name" id="superfavorite_<?php echo $key; ?>_name" value="<?php echo $item['Name']; ?>">
+            <input type="text" class="text" name="name" id="superfavorite_<?php echo $key; ?>_name" value="<?php echo htmlspecialchars($item['Name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
         </div>
     </div>
     <div class="superfavorite_filter">
@@ -19,7 +19,7 @@ if (isset($style)) {
             <label class="item" title="In RegEx Matching Style, use a PCRE Unicode regex such as .* to match all">Filter:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="filter" id="superfavorite_<?php echo $key; ?>_filter" value="<?php echo $item['Filter']; ?>">
+            <input type="text" class="text" name="filter" id="superfavorite_<?php echo $key; ?>_filter" value="<?php echo htmlspecialchars($item['Filter'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
         </div>
     </div>
     <div class="superfavorite_not">
@@ -27,7 +27,7 @@ if (isset($style)) {
             <label class="item" title="In RegEx Matching Style, use a PCRE Unicode regex to match items you don't want">Not:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="not" id="superfavorite_<?php echo $key; ?>_not" value="<?php echo $item['Not']; ?>"
+            <input type="text" class="text" name="not" id="superfavorite_<?php echo $key; ?>_not" value="<?php echo htmlspecialchars($item['Not'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                    title="Don't match titles with these words. You can add more than one word, separated by spaces">
         </div>
     </div>
@@ -52,7 +52,7 @@ if (isset($style)) {
             <label class="item" title="Episode filter. ex.: 1x1-3x24 for Season 1 Episode 1 to Season 3 Episode 24. To just set one episode use: 2x10. You may use s01e12 instead of 1x12." >Episodes:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="episodes" id="superfavorite_<?php echo $key; ?>_episodes" title="Episodes filter. Please read the instructions on how to use this feature." value="<?php echo $item['Episodes']  ?>">
+            <input type="text" class="text" name="episodes" id="superfavorite_<?php echo $key; ?>_episodes" title="Episodes filter. Please read the instructions on how to use this feature." value="<?php echo htmlspecialchars($item['Episodes'] ?? '', ENT_QUOTES, 'UTF-8');  ?>">
         </div>
     </div>
     <div class="superfavorite_feed">
@@ -70,7 +70,7 @@ if (isset($style)) {
             <label class="item" title="Search for this quality in the full title">Quality:</label>
         </div>
         <div class="right">
-            <input type="text" class="text" name="quality" id="superfavorite_<?php echo $key ?>_quality" value="<?php echo $item['Quality']; ?>">
+            <input type="text" class="text" name="quality" id="superfavorite_<?php echo $key ?>_quality" value="<?php echo htmlspecialchars($item['Quality'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
         </div>
     </div>
     <!--<div class="superfavorite_seed" <?php /*

@@ -27,14 +27,16 @@ $("#torrentClientButtonLabel").show();
 }
 function adjustUIElements() {
     // NOTE: No need to overdo handling below 640px wide due to phone.css
+    // the phone filter bar's burger button reveals these two tabs regardless of width
+    var filtersExpanded = $("body").hasClass("filters_expanded");
     // shrink/expand Downloading
-    if ($(window).width() < 650) {
+    if ($(window).width() < 650 && !filtersExpanded) {
         $("#filterbar_container li#filter_downloading.tab").hide();
     } else {
         $("#filterbar_container li#filter_downloading.tab").show();
     }
     // shrink/expand Downloaded
-    if ($(window).width() < 650) {
+    if ($(window).width() < 650 && !filtersExpanded) {
         $("#filterbar_container li#filter_downloaded.tab").hide();
     } else {
         $("#filterbar_container li#filter_downloaded.tab").show();

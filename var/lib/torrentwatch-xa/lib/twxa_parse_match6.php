@@ -14,38 +14,44 @@ function matchTitle6_2($ti, $seps) {
     $mat = [];
     $re = "/\b(\d{1,4})[$seps\-\/](\d{1,4})[$seps\-\/](\d{1,4})[$seps]?-[$seps]?(\d{1,4})[$seps\-\/](\d{1,4})[$seps\-\/](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
-        if (validateYYYYMMDD($mat[1] . $mat[2] . $mat[3]) && validateYYYYMMDD($mat[4] . $mat[5] . $mat[6])) {
+        $ymd1 = $mat[1] . str_pad($mat[2], 2, '0', STR_PAD_LEFT) . str_pad($mat[3], 2, '0', STR_PAD_LEFT);
+        $ymd2 = $mat[4] . str_pad($mat[5], 2, '0', STR_PAD_LEFT) . str_pad($mat[6], 2, '0', STR_PAD_LEFT);
+        $mdy1 = $mat[3] . str_pad($mat[1], 2, '0', STR_PAD_LEFT) . str_pad($mat[2], 2, '0', STR_PAD_LEFT);
+        $mdy2 = $mat[6] . str_pad($mat[4], 2, '0', STR_PAD_LEFT) . str_pad($mat[5], 2, '0', STR_PAD_LEFT);
+        $dmy1 = $mat[3] . str_pad($mat[2], 2, '0', STR_PAD_LEFT) . str_pad($mat[1], 2, '0', STR_PAD_LEFT);
+        $dmy2 = $mat[6] . str_pad($mat[5], 2, '0', STR_PAD_LEFT) . str_pad($mat[4], 2, '0', STR_PAD_LEFT);
+        if (strlen($ymd1) === 8 && strlen($ymd2) === 8 && validateYYYYMMDD($ymd1) && validateYYYYMMDD($ymd2)) {
             return [
                 'medTyp' => MEDTYP_VIDEO,
                 'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 0,
                 'seasEd' => 0,
-                'episSt' => $mat[1] . $mat[2] . $mat[3],
-                'episEd' => $mat[4] . $mat[5] . $mat[6],
+                'episSt' => $ymd1,
+                'episEd' => $ymd2,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "6_2-1"
             ];
-        } else if (validateYYYYMMDD($mat[3] . $mat[1] . $mat[2]) && validateYYYYMMDD($mat[6] . $mat[4] . $mat[5])) {
+        } else if (strlen($mdy1) === 8 && strlen($mdy2) === 8 && validateYYYYMMDD($mdy1) && validateYYYYMMDD($mdy2)) {
             return [
                 'medTyp' => MEDTYP_VIDEO,
                 'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 0,
                 'seasEd' => 0,
-                'episSt' => $mat[3] . $mat[1] . $mat[2],
-                'episEd' => $mat[6] . $mat[4] . $mat[5],
+                'episSt' => $mdy1,
+                'episEd' => $mdy2,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "6_2-2"
             ];
-        } else if (validateYYYYMMDD($mat[3] . $mat[2] . $mat[1]) && validateYYYYMMDD($mat[6] . $mat[5] . $mat[4])) {
+        } else if (strlen($dmy1) === 8 && strlen($dmy2) === 8 && validateYYYYMMDD($dmy1) && validateYYYYMMDD($dmy2)) {
             return [
                 'medTyp' => MEDTYP_VIDEO,
                 'numSeq' => NUMSEQ_SEASON_EPISODE,
                 'seasSt' => 0,
                 'seasEd' => 0,
-                'episSt' => $mat[3] . $mat[2] . $mat[1],
-                'episEd' => $mat[6] . $mat[5] . $mat[4],
+                'episSt' => $dmy1,
+                'episEd' => $dmy2,
                 'itemVr' => 1,
                 'favTi' => preg_replace($re, "", $ti),
                 'matFnd' => "6_2-3"

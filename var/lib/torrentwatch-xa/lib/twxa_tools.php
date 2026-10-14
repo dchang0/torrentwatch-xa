@@ -1,6 +1,6 @@
 <?php
 
-define('TWXA_VERSION', '1.12.0');
+define('TWXA_VERSION', '1.12.1');
 
 global $config_values;
 
@@ -21,7 +21,7 @@ function outputError($message) {
     if (php_sapi_name() === 'cli') {
         fwrite(STDERR, "ERROR: $message\n");
     } else {
-        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">$message</div>";
+        echo "<div id=\"errorDialog\" class=\"dialog_window\" style=\"display: block\">" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</div>";
     }
 }
 
@@ -33,7 +33,7 @@ function getArrayValueByKey($array, $key, $default = '') {
 function multi_str_search($haystack, $needles) {
     $needlesArray = explode(" ", $needles);
     foreach ($needlesArray as $needle) {
-        if (strpos($haystack, $needle) !== false) {
+        if ($needle !== '' && strpos($haystack, $needle) !== false) {
             return true;
         }
     }
@@ -84,7 +84,9 @@ function getCurl($url, $curlOptions = null, $skipDefaults = false, &$curlErrno =
                 $response = curl_exec($curlHandle);
                 $curlError = curl_error($curlHandle);
                 $curlErrno = curl_errno($curlHandle);
-                curl_close($curlHandle);
+                if (PHP_VERSION_ID < 80000) {
+                    curl_close($curlHandle);
+                }
                 if ($response === false) {
                     writeToLog("curl got no response from " . $curlOptions[CURLOPT_URL] . " with error: " . $curlError . "\n", -1);
                 } else if ($response === true) {
@@ -93,7 +95,7 @@ function getCurl($url, $curlOptions = null, $skipDefaults = false, &$curlErrno =
                     $result = $response;
                 }
             } else {
-                writeToLog("Unable to set curl options: " . print_r($curlOptions, true) . "\n", 0);
+                writeToLog("Unable to set curl options for " . $curlOptions[CURLOPT_URL] . ": option keys " . implode(", ", array_keys($setOptions)) . "\n", 0);
             }
         }
     } else {
@@ -135,7 +137,7 @@ function writeToLog($string, $lvl = -1) {
     }
     if (!isset($config_values['Settings']['Log Level']) || (int) $config_values['Settings']['Log Level'] >= $lvl) {
         // write plain text to log file
-        if (file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND) === false) {
+        if (file_put_contents(get_logFile(), date("c") . " $errLabel $string", FILE_APPEND | LOCK_EX) === false) {
             outputError("Failed to write to log file: " . get_logFile());
         }
     }
@@ -144,16 +146,39 @@ function writeToLog($string, $lvl = -1) {
 function notifyByEmail($body, $subject) {
     global $config_values;
 
-    $fromName = $config_values['Settings']['From Name'];
-    $fromEmail = $config_values['Settings']['From Email'];
-    $toEmail = $config_values['Settings']['To Email'];
-    $smtpServer = $config_values['Settings']['SMTP Server'];
-    $smtpPort = $config_values['Settings']['SMTP Port'];
-    $smtpAuthentication = $config_values['Settings']['SMTP Authentication'];
-    $smtpEncryption = $config_values['Settings']['SMTP Encryption'];
-    $smtpUser = $config_values['Settings']['SMTP User'];
-    $smtpPassword = $config_values['Settings']['SMTP Password'];
-    $hELOOverride = $config_values['Settings']['HELO Override'];
+    $settings = (isset($config_values['Settings']) && is_array($config_values['Settings'])) ? $config_values['Settings'] : [];
+    $smtpAuthentication = isset($settings['SMTP Authentication']) ? $settings['SMTP Authentication'] : '';
+    $requiredSettings = [
+        'From Email',
+        'To Email',
+        'SMTP Server',
+        'SMTP Authentication'
+    ];
+    if ($smtpAuthentication !== '' && $smtpAuthentication !== 'None') {
+        $requiredSettings[] = 'SMTP User';
+        $requiredSettings[] = 'SMTP Password';
+    }
+    $missingSettings = [];
+    foreach ($requiredSettings as $requiredSetting) {
+        if (!isset($settings[$requiredSetting])) {
+            $missingSettings[] = $requiredSetting;
+        }
+    }
+    if ($missingSettings) {
+        writeToLog("Email not sent: config missing required setting(s): " . implode(', ', $missingSettings) . "\n", -1);
+        return;
+    }
+
+    $fromName = getArrayValueByKey($settings, 'From Name');
+    $fromEmail = getArrayValueByKey($settings, 'From Email');
+    $toEmail = getArrayValueByKey($settings, 'To Email');
+    $smtpServer = getArrayValueByKey($settings, 'SMTP Server');
+    $smtpPort = getArrayValueByKey($settings, 'SMTP Port');
+    $smtpAuthentication = getArrayValueByKey($settings, 'SMTP Authentication');
+    $smtpEncryption = getArrayValueByKey($settings, 'SMTP Encryption');
+    $smtpUser = getArrayValueByKey($settings, 'SMTP User');
+    $smtpPassword = getArrayValueByKey($settings, 'SMTP Password');
+    $hELOOverride = getArrayValueByKey($settings, 'HELO Override');
 
     $output = sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smtpAuthentication, $smtpEncryption, $smtpUser, $smtpPassword, $hELOOverride, $subject, $body);
     writeToLog($output['message'] . " (rc=" . $output['rc'] . ")", 1);
@@ -180,9 +205,25 @@ function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smt
                 if ($fromName != '') {
                     $email->FromName = $fromName;
                 }
-                if ($hELOOverride != '' && filter_var($hELOOverride, FILTER_VALIDATE_DOMAIN)) {
-                    $email->Hostname = ''; // sets empty hostname to force setting of HELO to work
-                    $email->Helo = $hELOOverride;
+                $hELOIp = $hELOOverride;
+                if ($hELOOverride != '') {
+                    if (strlen($hELOIp) > 1 && $hELOIp[0] == '[' && substr($hELOIp, -1) == ']') {
+                        $hELOIp = substr($hELOIp, 1, -1);
+                    }
+                    if (
+                            filter_var($hELOIp, FILTER_VALIDATE_IP) ||
+                            (
+                                    strlen($hELOOverride) <= 253 &&
+                                    preg_match("/^[A-Za-z0-9_.-]+$/", $hELOOverride) &&
+                                    strpos($hELOOverride, "..") === false &&
+                                    $hELOOverride[0] != '.'
+                            )
+                    ) {
+                        $email->Hostname = ''; // sets empty hostname to force setting of HELO to work
+                        $email->Helo = $hELOOverride;
+                    } else {
+                        writeToLog("Invalid HELO Override ignored: " . str_replace(["\r", "\n"], " ", $hELOOverride) . " (expected FQDN or IP address)\n", 0);
+                    }
                 }
                 $email->AddAddress($toEmail);
                 $email->Host = $smtpServer;
@@ -191,7 +232,7 @@ function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smt
                     $email->SMTPAuth = true;
                     $email->AuthType = $smtpAuthentication;
                     $email->Username = $smtpUser;
-                    $email->Password = decryptsMTPPassword($smtpPassword);
+                    $email->Password = decryptSMTPPassword($smtpPassword);
 
                     switch ($smtpEncryption) {
                         case 'None':
@@ -241,7 +282,7 @@ function sendEmail($fromName, $fromEmail, $toEmail, $smtpServer, $smtpPort, $smt
 function runScript($param, $title, $errorMessage = "") {
     global $config_values;
     $subject = $msg = "";
-    $script = trim($config_values['Settings']['Script']);
+    $script = trim(getArrayValueByKey($config_values['Settings'], 'Script'));
     if ($script) {
         if (preg_match("/\s+/", $script)) {
             $subject = "Parameters not allowed in Trigger Script: $script";
@@ -279,7 +320,7 @@ function runScript($param, $title, $errorMessage = "") {
         $msg = "torrentwatch-xa: Configure > Trigger > Script not specified";
         writeToLog("Trigger Script not specified\n", 0);
     }
-    if ($subject && $config_values['Settings']['SMTP Notifications']) {
+    if ($subject && getArrayValueByKey($config_values['Settings'], 'SMTP Notifications')) {
         notifyByEmail($msg, $subject);
     }
 }
@@ -287,7 +328,10 @@ function runScript($param, $title, $errorMessage = "") {
 function parseURLForCookies($url) {
     $cookies = stristr($url, ':COOKIE:');
     if ($cookies !== false) {
-        $url = rtrim(substr($url, 0, -strlen($cookies)), '&');
+        $url = substr($url, 0, -strlen($cookies));
+        if (substr($url, -1) === '&') {
+            $url = substr($url, 0, -1);
+        }
         $cookies = strtr(substr($cookies, 8), '&', ';');
         return [
             'url' => $url,

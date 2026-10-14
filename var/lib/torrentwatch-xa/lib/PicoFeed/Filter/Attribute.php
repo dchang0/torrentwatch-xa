@@ -353,7 +353,11 @@ class Attribute
     public function rewriteAbsoluteUrl($tag, $attribute, &$value)
     {
         if ($this->isResource($attribute)) {
-            $value = Url::resolve($value, $this->website);
+            $link = new Url($value);
+
+            if (!($link->hasScheme() && !$link->hasHost())) {
+                $value = Url::resolve($value, $this->website);
+            }
         }
 
         return true;

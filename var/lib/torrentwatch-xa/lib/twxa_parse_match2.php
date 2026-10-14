@@ -79,8 +79,6 @@ function matchTitle2_1000($ti, $seps) {
         // V##.## (Software Version ##.##)
         // isolated S1 #10
         // ID-## - ## (different spacing around minuses)
-        $firstWord = strtolower($mat[1]);
-        $secondWord = strtolower($mat[4]);
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SEASON_EPISODE,
@@ -237,8 +235,10 @@ function matchTitle2_4($ti, $seps, $detVid = false) {
                     'matFnd' => "2_4-5"
                 ];
         }
-        $result['favTi'] = preg_replace($re, "", $ti);
-        return $result;
+        if (isset($result['matFnd'])) {
+            $result['favTi'] = preg_replace($re, "", $ti);
+            return $result;
+        }
     }
 }
 
@@ -494,8 +494,10 @@ function matchTitle2_12($ti, $seps, $detVid = false) {
                     'matFnd' => "2_12-5"
                 ];
         }
-        $result['favTi'] = preg_replace($re, "", $ti);
-        return $result;
+        if (isset($result['matFnd'])) {
+            $result['favTi'] = preg_replace($re, "", $ti);
+            return $result;
+        }
     }
 }
 
@@ -652,8 +654,10 @@ function matchTitle2_14($ti, $seps, $detVid = false) {
                     'matFnd' => "2_14-5"
                 ];
         }
-        $result['favTi'] = preg_replace($re, "", $ti);
-        return $result;
+        if (isset($result['matFnd'])) {
+            $result['favTi'] = preg_replace($re, "", $ti);
+            return $result;
+        }
     }
 }
 
@@ -843,8 +847,10 @@ function matchTitle2_16($ti, $seps, $detVid = false) {
                         ];
                 }
         }
-        $result['favTi'] = preg_replace($re, "", $ti);
-        return $result;
+        if (isset($result['matFnd'])) {
+            $result['favTi'] = preg_replace($re, "", $ti);
+            return $result;
+        }
     }
 }
 
@@ -1174,18 +1180,20 @@ function matchTitle2_25($ti, $seps) {
 
 function matchTitle2_26($ti, $seps) {
     // EEE - (YYYY) or title #### (YYYY)
+    $printWords = "Chapters|Chapter|Capitulos|Capitulo|Chapitres|Chapitre|Chap\.|Chap|Ch\.|Ch|Volumes|Volume|Volumen|Volumens|Vols\.|Vols|Vol\.|Vol";
     $mat = [];
-    $re = "/\b(\d{1,4})[-$seps]{0,3}\((\d{4})\).*/";
+    $re = "/\b(?:((" . $printWords . ")[-$seps]{0,3})?)(\d{1,4})[-$seps]{0,3}\((\d{4})\).*/i";
     if (preg_match($re, $ti, $mat)) {
-        if ((int) $mat[2] <= getdate()['year'] && (int) $mat[2] > 1895) {
-            //TODO use smaller threshold for videos, larger one for print media
-            if ((int) $mat[1] > 998 || (int) $mat[1] == 666) {
+        $isPrint = (isset($mat[2]) && $mat[2] !== "");
+        if ((int) $mat[4] <= getdate()['year'] && (int) $mat[4] > 1895) {
+            // videos: >54 (four seasons) or 666 is title text; print: no magnitude cutoff (4-digit max), only the 666 exception
+            if ((int) $mat[3] > ($isPrint ? 9999 : 54) || (int) $mat[3] == 666) {
                 // EEE is probably part of the title, such as 666 or 1000 or 2045
                 return [
-                    'medTyp' => MEDTYP_VIDEO,
+                    'medTyp' => $isPrint ? MEDTYP_PRINT : MEDTYP_VIDEO,
                     'numSeq' => NUMSEQ_SEASON_EPISODE,
-                    'seasSt' => $mat[2], // full Season = YYYY
-                    'seasEd' => $mat[2],
+                    'seasSt' => $mat[4], // full Season = YYYY
+                    'seasEd' => $mat[4],
                     'episSt' => 1,
                     'episEd' => "",
                     'itemVr' => 1,
@@ -1193,14 +1201,14 @@ function matchTitle2_26($ti, $seps) {
                     'matFnd' => "2_26-1"
                 ];
             } else {
-                // EEE is probably an episode and not part of the title
+                // EEE is probably an episode/chapter/volume and not part of the title
                 return [
-                    'medTyp' => MEDTYP_VIDEO,
+                    'medTyp' => $isPrint ? MEDTYP_PRINT : MEDTYP_VIDEO,
                     'numSeq' => NUMSEQ_SEASON_EPISODE,
-                    'seasSt' => $mat[2], // Half date notation and half episode: let Season = YYYY
-                    'seasEd' => $mat[2],
-                    'episSt' => $mat[1],
-                    'episEd' => $mat[1],
+                    'seasSt' => $mat[4], // Half date notation and half episode: let Season = YYYY
+                    'seasEd' => $mat[4],
+                    'episSt' => $mat[3],
+                    'episEd' => $mat[3],
                     'itemVr' => 1,
                     'favTi' => preg_replace($re, "", $ti),
                     'matFnd' => "2_26-2"
@@ -1455,9 +1463,12 @@ function matchTitle2_33($ti, $seps) {
 function matchTitle2_34($ti, $seps) {
     // month DD, YYYY
     $mat = [];
-    $re = "/\b([A-Za-z]+)[$seps](\d{1,2})[$seps\,](\d{1,4})\b.*/";
+    $re = "/\b([A-Za-z]+)[$seps](\d{1,2})[$seps\,][$seps]?(\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         $MM = convertMonthToMM($mat[1]);
+        if (strlen($mat[2]) == 1) {
+            $mat[2] = '0' . $mat[2];
+        }
         if (is_numeric($MM) && validateYYYYMMDD($mat[3] . $MM . $mat[2])
         ) {
             return [
@@ -1478,9 +1489,12 @@ function matchTitle2_34($ti, $seps) {
 function matchTitle2_35($ti, $seps) {
     // DD month, YYYY
     $mat = [];
-    $re = "/\b(\d{1,2})[$seps]([A-Za-z]+)[$seps\,](\d{1,4})\b.*/";
+    $re = "/\b(\d{1,2})[$seps]([A-Za-z]+)[$seps\,][$seps]?(\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         $MM = convertMonthToMM($mat[2]);
+        if (strlen($mat[1]) == 1) {
+            $mat[1] = '0' . $mat[1];
+        }
         if (is_numeric($MM) && validateYYYYMMDD($mat[3] . $MM . $mat[1])
         ) {
             return [
@@ -1519,8 +1533,10 @@ function matchTitle2_36($ti, $seps) {
                     ];
                 }
         }
-        $result['favTi'] = preg_replace($re, "", $ti);
-        return $result;
+        if (isset($result['matFnd'])) {
+            $result['favTi'] = preg_replace($re, "", $ti);
+            return $result;
+        }
     }
 }
 

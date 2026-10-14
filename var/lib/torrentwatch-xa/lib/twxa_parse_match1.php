@@ -240,8 +240,8 @@ function matchTitle1_1_11($ti, $seps) {
 function matchTitle1_1_12($ti, $seps) {
     // Special v##
     $mat = [];
-    $re = "/\b(Special|Spec\.|Spec|Spc\.|Spc|Sp\.|Sp)[$seps]v(\d+).*/i";
-    if (preg_match("/\b(Special|Spec\.|Spec|Spc\.|Spc|Sp\.|Sp)[$seps]v(\d+)/i", $ti, $mat)) {
+    $re = "/\b(" . SPECIAL_WORDS . "|Sp)[$seps]v(\d+).*/i";
+    if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
             'numSeq' => NUMSEQ_SPECIAL,
@@ -259,7 +259,7 @@ function matchTitle1_1_12($ti, $seps) {
 function matchTitle1_1_13($ti, $seps) {
     // 02 - Special
     $mat = [];
-    $re = "/\b(\d{1,2})[\-$seps]{0,3}(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.|Sp\b).*/i";
+    $re = "/\b(\d{1,2})[\-$seps]{0,3}(" . SPECIAL_WORDS . "|Sp\b).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,
@@ -280,7 +280,7 @@ function matchTitle1_1_14($ti, $seps) {
     // Spec02
     // SP# (Special #)
     $mat = [];
-    $re = "/\b(Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.|SP)[\-$seps]{0,3}(\d{1,2}).*/i";
+    $re = "/\b(" . SPECIAL_WORDS . "|Sp)[\-$seps]{0,3}(\d{1,2}).*/i";
     if (preg_match($re, $ti, $mat)) {
         return [
             'medTyp' => MEDTYP_VIDEO,

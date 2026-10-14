@@ -5,6 +5,11 @@
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+if (PHP_VERSION_ID < 70000) {
+    fwrite(STDERR, 'torrentwatch-xa requires PHP 7.0 or later (this server is running PHP ' . PHP_VERSION . ")\n");
+    exit(1);
+}
+
 require_once("config.php");
 require_once("twxa_tools.php");
 
@@ -24,7 +29,11 @@ function parse_args($argc, $argv) {
                 exit(0);
             case '-d':
             case '--debug':
-                $config_values['Settings']['Log Level'] = 2;
+                // only apply when the config actually loaded; writing into a null $config_values
+                // (corrupt config JSON) would auto-vivify a phantom 1-key Settings array
+                if (isset($config_values['Settings'])) {
+                    $config_values['Settings']['Log Level'] = 2;
+                }
                 break;
             default:
                 print ("Invalid command line argument:  " . $argv[$i] . "\n");
@@ -47,17 +56,15 @@ if (isset($config_values['Feeds'])) {
     process_all_feeds($config_values['Feeds'], $feedCache);
 }
 if (
+        !isset($config_values['Settings']['Auto-Del Seeded Torrents']) ||
+        $config_values['Settings']['Auto-Del Seeded Torrents'] != 1
+) {
+    writeToLog("Auto-Del Seeded Torrents is disabled\n", 2);
+} else if (
         isset($config_values['Settings']['Client']) &&
         $config_values['Settings']['Client'] === 'Transmission'
 ) {
-    if (
-            isset($config_values['Settings']['Auto-Del Seeded Torrents']) &&
-            $config_values['Settings']['Auto-Del Seeded Torrents'] == 1
-    ) {
-        auto_del_seeded_torrents();
-    } else {
-        writeToLog("Auto-Del Seeded Torrents is disabled\n", 2);
-    }
+    auto_del_seeded_torrents();
 } else {
     writeToLog("Auto-Del Seeded Torrents requires the Transmission client\n", 2);
 }

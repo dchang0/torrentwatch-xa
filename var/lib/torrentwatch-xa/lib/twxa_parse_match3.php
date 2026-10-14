@@ -34,10 +34,11 @@ function matchTitle3_1($ti, $seps) {
 function matchTitle3_2($ti, $seps) {
     // isolated YYYY MM DD or MM DD YYYY or DD MM YYYY
     $mat = [];
+    $thisYear = getdate()['year'];
     $re = "/\b(\d{1,4})[$seps\-\/](\d{1,4})[$seps\-\/](\d{1,4})\b.*/";
     if (preg_match($re, $ti, $mat)) {
         // YYYY MM DD
-        if (checkdate((int)$mat[2], (int)$mat[3], (int)$mat[1])) {
+        if (checkdate((int)$mat[2], (int)$mat[3], (int)$mat[1]) && (int)$mat[1] <= $thisYear && (int)$mat[1] > 1895) {
             $date = $mat[1] . str_pad($mat[2], 2, "0", STR_PAD_LEFT) . str_pad($mat[3], 2, "0", STR_PAD_LEFT);
             return [
                 'medTyp' => MEDTYP_VIDEO,
@@ -52,7 +53,7 @@ function matchTitle3_2($ti, $seps) {
             ];
         }
         // MM DD YYYY
-        if (checkdate((int)$mat[1], (int)$mat[2], (int)$mat[3])) {
+        if (checkdate((int)$mat[1], (int)$mat[2], (int)$mat[3]) && (int)$mat[3] <= $thisYear && (int)$mat[3] > 1895) {
             $date = $mat[3] . str_pad($mat[1], 2, "0", STR_PAD_LEFT) . str_pad($mat[2], 2, "0", STR_PAD_LEFT);
             return [
                 'medTyp' => MEDTYP_VIDEO,
@@ -67,7 +68,7 @@ function matchTitle3_2($ti, $seps) {
             ];
         }
         // DD MM YYYY
-        if (checkdate((int)$mat[2], (int)$mat[1], (int)$mat[3])) {
+        if (checkdate((int)$mat[2], (int)$mat[1], (int)$mat[3]) && (int)$mat[3] <= $thisYear && (int)$mat[3] > 1895) {
             $date = $mat[3] . str_pad($mat[2], 2, "0", STR_PAD_LEFT) . str_pad($mat[1], 2, "0", STR_PAD_LEFT);
             return [
                 'medTyp' => MEDTYP_VIDEO,

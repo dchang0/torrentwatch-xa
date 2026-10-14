@@ -46,10 +46,12 @@ function getTransmissionWebuRL() {
     global $config_values;
     $host = $config_values['Settings']['Transmission Host'];
     if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
-        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'HTTP_HOST'));
+        $hostHeader = filter_input(INPUT_SERVER, 'HTTP_HOST');
+        $host = preg_replace('/:.*/', "", $hostHeader !== null ? $hostHeader : '');
     }
     if (preg_match('/(localhost|127\.0\.0\.1)/', $host)) {
-        $host = preg_replace('/:.*/', "", filter_input(INPUT_SERVER, 'SERVER_NAME'));
+        $hostHeader = filter_input(INPUT_SERVER, 'SERVER_NAME');
+        $host = preg_replace('/:.*/', "", $hostHeader !== null ? $hostHeader : '');
     }
     $url = 'http://' . $host . ':' . $config_values['Settings']['Transmission Port'] . getTransmissionWebPath() . "/"; // ending slash is required
     return $url;
@@ -90,6 +92,7 @@ function writeDefaultConfigFile() {
     $config_values['Settings']['Ignore Batches'] = "1";
     $config_values['Settings']['Download Versions'] = "1";
     $config_values['Settings']['Resolutions Only'] = "0";
+    $config_values['Settings']['Re-add Delay (days)'] = "14";
     // Trigger tab
     $config_values['Settings']['Enable Script'] = "0";
     $config_values['Settings']['Script'] = "";
@@ -112,6 +115,8 @@ function writeDefaultConfigFile() {
     $config_values['Favorites'] = [];
     // wipe the Hidden section
     $config_values['Hidden'] = [];
+    // wipe the Deleted-Favorites section (tombstones: Favorite Name => hold expiry epoch)
+    $config_values['Deleted-Favorites'] = [];
     // set defaults for the Feeds section
     $config_values['Feeds'] = [
         0 => [
@@ -151,7 +156,7 @@ function writeDefaultConfigFile() {
 
 function readjSONConfigFile() {
     // reads config file written in PHP's JSON format
-    global $config_values;
+    global $config_values, $configCorrupt;
 
     $configFile = getConfigFile();
     $configCacheFile = getConfigCacheFile();
@@ -206,32 +211,36 @@ function readjSONConfigFile() {
     $return = false;
     switch ($useWhich) {
         case "cache":
-            $config_values = unserialize(file_get_contents($configCacheFile));
-            if ($config_values === false) {
-                // fall through to config below
-            } else {
+            $config_values = unserialize(file_get_contents($configCacheFile), ['allowed_classes' => false]);
+            if (is_array($config_values) && isset($config_values['Settings'])) {
                 break;
             }
+            // fall through to config below
         case "config":
             $config_values = json_decode(file_get_contents($configFile), true);
-            if (isset($config_values)) {
-                $return = writeConfigCacheFile($configCacheFile, $config_values);
-            } else {
-                writeToLog("Unable to read JSON config file: $configFile\n", -1);
+            if (!is_array($config_values) || !isset($config_values['Settings'])) {
+                // unreadable config: move it aside so no save can overwrite it, then re-resolve from cache or defaults
+                $config_values = null; // the failed decode result may be a scalar, which writeDefaultConfigFile() cannot build on
+                $configBackupFile = $configFile . ".corrupt-" . date("Ymd-His");
+                if (rename($configFile, $configBackupFile)) {
+                    chmod($configBackupFile, 0600);
+                    writeToLog("Config file was unreadable; preserved it as: $configBackupFile\n", -1);
+                    return readjSONConfigFile(); // config is now absent: a valid cache restores it, otherwise defaults apply
+                }
+                $configCorrupt = true;
+                writeToLog("Config file is unreadable and could not be moved aside: $configFile; refusing to write the config until this is fixed\n", -1);
+                return false;
             }
+            $return = writeConfigCacheFile($configCacheFile, $config_values);
             break;
         case "cacheToConfig":
-            $config_values = unserialize(file_get_contents($configCacheFile));
-            if ($config_values === false) {
-                // fall through to new below
-            } else {
-                if (isset($config_values)) {
-                    $return = writejSONConfigFile();
-                } else {
-                    writeToLog("Unable to read JSON config cache file: $configCacheFile\n", -1);
-                }
+            $config_values = unserialize(file_get_contents($configCacheFile), ['allowed_classes' => false]);
+            if (is_array($config_values) && isset($config_values['Settings'])) {
+                $return = writejSONConfigFile();
                 break;
             }
+            $config_values = null; // the failed unserialize result may be a scalar, which writeDefaultConfigFile() cannot build on
+            // fall through to new below
         case "new":
         default:
             $return = writeDefaultConfigFile() && writeConfigCacheFile($configCacheFile, $config_values);
@@ -245,8 +254,12 @@ function readjSONConfigFile() {
 
 function writeConfigCacheFile($configCacheFile, $config_values) {
     // write cache file
-    file_put_contents($configCacheFile, serialize($config_values)); // apparently serialize can't return a failure
+    if (file_put_contents($configCacheFile, serialize($config_values)) === false) {
+        writeToLog("Unable to write config cache file: $configCacheFile\n", -1);
+        return false;
+    }
     chmod($configCacheFile, 0660);
+    return true;
 }
 
 function setpHPTimeZone($timezone) {
@@ -281,7 +294,7 @@ function set_client_passwd(&$configClientPassword) {
     }
 }
 
-function decryptsMTPPassword($encryptedPassword) {
+function decryptSMTPPassword($encryptedPassword) {
     if (preg_match('/^\$%&(.*)\$%&$/', $encryptedPassword, $matches)) {
         return base64_decode($matches[1]);
     }
@@ -334,7 +347,12 @@ function setupConfigCacheDir() {
 }
 
 function writejSONConfigFile() {
-    global $config_values;
+    global $config_values, $configCorrupt;
+
+    if (!empty($configCorrupt) || !is_array($config_values)) {
+        writeToLog("Refusing to write config: settings did not load successfully; fix or restore the config file (see any .corrupt backup) before saving\n", -1);
+        return false;
+    }
 
     $configFile = getConfigFile();
     $configTempFile = $configFile . "_tmp";
@@ -346,7 +364,9 @@ function writejSONConfigFile() {
     $configOut = $config_values;
     unset($configOut['Global']);
 
-    setupConfigCacheDir();
+    if (!setupConfigCacheDir()) {
+        writeToLog("Config cache directory is not usable; the config cache may be stale after this save: $configCache\n", -1);
+    }
 
     $configjSON = json_encode($configOut, JSON_PRETTY_PRINT);
     if ($configjSON !== false) {
@@ -386,11 +406,15 @@ function writejSONConfigFile() {
 function updateGlobalConfig() {
     global $config_values;
 
+    if (!isset($_POST['button'])) {
+        return;
+    }
+
     $oldTimezone = $config_values['Settings']['Time Zone'] ?? '';
 
     /* Receives HTTP input from the Configure panels into $config_values
      * Do not put settings that are only accessible by editing the config file
-     * in this array, as they will get overwritten by null.
+     * in this array, as they will never be updated from the form.
      */
     $input = [
         // Interface tab
@@ -422,6 +446,7 @@ function updateGlobalConfig() {
         'Ignore Batches' => 'ignorebatches',
         'Download Versions' => 'fetchversions',
         'Resolutions Only' => 'resolutionsonly',
+        'Re-add Delay (days)' => 'readdelay',
         // Trigger tab
         'Enable Script' => 'enableScript',
         'Script' => 'script',
@@ -437,8 +462,64 @@ function updateGlobalConfig() {
         'SMTP Password' => 'smtpPassword',
         'HELO Override' => 'hELOOverride'
     ];
+    // settings whose form control is a checkbox: an unchecked box is absent from the POST,
+    // so store its explicit "0" default (matching writeDefaultConfigFile()) instead of null;
+    // any other absent param is skipped so a partial request cannot null out settings (C7)
+    $checkboxInputs = [
+        'Combine Feeds',
+        'Disable Hide List',
+        'Show Debug',
+        'Check for Updates',
+        'Also Save Torrent Files',
+        'Auto-Del Seeded Torrents',
+        'Enable Super-Favorites',
+        'Default Feed All',
+        'Require Episode Info',
+        'Only Newer',
+        'Download Versions',
+        'Ignore Batches',
+        'Enable Script',
+        'SMTP Notifications'
+    ];
     foreach ($input as $key => $data) {
-        $config_values['Settings'][$key] = filter_input(INPUT_GET, $data);
+        $value = filter_input(INPUT_POST, $data);
+        if ($value === null) {
+            if (in_array($key, $checkboxInputs, true)) {
+                $config_values['Settings'][$key] = '0';
+            }
+            continue;
+        }
+        if (!is_string($value)) {
+            // filter_input returns false for array params (name[]=...), which sails past the
+            // null skip above; storing that poisons string settings (URL builds, path joins,
+            // === comparisons) for as long as the config survives
+            continue;
+        }
+        $config_values['Settings'][$key] = $value;
+    }
+    // clamp Super-Favorite re-add hold to 7-21 days (weekly releases; default 14) so a
+    // hand-typed 0/9999 or non-numeric value never persists; consumers also clamp on read
+    $readdelay = $config_values['Settings']['Re-add Delay (days)'] ?? '14';
+    if (!is_numeric($readdelay)) {
+        $readdelay = '14';
+    }
+    $readdelay = (int) $readdelay;
+    if ($readdelay < 7) {
+        $readdelay = 7;
+    } elseif ($readdelay > 21) {
+        $readdelay = 21;
+    }
+    $config_values['Settings']['Re-add Delay (days)'] = (string) $readdelay;
+    // reject an invalid Time Zone so a typo never persists; runtime consumers fall back to
+    // UTC on their own, but the bad value would log on every feed parse until hand-fixed
+    $newTimezone = $config_values['Settings']['Time Zone'] ?? '';
+    if ($newTimezone !== '' && $newTimezone !== $oldTimezone) {
+        try {
+            new DateTimeZone($newTimezone);
+        } catch (Throwable $e) {
+            $config_values['Settings']['Time Zone'] = $oldTimezone;
+            writeToLog("Invalid Time Zone \"$newTimezone\" rejected, keeping \"$oldTimezone\"\n", -1);
+        }
     }
     set_client_passwd($config_values['Settings']['Transmission Password']);
     set_smtp_passwd();
@@ -498,7 +579,11 @@ function addHidden($name) {
                 }
             }
             $config_values['Hidden'][strtolower($guess['favTitle'])] = $guess['favTitle'];
-            writejSONConfigFile();
+            if (!writejSONConfigFile()) {
+                writeToLog("Failed writing config after hiding: $name\n", -1);
+                echo "twxa-ERROR:Failed to save hide list.";
+                return;
+            }
             writeToLog("Hid: $name\n", 1);
             echo $guess['favTitle']; // use favTitle, not title
             return;
@@ -524,6 +609,11 @@ function delHidden($list) {
 
 function addSuperFavoriteFromgET() {
     global $config_values;
+    foreach (array_keys($_GET) as $gKey) {
+        if (!is_string($_GET[$gKey])) {
+            unset($_GET[$gKey]);
+        }
+    }
 
     // $superfavInfo is returned all the way to Javascript for updating Super-Favorite in web UI dynamically
     // Theoretically we could use $_GET or $config_values['Super-Favorites'][$idx] to return, but $superfavInfo has error info
@@ -537,7 +627,7 @@ function addSuperFavoriteFromgET() {
         $superfavInfo['errorMessage'] = "Error: Missing Filter, cannot add Super-Favorite";
         return(json_encode($superfavInfo));
     }
-    if (!isset($_GET['idx']) || $_GET['idx'] == 'new') {
+    if ((!isset($_GET['idx']) || $_GET['idx'] == 'new') && isset($_GET['name'])) {
         foreach ($config_values['Super-Favorites'] as $superfav) {
             if ($_GET['name'] == $superfav['Name']) {
                 $superfavInfo['errorCode'] = 1;
@@ -579,12 +669,15 @@ function addSuperFavoriteFromgET() {
         }
     }
     if (isset($_GET['feed'])) {
-        $config_values['Super-Favorites'][$idx]['Feed'] = urldecode($_GET['feed']);
+        $config_values['Super-Favorites'][$idx]['Feed'] = $_GET['feed'];
         $superfavInfo['feed'] = $_GET['feed'];
     }
     //$superfavInfo['title'] = $_GET['name']; // not needed for Super-Favorites
     $config_values['Super-Favorites'][$idx]['lastUpdated'] = time();
-    writejSONConfigFile();
+    if (!writejSONConfigFile()) {
+        $superfavInfo['errorCode'] = 1;
+        $superfavInfo['errorMessage'] = 'Error: Failed to write config file';
+    }
     return(json_encode($superfavInfo));
 }
 
@@ -723,13 +816,39 @@ function addFavoriteFromParams(
         $config_values['Favorites'][$targetidx]['Episode'] = "";
     }
     $config_values['Favorites'][$targetidx]['lastUpdated'] = time();
-    writejSONConfigFile();
-    // assume success by now
+    // a deliberate manual add/update of this name clears any Super-Favorite re-add tombstone
+    // (the Super-Favorite auto-add path is blocked by the tombstone before reaching this
+    // function, so only user-initiated adds land here with a live tombstone)
+    unset($config_values['Deleted-Favorites'][$trimmedname]);
+    if (!writejSONConfigFile()) {
+        return [
+            'index' => $targetidx,
+            'errorCode' => 1,
+            'errorMessage' => "Error: Failed to write config file after adding/updating Favorite \"$trimmedname\" at index \"$targetidx\"."
+        ];
+    }
     return [
         'index' => $targetidx,
         'errorCode' => 0,
         'errorMessage' => "Successfully added/updated Favorite \"$trimmedname\" at index \"$targetidx\"."
     ];
+}
+
+function getSuperFavoriteReaddayDelay() {
+    // hold length before a Super-Favorite may re-add a deleted Favorite; weekly releases
+    // make 14 days the sane default, clamped 7-21 (also clamped on save in updateGlobalConfig)
+    global $config_values;
+    $delay = $config_values['Settings']['Re-add Delay (days)'] ?? '14';
+    if (!is_numeric($delay)) {
+        $delay = 14;
+    }
+    $delay = (int) $delay;
+    if ($delay < 7) {
+        $delay = 7;
+    } elseif ($delay > 21) {
+        $delay = 21;
+    }
+    return $delay;
 }
 
 function addFavoriteFromSuperFavoriteMatch(
@@ -738,6 +857,25 @@ function addFavoriteFromSuperFavoriteMatch(
         $feed = null,
         $quality = null
 ) {
+    global $config_values;
+    $name = trim((string) $name);
+    // don't re-add a Favorite the user intentionally deleted; the tombstone written by
+    // deleteFavoriteFromgET() holds for getSuperFavoriteReaddayDelay() days (RSS items
+    // linger for days after a release, so without the hold the next feed run recreates
+    // the Favorite the user just deleted); a manual re-add clears the tombstone
+    if (isset($config_values['Deleted-Favorites'][$name])) {
+        $expiry = (int) $config_values['Deleted-Favorites'][$name];
+        if ($expiry > time()) {
+            $holdUntil = date('Y-m-d', $expiry);
+            writeToLog("Favorite \"$name\" was recently deleted; not re-adding from Super-Favorite match (hold until $holdUntil).\n", 1);
+            return [
+                'index' => null,
+                'errorCode' => 2,
+                'errorMessage' => "\"$name\" was recently deleted; Super-Favorite re-add on hold until $holdUntil."
+            ];
+        }
+        unset($config_values['Deleted-Favorites'][$name]); // hold expired; prune in memory (persisted by the add's config write)
+    }
     writeToLog("Adding Favorite \"$name\" from Super-Favorite match.\n", 2);
     $return = addFavoriteFromParams(
             $name, // required
@@ -771,6 +909,11 @@ function addFavoriteFromSuperFavoriteMatch(
 
 function addFavoriteFromgET() {
     // extract and parse params from $_GET, then delegate to addFavoriteFromParams()
+    foreach (array_keys($_GET) as $gKey) {
+        if (!is_string($_GET[$gKey])) {
+            unset($_GET[$gKey]);
+        }
+    }
     $name = isset($_GET['name']) ? $_GET['name'] : null;
     $filter = isset($_GET['filter']) ? $_GET['filter'] : null;
 
@@ -790,7 +933,7 @@ function addFavoriteFromgET() {
     $result = addFavoriteFromParams(
             $name,
             $filter,
-            isset($_GET['feed']) ? urldecode($_GET['feed']) : null,
+            isset($_GET['feed']) ? $_GET['feed'] : null,
             isset($_GET['quality']) ? $_GET['quality'] : null,
             isset($_GET['not']) ? $_GET['not'] : null,
             isset($_GET['episodes']) ? $_GET['episodes'] : null,
@@ -835,7 +978,7 @@ function deleteSuperFavoriteFromgET() {
         'errorMessage' => ''
     ];
     $index = filter_input(INPUT_GET, 'idx');
-    if ($index === false) {
+    if ($index === false || $index === null) {
         $response['errorCode'] = 1;
         $response['errorMessage'] = 'Error: Missing index, cannot delete Super-Favorite';
         return json_encode($response);
@@ -864,7 +1007,7 @@ function deleteFavoriteFromgET() {
         'errorMessage' => ''
     ];
     $index = filter_input(INPUT_GET, 'idx');
-    if ($index === false) {
+    if ($index === false || $index === null) {
         $response['errorCode'] = 1;
         $response['errorMessage'] = 'Error: Missing index, cannot delete Favorite';
         return json_encode($response);
@@ -874,7 +1017,18 @@ function deleteFavoriteFromgET() {
         $response['errorMessage'] = "Error: Favorite with index '$index' not found";
         return json_encode($response);
     }
+    $deletedName = $config_values['Favorites'][$index]['Name'] ?? '';
     unset($config_values['Favorites'][$index]);
+    // tombstone the deleted Favorite's name so a Super-Favorite won't re-add it while the
+    // hold lasts (default 14 days, see "Re-add Delay (days)"); a manual re-add clears it
+    if ($deletedName !== '') {
+        $holdDays = getSuperFavoriteReaddayDelay();
+        if (!isset($config_values['Deleted-Favorites']) || !is_array($config_values['Deleted-Favorites'])) {
+            $config_values['Deleted-Favorites'] = [];
+        }
+        $config_values['Deleted-Favorites'][$deletedName] = time() + ($holdDays * 86400);
+        writeToLog("Deleted Favorite \"$deletedName\"; Super-Favorite re-add suppressed for $holdDays day(s).\n", 1);
+    }
     if (!writejSONConfigFile()) {
         $response['errorCode'] = 1;
         $response['errorMessage'] = 'Error: Failed to write config file';
@@ -972,7 +1126,10 @@ function addFeed($feedItem) {
                     $parsedFeed['feed']['website'] !== ''
                     )
             ) {
-                $config_values['Feeds'][$idx]['Website'] = filter_var($parsedFeed['feed']['website'], FILTER_VALIDATE_URL);
+                // store '' rather than the filter's false so the key never persists as boolean
+                // false (isset(false) passes the renderer's guard and yields an empty href)
+                $validatedWebsite = filter_var($parsedFeed['feed']['website'], FILTER_VALIDATE_URL);
+                $config_values['Feeds'][$idx]['Website'] = ($validatedWebsite !== false) ? $validatedWebsite : '';
             }
             $config_values['Feeds'][$idx]['lastUpdated'] = time();
         } else {
@@ -1027,10 +1184,11 @@ function updateFeed() {
                                 if ($newFeedLink !== $oldFeedLink) {
                                     // update the feed link on all associated Favorites
                                     foreach ($config_values['Favorites'] as &$favorite) {
-                                        if ($favorite['Feed'] == $oldFeedLink) {
+                                        if ($favorite['Feed'] === $oldFeedLink) {
                                             $favorite['Feed'] = str_replace(' ', '%20', $newFeedLink);
                                         }
                                     }
+                                    unset($favorite);
                                     $config_values['Feeds'][$idx]['Link'] = $newFeedLink;
                                     $feedItemChanged = true;
                                 }
@@ -1055,7 +1213,10 @@ function updateFeed() {
                                 }
                             }
                             // compare and update the feed website
-                            $oldFeedWebsite = $config_values['Feeds'][$idx]['Website'];
+                            // Website is optional (set by addFeed only when the feed parsed with one);
+                            // feeds added while the site was down, pre-Website-era configs, and
+                            // hand-edited configs legitimately lack the key
+                            $oldFeedWebsite = $config_values['Feeds'][$idx]['Website'] ?? '';
                             $newFeedWebsite = filter_var($feedItem['feedWebsite'], FILTER_VALIDATE_URL);
                             if ($newFeedWebsite !== false && $newFeedWebsite !== '') {
                                 if ($newFeedWebsite !== $oldFeedWebsite) {
@@ -1095,7 +1256,9 @@ function updateFeed() {
     }
     // if even one setting of one already-existing feedItem changed, write the config file
     if ($writeChanges === true) {
-        writejSONConfigFile();
+        if (!writejSONConfigFile()) {
+            writeToLog("Failed writing config after updating feeds\n", -1);
+        }
     }
 }
 

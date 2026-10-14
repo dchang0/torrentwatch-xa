@@ -11,7 +11,7 @@ As a fork of TorrentWatch-X, torrentwatch-xa handles Western live-action show ti
 
 To auto-download Favorite torrents, torrentwatch-xa controls a local __or remote__ Transmission BitTorrent client via Transmission RPC __and/or__ saves .torrent files or magnet links as files locally. The latter allows the use of __any__ BitTorrent client (not just Transmission) that can watch directories for .torrent files or magnet links to automatically start those torrents.
 
-torrentwatch-xa is a single-page web app designed to run on Apache httpd 2.4 and up with PHP 5.7 and up and certain PHP modules. See [INSTALL.md](INSTALL.md) for the list of prerequisite software. While official support is only for specific LINUX distributions, you should be able to run torrentwatch-xa on any OS, any architecture, and any web server so long as the PHP installation has all the functions needed.
+torrentwatch-xa is a single-page web app designed to run on Apache httpd 2.4 and up with PHP 7.0 and up and certain PHP modules. See [INSTALL.md](INSTALL.md) for the list of prerequisite software. While official support is only for specific LINUX distributions, you should be able to run torrentwatch-xa on any OS, any architecture, and any web server so long as the PHP installation has all the functions needed.
 
 torrentwatch-xa is extremely lightweight and can run decently on even a $5 Raspberry Pi Zero. The web UI works on any modern web browser that has Javascript enabled, including smartphone and tablet browsers.
 
@@ -23,13 +23,20 @@ Common setups:
 Status
 ===============
 
-I've posted 1.12.0 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
+I've posted 1.12.1 with the changes listed in [CHANGELOG.md](CHANGELOG.md).
 
-The biggest improvement is to the resolution detection mechanism, followed by improvements to the logging functions.
+This is yet another huge batch of small bug fixes with only a few small improvements in functionality.
 
-Some bugs introduced since 1.9.5 have been fixed including a rarely-triggered bug in 1.11.0 that blocked Apache2 from contacting transmission-daemon.
+The most important changes are:
 
-I also started to work on medium-risk bugs, now that the low-risk bugs have all largely been fixed.
++ Raised the minimum PHP version to 7.0
++ moved the SMTP/Transmission passwords to POST so they no longer leak into web-server logs.
++ Trash now actually deletes torrent data
++ Auto-Del Seeded Torrents is honored again
++ corrupt configs are backed up and recovered instead of wiped
++ deleted Favorites are no longer instantly re-added by Super-Favorites (new Re-add Delay (days) setting)
++ parser/magnet/content-filter fixes restore correct title matching and link handling. 
++ also overhauled the phone layout, restored toolbar/panel highlights, and fixed the search box so it survives Refresh and no longer blanks the list on regex input.
 
 Please report any bugs using Github Issues.
 

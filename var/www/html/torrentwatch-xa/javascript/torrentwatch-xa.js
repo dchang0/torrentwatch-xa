@@ -99,17 +99,30 @@ $(document).ready(function () { // first binding to document ready (while torren
         $.checkHiddenFeeds(1); // check the hidden (rolled-up) feeds
         var filterTab = (filter === 'torrentClient') ? '#filterTorrentClient' : '#filter_' + filter;
         $(filterTab).addClass('selected').siblings().removeClass("selected"); // this filter is selected, the others are deselected
-        document.querySelector('#filter_search_input').value = ''; // clear the search input field
+        if (empty !== true) {
+            document.querySelector('#filter_search_input').value = ''; // clear the search input field when the user switches filters (preserved when re-applying the filter after a Refresh)
+        } else if (document.querySelector('#filter_search_input').value) {
+            // re-apply the preserved search text to the re-rendered list, after the show callbacks scheduled above (same timeOut, scheduled later)
+            setTimeout(function () {
+                $('#filter_search_input').trigger('search');
+            }, timeOut);
+        }
     };
     window.processSearchInput = function () {
         // process search input including clearing
+        // apply the search as a class, not inline display: the Downloading/Downloaded filter interval re-runs
+        // show()/hide() every 500ms, and its inline styles used to clobber the search's inline visibility;
+        // the !important CSS rule on .searchHidden wins over those inline styles
         var filterText = this.value.toLowerCase();
-        document.querySelectorAll("li.torrent").forEach(function (el) { el.style.display = 'none'; });
-        $("li.torrent").each(function () {
-            if ($(this).find(".torrent_name").text().toLowerCase().match(filterText)) {
-                this.style.display = '';
+        document.querySelectorAll("li.torrent").forEach(function (el) {
+            var nameEl = el.querySelector(".torrent_name");
+            if (filterText === '' || (nameEl && nameEl.textContent.toLowerCase().indexOf(filterText) !== -1)) {
+                el.classList.remove('searchHidden');
+            } else {
+                el.classList.add('searchHidden');
             }
-        }).markAlt();
+        });
+        $("li.torrent").markAlt();
     };
     // keyup binding for Filter Bar search input key events
     $("#filter_search_input").on("keyup", processSearchInput);
@@ -296,6 +309,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                     $('.torInfo').html(error);
                     $('div.feed .torInfo').addClass('torInfoErr');
                     $('li#filterTorrentClient a').addClass('error');
+                    window.gotAllData = true; // complete the bootstrap so its init loop settles and the steady poll takes over
                     return;
                 }
 
@@ -305,6 +319,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 } catch (err) {
                     showClientError(json);
                     window.errorActive = true;
+                    window.gotAllData = true; // complete the bootstrap so its init loop settles and the steady poll takes over
                     return;
                 }
 
@@ -312,6 +327,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                 if (json === null) {
                     showClientError("Transmission did not return any data and might not be active.");
                     window.errorActive = true;
+                    window.gotAllData = true; // complete the bootstrap so its init loop settles and the steady poll takes over
                     return;
                 }
                 $('#clientError').slideUp();
@@ -327,6 +343,11 @@ $(document).ready(function () { // first binding to document ready (while torren
                 $('li#torrentClientButton a span').removeClass('altIcon'); // remove the spinning busy icon
             });
             window.hideProgressBar = false; // setting this to false turns on progress bar via ajaxStart
+        } else {
+            // folder client has no client-data payload to wait for; only the Transmission path's
+            // processTransmissionData() sets gotAllData, so without this the bootstrap init loop at
+            // ~500ms re-invoked getClientData forever (~2 requests/sec) and the steady poll never started
+            window.gotAllData = true;
         } // end window.client === "Transmission"
     };
     window.processTransmissionData = function (json) {
@@ -431,7 +452,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 ///// completely downloaded and completed seeding
                                 // perform auto-delete if it is enabled
                                 $.get('torrentwatch-xa.php', {get_autodel: 1}, function (autodel) {
-                                    if (autodel) {
+                                    if (autodel === "1") {
                                         $.delTorrent(item.hashString, false, true, true); // torHash, trash, sure, checkCache
                                         // NOTE: .delTorrent() performs some important changes to the list item(s) on successful deletion
                                     }
@@ -461,6 +482,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                         }
                         // update progress bar for item in all filters
                         torListElmt.find("div.progressBarContainer").show(); // must use item.hashString as other filters don't have clientId_
+                        torListElmt.find("div.infoDiv").show();
                         torListElmt.find("div.progressDiv").width(percentage + "%").height(3);
                         ///// add the empty infoDiv and torEta to active torrent items if they don't have one
                         var tds = torListElmt.find("td.torrent_name");
@@ -557,6 +579,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 }
                             }
                             $(this).find("div.progressBarContainer").show();
+                            $(this).find("div.infoDiv").show();
                             $(this).find("div.progressDiv").width(percentage + "%").height(3);
                             $(this).find(".torInfo").text(clientData);
                             $(this).find("span.torEta").text(convertedEta);
@@ -575,17 +598,18 @@ $(document).ready(function () { // first binding to document ready (while torren
                     // search through torrentClientItemIds array
                     if (jQuery.inArray(item.id, torrentClientItemIds) === -1) { // relies on id="clientId_" instead of class="clientId_"
                         // item in Transmission filter is not found in transmission-daemon
-                        // first, remove the class="clientId_###" from items in all filters using item.id, which is also "clientId_###"
-                        $("li." + item.id).removeClass(item.id);
+                        // capture all copies in every filter while class="clientId_###" is still present (item.id is also "clientId_###")
+                        var els = $("li." + item.id);
                         // revert feed-list items to st_inCacheNotActive state
-                        $("li." + item.id)
+                        els
                             .removeClass("st_favTooOld tc_paused tc_downloading tc_seeding tc_verifying tc_waiting st_favReady st_waitTorCheck st_downloading st_downloaded")
                             .addClass("st_inCacheNotActive");
-                        $("li." + item.id + " div.infoDiv").remove();
-                        $("li." + item.id + " div.progressBarContainer").hide();
-                        $("li." + item.id + " div.torStart").show().removeClass("hidden");
+                        els.find("div.infoDiv").remove();
+                        els.find("div.progressBarContainer").hide();
+                        els.find("div.torStart").show().removeClass("hidden");
                         document.querySelectorAll("li." + item.id + " div.torDelete, li." + item.id + " div.torTrash, li." + item.id + " div.torPause, li." + item.id + " div.torResume").forEach(function (el) { el.style.display = 'none'; el.classList.add('hidden'); });
-                        // then, remove the item from the Transmission filter
+                        // then, remove the class="clientId_###" from items in all filters and the item from the Transmission filter
+                        els.removeClass(item.id);
                         item.remove(); // essentially removes item from Transmission filter by id="clientId_" not class="clientId_"
                     }
                 });
@@ -594,7 +618,7 @@ $(document).ready(function () { // first binding to document ready (while torren
 
         // loop through in #torrentlist_container that have st_waitTorCheck
         // NOTE: #torrentlist_container is parent of #torrentClientList
-        $.each($("#torrentlist_container").find(".st_waitTorCheck, .tc_downloading"), function () { //TODO test .tc_downloading; might need to separate from .st_waitTorCheck
+        $.each($("#torrentlist_container").find(".st_waitTorCheck"), function () {
             // check if it does not have a class starting with "clientId_"
             var classList = $(this).prop("className").split(/\s+/);
             var clientIdClass = "";
@@ -618,13 +642,6 @@ $(document).ready(function () { // first binding to document ready (while torren
                 $(this).find("div.torDelete").addClass("hidden");
                 $(this).find("div.torTrash").hide();
                 $(this).find("div.torTrash").addClass("hidden");
-                // hide progress bar and remove infoDiv
-                //TODO we might need to do this only for .tc_downloading
-                if ($(this).find(".torInfo").length) {
-                    //TODO might need to set .torInfo text to nothing
-                    $(this).find("div.infoDiv").remove();
-                }
-                $(this).find("div.progressBarContainer").hide();
 
                 // finally, change st_waitTorCheck to st_inCacheNotActive for leftover items
                 $(this).removeClass("st_waitTorCheck").addClass("st_inCacheNotActive");
@@ -657,13 +674,12 @@ $(document).ready(function () { // first binding to document ready (while torren
         if ($('#torrentlist_container').find('li.torrent.selected').length) {
             updateClientButtons();
             $('#moveTo').val($('#' + item.id + ' input.path').val());
-            //document.querySelector('#moveTo').value = item.querySelector('input.path').value; //TODO didn't work when querySelector returns null
         } else {
             updateClientButtons();
             $('#moveTo').val('');
-            //document.querySelector('#moveTo').value = ''; //TODO test the switch from .val() to .value
         }
     };
+    window.actionableFeedStates = '.st_notAMatch, .st_ignoredFavBatch, .st_favTooOld, .st_favReady, .st_notSerialized, .st_inCache, .st_inCacheNotActive';
     window.updateClientButtons = function (fast) {
         var obj;
         var tor = [];
@@ -685,8 +701,12 @@ $(document).ready(function () { // first binding to document ready (while torren
         if ($('#torrentlist_container .feed  li.torrent.selected.st_notAMatch').length && window.disableHideList !== true) {
             tor['hide'] = 1;
         }
-        //TODO maybe block other interim states (do not show start button on st_waitTorCheck, etc.)
-        if ($('#torrentlist_container .feed li.selected').not('.st_downloading').not('.st_downloaded').length) {
+        // enable Start only for states where a manual download is actionable (allowlist);
+        // blocks interim states like st_waitTorCheck (client check still pending) and un-downloadable
+        // states like st_noURL, which can arrive as a compound class alongside an actionable state
+        // ("st_notAMatch st_noURL") via the render-path append, so filter the class out explicitly
+        if ($('#torrentlist_container .feed li.selected')
+                .filter(window.actionableFeedStates).not('.st_noURL').length) {
             tor['start'] = 1;
         }
 
@@ -984,7 +1004,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                     //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
                                 });
                                 // set _feed select option to rsp.feed
-                                $(superfavoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                $(superfavoriteiDPrefix + "_feed option").filter(function () { return this.value === rsp.feed; }).attr("selected", "selected").change();
                                 //$(superfavoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
                                 window.input_change = 0; // cancel the change alert dialog set by the change event handler
                                 $(superfavoriteiDPrefix + "_filter").attr("value", rsp.filter);
@@ -992,6 +1012,9 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $(superfavoriteiDPrefix + "_not").attr("value", rsp.not);
                                 $(superfavoriteiDPrefix + "_quality").attr("value", rsp.quality);
                                 //$(superfavoriteiDPrefix + "_seedratio").attr("value", rsp.seedratio);
+                                // changes are saved; disable Update until the user edits this Super-Favorite again
+                                window.superfavorite_modified = 0;
+                                $(superfavoriteiDPrefix + ' a[id$="_Update"]').addClass('disabled').removeClass('submitForm');
                             } else {
                                 //$.fn.showErrorPanel("Cannot target Super-Favorite with idx = '" + rsp.idx + "' in Super-Favorites dialog for refresh.");
                                 // Super-Favorite is missing a superfavInfo form, clone the new one
@@ -1011,7 +1034,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                     //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
                                 });
                                 // set _feed select option to rsp.feed
-                                $clone.find("#superfavorite_new_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                $clone.find("#superfavorite_new_feed option").filter(function () { return this.value === rsp.feed; }).attr("selected", "selected").change();
                                 //$clone.find("#superfavorite_new_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
                                 window.input_change = 0; // cancel the change alert dialog set by the change event handler
                                 $clone.find("#superfavorite_new_feed").attr("id", "superfavorite_" + rsp.idx + "_feed");
@@ -1019,6 +1042,9 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $clone.find("#superfavorite_new_seedratio").attr("id", "superfavorite_" + rsp.idx + "_seedratio").attr("value", rsp.seedratio);
                                 $clone.find("a[id$='_Delete']").attr("href", "#superfavorite_" + rsp.idx).attr("id", "superfavorite_" + rsp.idx + "_Delete");
                                 $clone.find("a[id$='_Update']").attr("href", "#superfavorite_" + rsp.idx).attr("id", "superfavorite_" + rsp.idx + "_Update");
+                                // changes are saved; disable Update on the clone until the user edits this Super-Favorite again
+                                window.superfavorite_modified = 0;
+                                $clone.find("a[id$='_Update']").addClass('disabled').removeClass('submitForm');
                                 // hide the clone by removing its style="display: block;"--do not use .hide()
                                 $clone.removeAttr("style");
                                 // insert the clone to the div containing the superfavInfo forms just before last child #superfavClose
@@ -1060,7 +1086,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                     //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
                                 });
                                 // set _feed select option to rsp.feed
-                                $(favoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                $(favoriteiDPrefix + "_feed option").filter(function () { return this.value === rsp.feed; }).attr("selected", "selected").change();
                                 //$(favoriteiDPrefix + "_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
                                 window.input_change = 0; // cancel the change alert dialog set by the change event handler
                                 $(favoriteiDPrefix + "_filter").attr("value", rsp.filter);
@@ -1069,6 +1095,9 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $(favoriteiDPrefix + "_quality").attr("value", rsp.quality);
                                 $(favoriteiDPrefix + "_season").attr("value", rsp.season);
                                 $(favoriteiDPrefix + "_seedratio").attr("value", rsp.seedratio);
+                                // changes are saved; disable Update until the user edits this Favorite again
+                                window.favorite_modified = 0;
+                                $(favoriteiDPrefix + ' a[id$="_Update"]').addClass('disabled').removeClass('submitForm');
                             } else {
                                 //$.fn.showErrorPanel("Cannot target Favorite with idx = '" + rsp.idx + "' in Favorites dialog for refresh.");
                                 // Favorite is missing a favInfo form, clone the new one
@@ -1088,7 +1117,7 @@ $(document).ready(function () { // first binding to document ready (while torren
                                     //$(this).prop("selected", false); // prop is supposed to be better than attr but it doesn't work as of 1.9.0
                                 });
                                 // set _feed select option to rsp.feed
-                                $clone.find("#favorite_new_feed option[value='" + rsp.feed + "']").attr("selected", "selected").change();
+                                $clone.find("#favorite_new_feed option").filter(function () { return this.value === rsp.feed; }).attr("selected", "selected").change();
                                 //$clone.find("#favorite_new_feed option[value='" + rsp.feed + "']").prop("selected", true).change();  // prop is supposed to be better than attr but it doesn't work as of 1.9.0; change is required for it to take effect
                                 window.input_change = 0; // cancel the change alert dialog set by the change event handler
                                 $clone.find("#favorite_new_feed").attr("id", "favorite_" + rsp.idx + "_feed");
@@ -1101,6 +1130,9 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 $clone.find("#favorite_new_episode").attr("id", "favorite_" + rsp.idx + "_episode").attr("value", rsp.episode);
                                 $clone.find("a[id$='_Delete']").attr("href", "#favorite_" + rsp.idx).attr("id", "favorite_" + rsp.idx + "_Delete");
                                 $clone.find("a[id$='_Update']").attr("href", "#favorite_" + rsp.idx).attr("id", "favorite_" + rsp.idx + "_Update");
+                                // changes are saved; disable Update on the clone until the user edits this Favorite again
+                                window.favorite_modified = 0;
+                                $clone.find("a[id$='_Update']").addClass('disabled').removeClass('submitForm');
                                 // hide the clone by removing its style="display: block;"--do not use .hide()
                                 $clone.removeAttr("style");
                                 // insert the clone to the div containing the favInfo forms just before last child #favClose
@@ -1118,7 +1150,13 @@ $(document).ready(function () { // first binding to document ready (while torren
         } else {
             //TODO finish code to "pin open" Feeds panel when Save button is pressed
             // Handle all other buttons including Close, Save
-            $.get(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
+            var ajaxVerb = (form.attr("id") === "config_form") ? $.post : $.get;
+            if (form.attr("id") === "config_form") {
+                // settings are saved; disable Save until the user changes a setting again
+                window.config_modified = 0;
+                form.find('a#Save').addClass('disabled').removeClass('submitForm');
+            }
+            ajaxVerb(form.get(0).action, form.buildDataString(button), $.loadDynamicData, 'html');
         }
     };
     $.fn.showErrorPanel = function (errorMessage) {
@@ -1127,7 +1165,7 @@ $(document).ready(function () { // first binding to document ready (while torren
         if (errorMessageString !== "") {
             var errorID = new Date().getTime();
             document.getElementById('twError').style.display = 'block';
-            $('#twError').append('<p id="error_' + errorID + '">' + errorMessage + '</p>');
+            $('<p>', {id: 'error_' + errorID}).text(errorMessageString).appendTo('#twError');
             setTimeout(function () {
                 $('#twError p#error_' + errorID).remove();
                 if (!$('#twError p').length) {
@@ -1167,6 +1205,15 @@ $(document).ready(function () { // first binding to document ready (while torren
                         $('.dialog').fadeIn('fast');
                     }
                     $(current_dialog).fadeIn('fast');
+                    if (target === '#configuration') {
+                        // Save is disabled until a setting is changed; changes are saved when Save is pressed
+                        window.config_modified = 0;
+                        $('#config_form a#Save').addClass('disabled').removeClass('submitForm');
+                        $("#config_form input, #config_form select").off("keyup.twxaConfig change.twxaConfig").on("keyup.twxaConfig change.twxaConfig", function () {
+                            window.config_modified = 1;
+                            $('#config_form a#Save').removeClass('disabled').addClass('submitForm');
+                        });
+                    }
                     setTimeout(function () {
                         $("#dynamicdata .dialog_window input, #dynamicdata .dialog_window select").on("change", function () {
                             window.input_change = 1;
@@ -1177,7 +1224,11 @@ $(document).ready(function () { // first binding to document ready (while torren
                         window.dialog = 0;
                     });
                 });
-                $("li#id_" + this.parentNode.id + " a").addClass("selected");
+                // highlight the toolbar button for the opened dialog; the old "li#id_" + parentNode.id
+                // selector matched nothing since the main-options li ids never carried the "id_" prefix
+                // (they are favoritesMenu/config/... — "id_" belongs to feed-item rows), so the
+                // #mainoptions a.selected highlight has been dead since ~0.6.0
+                $('#mainoptions a[href="' + this.hash + '"]').addClass("selected");
             } else {
                 $('#dynamicdata .dialog').fadeOut('fast');
                 setTimeout(function () {
@@ -1223,6 +1274,23 @@ $(document).ready(function () { // first binding to document ready (while torren
         });
         return this;
     };
+    // enable the Update button of the current Super-Favorite only if unsaved changes exist and required fields are filled
+    var updateSuperFavoriteUpdateButton = function () {
+        if (!current_superfavorite) {
+            return;
+        }
+        var $update = $(current_superfavorite + ' a[id$="_Update"]');
+        if (!$update.length) {
+            return;
+        }
+        if (window.superfavorite_modified &&
+                $(current_superfavorite + ' input:text[name=name]').val().length &&
+                $(current_superfavorite + ' input:text[name=filter]').val().length) {
+            $update.removeClass('disabled').addClass('submitForm');
+        } else {
+            $update.addClass('disabled').removeClass('submitForm');
+        }
+    };
     $.fn.toggleSuperFavorite = function () {
         this.each(function () {
             if (window.input_change) {
@@ -1234,13 +1302,13 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
             var last = current_superfavorite;
             current_superfavorite = this.hash;
-            $("#superfavorites input").on("keyup", function () {
-                if ($(current_superfavorite + ' input:text[name=name]').val().length &&
-                        $(current_superfavorite + ' input:text[name=filter]').val().length) {
-                    $(current_superfavorite + ' a[id$="_Update"]').removeClass('disabled').addClass('submitForm');
-                } else {
-                    $(current_superfavorite + ' a[id$="_Update"]').addClass('disabled').removeClass('submitForm');
-                }
+            // mark the clicked entry as the selected one (persists after hover leaves; CSS ul.superfavorite li.selected)
+            $("ul.superfavorite li").removeClass("selected");
+            $(this).closest("li").addClass("selected");
+            window.superfavorite_modified = 0; // no changes have been made to the newly-selected Super-Favorite yet
+            $("#superfavorites input, #superfavorites select").off("keyup.twxaSuperFavorite change.twxaSuperFavorite").on("keyup.twxaSuperFavorite change.twxaSuperFavorite", function () {
+                window.superfavorite_modified = 1;
+                updateSuperFavoriteUpdateButton();
             });
             if (current_superfavorite === "#superfavorite_new") {
                 $(current_superfavorite + ' a[id$="_Delete"]').addClass('disabled').removeClass('submitForm');
@@ -1249,15 +1317,34 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
             if (!last) {
                 $(current_superfavorite).show();
+                updateSuperFavoriteUpdateButton();
             } else {
                 $(last).fadeOut('fast',
                         function () {
                             $(current_superfavorite).fadeIn('fast');
                             $(current_superfavorite).resetForm();
+                            updateSuperFavoriteUpdateButton();
                         });
             }
         });
         return this;
+    };
+    // enable the Update button of the current Favorite only if unsaved changes exist and required fields are filled
+    var updateFavoriteUpdateButton = function () {
+        if (!current_favorite) {
+            return;
+        }
+        var $update = $(current_favorite + ' a[id$="_Update"]');
+        if (!$update.length) {
+            return;
+        }
+        if (window.favorite_modified &&
+                $(current_favorite + ' input:text[name=name]').val().length &&
+                $(current_favorite + ' input:text[name=filter]').val().length) {
+            $update.removeClass('disabled').addClass('submitForm');
+        } else {
+            $update.addClass('disabled').removeClass('submitForm');
+        }
     };
     $.fn.toggleFavorite = function () {
         this.each(function () {
@@ -1270,13 +1357,13 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
             var last = current_favorite;
             current_favorite = this.hash;
-            $("#favorites input").on("keyup", function () {
-                if ($(current_favorite + ' input:text[name=name]').val().length &&
-                        $(current_favorite + ' input:text[name=filter]').val().length) {
-                    $(current_favorite + ' a[id$="_Update"]').removeClass('disabled').addClass('submitForm');
-                } else {
-                    $(current_favorite + ' a[id$="_Update"]').addClass('disabled').removeClass('submitForm');
-                }
+            // mark the clicked entry as the selected one (persists after hover leaves; CSS ul.favorite li.selected)
+            $("ul.favorite li").removeClass("selected");
+            $(this).closest("li").addClass("selected");
+            window.favorite_modified = 0; // no changes have been made to the newly-selected Favorite yet
+            $("#favorites input, #favorites select").off("keyup.twxaFavorite change.twxaFavorite").on("keyup.twxaFavorite change.twxaFavorite", function () {
+                window.favorite_modified = 1;
+                updateFavoriteUpdateButton();
             });
             if (current_favorite === "#favorite_new") {
                 $(current_favorite + ' a[id$="_Delete"]').addClass('disabled').removeClass('submitForm');
@@ -1285,11 +1372,13 @@ $(document).ready(function () { // first binding to document ready (while torren
             }
             if (!last) {
                 $(current_favorite).show();
+                updateFavoriteUpdateButton();
             } else {
                 $(last).fadeOut('fast',
                         function () {
                             $(current_favorite).fadeIn('fast');
                             $(current_favorite).resetForm();
+                            updateFavoriteUpdateButton();
                         });
             }
         });
@@ -1327,9 +1416,10 @@ $(document).ready(function () { // first binding to document ready (while torren
                 var items = document.querySelectorAll("#torrentlist_container .feed ul.torrentlist li");
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i];
-                    if (item.querySelector('input.show_title').value.toLowerCase().match(rsp.name.toLowerCase()) &&
+                    // indexOf containment, not .match(): favorite names with regex metacharacters (C++, Show [OVA]) compile to invalid patterns and threw, leaving window.favving stuck at 1 and wedging all future Add-Favorite batches
+                    if (item.querySelector('input.show_title').value.toLowerCase().indexOf(rsp.name.toLowerCase()) !== -1 &&
                             item.querySelector('input.show_quality').value.toLowerCase().match(rsp.quality.toLowerCase()) &&
-                            ($.urlencode(item.querySelector('input.feed_link').value).match(rsp.feed) ||
+                            (item.querySelector('input.feed_link').value === rsp.feed ||
                                     rsp.feed === 'All')) {
                         item.classList.remove('st_notAMatch');
                         item.classList.add('st_favReady');
@@ -1381,7 +1471,10 @@ $(document).ready(function () { // first binding to document ready (while torren
                         $('li#id_' + id)
                                 .removeClass('st_favTooOld tc_paused tc_downloading tc_seeding tc_verifying st_downloaded st_favReady st_waitTorCheck st_inCacheNotActive')
                                 .addClass('st_downloading tc_waiting');
-                        if (!$('li#id_' + id + ' .torInfo').length) {
+                        if ($('li#id_' + id + ' .torInfo').length) {
+                            $('li#id_' + id + ' div.infoDiv').show();
+                            $('li#id_' + id + ' .torInfo').text('Waiting for client data...');
+                        } else {
                             $('li#id_' + id + ' td.torrent_name')
                                     .append('<div class="infoDiv"><span id=tor_' + id + ' class="torInfo tor_' + torHash.match(/\w+/) + '">' +
                                             'Waiting for client data...</span><span class="torEta"></span></div>');
@@ -1400,9 +1493,11 @@ $(document).ready(function () { // first binding to document ready (while torren
                         // $('li#id_' + id + ' div.torTrash').removeClass("hidden");
                         // $('li#id_' + id + ' div.torDelete').show();
                         // $('li#id_' + id + ' div.torDelete').removeClass("hidden");
-                        $('li#id_' + id).removeClass('item_###torHash###').addClass('item_' + torHash);
-                        var item = $('li#id_' + id);
-                        item.html(item.html().replace(/###torHash###/g, torHash));
+                        if (/^[0-9a-f]{40,64}$/i.test(torHash)) {
+                            $('li#id_' + id).removeClass('item_###torHash###').addClass('item_' + torHash);
+                            var item = $('li#id_' + id);
+                            item.html(item.html().replace(/###torHash###/g, torHash));
+                        }
                         setTimeout(getClientData, 10);
                     }
                 });
@@ -1434,6 +1529,12 @@ $(document).ready(function () { // first binding to document ready (while torren
                     function (json) {
                         if (json.result === "success") {
                             // there is no useful response other than the result
+                            // json.inCache maps each requested hash to whether it is still in the
+                            // download cache after the delete (server-reported); st_inCacheNotActive
+                            // means "seen in download cache but no longer active", so an item that is
+                            // no longer in the cache (trash delete removed the entry) reverts to
+                            // st_favReady instead of being mislabeled as previously downloaded
+                            var inCacheMap = json.inCache || {};
                             var torHashes = torHash.split(",");
                             // loop through each torrent hash in torHash array
                             for (var i = 0; i < torHashes.length; i++) {
@@ -1445,9 +1546,8 @@ $(document).ready(function () { // first binding to document ready (while torren
                                     $('li.item_' + torHashes[i] + ' div.torStart').removeClass("hidden");
                                     $('li.item_' + torHashes[i])
                                             .removeClass('st_favTooOld tc_waiting tc_verifying tc_downloading tc_seeding tc_paused st_favReady st_waitTorCheck st_downloading st_downloaded')
-                                            .addClass('st_inCacheNotActive');
+                                            .addClass(inCacheMap[torHashes[i]] === true ? 'st_inCacheNotActive' : 'st_favReady');
                                     // find the unknown class clientId_### and remove it
-                                    //TODO this block might be unnecessary since the same cleanup is done in processClientData
                                     var classList = $('li.item_' + torHashes[i]).prop("className").split(/\s+/);
                                     var clientIdClass = "";
                                     for (var k = 0; k < classList.length; k++) {
@@ -1463,7 +1563,6 @@ $(document).ready(function () { // first binding to document ready (while torren
                                 if ($('#torrentClientFilterView li.item_' + torHashes[i]).length) {
                                     $('#torrentClientFilterView li.item_' + torHashes[i]).remove();
                                 }
-                                //TODO double-check to make sure the list length is reduced by 1
                             }
                             setTimeout(getClientData, 10);
                         } else {
@@ -1654,19 +1753,21 @@ $(document).ready(function () { // first binding to document ready (while torren
                     }
                 }, 100);
             }
-            if (!$(this).hasClass('st_downloading') && !$(this).hasClass('st_downloaded')) {
-                switch (action) {
-                    case 'dlTorrent':
+            switch (action) {
+                case 'dlTorrent':
+                    if ($(this).is(window.actionableFeedStates)) {
                         $.dlTorrent(title, link, linkType, feedLink, id);
-                        break;
-                    case 'hideItem':
+                    }
+                    break;
+                case 'hideItem':
+                    if (!$(this).hasClass('st_downloading') && !$(this).hasClass('st_downloaded')) {
                         var hideInterval = setInterval(function () {
                             if (window.hiding !== 1) {
                                 $.hideItem(title, id);
                                 clearInterval(hideInterval);
                             }
                         }, 100);
-                }
+                    }
             }
         });
     };

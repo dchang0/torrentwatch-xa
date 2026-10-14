@@ -16,6 +16,8 @@ define('VOLUME_WORDS', 'Volumes|Volume|Volumen|Volumens|Vols\.|Vols|Vol\.|Vol|\b
 define('CHAPTER_WORDS', 'Chapters|Chapter|Capitulos|Capitulo|Chapitres|Chapitre|\bChap\.|\bChap|\bCh\.|\bCh|\bC\.|\bC');
 // part words
 define('PART_WORDS', 'Parts|Part|Pt\.|Pt');
+// special words include abbreviations; bare Sp/SP kept per call site (word-final needs trailing \b, word-initial is guarded by the following number)
+define('SPECIAL_WORDS', 'Specials|Special|Spec\.|Spec|Spc\.|Spc|Sp\.');
 
 // media type constants
 define('MEDTYP_UNKNOWN', 0);
@@ -35,7 +37,7 @@ define('NUMSEQ_MOVIE', 64);
 define('NUMSEQ_DISC_PART', 128);
 
 // known valid vertical resolution heights (used by detectResolution)
-define('RESOLUTION_HEIGHTS', [240, 360, 400, 480, 544, 576, 720, 768, 800, 900, 1024, 1050, 1080, 1200, 1440, 2160]);
+const RESOLUTION_HEIGHTS = [240, 360, 400, 480, 544, 576, 720, 768, 800, 900, 1024, 1050, 1080, 1200, 1440, 2160];
 
 // load matchTitle function files
 require_once("twxa_parse_match.php");
@@ -312,7 +314,7 @@ function detectQualities($ti, $seps = '\s\.\_') {
         'TVCap',
         'TVDub',
         'TV-Dub',
-        'HR.PDTV',
+        'HR\.PDTV',
         'PDTV',
         'SatRip',
         'WebRip',
@@ -492,7 +494,7 @@ function detectMatch($ti) {
     // detect qualities
     $detQualitiesOutput = detectQualities(simplifyTitle($ti));
     $detQualitiesJoined = implode(' ', $detQualitiesOutput['detectedQualities']);
-    if ($config_values['Settings']['Resolutions Only'] == "yes") {
+    if (isset($config_values['Settings']['Resolutions Only']) && $config_values['Settings']['Resolutions Only'] == "yes") {
         $detQualities = $detQualitiesOutput['detectedResolutions'];
     } else {
         $detQualities = $detQualitiesOutput['detectedQualities'];
@@ -616,10 +618,15 @@ function detectItem($ti, $wereQualitiesDetected = false, $seps = '\s\.\_') {
     // because of PHP left-to-right matching order, (Season|Seas|Se|S) works but (S|Se|Seas|Season) will match S and move on
     $ti = html_entity_decode($ti, ENT_QUOTES);
     $ti = rawurldecode($ti);
+    $ti = mb_convert_encoding($ti, 'UTF-8', 'UTF-8');
 
     // bucket the matches of all numbers of different lengths
     $matNums = [];
-    preg_match_all("/(\d+)/u", $ti, $matNums, \PREG_SET_ORDER); // can't initialize $matNums here due to isset tests later
+    $matNumsFound = preg_match_all("/(\d+)/u", $ti, $matNums, \PREG_SET_ORDER); // can't initialize $matNums here due to isset tests later
+    if ($matNumsFound === false) {
+        $matNums = [];
+        writeToLog("detectItem: preg_match_all failed with error " . preg_last_error() . " for $ti\n", -1);
+    }
     // is there at least one number? can't have an episode otherwise (except in case of PV preview episode)
     $numbersDetected = count($matNums);
     if (isset($matNums[0])) {
@@ -820,6 +827,12 @@ function episode_filter($item, $filter) {
             $filterSets = explode(',', $filter);
             $filterSetsCount = count($filterSets);
             for ($i = 0; $i < $filterSetsCount; $i++) {
+                $startSeason = 1;
+                $startEpisode = 1;
+                $startEpisodeVersion = '';
+                $stopSeason = 99999;
+                $stopEpisode = 99999;
+                $stopEpisodeVersion = '';
                 // convert from old notation style to new
                 if (preg_match('/\b[s]\d+/', $filterSets[$i])) {
                     $filterSets[$i] = str_replace('s', '', $filterSets[$i]);

@@ -1,6 +1,7 @@
 <?php
 
 $utitle = null; // to contain HTML code of un-soft-hyphenated title of the item
+$utitleJS = null; // to contain JS string literal of the raw title for onclick handlers
 $description = null; // to contain HTML code of description of the item
 $infoDiv = null; // to contain HTML code of each item's div.infoDiv
 $hideItem = null; // to contain HTML code of div for Hide Show button on drop-down menu
@@ -19,6 +20,16 @@ $pubDate = null; // to contain publication date of the item
 $unixTime = null; // to contain UNIX timestamp
 //TODO improve passing of $guess[], $id, $ulink, and $feed into this file
 
+$ulinkJS = htmlspecialchars(json_encode($ulink ?? ''), ENT_QUOTES, 'UTF-8');
+$feedJS = htmlspecialchars(json_encode($feed ?? ''), ENT_QUOTES, 'UTF-8');
+$linkTypeJS = htmlspecialchars(json_encode($linkType ?? ''), ENT_QUOTES, 'UTF-8');
+$idJS = htmlspecialchars(json_encode($id ?? ''), ENT_QUOTES, 'UTF-8');
+
+$ulink = htmlspecialchars($ulink ?? '', ENT_QUOTES, 'UTF-8');
+$feed = htmlspecialchars($feed ?? '', ENT_QUOTES, 'UTF-8');
+$linkType = htmlspecialchars($linkType ?? '', ENT_QUOTES, 'UTF-8');
+$id = htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8');
+
 if (isset($ulink) && !empty($ulink)) {
     $titleClasses = "torrent_title";
 } else {
@@ -26,7 +37,9 @@ if (isset($ulink) && !empty($ulink)) {
 }
 
 if (isset($item['title'])) {
-    $utitle = str_replace('&shy;', '', $item['title']);
+    $utitleRaw = str_replace('&shy;', '', $item['title']);
+    $utitleJS = htmlspecialchars(json_encode($utitleRaw), ENT_QUOTES, 'UTF-8');
+    $utitle = htmlspecialchars($utitleRaw, ENT_QUOTES, 'UTF-8');
 }
 
 if (isset($item['description'])) {
@@ -41,13 +54,14 @@ if (isset($item['pubDate'])) {
 if (!isset($torHash) || !$torHash) {
     $torHash = '###torHash###';
 }
+$torHashJS = htmlspecialchars(json_encode($torHash), ENT_QUOTES, 'UTF-8');
 
 if ($config_values['Settings']['Combine Feeds'] == 1) {
     $feedItem = "<span class=\"feed_name\">" . htmlspecialchars($feedName ?? '', ENT_QUOTES, 'UTF-8') . "</span>";
 }
 
 /* if (!$config_values['Settings']['Disable Hide List'] && $itemState === "st_notAMatch") {
-    $hideItem = "<div class='contextItem hideItem' onclick='$.hideItem(\"$utitle\")' title='Hide show'>Hide show</div>"; // adds Hide Show button to drop-down menu
+    $hideItem = "<div class='contextItem hideItem' onclick='$.hideItem(" . $utitleJS . ")' title='Hide show'>Hide show</div>"; // adds Hide Show button to drop-down menu
 } */
 
 if ($config_values['Settings']['Client'] != "folder") {
@@ -76,8 +90,8 @@ switch ($itemState) {
         $torTrash = "torTrash hidden";
 } */
 
-$showTitle = $guess['favTitle'];
-$showQuality = $guess['qualities'];
+$showTitle = htmlspecialchars($guess['favTitle'] ?? '', ENT_QUOTES, 'UTF-8');
+$showQuality = htmlspecialchars($guess['qualities'] ?? '', ENT_QUOTES, 'UTF-8');
 $debugMatch = htmlspecialchars($guess['debugMatch'] ?? '', ENT_QUOTES, 'UTF-8');
 
 if ($config_values['Settings']['Show Debug']) {
@@ -87,7 +101,7 @@ if ($config_values['Settings']['Show Debug']) {
 }
 
 if ($guess['episode'] != '' && $guess['episode'] != 'notSerialized') {
-    $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>" . $guess['episode'] . "</b></span>";
+    $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>" . htmlspecialchars($guess['episode'] ?? '', ENT_QUOTES, 'UTF-8') . "</b></span>";
 } else {
     $showEpisodeNumber .= "<span class=\"episodeNum\" title=\"$debugMatch\"><b>(\"_&nbsp;)</b></span>";
 }
@@ -108,17 +122,17 @@ print <<< EOH
 <td class="identifier"></td>
 <td class="torrent_name">
 <div class='torrent_name'>
-<!-- <span class="contextButtonContainer"><a id="contextButton_$id" class="contextButton" onclick='$.toggleContextMenu("#divContext_$id", "$id");'></a></span> -->
+<!-- <span class="contextButtonContainer"><a id="contextButton_$id" class="contextButton" onclick='$.toggleContextMenu("#divContext_" + $idJS, $idJS);'></a></span> -->
 <span class="$titleClasses" title="$description">$ti</span>
 <span class='torrent_pubDate'>$feedItem $showEpisodeNumber $pubDate</span>
 </div>
 <!-- <div id="divContext_$id" class="contextMenu">
-<div class='contextItem addFavorite <?= $addFavHidden ?>' onclick='javascript:$.addFavorite("$feed","$utitle")' title="Add this show to favorites">Add to favorites</div>
-<div class='contextItem $torStart' onclick='javascript:$.dlTorrent("$utitle","$ulink","$linkType","$feed","$id")' title="Download this torrent">Download</div>
-<div class="contextItem activeTorrent $torResume" onclick='javascript:$.stopStartTorrent("start", "$torHash")' title="Resume download">Resume transfer</div>
-<div class="contextItem activeTorrent $torPause" onclick='javascript:$.stopStartTorrent("stop", "$torHash")' title="Pause download">Pause transfer</div>
-<div class="contextItem activeTorrent $torDelete" onclick='javascript:$.delTorrent("$torHash", false, false)' title="Delete torrent but keep data">Remove from client</div>
-<div class="contextItem activeTorrent $torTrash" onclick='javascript:$.delTorrent("$torHash", true, false)' title="Delete torrent and its data">Remove &amp; trash data</div>
+<div class='contextItem addFavorite <?= $addFavHidden ?>' onclick='javascript:$.addFavorite($feedJS,$utitleJS)' title="Add this show to favorites">Add to favorites</div>
+<div class='contextItem $torStart' onclick='javascript:$.dlTorrent($utitleJS,$ulinkJS,$linkTypeJS,$feedJS,$idJS)' title="Download this torrent">Download</div>
+<div class="contextItem activeTorrent $torResume" onclick='javascript:$.stopStartTorrent("start", $torHashJS)' title="Resume download">Resume transfer</div>
+<div class="contextItem activeTorrent $torPause" onclick='javascript:$.stopStartTorrent("stop", $torHashJS)' title="Pause transfer">Pause transfer</div>
+<div class="contextItem activeTorrent $torDelete" onclick='javascript:$.delTorrent($torHashJS, false, false)' title="Delete torrent but keep data">Remove from client</div>
+<div class="contextItem activeTorrent $torTrash" onclick='javascript:$.delTorrent($torHashJS, true, false)' title="Delete torrent and its data">Remove &amp; trash data</div>
 $hideItem
 $epiDiv
 </div> -->
